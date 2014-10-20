@@ -1,0 +1,29 @@
+#!/bin/sh
+
+export ja_basedir="$(realpath $(dirname $0))"
+
+cd "$ja_basedir"
+. src/env.sh
+
+print_help() {
+    echo "Usage: $0 <COMMAND> <OPTIONS>...
+Generates a build system.
+
+Commands:
+  help		print this help message
+  regen		regenerate a build system"
+}
+
+case $1 in
+    help)
+        print_help
+        ;;
+    regen)
+        shift
+        exec ninja -f src/jagen.ninja "$@"
+        ;;
+    *)
+        set_env tools
+        exec chibi-scheme -r src/jagen.scm "$@"
+        ;;
+esac
