@@ -2,9 +2,13 @@
         (scheme file)
         (scheme write)
         (scheme load)
+        (scheme process-context)
         (srfi 26)
+        (chibi regexp)
         (chibi match)
         (chibi show))
+
+(define *env* '())
 
 (define-record-type
   target
@@ -27,11 +31,21 @@
                                   (list 'rule 'rules ...)))
            nl))))
 
+(define (import-shell-variable p)
+  (let* ((k (car p))
+         (v (cdr p))
+         (rx '(: "ja_" (-> name (+ any))))
+         (m (regexp-matches rx k)))
+    (when m
+      (let ((n (regexp-match-submatch m 'name)))
+        (set! *env* (cons (cons (string->symbol n) v) *env*))))))
+
+(for-each import-shell-variable (get-environment-variables))
+
 (define (generate-build out-file in-file)
   (if (file-exists? out-file) (delete-file out-file))
   (with-output-to-file out-file (lambda ()
-                                  (include "env.scm")
-                                  (include "build.scm"))))
+                                  (include "src/rules.scm"))))
 
 (define (%include file)
   (show #t "include " file nl nl))
