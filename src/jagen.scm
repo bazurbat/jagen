@@ -3,12 +3,11 @@
         (scheme write)
         (scheme load)
         (scheme process-context)
+        (srfi 2)
         (srfi 26)
         (chibi regexp)
         (chibi match)
         (chibi show))
-
-(define *env* '())
 
 (define-record-type
   target
@@ -24,28 +23,36 @@
      (generate-build out in)))
   0)
 
-(define-syntax build
+(define (import-shell-variable p)
+  (let* ((k (car p))
+         (v (cdr p))
+         (rx '(: "ja_" (-> name (+ any))))
+         (m (regexp-matches rx k)))
+    (if m
+      (let* ((submatch (regexp-match-submatch m 'name))
+             (name (regexp-replace-all "_" submatch "-")))
+        (cons (cons (string->symbol name) v) *env*))
+      '())))
+
+(define *env*
+  (apply append (map import-shell-variable (get-environment-variables))))
+
+(define (env k)
+  (and-let* ((p (assq k *env*))
+             (value (cdr p))
+             ((not (zero? (string-length value)))))
+    value))
+
+(define-syntax pkg
   (syntax-rules ()
     ((build pkg rule rules ...)
      (show #t (apply show #f (map (cut %build 'pkg #f <>)
                                   (list 'rule 'rules ...)))
            nl))))
 
-(define (import-shell-variable p)
-  (let* ((k (car p))
-         (v (cdr p))
-         (rx '(: "ja_" (-> name (+ any))))
-         (m (regexp-matches rx k)))
-    (when m
-      (let ((n (regexp-match-submatch m 'name)))
-        (set! *env* (cons (cons (string->symbol n) v) *env*))))))
-
-(for-each import-shell-variable (get-environment-variables))
-
 (define (generate-build out-file in-file)
   (if (file-exists? out-file) (delete-file out-file))
-  (with-output-to-file out-file (lambda ()
-                                  (include "src/rules.scm"))))
+  (with-output-to-file out-file (cut load in-file)))
 
 (define (%include file)
   (show #t "include " file nl nl))

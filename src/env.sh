@@ -10,7 +10,12 @@ export ja_srcdir="$ja_basedir/src"
 
 export ja_builddir="$ja_basedir/build"
 
-[ -f env.sh ] && . env.sh
+export ja_sdk=""
+
+local_env="$ja_basedir/env.sh"
+
+[ -f "$local_env" ] || touch "$local_env"
+. "$local_env"
 
 message() { printf "\033[1;34m:::\033[0m %s\n" "$@"; }
 

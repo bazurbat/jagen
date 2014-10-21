@@ -1,3 +1,5 @@
 /build/
 /lib/dist
-build.ninja
+
+/build.ninja
+/env.sh

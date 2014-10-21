@@ -7,6 +7,7 @@ build $b/chibi-scheme-build-tools: script $b/chibi-scheme-unpack-tools
 build $b/chibi-scheme-install-tools: script $b/chibi-scheme-build-tools
     script = pkg.sh chibi-scheme install tools
 
-build build.ninja: command src/jagen.scm src/env.scm src/rules.scm $
+build build.ninja: command env.sh src/env.sh src/env.scm src/jagen.scm $
+                           src/rules.scm src/rules.ez.scm src/rules.sigma.scm $
                            || $b/chibi-scheme-install-tools
     command = ./jagen generate build.ninja src/rules.scm
