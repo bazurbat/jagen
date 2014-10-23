@@ -1,3 +1,10 @@
+(%build (make-build "script"
+                    '("out1" "out2")
+                    '("int1" "int2")
+                    '(("var1" "aaa")
+                      ("var2" "bbb"))))
+(newline)
+
 (pkg 'rootfs
      '(unpack)
      '(prepare))

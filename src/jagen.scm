@@ -16,6 +16,20 @@
   (stage  target-stage)
   (config target-config))
 
+(define-record-type
+  rule
+  (make-rule name variables) rule?
+  (name      rule-name)
+  (variables rule-variables))
+
+(define-record-type
+  build
+  (make-build rule output input variables) build?
+  (rule      build-rule)
+  (output    build-output)
+  (input     build-input)
+  (variables build-variables))
+
 (define main
   (match-lambda
     ((_) (show #t "pbuild" nl))
@@ -62,6 +76,15 @@
 
 (define (%include file)
   (show #t "include " file nl nl))
+
+(define (%build b)
+  (define (%target name)
+    (show #f "$builddir/" name " "))
+  (show #t "build " (apply show #f (map %target (build-output b))))
+  (show #t ": " (build-rule b) " $" nl)
+  (for-each (lambda (i)
+              (show #t (space-to 8) (%target i) "$" nl))
+            (build-input b)))
 
 (define (%target t deps)
   (match-let ((($ target p n c) t))
