@@ -1,71 +1,68 @@
 ; prereq
 
-(build prereq
-       (check))
+(pkg 'prereq
+     '(check))
 
-(build xsdk
-       (unpack (prereq check)))
+(pkg 'xsdk
+     '(unpack (prereq check)))
 
 ; host
-(build make
-       (config host
-               (unpack (prereq check))
-               (build (make unpack host))
-               (install (make build host))))
+(pkg 'make
+     '(config host
+              (unpack (prereq check))
+              (build)
+              (install)))
 
-(build gdb
-       (config host
-               (unpack (prereq check))
-               (prepare (gdb unpack host))
-               (build (gdb prepare host))
-               (install (gdb build host))))
+(pkg 'gdb
+     '(config host
+              (unpack (prereq check))
+              (prepare)
+              (build)
+              (install)))
 
 ; utils
 
-(build utils
-       (unpack (prereq check))
-       (config host
-               (build (utils unpack))
-               (install (utils build host)))
-       (build (utils unpack)
-              (gpgme install)
-              (dbus install))
-       (install (utils build)))
+(pkg 'utils
+     '(unpack (prereq check))
+     '(config host
+              (build)
+              (install))
+     '(build (gpgme install)
+             (dbus install))
+     '(install))
 
 ; boot
 
-(build ezboot
-       (build (prereq check)
-              (after (xsdk unpack)
-                     (rootfs build)))
-       (install (ezboot build)))
+(pkg 'ezboot
+     '(build (prereq check)
+             (after (xsdk unpack)
+                    (rootfs build)))
+     '(install))
 
-(build yamon
-       (unpack (prereq check))
-       (prepare (yamon unpack))
-       (build (yamon prepare)
-              (after (xsdk unpack)
-                     (rootfs build)))
-       (install (yamon build)))
+(pkg 'yamon
+     '(unpack (prereq check))
+     '(prepare)
+     '(build (after (xsdk unpack)
+                    (rootfs build)))
+     '(install))
 
 ; rootfs
 
-(build rootfs
-       (unpack (prereq check))
-       (build (rootfs unpack)
-              (after (make install host)))
-       (install (kernel install)
-                (loop-aes install)
-                (mrua modules)
-                (utils-linux install)
-                (e2fsprogs install)
-                (gnupg install)
-                (dbus install)
-                (libuv install)
-                (utils install)
-                (gdbserver install)
-                (freetype install)
-                (sqlite install)
-                (strace install)
-                (ralink install)
-                (wpa_supplicant install)))
+(pkg 'rootfs
+     '(unpack (prereq check))
+     '(build (after (make install host)))
+     '(install (kernel install)
+               (loop-aes install)
+               (mrua modules)
+               (utils-linux install)
+               (e2fsprogs install)
+               (gnupg install)
+               (dbus install)
+               (libuv install)
+               (utils install)
+               (gdbserver install)
+               (freetype install)
+               (sqlite install)
+               (strace install)
+               (ralink install)
+               (wpa_supplicant install)))

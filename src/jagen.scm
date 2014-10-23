@@ -11,9 +11,9 @@
 
 (define-record-type
   target
-  (make-target pkg name config) target?
-  (pkg    target-pkg)
-  (name   target-stage)
+  (make-target name stage config) target?
+  (name   target-name)
+  (stage  target-stage)
   (config target-config))
 
 (define main
@@ -43,36 +43,36 @@
              ((not (zero? (string-length value)))))
     value))
 
-(define-syntax pkg
-  (syntax-rules ()
-    ((build pkg rule rules ...)
-     (show #t (apply show #f (map (cut %build 'pkg #f <>)
-                                  (list 'rule 'rules ...)))
-           nl))))
-
 (define (generate-build out-file in-file)
   (if (file-exists? out-file) (delete-file out-file))
   (with-output-to-file out-file (cut load in-file)))
 
+(define (pkg name . rest)
+  (let loop ((rest rest) (config #f) (prev '()))
+    (unless (null? rest)
+      (match (car rest)
+             (('config config rest ...)
+              (loop rest config prev))
+             ((stage deps ...)
+              (%target (make-target name stage config)
+                       (append (list prev) deps))
+              (set! prev (list name stage config))))
+      (loop (cdr rest) config prev)))
+  (show #t nl))
+
 (define (%include file)
   (show #t "include " file nl nl))
 
-(define (%build pkg config expr)
-  (match expr
-         (('config name targets ...)
-          (apply show #f (map (cut %build pkg name <>) targets)))
-         ((name deps ...)
-          (%target (make-target pkg name config) deps))))
-
 (define (%target t deps)
   (match-let ((($ target p n c) t))
-             (show #f "build $builddir/" (%name t) ": script"
+             (show #t "build $builddir/" (%name t) ": script"
                    (apply show #f (map (cut %dep <>) deps)) nl
                    (space-to 4)
                    "script = pkg.sh " p " " n " " (if c c "") nl)))
 
 (define (%dep expr)
   (match expr
+         (() "")
          (('after targets ...)
           (show #f " ||"
                 (apply show #f (map %dep targets))))
