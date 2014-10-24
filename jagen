@@ -6,7 +6,7 @@ Generates a build system.
 
 Commands:
   help		print this help message
-  regen		regenerate build system"
+  refresh	regenerate build system"
 }
 
 export ja_basedir="$(realpath $(dirname $0))"
@@ -20,7 +20,7 @@ case $1 in
     help)
         print_help
         ;;
-    regen)
+    refresh)
         if ! $(which chibi-scheme >/dev/null); then
             for s in unpack build install; do
                 bin/pkg.sh chibi-scheme $s tools || exit
