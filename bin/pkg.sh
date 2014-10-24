@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. src/env.sh || exit 1
+. "$ja_libdir/jagen/env.sh" || exit
 
 p_is_function() {
     type "$1" 2>/dev/null | grep -q 'function'

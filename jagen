@@ -1,29 +1,34 @@
 #!/bin/sh
 
-export ja_basedir="$(realpath $(dirname $0))"
-
-cd "$ja_basedir"
-. src/env.sh
-
 print_help() {
     echo "Usage: $0 <COMMAND> <OPTIONS>...
 Generates a build system.
 
 Commands:
   help		print this help message
-  regen		regenerate a build system"
+  regen		regenerate build system"
 }
+
+export ja_basedir="$(realpath $(dirname $0))"
+
+cd "$ja_basedir"
+
+. lib/jagen/env.sh
+use_env tools
 
 case $1 in
     help)
         print_help
         ;;
     regen)
-        shift
-        exec ninja -f src/jagen.ninja "$@"
+        if ! $(which chibi-scheme >/dev/null); then
+            for s in unpack build install; do
+                bin/pkg.sh chibi-scheme $s tools || exit
+            done
+        fi
+        exec $ja_bin generate build.ninja "$ja_libdir/jagen/rules.scm"
         ;;
     *)
-        set_env tools
-        exec chibi-scheme -r src/jagen.scm "$@"
+        exec $ja_bin "$@"
         ;;
 esac

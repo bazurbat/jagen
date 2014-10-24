@@ -10,10 +10,11 @@ export ja_srcdir="$ja_basedir/src"
 
 export ja_builddir="$ja_basedir/build"
 
+export ja_bin="chibi-scheme -r $ja_libdir/jagen/jagen.scm"
+
 export ja_sdk=""
 
 local_env="$ja_basedir/env.sh"
-
 [ -f "$local_env" ] || touch "$local_env"
 . "$local_env"
 
@@ -23,7 +24,7 @@ error() { printf "\033[1;31m:::\033[0m %s\n" "$@" >&2; }
 
 die() { error "$@"; exit 1; }
 
-set_env() {
+use_env() {
     local e
     for e in "$@"; do
         local f="$ja_libdir/env/${e}.sh"
