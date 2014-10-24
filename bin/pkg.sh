@@ -1,7 +1,5 @@
 #!/bin/sh
 
-. "$ja_libdir/jagen/env.sh" || exit
-
 p_is_function() {
     type "$1" 2>/dev/null | grep -q 'function'
 }
@@ -32,6 +30,11 @@ pkg_unpack() {
     p_unpack "$psource"
 }
 
+. "$ja_libdir/jagen/env.sh" || exit
+
+[ -f "$ja_libdir/env/sdk.${ja_sdk}.sh" ] && \
+    . "$ja_libdir/env/sdk.${ja_sdk}.sh"
+
 builddir="$ja_builddir/pkg"
 distdir="$ja_libdir/dist/$ja_sdk"
 libdir="$ja_libdir/pkg"
@@ -43,8 +46,8 @@ pconfig="$3"
 plog="${ja_builddir}/${pname}-${pstage}${pconfig:+-${pconfig}}.log"
 pworkdir="$builddir/$pname"
 
-if [ -f "$libdir/${pname}.sh" ]; then
-    . "$libdir/${pname}.sh"
+if [ -f "$libdir/$ja_sdk/${pname}.sh" ]; then
+    . "$libdir/$ja_sdk/${pname}.sh"
 fi
 
 psourcedir="${psourcedir:-${pworkdir}${psource:+/${psource}}}"
