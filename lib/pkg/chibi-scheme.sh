@@ -3,6 +3,10 @@
 psource="chibi-scheme-0.7"
 pworkdir="$pworkdir${pconfig:+-$pconfig}"
 
+pkg_unpack_tools() {
+    pkg_unpack "$@"
+}
+
 pkg_build_tools() {
     p_make PREFIX="${toolsdir}${toolsprefix}"
 }

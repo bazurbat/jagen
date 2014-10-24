@@ -21,7 +21,7 @@ case $1 in
         print_help
         ;;
     refresh)
-        if ! $(which chibi-scheme >/dev/null); then
+        if ! $(which chibi-scheme >/dev/null 2>&1); then
             for s in unpack build install; do
                 bin/pkg.sh chibi-scheme $s tools || exit
             done
