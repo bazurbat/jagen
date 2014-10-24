@@ -28,7 +28,8 @@ case $1 in
         fi
         exec $ja_bin generate build.ninja "$ja_libdir/jagen/rules.scm"
         ;;
-    *)
-        exec $ja_bin "$@"
+    build)
+        shift
+        exec ninja "$@"
         ;;
 esac

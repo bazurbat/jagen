@@ -1,48 +1,43 @@
-; prereq
-
-(pkg 'prereq
-     '(check))
-
-(pkg 'xsdk
-     '(unpack (prereq check)))
-
 ; host
 
 (pkg 'make
+     '(unpack)
      '(config host
-              (unpack (prereq check))
               (build)
               (install)))
 
 (pkg 'gdb
+     '(unpack)
+     '(prepare)
      '(config host
-              (unpack (prereq check))
-              (prepare)
               (build)
               (install)))
 
 ; utils
 
 (pkg 'utils
-     '(unpack (prereq check))
+     '(unpack)
      '(config host
               (build)
               (install))
-     '(build (gpgme install)
-             (dbus install))
-     '(install))
+     '(config target
+              '(build (gpgme install)
+                      (dbus install))
+              '(install)))
 
 ; boot
 
+(pkg 'xsdk
+     '(unpack))
+
 (pkg 'ezboot
-     '(build (prereq check)
-             after
+     '(build after
              (xsdk unpack)
              (rootfs build))
      '(install))
 
 (pkg 'yamon
-     '(unpack (prereq check))
+     '(unpack)
      '(prepare)
      '(build after
              (xsdk unpack)
@@ -52,7 +47,7 @@
 ; rootfs
 
 (pkg 'rootfs
-     '(unpack (prereq check))
+     '(unpack)
      '(build after
              (make install host))
      '(install (kernel install)
@@ -65,7 +60,7 @@
                (rsync install)
                (ntpclient install)
                (libuv install)
-               (utils install)
+               (utils install target)
                (gdbserver install)
                (freetype install)
                (sqlite install)
@@ -74,39 +69,39 @@
                (wpa_supplicant install)))
 
 (pkg 'util-linux
-     '(unpack (prereq check))
+     '(unpack)
      '(prepare)
      '(build (rootfs build))
      '(install))
 
 (pkg 'e2fsprogs
-     '(unpack (prereq check))
+     '(unpack)
      '(prepare)
      '(build (util-linux install))
      '(install))
 
 (pkg 'libgpg-error
-     '(unpack (prereq check))
+     '(unpack)
      '(build (rootfs build))
      '(install))
 
 (pkg 'libassuan
-     '(unpack (prereq check))
+     '(unpack)
      '(build (libgpg-error install))
      '(install))
 
 (pkg 'gpgme
-     '(unpack (prereq check))
+     '(unpack)
      '(build (libassuan install))
      '(install))
 
-(pkg 'gunpg
-     '(unpack (prereq check))
+(pkg 'gnupg
+     '(unpack)
      '(build (rootfs build))
      '(install))
 
 (pkg 'expat
-     '(unpack (prereq check))
+     '(unpack)
      '(build (rootfs build))
      '(install))
 
@@ -118,23 +113,23 @@
      '(install))
 
 ; (pkg 'popt
-;      '(unpack (prereq check))
+;      '(unpack)
 ;      '(build (rootfs build))
 ;      '(install))
 ;
 ; (pkg 'device-mapper
-;      '(unpack (prereq check))
+;      '(unpack)
 ;      '(build (libgpg-error install))
 ;      '(install))
 ;
 ; (pkg 'libgcrypt
-;      '(unpack (prereq check))
+;      '(unpack)
 ;      '(prepare)
 ;      '(build (rootfs build))
 ;      '(install))
 ;
 ; (pkg 'cryptsetup
-;      '(unpack (prereq check))
+;      '(unpack)
 ;      '(prepare)
 ;      '(build (e2fsprogs install)
 ;              (popt install)
@@ -143,80 +138,80 @@
 ;      '(install))
 
 (pkg 'dbus
-     '(unpack (prereq check))
+     '(unpack)
      '(build (expat install))
      '(install))
 
 (pkg 'rsync
-     '(unpack (prereq check))
+     '(unpack)
      '(build (rootfs build))
      '(install))
 
 (pkg 'ntpclient
-     '(unpack (prereq check))
+     '(unpack)
      '(build (rootfs build))
      '(install))
 
 (pkg 'libuv
-     '(unpack (prereq check))
+     '(unpack)
      '(prepare)
      '(build (rootfs build))
      '(install))
 
 (pkg 'gdbserver
-     '(unpack (prereq check))
+     '(unpack)
      '(build (rootfs build))
      '(install))
 
 ; (pkg 'oprofile
-;      '(unpack (prereq check))
+;      '(unpack)
 ;      '(prepare)
 ;      '(build (popt install))
 ;      '(install))
 
 (pkg 'freetype
-     '(unpack (prereq check))
+     '(unpack)
      '(prepare)
      '(build (rootfs build))
      '(install))
 
 (pkg 'sqlite
-     '(unpack (prereq check))
+     '(unpack)
      '(prepare)
      '(build (rootfs build))
      '(install))
 
 (pkg 'strace
-     '(unpack (prereq check))
+     '(unpack)
      '(build (rootfs build))
      '(install))
 
 ; (pkg 'chibi-scheme
 ;      '(config host
-;               (unpack (prereq check))
+;               (unpack)
 ;               (build)
 ;               (install))
-;      '(unpack (prereq check))
+;      '(unpack)
 ;      '(patch)
 ;      '(build (chibi-scheme install host)
 ;              (rootfs build))
 ;      '(install))
 
 (pkg 'kernel
-     '(unpack (prereq check))
+     '(unpack)
      '(build (rootfs build)
              after (xsdk unpack))
      '(install)
      '(image))
 
 (pkg 'ralink
-     '(unpack (prereq check))
+     '(unpack)
      '(prepare)
      '(build (kernel build))
      '(install))
 
 (pkg 'loop-aes
-     '(unpack (prereq check))
+     '(unpack)
      '(build (kernel build))
      '(install))
 
@@ -226,7 +221,7 @@
      '(install (firmware prepare)))
 
 (pkg 'chicken
-     '(unpack (prereq check))
+     '(unpack)
      '(config host
               (build)
               (install))
@@ -238,20 +233,20 @@
               (install (firmware prepare))))
 
 (pkg 'chicken-eggs
-     '(unpack (prereq check))
+     '(unpack)
      '(config host
               (install (chicken install host)))
      '(config cross
               (install (chicken install cross)
                        after (chicken-eggs install host)))
      '(config target
-              (install (chicken install)
+              (install (chicken install target)
                        after
                        (chicken-eggs install cross)
                        (dbus install))))
 
 (pkg 'ffmpeg
-     '(unpack (prereq check))
+     '(unpack)
      '(build after (rootfs build))
      '(install (firmware prepare))
      '(config host
@@ -259,26 +254,26 @@
               (install)))
 
 (pkg 'soundtouch
-     '(unpack (prereq check))
+     '(unpack)
      '(prepare)
      '(build after (rootfs build))
      '(install (firmware prepare)))
 
 (pkg 'karaoke-player
-     '(unpack (prereq check))
-     '(build (mrua build)
-             (ffmpeg install)
-             (soundtouch install)
-             (chicken install)
-             (chicken-eggs install cross))
-     '(install after (chicken eggs install))
+     '(unpack)
      '(config host
               (build (ffmpeg build host)
                      (chicken-eggs install host))
-              (install)))
+              (install))
+     '(build (mrua build)
+             (ffmpeg install)
+             (soundtouch install)
+             (chicken install target)
+             (chicken-eggs install cross))
+     '(install after (chicken-eggs install target)))
 
 (pkg 'firmware
-     '(unpack (prereq check))
+     '(unpack)
      '(prepare)
      '(material (mrua build))
      '(install (karaoke-player install)) ; files/firmware/fwversion.sexp

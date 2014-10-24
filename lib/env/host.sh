@@ -1,7 +1,5 @@
 #!/bin/sh
 
-[ "$basedir" ] || . ./env.sh
-
 export hostdir="$builddir/host"
 export hostprefix=""
 

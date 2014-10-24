@@ -33,14 +33,14 @@ pkg_unpack() {
 }
 
 builddir="$ja_builddir/pkg"
-distdir="$ja_libdir/dist"
+distdir="$ja_libdir/dist/$ja_sdk"
 libdir="$ja_libdir/pkg"
 
 pname="$1"
-paction="$2"
+pstage="$2"
 pconfig="$3"
 
-plog="${ja_builddir}/${pname}-${paction}${pconfig:+-${pconfig}}.log"
+plog="${ja_builddir}/${pname}-${pstage}${pconfig:+-${pconfig}}.log"
 pworkdir="$builddir/$pname"
 
 if [ -f "$libdir/${pname}.sh" ]; then
@@ -52,5 +52,12 @@ pbuilddir="${pbuilddir:-${psourcedir}}"
 
 mkdir -p "$pbuilddir" && cd "$pbuilddir" || exit
 
-eval "pkg_${paction}" \
-    || die "Failed to run '$paction' action of package $pname ${pconfig:+($pconfig)}"
+stage_function="pkg_${pstage}"
+
+if [ "$pconfig" ]; then
+    use_env "$pconfig"
+    stage_function="${stage_function}_${pconfig}"
+fi
+
+eval "$stage_function" \
+    || die "Failed to run '$pstage' stage of package $pname ${pconfig:+($pconfig)}"

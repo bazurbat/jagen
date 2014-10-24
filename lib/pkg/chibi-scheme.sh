@@ -3,30 +3,27 @@
 psource="chibi-scheme-0.7"
 pworkdir="$pworkdir${pconfig:+-$pconfig}"
 
-use_env tools
-
-pkg_build() {
-    if [ "$pconfig" = "tools" ]; then
-        p_make PREFIX="${toolsdir}${toolsprefix}"
-    elif [ "$pconfig" = "target" ]; then
-        use_env target
-        p_make \
-            PREFIX="$targetprefix" \
-            CHIBI="$toolsdir/bin/chibi-scheme" \
-            XCFLAGS="$targetflags"
-    fi
+pkg_build_tools() {
+    p_make PREFIX="${toolsdir}${toolsprefix}"
 }
 
-pkg_install() {
-    if [ "$pconfig" = "tools" ]; then
-        p_make install PREFIX="${toolsdir}${toolsprefix}"
-    elif [ "$pconfig" = "target" ]; then
-        use_env target
-        p_make \
-            PREFIX="$targetprefix" \
-            CHIBI="$toolsdir/bin/chibi-scheme" \
-            XCFLAGS="$targetflags" \
-            DESTDIR="$targetdir" \
-            install
-    fi
+pkg_install_tools() {
+    p_make install PREFIX="${toolsdir}${toolsprefix}"
+}
+
+pkg_build_target() {
+    use_env tools
+    p_make \
+        PREFIX="$targetprefix" \
+        CHIBI="$toolsdir/bin/chibi-scheme" \
+        XCFLAGS="$targetflags"
+}
+
+pkg_install_target() {
+    p_make \
+        PREFIX="$targetprefix" \
+        CHIBI="$toolsdir/bin/chibi-scheme" \
+        XCFLAGS="$targetflags" \
+        DESTDIR="$targetdir" \
+        install
 }

@@ -27,10 +27,6 @@
      '(install))
 
 (pkg 'chibi-scheme
-     '(config host
-              (unpack)
-              (build)
-              (install))
      '(config target
               (unpack)
               (build (chibi-scheme install host))
