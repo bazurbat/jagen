@@ -124,9 +124,7 @@
   (let loop ((vars (build-variables b)))
     (unless (null? vars)
       (show #t (space-to 4) (variable (car vars)) nl)
-      (loop (cdr vars))))
-
-  (show #t nl))
+      (loop (cdr vars)))))
 
 (define (%target t deps)
   (define (format-target t . sep)
