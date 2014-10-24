@@ -10,13 +10,6 @@
         (chibi show))
 
 (define-record-type
-  target
-  (make-target name stage config) target?
-  (name   target-name)
-  (stage  target-stage)
-  (config target-config))
-
-(define-record-type
   rule
   (make-rule name variables) rule?
   (name      rule-name)
@@ -24,11 +17,18 @@
 
 (define-record-type
   build
-  (make-build rule output input variables) build?
+  (make-build rule outputs inputs variables) build?
   (rule      build-rule)
-  (output    build-output)
-  (input     build-input)
+  (outputs   build-outputs)
+  (inputs    build-inputs)
   (variables build-variables))
+
+(define-record-type
+  target
+  (make-target name stage config) target?
+  (name   target-name)
+  (stage  target-stage)
+  (config target-config))
 
 (define main
   (match-lambda
@@ -57,6 +57,15 @@
              ((not (zero? (string-length value)))))
     value))
 
+(define (intersperse ls x)
+  (if (or (null? ls) (null? (cdr ls)))
+    ls
+    (let loop ((ls (cdr ls)) (res (list (car ls))))
+      (let ((res (cons (car ls) (cons x res))))
+        (if (null? (cdr ls))
+          (reverse res)
+          (loop (cdr ls) res))))))
+
 (define (generate-build out-file in-file)
   (if (file-exists? out-file) (delete-file out-file))
   (with-output-to-file out-file (cut load in-file)))
@@ -69,7 +78,9 @@
               (loop rest config prev))
              ((stage deps ...)
               (%target (make-target name stage config)
-                       (append (list prev) deps))
+                       (if (null? prev)
+                         deps
+                         (cons prev deps)))
               (set! prev (list name stage config))))
       (loop (cdr rest) config prev)))
   (show #t nl))
@@ -78,31 +89,62 @@
   (show #t "include " file nl nl))
 
 (define (%build b)
-  (define (%target name)
-    (show #f "$builddir/" name " "))
-  (show #t "build " (apply show #f (map %target (build-output b))))
-  (show #t ": " (build-rule b) " $" nl)
-  (for-each (lambda (i)
-              (show #t (space-to 8) (%target i) "$" nl))
-            (build-input b)))
+  (define (target name)
+    (show #f "$builddir/" name))
+
+  (define (variable pr)
+    (show #f (car pr) " = " (cdr pr)))
+
+  (show #t "build")
+
+  (let loop ((outs (build-outputs b)))
+    (unless (null? outs)
+      (show #t " " (target (car outs)))
+      (loop (cdr outs))))
+
+  (show #t ": " (build-rule b))
+  (unless (null? (build-inputs b))
+    (show #t " $" nl))
+
+  (let loop ((ins (build-inputs b)))
+    (if (null? ins) (show #t nl)
+      (match ins
+             (('implicit deps ...)
+              (show #t (space-to 14) "| $" nl)
+              (loop deps))
+             (('order-only ins ...)
+              (show #t (space-to 13) "|| $" nl)
+              (loop ins))
+             (other
+               (show #t (space-to 16) (target (car other)))
+               (unless (null? (cdr ins))
+                 (show #t " $" nl))
+               (loop (cdr ins))))))
+
+  (let loop ((vars (build-variables b)))
+    (unless (null? vars)
+      (show #t (space-to 4) (variable (car vars)) nl)
+      (loop (cdr vars))))
+
+  (show #t nl))
 
 (define (%target t deps)
-  (match-let ((($ target p n c) t))
-             (show #t "build $builddir/" (%name t) ": script"
-                   (apply show #f (map (cut %dep <>) deps)) nl
-                   (space-to 4)
-                   "script = pkg.sh " p " " n " " (if c c "") nl)))
+  (define (format-target t . sep)
+    (let ((sep (or (and (null? sep) "-") (car sep))))
+      (match-let ((($ target n s c) t))
+                 (if c
+                   (show #f n sep s sep c)
+                   (show #f n sep s)))))
 
-(define (%dep expr)
-  (match expr
-         (() "")
-         (('after targets ...)
-          (show #f " ||"
-                (apply show #f (map %dep targets))))
-         ((n t c ...)
-          (let ((c (and (pair? c) (car c))))
-            (show #f " $builddir/" (%name (make-target n t c)))))))
+  (define format-dep
+    (match-lambda
+      ('after
+       'order-only)
+      ((n s c ...)
+       (format-target (make-target n s (if (null? c) #f (car c)))))))
 
-(define (%name t)
-  (match-let ((($ target p n c) t))
-             (show #f p "-" n (if c (show #f "-" c) ""))))
+  (%build
+    (make-build "script"
+                (list (format-target t))
+                (map format-dep deps)
+                `(("script" . ,(show #f "pkg.sh " (format-target t " ")))))))

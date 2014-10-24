@@ -1,10 +1,3 @@
-(%build (make-build "script"
-                    '("out1" "out2")
-                    '("int1" "int2")
-                    '(("var1" "aaa")
-                      ("var2" "bbb"))))
-(newline)
-
 (pkg 'rootfs
      '(unpack)
      '(prepare))
@@ -50,10 +43,10 @@
               (build)
               (install))
      '(config cross
-              (build (after (chicken install host)))
+              (build after (chicken install host))
               (install))
      '(config target
-              (build (after (chicken install cross)))
+              (build after (chicken install cross))
               (install (rootfs prepare))))
 
 (pkg 'libuv
