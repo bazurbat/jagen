@@ -9,6 +9,7 @@ export ja_libdir="$ja_basedir/lib"
 export ja_srcdir="$ja_basedir/src"
 
 export ja_builddir="$ja_basedir/build"
+export ja_buildtype="Release"
 
 export ja_bin="chibi-scheme -r $ja_libdir/jagen/jagen.scm"
 
