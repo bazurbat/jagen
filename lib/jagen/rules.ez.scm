@@ -7,24 +7,28 @@
               (build (rootfs prepare)))
      '(config target
               (build (u-boot build min))
-              (scr)))
+              (mkimage)))
 
 (pkg 'linux
      '(config target
               (build)
               (install (rootfs prepare))
-              (depmod (linux-cmem install)
+              (depmod (cmem install target)
                       (syslink install))))
 
-(pkg 'linux-cmem
-     '(unpack (rootfs prepare))
-     '(build (linux install))
-     '(install))
+(pkg 'cmem
+     '(config target
+              (unpack (rootfs prepare))
+              (build (linux install target))
+              (install)))
 
 (pkg 'syslink
      '(unpack (rootfs prepare))
-     '(build (linux install))
+     '(build (linux install target))
      '(install))
+
+(if #f
+(begin
 
 (pkg 'chibi-scheme
      '(config target
@@ -82,3 +86,5 @@
      '(config target
               (build)
               (install (rootfs prepare))))
+
+))

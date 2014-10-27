@@ -12,22 +12,33 @@ export ja_builddir="$ja_basedir/build"
 
 export ja_bin="chibi-scheme -r $ja_libdir/jagen/jagen.scm"
 
-export ja_sdk=""
+debug() { [ "$ja_debug" ] && printf "\033[1;36m:::\033[0m %s\n" "$*"; }
 
-local_env="$ja_basedir/env.sh"
-[ -f "$local_env" ] || touch "$local_env"
-. "$local_env"
+message() { printf "\033[1;34m:::\033[0m %s\n" "$*"; }
 
-message() { printf "\033[1;34m:::\033[0m %s\n" "$@"; }
+error() { printf "\033[1;31m:::\033[0m %s\n" "$*" >&2; }
 
-error() { printf "\033[1;31m:::\033[0m %s\n" "$@" >&2; }
+die() { error "$*"; exit 1; }
 
-die() { error "$@"; exit 1; }
+include() {
+    local basepath="$1"
+
+    if [ -f "${basepath}.${ja_sdk}.sh" ]; then
+        debug include ${basepath}.${ja_sdk}.sh
+        . "${basepath}.${ja_sdk}.sh"
+    elif [ -f "${basepath}.sh" ]; then
+        debug include ${basepath}.sh
+        . "${basepath}.sh"
+    else
+        debug include not found $basepath
+    fi
+}
 
 use_env() {
     local e
     for e in "$@"; do
-        local f="$ja_libdir/env/${e}.sh"
-        [ -f "$f" ] && . "$f"
+        include "$ja_libdir/env/$e"
     done
 }
+
+include "$ja_basedir/env"

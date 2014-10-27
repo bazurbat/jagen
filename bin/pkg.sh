@@ -1,10 +1,17 @@
 #!/bin/sh
 
+if [ -z "$ja_basedir" ]; then
+    export ja_basedir="$(realpath $(dirname $0)/..)"
+fi
+
+. "$ja_basedir/lib/jagen/env.sh" || exit
+
 p_is_function() {
     type "$1" 2>/dev/null | grep -q 'function'
 }
 
 p_cmd() {
+    message "$*"
     "$@" >>"$plog" 2>&1 || exit
 }
 
@@ -24,24 +31,13 @@ p_make() {
     p_cmd make "$@"
 }
 
-p_source() {
-    local basepath="$1"
-
-    if [ -f "${basepath}.${ja_sdk}.sh" ]; then
-        . "${basepath}.${ja_sdk}.sh"
-    elif [ -f "${basepath}.sh" ]; then
-        . "${basepath}.sh"
-    fi
-}
-
 pkg_unpack() {
     rm -rf "$pworkdir"
     mkdir -p "$pworkdir"
     p_unpack "$psource"
 }
 
-p_source "$ja_libdir/jagen/env" || exit
-p_source "$ja_libdir/env/sdk"
+include "$ja_libdir/env/sdk"
 
 distdir="$ja_libdir/dist/$ja_sdk"
 
@@ -52,7 +48,7 @@ pconfig="$3"
 plog="${ja_builddir}/${pname}-${pstage}${pconfig:+-${pconfig}}.log"
 pworkdir="$ja_builddir/pkg/$pname"
 
-p_source "$ja_libdir/pkg/$pname" 
+include "$ja_libdir/pkg/$pname" 
 
 psourcedir="${psourcedir:-${pworkdir}${psource:+/${psource}}}"
 pbuilddir="${pbuilddir:-${psourcedir}}"
