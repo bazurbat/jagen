@@ -21,9 +21,9 @@
               (build)
               (install))
      '(config target
-              '(build (gpgme install)
-                      (dbus install))
-              '(install)))
+              (build (gpgme install)
+                     (dbus install))
+              (install)))
 
 ; boot
 
