@@ -24,31 +24,35 @@ p_make() {
     p_cmd make "$@"
 }
 
+p_source() {
+    local basepath="$1"
+
+    if [ -f "${basepath}.${ja_sdk}.sh" ]; then
+        . "${basepath}.${ja_sdk}.sh"
+    elif [ -f "${basepath}.sh" ]; then
+        . "${basepath}.sh"
+    fi
+}
+
 pkg_unpack() {
     rm -rf "$pworkdir"
     mkdir -p "$pworkdir"
     p_unpack "$psource"
 }
 
-. "$ja_libdir/jagen/env.sh" || exit
+p_source "$ja_libdir/jagen/env" || exit
+p_source "$ja_libdir/env/sdk"
 
-[ -f "$ja_libdir/env/sdk.${ja_sdk}.sh" ] && \
-    . "$ja_libdir/env/sdk.${ja_sdk}.sh"
-
-builddir="$ja_builddir/pkg"
 distdir="$ja_libdir/dist/$ja_sdk"
-libdir="$ja_libdir/pkg"
 
 pname="$1"
 pstage="$2"
 pconfig="$3"
 
 plog="${ja_builddir}/${pname}-${pstage}${pconfig:+-${pconfig}}.log"
-pworkdir="$builddir/$pname"
+pworkdir="$ja_builddir/pkg/$pname"
 
-if [ -f "$libdir/$ja_sdk/${pname}.sh" ]; then
-    . "$libdir/$ja_sdk/${pname}.sh"
-fi
+p_source "$ja_libdir/pkg/$pname" 
 
 psourcedir="${psourcedir:-${pworkdir}${psource:+/${psource}}}"
 pbuilddir="${pbuilddir:-${psourcedir}}"

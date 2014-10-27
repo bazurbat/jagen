@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export hostdir="$builddir/host"
+export hostdir="$ja_builddir/host"
 export hostprefix=""
 
 export PATH="$hostdir/bin:$PATH"
