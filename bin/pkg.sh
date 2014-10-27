@@ -53,6 +53,7 @@ include "$ja_libdir/pkg/$pname"
 psourcedir="${psourcedir:-${pworkdir}${psource:+/${psource}}}"
 pbuilddir="${pbuilddir:-${psourcedir}}"
 
+rm -f "$plog"
 mkdir -p "$pbuilddir" && cd "$pbuilddir" || exit
 
 stage_function="pkg_${pstage}"
