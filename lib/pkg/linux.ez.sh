@@ -24,7 +24,7 @@ pkg_install_target() {
     p_cmd install -m644 "${pworkdir}/arch/arm/boot/uImage" "/tftproot/$uimage"
     p_cmd install -m644 "${pworkdir}/System.map" "$dest"
 
-    p_cmd $CROSS_MAKE INSTALL_MOD_PATH="${dest}/" modules_install
+    p_cmd $CROSS_MAKE INSTALL_MOD_PATH="${rootfsdir}/" modules_install
 }
 
 pkg_depmod_target() {
