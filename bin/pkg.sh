@@ -11,7 +11,7 @@ p_is_function() {
 }
 
 p_cmd() {
-    message "$*"
+    debug "$*"
     "$@" >>"$plog" 2>&1 || exit
 }
 
