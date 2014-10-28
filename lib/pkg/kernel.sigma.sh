@@ -48,7 +48,7 @@ pkg_install() {
 pkg_image() {
     p_run cd linux
 
-    p_run cp -f "$ja_libdir/conf/initramfs_default_node_list" "usr"
+    p_run cp -f "$ja_srcdir/misc/cfg/initramfs_default_node_list" "usr"
 
     p_run make zbimage-linux-xload
 
