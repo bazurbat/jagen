@@ -7,7 +7,7 @@ use_env target
 pkg_build() {
     export ac_cv_lib_pthread_pthread_create=no
 
-    p_cmd ./configure \
+    p_run ./configure \
         --host="mipsel-linux" \
         --prefix="" \
         --includedir="/include" \
@@ -18,9 +18,9 @@ pkg_build() {
         --disable-gpgsm-test \
         --disable-g13-test
 
-    p_cmd make
+    p_run make
 }
 
 pkg_install() {
-    p_cmd make DESTDIR="$rootfs_cross_root" install
+    p_run make DESTDIR="$rootfs_cross_root" install
 }

@@ -5,7 +5,7 @@ psource="gnupg-1.4.18"
 use_env target
 
 pkg_build() {
-    p_cmd ./configure \
+    p_run ./configure \
         --host="mipsel-linux" \
         --prefix="" \
         --disable-dependency-tracking \
@@ -36,9 +36,9 @@ pkg_build() {
         --disable-dns-cert \
         --disable-regex
 
-    p_cmd make
+    p_run make
 }
 
 pkg_install() {
-    p_cmd make DESTDIR="$rootfs_cross_root" install
+    p_run make DESTDIR="$rootfs_cross_root" install
 }

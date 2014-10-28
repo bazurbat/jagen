@@ -8,23 +8,23 @@ pkg_unpack_tools() {
 }
 
 pkg_build_tools() {
-    p_make PREFIX="${toolsdir}${toolsprefix}"
+    p_run make PREFIX="${toolsdir}${toolsprefix}"
 }
 
 pkg_install_tools() {
-    p_make install PREFIX="${toolsdir}${toolsprefix}"
+    p_run make install PREFIX="${toolsdir}${toolsprefix}"
 }
 
 pkg_build_target() {
     use_env tools
-    p_make \
+    p_run make \
         PREFIX="$targetprefix" \
         CHIBI="$toolsdir/bin/chibi-scheme" \
         XCFLAGS="$targetflags"
 }
 
 pkg_install_target() {
-    p_make \
+    p_run make \
         PREFIX="$targetprefix" \
         CHIBI="$toolsdir/bin/chibi-scheme" \
         XCFLAGS="$targetflags" \

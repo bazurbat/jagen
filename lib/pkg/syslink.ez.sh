@@ -19,23 +19,23 @@ MAKE="make DEVICE=$platform \
     USE_SYSLINK_NOTIFY=0"
 
 pkg_unpack() {
-    p_cmd $MAKE clean
+    p_run $MAKE clean
 }
 
 pkg_build() {
     # do not use parallel jobs here
-    p_cmd $MAKE syslink
+    p_run $MAKE syslink
 }
 
 pkg_install() {
     local src="$pworkdir/packages/ti/syslink"
     local dest="$rootfsdir/lib/modules/$kernel_version/kernel/drivers/dsp"
 
-    p_cmd install -v -d "$dest"
-    p_cmd install -v -m644 \
+    p_run install -v -d "$dest"
+    p_run install -v -m644 \
         "$src/bin/$platform/syslink.ko" "$dest"
-    p_cmd install -v -m644 \
+    p_run install -v -m644 \
         $src/lib/syslink.a* "$rootfsdir/usr/lib"
-    p_cmd install -v -m755 \
+    p_run install -v -m755 \
         $src/bin/$platform/samples/slaveloader* "$rootfsdir/usr/bin"
 }

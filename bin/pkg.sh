@@ -48,10 +48,6 @@ p_patch() {
     p_cmd patch -sp1 -i "$distdir/patches/${1}.patch"
 }
 
-p_make() {
-    p_cmd make "$@"
-}
-
 pkg_unpack() {
     rm -rf "$pworkdir"
     mkdir -p "$pworkdir"

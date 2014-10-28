@@ -11,7 +11,7 @@ pkg_prepare() {
 }
 
 pkg_build_host() {
-    p_cmd ./configure \
+    p_run ./configure \
         --target="mipsel-linux" \
         --prefix="$toolsdir" \
         --program-transform-name='' \
@@ -21,9 +21,9 @@ pkg_build_host() {
         --with-python="/usr/bin/python2" \
         --with-zlib
 
-    p_make
+    p_run make
 }
 
 pkg_install_host() {
-    p_make install
+    p_run make install
 }

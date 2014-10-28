@@ -10,7 +10,7 @@ pkg_prepare() {
 
 pkg_build() {
     CFLAGS="$CFLAGS -I$targetdir/$targetprefix/include" \
-    p_cmd ./configure \
+    p_run ./configure \
         --host="mipsel-linux" \
         --prefix="$targetprefix" \
         --disable-dependency-tracking \
@@ -23,9 +23,9 @@ pkg_build() {
         --with-extra-includes="$targetdir/$targetprefix/include" \
         --with-extra-libs="$targetdir/$targetprefix/lib"
 
-    p_make
+    p_run make
 }
 
 pkg_install() {
-    p_make DESTDIR="$targetdir" install
+    p_run make DESTDIR="$targetdir" install
 }

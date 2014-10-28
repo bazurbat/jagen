@@ -27,7 +27,7 @@ pkg_prepare() {
 }
 
 pkg_build() {
-    p_cmd ./configure \
+    p_run ./configure \
         --host="mipsel-linux" \
         --prefix="" \
         --disable-static \
@@ -40,9 +40,9 @@ pkg_build() {
         --without-quickdraw-carbon \
         --without-ats \
         --with-sysroot="$rootfs_cross_root"
-    p_make
+    p_run make
 }
 
 pkg_install() {
-    p_make DESTDIR="$rootfs_cross_root" install
+    p_run make DESTDIR="$rootfs_cross_root" install
 }

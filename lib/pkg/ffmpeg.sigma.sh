@@ -49,7 +49,7 @@ pkg_build() {
         options="--disable-optimizations"
     fi
 
-    p_cmd $psourcedir/configure --prefix="$prefix" \
+    p_run $psourcedir/configure --prefix="$prefix" \
         --bindir="${prefix}/bin" \
         --enable-gpl --enable-nonfree \
         --disable-static --enable-shared --disable-runtime-cpudetect \
@@ -71,7 +71,7 @@ pkg_build() {
         --disable-symver --disable-safe-bitstream-reader \
         --disable-stripping $options
 
-    p_make
+    p_run make
 }
 
 pkg_build_host() {
@@ -83,9 +83,9 @@ pkg_build_target() {
 }
 
 pkg_install_host() {
-    p_make install
+    p_run make install
 }
 
 pkg_install_target() {
-    p_make DESTDIR="$targetdir" install
+    p_run make DESTDIR="$targetdir" install
 }

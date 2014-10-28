@@ -19,25 +19,25 @@ pkg_build_min() {
 
     use_env target
 
-    p_cmd $CROSS_MAKE distclean
-    p_cmd $CROSS_MAKE $config_min
-    p_cmd $CROSS_MAKE u-boot.ti
+    p_run $CROSS_MAKE distclean
+    p_run $CROSS_MAKE $config_min
+    p_run $CROSS_MAKE u-boot.ti
 
-    p_cmd install -d "$dest"
-    p_cmd install -m644 u-boot.min.sd "$dest/MLO"
+    p_run install -d "$dest"
+    p_run install -m644 u-boot.min.sd "$dest/MLO"
 }
 
 pkg_build_target() {
     local dest="$rootfsdir/boot"
 
-    p_cmd $CROSS_MAKE distclean
-    p_cmd $CROSS_MAKE $config
-    p_cmd $CROSS_MAKE u-boot.ti
+    p_run $CROSS_MAKE distclean
+    p_run $CROSS_MAKE $config
+    p_run $CROSS_MAKE u-boot.ti
 
-    p_cmd install -d "$dest"
-    p_cmd install -m644 u-boot.bin "$dest"
+    p_run install -d "$dest"
+    p_run install -m644 u-boot.bin "$dest"
 }
 
 pkg_mkimage_target() {
-    p_cmd $mkimage "${ja_srcdir}/misc/boot/${boot_scipt}" "${rootfsdir}/boot/boot.scr"
+    p_run $mkimage "${ja_srcdir}/misc/boot/${boot_scipt}" "${rootfsdir}/boot/boot.scr"
 }

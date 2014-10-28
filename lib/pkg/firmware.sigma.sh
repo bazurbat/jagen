@@ -9,11 +9,11 @@ pkg_unpack() {
     p_clean "$pworkdir"
     p_clean "$psourcedir"
 
-    p_cmd cd "$pworkdir"
+    p_run cd "$pworkdir"
 
-    p_cmd install -d -m 755 bin dev etc home lib mnt proc run sbin sys usr var
-    p_cmd install -d -m 700 root
-    p_cmd install -d -m 1777 tmp
+    p_run install -d -m 755 bin dev etc home lib mnt proc run sbin sys usr var
+    p_run install -d -m 700 root
+    p_run install -d -m 1777 tmp
 }
 
 create_imaterial() {
@@ -22,16 +22,16 @@ create_imaterial() {
 
     rm -rf "$workdir" && mkdir -p "$workdir" || return $?
 
-    p_cmd cp -f \
+    p_run cp -f \
         "$ja_files_dir/ucode/itask_loader.iload" \
         "$ja_files_dir/ucode/itask_splashscreen.iload" \
         "$workdir"
 
-    p_cmd "$bmp2sdd" \
+    p_run "$bmp2sdd" \
         "$ja_files_dir/splash/artsystem-splash-2013-720p-32bpp.bmp" \
         "$workdir/splash_picture.sdd"
 
-    p_cmd genromfs -d "$workdir" -f "$targetdir/imaterial.romfs" -V imaterial
+    p_run genromfs -d "$workdir" -f "$targetdir/imaterial.romfs" -V imaterial
 }
 
 create_xmaterial() {
@@ -39,12 +39,12 @@ create_xmaterial() {
 
     rm -rf "$workdir" && mkdir -p "$workdir" || return $?
 
-    p_cmd cp -f \
+    p_run cp -f \
         "$ja_files_dir/ucode/xtask_loader.xload" \
         "$ja_files_dir/ucode/ios.bin.gz_8644_ES1_dev_0006.xload" \
         "$workdir"
 
-    p_cmd genromfs -d "$workdir" -f "$targetdir/xmaterial.romfs" -V xmaterial
+    p_run genromfs -d "$workdir" -f "$targetdir/xmaterial.romfs" -V xmaterial
 }
 
 pkg_material() {

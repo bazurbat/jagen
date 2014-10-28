@@ -5,7 +5,7 @@ psource="dbus-1.6.18"
 use_env target
 
 pkg_build() {
-    p_cmd ./configure \
+    p_run ./configure \
         --host="mipsel-linux" \
         --prefix="" \
         --with-system-pid-file=/run/dbus.pid \
@@ -40,9 +40,9 @@ pkg_build() {
         --without-valgrind \
         --without-x
 
-    p_make
+    p_run make
 }
 
 pkg_install() {
-    p_make DESTDIR="$rootfs_cross_root" install
+    p_run make DESTDIR="$rootfs_cross_root" install
 }

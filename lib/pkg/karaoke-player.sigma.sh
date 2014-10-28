@@ -8,19 +8,19 @@ pkg_unpack() {
 }
 
 pkg_build_host() {
-    p_cmd cmake -G"$cmake_generator" \
+    p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$ja_buildtype" \
         -DCMAKE_PREFIX_PATH="$hostdir" \
         -DCMAKE_INSTALL_PREFIX="$hostdir" \
         "$psourcedir"
 
-    p_cmd cmake --build . -- $cmake_build_options
+    p_run cmake --build . -- $cmake_build_options
 }
 
 pkg_build_target() {
     use_env tools
 
-    p_cmd cmake -G"$cmake_generator" \
+    p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$ja_buildtype" \
         -DCMAKE_SYSTEM_NAME="Linux" \
         -DCMAKE_INSTALL_PREFIX="${targetdir}${targetprefix}" \
@@ -31,13 +31,13 @@ pkg_build_target() {
         -DLIBUV_ROOT_DIR="$ja_rootfs_prefix" \
         "$psourcedir"
 
-    p_cmd cmake --build . -- $cmake_build_options
+    p_run cmake --build . -- $cmake_build_options
 }
 
 pkg_install_host() {
-    p_cmd cmake --build . --target install
+    p_run cmake --build . --target install
 }
 
 pkg_install_target() {
-    p_cmd cmake --build . --target install
+    p_run cmake --build . --target install
 }

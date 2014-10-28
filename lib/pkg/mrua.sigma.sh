@@ -5,28 +5,28 @@ pworkdir="$ja_srcdir/sigma-mrua"
 use_env tools target
 
 pkg_build() {
-    p_make
-    p_make
-    p_make -C MRUA_src/splashscreen/utils
+    p_run make
+    p_run make
+    p_run make -C MRUA_src/splashscreen/utils
 }
 
 pkg_modules() {
-    p_cmd cd "$pworkdir/modules/$kernelrelease"
+    p_run cd "$pworkdir/modules/$kernelrelease"
     p_install_modules em8xxx llad
 }
 
 pkg_install() {
-    p_cmd cd bin
-    p_cmd cp -a ikc xkc "$firmwaredir/bin"
+    p_run cd bin
+    p_run cp -a ikc xkc "$firmwaredir/bin"
 
-    p_cmd cd "$pworkdir/MRUA_src/llad_smallapps"
-    p_cmd cp -a gbus_read_bin_to_file gbus_read_uint32 "$firmwaredir/bin"
+    p_run cd "$pworkdir/MRUA_src/llad_smallapps"
+    p_run cp -a gbus_read_bin_to_file gbus_read_uint32 "$firmwaredir/bin"
 
-    p_cmd cd "$pworkdir/MRUA_src/llad_xtest"
-    p_cmd cp -a rmfree rmmalloc "$firmwaredir/bin"
+    p_run cd "$pworkdir/MRUA_src/llad_xtest"
+    p_run cp -a rmfree rmmalloc "$firmwaredir/bin"
 
-    p_cmd cd "$pworkdir/lib"
-    p_cmd cp -a \
+    p_run cd "$pworkdir/lib"
+    p_run cp -a \
         libgbus.so \
         libllad.so \
         librmchannel.so \
@@ -37,8 +37,8 @@ pkg_install() {
         librmmm_t.so \
         "$firmwaredir/lib"
 
-    p_cmd cd "$pworkdir/lib"
-    p_cmd cp -a \
+    p_run cd "$pworkdir/lib"
+    p_run cp -a \
         librmcec.so \
         librmedid.so \
         librmhdmi.so \
@@ -52,6 +52,6 @@ pkg_install() {
         "$firmwaredir/lib"
 
     if [ "$sdkver" = "4.0" ]; then
-        p_cmd cp -a librminfoframe.so "$firmwaredir/lib"
+        p_run cp -a librminfoframe.so "$firmwaredir/lib"
     fi
 }

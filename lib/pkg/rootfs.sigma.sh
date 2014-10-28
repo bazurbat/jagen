@@ -5,10 +5,10 @@ pworkdir="$rootfsdir"
 pkg_unpack() {
     use_env tools
 
-    p_cmd rm -rf "build_mipsel" "cross_rootfs"
-    [ -d dl ] || p_cmd cp -r "$distdir/dl" "$rootfsdir"
-    # p_cmd cd "package/target-shell/busybox"
-    # p_cmd make clean
+    p_run rm -rf "build_mipsel" "cross_rootfs"
+    [ -d dl ] || p_run cp -r "$distdir/dl" "$rootfsdir"
+    # p_run cd "package/target-shell/busybox"
+    # p_run make clean
 }
 
 pkg_build() {
@@ -20,7 +20,7 @@ pkg_build() {
         cp config.dev .config
     fi
 
-    p_make
+    p_run make
 
     # contains cyclic symlinks
     rm -rf "package/udev/udev-114/test/sys"

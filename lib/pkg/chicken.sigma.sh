@@ -8,20 +8,20 @@ pkg_unpack() {
 }
 
 pkg_build_host() {
-    p_cmd cmake -G"$cmake_generator" \
+    p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$ja_buildtype" \
         -DCMAKE_INSTALL_PREFIX="$hostdir" \
         -DCMAKE_C_FLAGS_RELEASE="" \
         -DCHICKEN_API_VERSION=6 \
         "$psourcedir"
 
-    p_cmd cmake --build . -- $cmake_build_options
+    p_run cmake --build . -- $cmake_build_options
 }
 
 pkg_build_cross() {
     use_env host tools
 
-    p_cmd cmake -G"$cmake_generator" \
+    p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$ja_buildtype" \
         -DCMAKE_C_FLAGS_RELEASE="" \
         -DCMAKE_PREFIX_PATH="$hostdir" \
@@ -32,13 +32,13 @@ pkg_build_cross() {
         -DCHICKEN_TARGET_RUN_PREFIX="$targetprefix" \
         "$psourcedir"
 
-    p_cmd cmake --build . -- $cmake_build_options
+    p_run cmake --build . -- $cmake_build_options
 }
 
 pkg_build_target() {
     use_env tools
 
-    p_cmd cmake -G"$cmake_generator" \
+    p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$ja_buildtype" \
         -DCMAKE_C_FLAGS_RELEASE="" \
         -DCMAKE_SYSTEM_NAME="Linux" \
@@ -49,18 +49,18 @@ pkg_build_target() {
         -DCHICKEN_TARGET_FEATURES="-no-feature x86 -feature mips" \
         "$psourcedir"
 
-    p_cmd cmake --build . -- $cmake_build_options
+    p_run cmake --build . -- $cmake_build_options
 }
 
 pkg_install_host() {
-    p_cmd cmake --build . --target install -- $cmake_build_options
+    p_run cmake --build . --target install -- $cmake_build_options
 }
 
 pkg_install_cross() {
-    p_cmd cmake --build . --target install -- $cmake_build_options
+    p_run cmake --build . --target install -- $cmake_build_options
 }
 
 pkg_install_target() {
-    DESTDIR="$targetdir" p_cmd cmake --build . \
+    DESTDIR="$targetdir" p_run cmake --build . \
         --target install -- $cmake_build_options
 }

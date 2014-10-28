@@ -5,7 +5,7 @@ psource="LVM2.2.02.95"
 use_env target
 
 pkg_build() {
-    p_cmd ./configure \
+    p_run ./configure \
         --host="mipsel-linux" \
         --prefix="" \
         --disable-lvm1_fallback \
@@ -32,11 +32,11 @@ pkg_build() {
         --disable-selinux \
         --disable-nls
 
-    p_make device-mapper
+    p_run make device-mapper
 }
 
 pkg_install() {
-    p_make DESTDIR="$rootfs_cross_root" install_device-mapper
-    p_cmd chmod 755 "$rootfs_cross_root"/lib/libdevmapper*
-    p_cmd chmod 755 "$rootfs_cross_root"/sbin/dmsetup*
+    p_run make DESTDIR="$rootfs_cross_root" install_device-mapper
+    p_run chmod 755 "$rootfs_cross_root"/lib/libdevmapper*
+    p_run chmod 755 "$rootfs_cross_root"/sbin/dmsetup*
 }

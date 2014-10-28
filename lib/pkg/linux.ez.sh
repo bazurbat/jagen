@@ -11,24 +11,24 @@ elif [ "$target_board" = "ast200" ]; then
 fi
 
 pkg_build_target() {
-    p_cmd $CROSS_MAKE $defconfig
-    p_cmd $CROSS_MAKE uImage
-    p_cmd $CROSS_MAKE modules
+    p_run $CROSS_MAKE $defconfig
+    p_run $CROSS_MAKE uImage
+    p_run $CROSS_MAKE modules
 }
 
 pkg_install_target() {
     local dest="$rootfsdir/boot"
 
-    p_cmd install -d "$dest"
-    p_cmd install -m644 "${pworkdir}/arch/arm/boot/uImage" "$dest/$uimage"
-    p_cmd install -m644 "${pworkdir}/arch/arm/boot/uImage" "/tftproot/$uimage"
-    p_cmd install -m644 "${pworkdir}/System.map" "$dest"
+    p_run install -d "$dest"
+    p_run install -m644 "${pworkdir}/arch/arm/boot/uImage" "$dest/$uimage"
+    p_run install -m644 "${pworkdir}/arch/arm/boot/uImage" "/tftproot/$uimage"
+    p_run install -m644 "${pworkdir}/System.map" "$dest"
 
-    p_cmd $CROSS_MAKE INSTALL_MOD_PATH="${rootfsdir}/" modules_install
+    p_run $CROSS_MAKE INSTALL_MOD_PATH="${rootfsdir}/" modules_install
 }
 
 pkg_depmod_target() {
     local depmod="/sbin/depmod"
 
-    p_cmd $depmod -ae -F "$pworkdir/System.map" -b "$rootfsdir" "$kernel_version"
+    p_run $depmod -ae -F "$pworkdir/System.map" -b "$rootfsdir" "$kernel_version"
 }

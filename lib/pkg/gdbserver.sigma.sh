@@ -8,14 +8,14 @@ workdir="gdb/gdbserver"
 
 pkg_build() {
     cd "$workdir" || return $?
-    p_cmd ./configure \
+    p_run ./configure \
         --host="mipsel-linux" \
         --prefix=""
 
-    p_make
+    p_run make
 }
 
 pkg_install() {
     cd "$workdir" || return $?
-    p_make DESTDIR="$rootfs_cross_root" install
+    p_run make DESTDIR="$rootfs_cross_root" install
 }

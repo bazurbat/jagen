@@ -6,7 +6,7 @@ use_env target
 
 pkg_prepare() {
     p_patch "e2fsprogs-1.41.8-makefile"
-    p_cmd rm -rf doc
+    p_run rm -rf doc
 }
 
 pkg_build() {
@@ -17,7 +17,7 @@ pkg_build() {
     CFLAGS="$CFLAGS -D_GNU_SOURCE" \
     ac_cv_path_LDCONFIG=: \
     QUOTA_CMT='#' \
-    p_cmd ./configure \
+    p_run ./configure \
         --prefix="" \
         --host="mipsel-linux" \
         --enable-symlink-install \
@@ -47,9 +47,9 @@ pkg_build() {
         --disable-rpath \
         --with-root-prefix=""
 
-    p_make
+    p_run make
 }
 
 pkg_install() {
-    p_make DESTDIR="$rootfs_cross_root" install
+    p_run make DESTDIR="$rootfs_cross_root" install
 }

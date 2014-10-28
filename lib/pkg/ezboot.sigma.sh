@@ -5,13 +5,13 @@ pworkdir="$ja_srcdir/sigma-ezboot"
 use_env tools target
 
 pkg_build() {
-    p_cmd cd "xos/xboot2/xmasboot/nand_st2"
-    p_cmd ./build_phyblock0.bash
+    p_run cd "xos/xboot2/xmasboot/nand_st2"
+    p_run ./build_phyblock0.bash
 }
 
 pkg_install() {
-    p_cmd mkdir -p "$targetdir"
-    p_cmd cd "xos/xboot2/xmasboot/nand_st2"
-    p_cmd cp -f phyblock0-0x20000padded.AST50 "$targetdir"
-    p_cmd cp -f phyblock0-0x20000padded.AST100 "$targetdir"
+    p_run mkdir -p "$targetdir"
+    p_run cd "xos/xboot2/xmasboot/nand_st2"
+    p_run cp -f phyblock0-0x20000padded.AST50 "$targetdir"
+    p_run cp -f phyblock0-0x20000padded.AST100 "$targetdir"
 }
