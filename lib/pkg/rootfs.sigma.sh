@@ -6,7 +6,7 @@ pkg_unpack() {
     use_env tools
 
     p_run rm -rf "build_mipsel" "cross_rootfs"
-    [ -d dl ] || p_run cp -r "$distdir/dl" "$rootfsdir"
+    [ -d dl ] || p_run cp -r "$pkg_distdir/dl" "$rootfsdir"
     # p_run cd "package/target-shell/busybox"
     # p_run make clean
 }

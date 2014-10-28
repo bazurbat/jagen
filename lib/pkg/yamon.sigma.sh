@@ -6,7 +6,7 @@ use_env tools target
 
 pkg_prepare() {
     p_run mkdir -p "$psourcedir/sources"
-    p_run cp "$distdir/dl/yamon-src-02.13.tar.gz" "$psourcedir/sources"
+    p_run cp "$pkg_distdir/dl/yamon-src-02.13.tar.gz" "$psourcedir/sources"
 }
 
 pkg_build() {

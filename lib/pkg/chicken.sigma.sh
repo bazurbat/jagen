@@ -1,7 +1,7 @@
 #!/bin/sh
 
 psourcedir="$ja_srcdir/chicken-scheme"
-pbuilddir="$pkg_build_dir/$pname${pconfig:+-$pconfig}"
+pbuilddir="$pkg_builddir/$pname${pconfig:+-$pconfig}"
 
 pkg_unpack() {
     :
