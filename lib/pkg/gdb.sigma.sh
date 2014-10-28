@@ -2,13 +2,12 @@
 
 psource="gdb-7.6.2"
 
+use_env tools
+
 pkg_prepare() {
-    p_patch "05_all_readline-headers" \
-        >"$plog" 2>&1 || return $?
-    p_patch "10_all_gdb-7.6-cpuid" \
-        >>"$plog" 2>&1 || return $?
-    p_patch "15_all_gdb-7.6-btrace" \
-        >>"$plog" 2>&1 || return $?
+    p_patch "05_all_readline-headers"
+    p_patch "10_all_gdb-7.6-cpuid"
+    p_patch "15_all_gdb-7.6-btrace"
 }
 
 pkg_build_host() {

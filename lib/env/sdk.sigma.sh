@@ -1,11 +1,31 @@
 #!/bin/sh
 
-export rootfsdir="$ja_srcdir/sigma-rootfs"
+export ja_ezboot_dir="$ja_srcdir/sigma-ezboot"
+export ja_kernel_dir="$ja_srcdir/sigma-kernel"
+export ja_mrua_dir="$ja_srcdir/sigma-mrua"
 
-toolchain_gcc=$(which mips-linux-gnu-gcc >/dev/null 2>&1)
+export ja_rootfs_dir="$ja_srcdir/sigma-rootfs"
+export ja_rootfs_root="$ja_rootfs_dir/build_mipsel/root"
+export ja_rootfs_prefix="$ja_rootfs_dir/cross_rootfs"
+
+export ja_utils_dir="$ja_srcdir/sigma-utils"
+
+export rootfsdir="$ja_srcdir/sigma-rootfs"
+export rootfs_root="$rootfsdir/build_mipsel/root"
+export rootfs_cross_root="$rootfsdir/cross_rootfs"
+
+export rootfs_add_e2fs_tools="yes"
+
+export firmwaredir="$ja_builddir/firmware"
+
+export ja_files_dir="$ja_srcdir/misc"
+
+toolchain_gcc=$(which mips-linux-gnu-gcc 2>/dev/null)
 if [ $? = 0 ] && [ "$toolchain_gcc" ]; then
     export SMP86XX_TOOLCHAIN_PATH=$(realpath $(dirname "$toolchain_gcc")/..)
 fi
+
+[ -d "$SMP86XX_TOOLCHAIN_PATH" ] || die "Toolchain path is not found"
 
 export TOOLCHAIN_RUNTIME_PATH="${SMP86XX_TOOLCHAIN_PATH}/mips-linux-gnu/libc/el"
 
@@ -24,18 +44,74 @@ export RMCFLAGS="\
 -DXBOOT2_SMP8670=1 \
 "
 
-if [ "$buildtype" = "Debug" ]; then
+if [ "$ja_buildtype" = "Debug" ]; then
     COMPILKIND="debug glibc codesourcery hardfloat"
 else
     COMPILKIND="release glibc codesourcery hardfloat"
 fi
 export COMPILKIND
 
+export sdkver="3.9-nk"
+
+case $sdkver in
+    3.8)
+        cpukeys="CPU_KEYS_SMP86xx_2010-02-12"
+        kernelversion="2.6.22.19"
+        kernelrelease="${kernelversion}-35-sigma"
+        ;;
+    3.9)
+        cpukeys="CPU_KEYS_SMP86xx_2010-02-12"
+        kernelversion="2.6.22.19"
+        kernelrelease="${kernelversion}-35-sigma"
+        ;;
+    3.9-nk)
+        cpukeys="CPU_KEYS_SMP86xx_2010-02-12"
+        kernelversion="2.6.32"
+        kernelrelease="${kernelversion}.15-21-sigma"
+        ;;
+    3.11)
+        cpukeys="CPU_KEYS_SMP86xx_2011-09-22"
+        kernelversion="2.6.29"
+        kernelrelease="${kernelversion}.6-33-sigma"
+        ;;
+    3.11-ok)
+        cpukeys="CPU_KEYS_SMP86xx_2011-09-22"
+        kernelversion="2.6.22.19"
+        kernelrelease="${kernelversion}-35-sigma"
+        ;;
+    3.11-nk)
+        cpukeys="CPU_KEYS_SMP86xx_2011-09-22"
+        kernelversion="2.6.32"
+        kernelrelease="${kernelversion}.15-21-sigma"
+        ;;
+    4.0)
+        cpukeys="CPU_KEYS_SMP86xx_2011-09-22"
+        kernelversion="2.6.32"
+        kernelrelease="${kernelversion}.15-21-sigma"
+        ;;
+    4.0-ok)
+        cpukeys="CPU_KEYS_SMP86xx_2011-09-22"
+        kernelversion="2.6.29"
+        kernelrelease="${kernelversion}.6-33-sigma"
+        ;;
+esac
+export cpukeys kernelversion kernelrelease
+
+export ja_xsdk_dir="$ja_builddir/pkg/xsdk/$cpukeys"
+
 # XSDK
-export XSDK_ROOT="$sdkdir/$cpukeys/signed_items"
+export XSDK_ROOT="$ja_xsdk_dir/signed_items"
 export XSDK_DEFAULT_KEY_DOMAIN=8644_ES1_prod
 export XSDK_DEFAULT_ZBOOT_CERTID=0000
 export XSDK_DEFAULT_CPU_CERTID=0001
+
+if [ -d "$ja_xsdk_dir/xbin" ]; then
+    PATH="$ja_xsdk_dir/xbin:$PATH"
+fi
+
+export kerneldir="$ja_srcdir/sigma-kernel"
+export kernelmodulesdir="$rootfs_root/lib/modules/$kernelrelease"
+export kernelextramodulesdir="$kernelmodulesdir/extra"
 
 export LINUX_KERNEL="$kerneldir/linux"
 export UCLINUX_KERNEL="$LINUX_KERNEL"

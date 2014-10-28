@@ -1,7 +1,7 @@
 #!/bin/sh
 
-export targetprefix="/usr"
-export targetdir="$rootfsdir"
+export targetdir="$ja_builddir/target"
+export targetprefix="/firmware"
 
 export target_arch="mipsel"
 export target_cpu="24kf"
@@ -27,9 +27,5 @@ export SMP86XX_ROOTFS_PATH INSTALL_MOD_PATH BDAPP_DEVICE_TABLE
 # fixes: undefined reference to `rpl_malloc'
 ac_cv_func_malloc_0_nonnull=yes
 export ac_cv_func_malloc_0_nonnull
-
-if [ -d "$sdkdir/$cpukeys/xbin" ]; then
-    PATH="$sdkdir/$cpukeys/xbin:$PATH"
-fi
 
 PATH="$SMP86XX_ROOTFS_PATH/host/bin:$SMP86XX_ROOTFS_PATH/cross_rootfs/bin:$PATH"

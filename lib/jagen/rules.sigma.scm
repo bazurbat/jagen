@@ -30,6 +30,10 @@
 (pkg 'xsdk
      '(unpack))
 
+(pkg 'ucode
+     '(unpack)
+     '(install))
+
 (pkg 'ezboot
      '(build after
              (xsdk unpack)
@@ -218,7 +222,7 @@
 (pkg 'mrua
      '(build (kernel build))
      '(modules)
-     '(install (firmware prepare)))
+     '(install (firmware unpack)))
 
 (pkg 'chicken
      '(unpack)
@@ -230,7 +234,7 @@
               (install))
      '(config target
               (build after (rootfs build) (chicken install cross))
-              (install (firmware prepare))))
+              (install (firmware unpack))))
 
 (pkg 'chicken-eggs
      '(unpack)
@@ -247,17 +251,18 @@
 
 (pkg 'ffmpeg
      '(unpack)
-     '(build after (rootfs build))
-     '(install (firmware prepare))
      '(config host
               (build)
-              (install)))
+              (install))
+     '(config target
+              (build after (rootfs build))
+              (install (firmware unpack))))
 
 (pkg 'soundtouch
      '(unpack)
      '(prepare)
      '(build after (rootfs build))
-     '(install (firmware prepare)))
+     '(install (firmware unpack)))
 
 (pkg 'karaoke-player
      '(unpack)
@@ -265,17 +270,17 @@
               (build (ffmpeg build host)
                      (chicken-eggs install host))
               (install))
-     '(build (mrua build)
-             (ffmpeg install)
-             (soundtouch install)
-             (chicken install target)
-             (chicken-eggs install cross))
-     '(install after (chicken-eggs install target)))
+     '(config target
+              (build (mrua build)
+                     (ffmpeg install target)
+                     (soundtouch install)
+                     (chicken install target)
+                     (chicken-eggs install cross))
+              (install after (chicken-eggs install target))))
 
 (pkg 'firmware
      '(unpack)
-     '(prepare)
      '(material (mrua build))
-     '(install (karaoke-player install)) ; files/firmware/fwversion.sexp
+     '(install (karaoke-player install target)) ; files/firmware/fwversion.sexp
      '(clean (firmware material)
              (mrua install)))
