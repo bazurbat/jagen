@@ -1,9 +1,5 @@
 #!/bin/sh
 
-if [ -z "$ja_basedir" ]; then
-    export ja_basedir="$(realpath $(dirname $0))"
-fi
-
 export ja_bindir="$ja_basedir/bin"
 export ja_libdir="$ja_basedir/lib"
 export ja_srcdir="$ja_basedir/src"
@@ -41,5 +37,9 @@ use_env() {
         include "$ja_libdir/env/$e"
     done
 }
+
+if [ -z "$ja_basedir" ]; then
+    die "base directory is not set"
+fi
 
 include "$ja_basedir/env"
