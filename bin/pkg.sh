@@ -10,16 +10,16 @@ p_is_function() {
     type "$1" 2>/dev/null | grep -q 'function'
 }
 
-p_cmd() {
+p_run() {
     debug "$*"
     "$@" >>"$plog" 2>&1 || exit
 }
 
 p_clean() {
     if [ -d "$1" ]; then
-        p_cmd rm -fr "$1"
+        p_run rm -fr "$1"
     fi
-    p_cmd mkdir -p "$1"
+    p_run mkdir -p "$1"
 }
 
 p_strip() {
@@ -45,7 +45,7 @@ p_unpack() {
 }
 
 p_patch() {
-    p_cmd patch -sp1 -i "$distdir/patches/${1}.patch"
+    p_run patch -sp1 -i "$distdir/patches/${1}.patch"
 }
 
 pkg_unpack() {
@@ -76,7 +76,7 @@ p_depmod() {
 }
 
 p_fix_la() {
-    p_cmd p_cmd sed -ri "s|libdir='/lib'|libdir='$rootfs_cross_root/lib'|" $1
+    p_run p_run sed -ri "s|libdir='/lib'|libdir='$rootfs_cross_root/lib'|" $1
 }
 
 include "$ja_libdir/env/cmake"
