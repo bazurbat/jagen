@@ -28,7 +28,7 @@ pkg_build_target() {
         -DSIGMA_ROOT_DIR="$ja_srcdir" \
         -DCHICKEN_HOST_SYSTEM="mipsel-linux" \
         -DCHICKEN_BUILD_IMPORTS=NO \
-        -DLIBUV_ROOT_DIR="$ja_rootfs_prefix" \
+        -DLIBUV_ROOT_DIR="$sdk_rootfs_prefix" \
         "$psourcedir"
 
     p_run cmake --build . -- $cmake_build_options

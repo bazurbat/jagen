@@ -23,7 +23,7 @@ pkg_build_host() {
 pkg_build_target() {
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$ja_buildtype" \
-        -DCMAKE_INSTALL_PREFIX="$ja_rootfs_root" \
+        -DCMAKE_INSTALL_PREFIX="$sdk_rootfs_root" \
         -DUSE_LOOPAES=1 \
         "$psourcedir"
 

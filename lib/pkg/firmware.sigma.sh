@@ -92,7 +92,7 @@ pkg_install() {
     cp -f "$targetdir/phyblock0-0x20000padded.AST50" "$firmwaredir/" || return $?
     cp -f "$targetdir/phyblock0-0x20000padded.AST100" "$firmwaredir/" || return $?
 
-    cd "$rootfs_cross_root/lib" || return $?
+    cd "$sdk_rootfs_prefix/lib" || return $?
     cp -a libsqlite* "$firmwaredir/lib" || return $?
 }
 

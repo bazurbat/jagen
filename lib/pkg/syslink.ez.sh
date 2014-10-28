@@ -29,13 +29,13 @@ pkg_build() {
 
 pkg_install() {
     local src="$pworkdir/packages/ti/syslink"
-    local dest="$rootfsdir/lib/modules/$kernel_version/kernel/drivers/dsp"
+    local dest="$sdk_rootfsdir/lib/modules/$kernel_version/kernel/drivers/dsp"
 
     p_run install -v -d "$dest"
     p_run install -v -m644 \
         "$src/bin/$platform/syslink.ko" "$dest"
     p_run install -v -m644 \
-        $src/lib/syslink.a* "$rootfsdir/usr/lib"
+        $src/lib/syslink.a* "$sdk_rootfsdir/usr/lib"
     p_run install -v -m755 \
-        $src/bin/$platform/samples/slaveloader* "$rootfsdir/usr/bin"
+        $src/bin/$platform/samples/slaveloader* "$sdk_rootfsdir/usr/bin"
 }

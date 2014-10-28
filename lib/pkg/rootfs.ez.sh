@@ -1,6 +1,6 @@
 #!/bin/sh
 
-pworkdir="$rootfsdir"
+pworkdir="$sdk_rootfsdir"
 
 pkg_unpack() {
     local A=$(ls -1 $EZSDK/filesystem/ezsdk-dm816x-evm-rootfs.tar.gz)

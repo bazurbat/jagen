@@ -22,5 +22,5 @@ pkg_build() {
 }
 
 pkg_install() {
-    p_run make DESTDIR="$rootfs_cross_root" install
+    p_run make DESTDIR="$sdk_rootfs_prefix" install
 }

@@ -64,7 +64,7 @@ p_depmod() {
 }
 
 p_fix_la() {
-    p_run p_run sed -ri "s|libdir='/lib'|libdir='$rootfs_cross_root/lib'|" $1
+    p_run p_run sed -ri "s|libdir='/lib'|libdir='$sdk_rootfs_prefix/lib'|" $1
 }
 
 pkg_unpack() {

@@ -23,13 +23,13 @@ pkg_build() {
         --enable-udev \
         --disable-kernel_crypto \
         --disable-python \
-        --with-sysroot="$rootfs_cross_root" \
+        --with-sysroot="$sdk_rootfs_prefix" \
         --with-crypto_backend=gcrypt \
-        --with-libgcrypt-prefix="$rootfs_cross_root"
+        --with-libgcrypt-prefix="$sdk_rootfs_prefix"
 
     p_run make
 }
 
 pkg_install() {
-    p_run make DESTDIR="$rootfs_cross_root" install
+    p_run make DESTDIR="$sdk_rootfs_prefix" install
 }

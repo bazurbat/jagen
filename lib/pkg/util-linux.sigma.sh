@@ -73,7 +73,7 @@ pkg_build() {
         --disable-pg-bell \
         --disable-makeinstall-chown \
         --disable-makeinstall-setuid \
-        --with-sysroot="$rootfs_cross_root" \
+        --with-sysroot="$sdk_rootfs_prefix" \
         --without-selinux \
         --without-audit \
         --without-udev \
@@ -86,5 +86,5 @@ pkg_build() {
 }
 
 pkg_install() {
-    p_run make DESTDIR="$rootfs_cross_root" install
+    p_run make DESTDIR="$sdk_rootfs_prefix" install
 }

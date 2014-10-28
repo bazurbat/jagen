@@ -16,6 +16,6 @@ pkg_build() {
 }
 
 pkg_install() {
-    p_run make DESTDIR="$rootfs_cross_root" install
-    # p_fix_la "$rootfs_cross_root/lib/libgpg-error.la"
+    p_run make DESTDIR="$sdk_rootfs_prefix" install
+    # p_fix_la "$sdk_rootfs_prefix/lib/libgpg-error.la"
 }

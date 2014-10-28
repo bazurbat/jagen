@@ -11,7 +11,7 @@ pkg_build() {
 }
 
 pkg_install() {
-    local dest="$rootfs_root/bin"
+    local dest="$sdk_rootfs_root/bin"
     p_run install -vd "$dest"
     p_run install -vm755 ntpclient "$dest"
 }

@@ -15,7 +15,7 @@ pkg_build() {
         p_run ./configure \
             --host="mipsel-linux" \
             --prefix="" \
-            --with-sysroot="$rootfs_cross_root"
+            --with-sysroot="$sdk_rootfs_prefix"
     fi
 
     p_run make
@@ -23,13 +23,13 @@ pkg_build() {
 
 pkg_install() {
     if [ -x ./configure ]; then
-        p_run make DESTDIR="$rootfs_cross_root" install
+        p_run make DESTDIR="$sdk_rootfs_prefix" install
     else
-        p_run cp -vaf include "$rootfs_cross_root"
-        # cp -vaf libuv.a "${rootfs_cross_root}/lib" \
+        p_run cp -vaf include "$sdk_rootfs_prefix"
+        # cp -vaf libuv.a "${sdk_rootfs_prefix}/lib" \
         #     >>"$plog" 2>&1 || return $?
-        p_run cp -vaf libuv.so "${rootfs_cross_root}/lib/libuv.so.0.10.so"
-        p_run cd "${rootfs_cross_root}/lib"
+        p_run cp -vaf libuv.so "${sdk_rootfs_prefix}/lib/libuv.so.0.10.so"
+        p_run cd "${sdk_rootfs_prefix}/lib"
         p_run ln -sf libuv.so.0.10.so libuv.so.0.10
         p_run ln -sf libuv.so.0.10.so libuv.so
     fi

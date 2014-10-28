@@ -1,12 +1,12 @@
 #!/bin/sh
 
-pworkdir="$rootfsdir"
+pworkdir="$sdk_rootfsdir"
 
 pkg_unpack() {
     use_env tools
 
     p_run rm -rf "build_mipsel" "cross_rootfs"
-    [ -d dl ] || p_run cp -r "$pkg_distdir/dl" "$rootfsdir"
+    [ -d dl ] || p_run cp -r "$pkg_distdir/dl" "$sdk_rootfsdir"
     # p_run cd "package/target-shell/busybox"
     # p_run make clean
 }
@@ -27,7 +27,7 @@ pkg_build() {
 }
 
 create_dirs() {
-    cd "$rootfs_root" &&
+    cd "$sdk_rootfs_root" &&
     rm -rf dev opt proc sys root tmp var/run &&
     install -m 700 -d root &&
     if [ ! -d libexec ]
@@ -36,20 +36,20 @@ create_dirs() {
 }
 
 fix_init_link() {
-    cd "$rootfs_root" &&
+    cd "$sdk_rootfs_root" &&
     rm -f init linuxrc &&
     ln -s /bin/busybox init
 }
 
 fix_xenv_bins() {
-    cd "$rootfs_root/bin" &&
+    cd "$sdk_rootfs_root/bin" &&
     rm -f setxenv setxenv.bash unsetxenv &&
     ln -sf setxenv2_mipsel setxenv2 &&
     ln -sf setxenv2_mipsel unsetxenv2
 }
 
 clean_etc() {
-    cd "$rootfs_root/etc" &&
+    cd "$sdk_rootfs_root/etc" &&
     rm -rf init.d rc.d network cs_rootfs_* &&
     rm -f ld.so.cache mtab
     for d in up down pre-up post-down; do
@@ -58,20 +58,20 @@ clean_etc() {
 }
 
 remove_nss_libs() {
-    cd "$rootfs_root/lib" &&
+    cd "$sdk_rootfs_root/lib" &&
     rm -f libnss_compat* libnss_hesiod* libnss_nis*
 }
 
 remove_ncurses() {
-    cd "$rootfs_root" &&
+    cd "$sdk_rootfs_root" &&
     rm -f etc/inputrc &&
     rm -rf usr/share/terminfo &&
-    cd "$rootfs_root/lib" &&
+    cd "$sdk_rootfs_root/lib" &&
     rm -f libmenu* libpanel* libform* libncurses*
 }
 
 remove_image_libs() {
-    cd "$rootfs_root/lib" || return $?
+    cd "$sdk_rootfs_root/lib" || return $?
     rm -f libjpeg*
     rm -f libpng*
     rm -f libtiff*
@@ -79,99 +79,99 @@ remove_image_libs() {
 }
 
 remove_ssl() {
-    cd "$rootfs_root" || return $?
+    cd "$sdk_rootfs_root" || return $?
     rm -f lib/libssl* lib/libcrypto*
     rm -f usr/bin/openssl
 }
 
 remove_libcurl() {
-    cd "$rootfs_root/lib" || return $?
+    cd "$sdk_rootfs_root/lib" || return $?
     rm -f libcurl*
 }
 
 install_keys() {
-    mkdir -p "$rootfs_root/lib/firmware" || return $?
-    cp -a "$ja_files_dir/keys/keyfile.gpg" "$rootfs_root/lib/firmware"
+    mkdir -p "$sdk_rootfs_root/lib/firmware" || return $?
+    cp -a "$ja_files_dir/keys/keyfile.gpg" "$sdk_rootfs_root/lib/firmware"
 }
 
 install_gpg() {
-    cd "$rootfs_cross_root" || return $?
-    cp -a bin/gpg "$rootfs_root/bin" || return $?
-    cp -a lib/libgpg* lib/libassuan* "$rootfs_root/lib"
+    cd "$sdk_rootfs_prefix" || return $?
+    cp -a bin/gpg "$sdk_rootfs_root/bin" || return $?
+    cp -a lib/libgpg* lib/libassuan* "$sdk_rootfs_root/lib"
 }
 
 install_util_linux() {
-    cd "$rootfs_cross_root" || return $?
-    cp -a sbin/losetup "$rootfs_root/sbin"
+    cd "$sdk_rootfs_prefix" || return $?
+    cp -a sbin/losetup "$sdk_rootfs_root/sbin"
 }
 
 install_e2fsprogs() {
-    cd "$rootfs_cross_root/sbin" || return $?
-    cp -a badblocks blkid e2fsck "$rootfs_root/sbin" || return $?
+    cd "$sdk_rootfs_prefix/sbin" || return $?
+    cp -a badblocks blkid e2fsck "$sdk_rootfs_root/sbin" || return $?
     if [ "$rootfs_add_e2fs_tools" = "yes" ]; then
-        cp -a dumpe2fs mke2fs tune2fs "$rootfs_root/sbin" || return $?
+        cp -a dumpe2fs mke2fs tune2fs "$sdk_rootfs_root/sbin" || return $?
     fi
 }
 
 install_cryptsetup() {
-    cd "$rootfs_cross_root" || return $?
+    cd "$sdk_rootfs_prefix" || return $?
     cp -af lib/libcryptsetup* lib/libuuid* lib/libdevmapper* lib/libgcrypt* \
-        lib/libpopt* "$rootfs_root/lib"
-    cp -af sbin/cryptsetup "$rootfs_root/sbin"
+        lib/libpopt* "$sdk_rootfs_root/lib"
+    cp -af sbin/cryptsetup "$sdk_rootfs_root/sbin"
 }
 
 install_freetype() {
-    cd "$rootfs_cross_root" || return $?
-    cp -af lib/libfreetype*.so* "$rootfs_root/lib"
+    cd "$sdk_rootfs_prefix" || return $?
+    cp -af lib/libfreetype*.so* "$sdk_rootfs_root/lib"
 }
 
 install_dbus() {
-    cd "$rootfs_cross_root" || return $?
-    cp -a bin/dbus-* "$rootfs_root/bin" || return $?
-    cp -a "etc/dbus-1" "$rootfs_root/etc" || return $?
-    cp -a lib/libexpat* lib/libdbus* "$rootfs_root/lib" || return $?
-    cp -a "libexec/dbus-daemon-launch-helper" "$rootfs_root/libexec"
+    cd "$sdk_rootfs_prefix" || return $?
+    cp -a bin/dbus-* "$sdk_rootfs_root/bin" || return $?
+    cp -a "etc/dbus-1" "$sdk_rootfs_root/etc" || return $?
+    cp -a lib/libexpat* lib/libdbus* "$sdk_rootfs_root/lib" || return $?
+    cp -a "libexec/dbus-daemon-launch-helper" "$sdk_rootfs_root/libexec"
 }
 
 install_rsync() {
-    cd "$rootfs_cross_root" || return $?
-    cp -a bin/rsync "$rootfs_root/bin" || return $?
+    cd "$sdk_rootfs_prefix" || return $?
+    cp -a bin/rsync "$sdk_rootfs_root/bin" || return $?
 }
 
 install_libuv() {
-    cd "$rootfs_cross_root" || return $?
-    cp -a lib/libuv.so* "$rootfs_root/lib" || return $?
+    cd "$sdk_rootfs_prefix" || return $?
+    cp -a lib/libuv.so* "$sdk_rootfs_root/lib" || return $?
 }
 
 install_chibi() {
-    cd "$rootfs_cross_root" || return $?
-    cp -a bin/chibi-scheme "$rootfs_root/bin" || return $?
-    cp -a lib/*chibi* "$rootfs_root/lib" || return $?
-    cp -a share/chibi "$rootfs_root/share" || return $?
+    cd "$sdk_rootfs_prefix" || return $?
+    cp -a bin/chibi-scheme "$sdk_rootfs_root/bin" || return $?
+    cp -a lib/*chibi* "$sdk_rootfs_root/lib" || return $?
+    cp -a share/chibi "$sdk_rootfs_root/share" || return $?
 }
 
 install_ldconfig() {
     cd "$TOOLCHAIN_RUNTIME_PATH" || return $?
-    cp -a sbin/ldconfig "$rootfs_root/sbin"
+    cp -a sbin/ldconfig "$sdk_rootfs_root/sbin"
 }
 
 install_zoneinfo() {
-    mkdir -p "$rootfs_root/usr/share/zoneinfo" &&
+    mkdir -p "$sdk_rootfs_root/usr/share/zoneinfo" &&
     cd "${TOOLCHAIN_RUNTIME_PATH}/usr/share/zoneinfo" &&
-    cp -r Etc Europe Factory GMT UTC "$rootfs_root/usr/share/zoneinfo" &&
-    cd "$rootfs_root/etc" &&
+    cp -r Etc Europe Factory GMT UTC "$sdk_rootfs_root/usr/share/zoneinfo" &&
+    cd "$sdk_rootfs_root/etc" &&
     rm -f TZ &&
     ln -sf /usr/share/zoneinfo/GMT localtime
 }
 
 install_gdbserver() {
     # GDB Server
-    cp -f "$rootfs_cross_root/bin/gdbserver" \
-        "$rootfs_root/bin"
+    cp -f "$sdk_rootfs_prefix/bin/gdbserver" \
+        "$sdk_rootfs_root/bin"
 }
 
 clean_misc() {
-    cd "$rootfs_root" || return $?
+    cd "$sdk_rootfs_root" || return $?
 
     rm -f bin/mtd_*
 
@@ -189,7 +189,7 @@ clean_misc() {
 }
 
 install_files() {
-    cp -rf "$ja_files_dir"/rootfs/* "$rootfs_root"
+    cp -rf "$ja_files_dir"/rootfs/* "$sdk_rootfs_root"
 }
 
 pkg_install() {
@@ -221,5 +221,5 @@ pkg_install() {
 
     install_files || die "install_files failed"
 
-    p_strip "$rootfs_root" >>"$plog" 2>&1 || die "strip failed"
+    p_strip "$sdk_rootfs_root" >>"$plog" 2>&1 || die "strip failed"
 }

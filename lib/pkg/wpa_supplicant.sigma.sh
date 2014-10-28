@@ -42,7 +42,7 @@ pkg_build() {
 
 pkg_install() {
     local s="$pbuilddir/$pname"
-    local d="$rootfs_root"
+    local d="$sdk_rootfs_root"
 
     p_run install -vd "$d/bin" "$d/sbin" \
         "$d/etc/dbus-1/system.d" \

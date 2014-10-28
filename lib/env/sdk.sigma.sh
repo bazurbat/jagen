@@ -4,15 +4,9 @@ export ja_ezboot_dir="$ja_srcdir/sigma-ezboot"
 export ja_kernel_dir="$ja_srcdir/sigma-kernel"
 export ja_mrua_dir="$ja_srcdir/sigma-mrua"
 
-export ja_rootfs_dir="$ja_srcdir/sigma-rootfs"
-export ja_rootfs_root="$ja_rootfs_dir/build_mipsel/root"
-export ja_rootfs_prefix="$ja_rootfs_dir/cross_rootfs"
-
-export ja_utils_dir="$ja_srcdir/sigma-utils"
-
-export rootfsdir="$ja_srcdir/sigma-rootfs"
-export rootfs_root="$rootfsdir/build_mipsel/root"
-export rootfs_cross_root="$rootfsdir/cross_rootfs"
+export sdk_rootfsdir="$ja_srcdir/sigma-rootfs"
+export sdk_rootfs_root="$sdk_rootfsdir/build_mipsel/root"
+export sdk_rootfs_prefix="$sdk_rootfsdir/cross_rootfs"
 
 export rootfs_add_e2fs_tools="yes"
 
@@ -110,7 +104,7 @@ if [ -d "$ja_xsdk_dir/xbin" ]; then
 fi
 
 export kerneldir="$ja_srcdir/sigma-kernel"
-export kernelmodulesdir="$rootfs_root/lib/modules/$kernelrelease"
+export kernelmodulesdir="$sdk_rootfs_root/lib/modules/$kernelrelease"
 export kernelextramodulesdir="$kernelmodulesdir/extra"
 
 export LINUX_KERNEL="$kerneldir/linux"

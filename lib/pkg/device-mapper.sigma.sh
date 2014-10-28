@@ -36,7 +36,7 @@ pkg_build() {
 }
 
 pkg_install() {
-    p_run make DESTDIR="$rootfs_cross_root" install_device-mapper
-    p_run chmod 755 "$rootfs_cross_root"/lib/libdevmapper*
-    p_run chmod 755 "$rootfs_cross_root"/sbin/dmsetup*
+    p_run make DESTDIR="$sdk_rootfs_prefix" install_device-mapper
+    p_run chmod 755 "$sdk_rootfs_prefix"/lib/libdevmapper*
+    p_run chmod 755 "$sdk_rootfs_prefix"/sbin/dmsetup*
 }

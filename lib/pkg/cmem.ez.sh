@@ -18,7 +18,7 @@ pkg_build_target() {
 }
 
 pkg_install_target() {
-    local dest="$rootfsdir/lib/modules/$kernel_version/kernel/drivers/dsp"
+    local dest="$sdk_rootfsdir/lib/modules/$kernel_version/kernel/drivers/dsp"
 
     p_run install -d "$dest"
     p_run install -m644 "$module_dir/cmemk.ko" "$dest"
