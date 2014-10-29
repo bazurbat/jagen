@@ -1,11 +1,10 @@
 #!/bin/sh
 
-psourcedir="$ja_srcdir/sigma-utils"
-pbuilddir="$pkg_builddir/$pname${pconfig:+-$pconfig}"
+p_type="git"
+p_address="git@bitbucket.org:art-system/sigma-utils.git"
 
-pkg_unpack() {
-    :
-}
+psourcedir="$ja_srcdir/sigma-utils"
+pbuilddir="$pworkdir${pconfig:+/$pconfig}"
 
 pkg_build_host() {
     use_env tools

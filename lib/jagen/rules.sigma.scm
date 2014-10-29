@@ -16,6 +16,7 @@
 ; utils
 
 (pkg 'utils
+     '(clean)
      '(unpack)
      '(config host
               (build)

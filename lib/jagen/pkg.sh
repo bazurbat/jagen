@@ -67,8 +67,43 @@ p_fix_la() {
     p_run p_run sed -ri "s|libdir='/lib'|libdir='$sdk_rootfs_prefix/lib'|" $1
 }
 
+p_git_clone() {
+    local directory="$1" address="$2"
+
+    p_run git clone --progress "$address" "$directory"
+}
+
+p_git_checkout() {
+    local directory="$1" branch="${2:-master}"
+
+    p_run cd "$directory"
+    [ "$(git status --porcelain)" ] || p_run git checkout "$branch"
+    p_run cd -
+}
+
+p_git_update() {
+    local directory="$1"
+
+    p_run cd "$directory"
+    [ "$(git status --porcelain)" ] || p_run git pull --progress
+    p_run cd -
+}
+
+pkg_clean() {
+    p_run rm -rf "$pworkdir"/*
+}
+
 pkg_unpack() {
-    rm -rf "$pworkdir"
-    mkdir -p "$pworkdir"
-    p_unpack "$psource"
+    if [ "$p_type" = "git" ]; then
+        if [ -d "$psourcedir" ]; then
+            p_git_update "$psourcedir"
+        else
+            p_git_clone "$psourcedir" "$p_address"
+            p_git_checkout "$psourcedir" "$p_branch"
+        fi
+    else
+        rm -rf "$pworkdir"
+        mkdir -p "$pworkdir"
+        p_unpack "$psource"
+    fi
 }
