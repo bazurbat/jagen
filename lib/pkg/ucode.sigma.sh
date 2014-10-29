@@ -7,7 +7,7 @@ case $sdkver in
 esac
 
 pkg_install() {
-    local dst="$firmwaredir/xload"
+    local dst="$sdk_firmware_dir/xload"
 
     p_run install -vd "$dst"
 

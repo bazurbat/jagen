@@ -17,13 +17,13 @@ pkg_modules() {
 
 pkg_install() {
     p_run cd bin
-    p_run cp -a ikc xkc "$firmwaredir/bin"
+    p_run cp -a ikc xkc "$sdk_firmware_dir/bin"
 
     p_run cd "$pworkdir/MRUA_src/llad_smallapps"
-    p_run cp -a gbus_read_bin_to_file gbus_read_uint32 "$firmwaredir/bin"
+    p_run cp -a gbus_read_bin_to_file gbus_read_uint32 "$sdk_firmware_dir/bin"
 
     p_run cd "$pworkdir/MRUA_src/llad_xtest"
-    p_run cp -a rmfree rmmalloc "$firmwaredir/bin"
+    p_run cp -a rmfree rmmalloc "$sdk_firmware_dir/bin"
 
     p_run cd "$pworkdir/lib"
     p_run cp -a \
@@ -35,7 +35,7 @@ pkg_install() {
         librmmm.so \
         librmmm_g.so \
         librmmm_t.so \
-        "$firmwaredir/lib"
+        "$sdk_firmware_dir/lib"
 
     p_run cd "$pworkdir/lib"
     p_run cp -a \
@@ -49,9 +49,9 @@ pkg_install() {
         librmvideoout.so \
         librua.so \
         libruaoutput.so \
-        "$firmwaredir/lib"
+        "$sdk_firmware_dir/lib"
 
     if [ "$sdkver" = "4.0" ]; then
-        p_run cp -a librminfoframe.so "$firmwaredir/lib"
+        p_run cp -a librminfoframe.so "$sdk_firmware_dir/lib"
     fi
 }

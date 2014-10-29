@@ -2,7 +2,7 @@
 
 use_env target
 
-pworkdir="$firmwaredir"
+pworkdir="$sdk_firmware_dir"
 psourcedir="${targetdir}${targetprefix}"
 
 pkg_unpack() {
@@ -53,12 +53,12 @@ pkg_material() {
 }
 
 copy_files() {
-    cp -af "$sdk_files_dir"/firmware/* "$firmwaredir" || return $?
+    cp -af "$sdk_files_dir"/firmware/* "$sdk_firmware_dir" || return $?
 }
 
 install_chibi() {
     local src="$psourcedir"
-    local dst="$firmwaredir"
+    local dst="$sdk_firmware_dir"
 
     cd "$src" || return $?
     cp -a bin/chibi-scheme "$dst/bin" || return $?
@@ -76,24 +76,24 @@ pkg_install() {
         csi i2c_debug uart-shell ast-service pcf8563"
 
     cd "$psourcedir/bin" || return $?
-    install -m 755 $bin "$firmwaredir/bin" || return $?
+    install -m 755 $bin "$sdk_firmware_dir/bin" || return $?
 
     cd "$psourcedir/lib" || return $?
-    cp -a chicken "$firmwaredir/lib" || return $?
-    cp -a *.so* "$firmwaredir/lib" || return $?
+    cp -a chicken "$sdk_firmware_dir/lib" || return $?
+    cp -a *.so* "$sdk_firmware_dir/lib" || return $?
 
     copy_files || return $?
 
     # install_chibi || return $?
 
-    cp -f "$targetdir/xmaterial.romfs" "$firmwaredir/" || return $?
-    cp -f "$targetdir/imaterial.romfs" "$firmwaredir/" || return $?
-    cp -f "$targetdir/zbimage-linux-xload.zbc" "$firmwaredir/" || return $?
-    cp -f "$targetdir/phyblock0-0x20000padded.AST50" "$firmwaredir/" || return $?
-    cp -f "$targetdir/phyblock0-0x20000padded.AST100" "$firmwaredir/" || return $?
+    cp -f "$targetdir/xmaterial.romfs" "$sdk_firmware_dir/" || return $?
+    cp -f "$targetdir/imaterial.romfs" "$sdk_firmware_dir/" || return $?
+    cp -f "$targetdir/zbimage-linux-xload.zbc" "$sdk_firmware_dir/" || return $?
+    cp -f "$targetdir/phyblock0-0x20000padded.AST50" "$sdk_firmware_dir/" || return $?
+    cp -f "$targetdir/phyblock0-0x20000padded.AST100" "$sdk_firmware_dir/" || return $?
 
     cd "$sdk_rootfs_prefix/lib" || return $?
-    cp -a libsqlite* "$firmwaredir/lib" || return $?
+    cp -a libsqlite* "$sdk_firmware_dir/lib" || return $?
 }
 
 pkg_clean() {
