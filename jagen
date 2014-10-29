@@ -32,4 +32,12 @@ case $1 in
         shift
         exec ninja "$@"
         ;;
+    rebuild)
+        shift
+        target_path="$1"
+        shift
+        rm -f "$target_path"
+        ninja "$@"
+        cat "${target_path}.log"
+        ;;
 esac
