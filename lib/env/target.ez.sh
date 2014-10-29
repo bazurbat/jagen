@@ -1,7 +1,7 @@
 #!/bin/sh
 
 export targetprefix="/usr"
-export targetdir="$sdk_rootfsdir"
+export targetdir="$sdk_rootfs_dir"
 
 export target_arch="arm"
 export target_cpu="armv7-a"

@@ -17,18 +17,18 @@ pkg_build_target() {
 }
 
 pkg_install_target() {
-    local dest="$sdk_rootfsdir/boot"
+    local dest="$sdk_rootfs_dir/boot"
 
     p_run install -d "$dest"
     p_run install -m644 "${pworkdir}/arch/arm/boot/uImage" "$dest/$uimage"
     p_run install -m644 "${pworkdir}/arch/arm/boot/uImage" "/tftproot/$uimage"
     p_run install -m644 "${pworkdir}/System.map" "$dest"
 
-    p_run $CROSS_MAKE INSTALL_MOD_PATH="${sdk_rootfsdir}/" modules_install
+    p_run $CROSS_MAKE INSTALL_MOD_PATH="${sdk_rootfs_dir}/" modules_install
 }
 
 pkg_depmod_target() {
     local depmod="/sbin/depmod"
 
-    p_run $depmod -ae -F "$pworkdir/System.map" -b "$sdk_rootfsdir" "$kernel_version"
+    p_run $depmod -ae -F "$pworkdir/System.map" -b "$sdk_rootfs_dir" "$kernel_version"
 }

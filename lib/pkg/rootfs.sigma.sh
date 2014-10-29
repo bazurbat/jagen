@@ -1,12 +1,12 @@
 #!/bin/sh
 
-pworkdir="$sdk_rootfsdir"
+pworkdir="$sdk_rootfs_dir"
 
 pkg_unpack() {
     use_env tools
 
     p_run rm -rf "build_mipsel" "cross_rootfs"
-    [ -d dl ] || p_run cp -r "$pkg_distdir/dl" "$sdk_rootfsdir"
+    [ -d dl ] || p_run cp -r "$pkg_distdir/dl" "$sdk_rootfs_dir"
     # p_run cd "package/target-shell/busybox"
     # p_run make clean
 }
@@ -91,7 +91,7 @@ remove_libcurl() {
 
 install_keys() {
     mkdir -p "$sdk_rootfs_root/lib/firmware" || return $?
-    cp -a "$ja_files_dir/keys/keyfile.gpg" "$sdk_rootfs_root/lib/firmware"
+    cp -a "$sdk_files_dir/keys/keyfile.gpg" "$sdk_rootfs_root/lib/firmware"
 }
 
 install_gpg() {
@@ -189,7 +189,7 @@ clean_misc() {
 }
 
 install_files() {
-    cp -rf "$ja_files_dir"/rootfs/* "$sdk_rootfs_root"
+    cp -rf "$sdk_files_dir"/rootfs/* "$sdk_rootfs_root"
 }
 
 pkg_install() {

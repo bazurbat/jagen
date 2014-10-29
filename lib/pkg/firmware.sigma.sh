@@ -18,17 +18,17 @@ pkg_unpack() {
 
 create_imaterial() {
     local workdir="$targetdir/imaterial"
-    local bmp2sdd="$ja_mrua_dir/MRUA_src/splashscreen/utils/bmp2sdd"
+    local bmp2sdd="$sdk_mrua_dir/MRUA_src/splashscreen/utils/bmp2sdd"
 
     rm -rf "$workdir" && mkdir -p "$workdir" || return $?
 
     p_run cp -f \
-        "$ja_files_dir/ucode/itask_loader.iload" \
-        "$ja_files_dir/ucode/itask_splashscreen.iload" \
+        "$sdk_files_dir/ucode/itask_loader.iload" \
+        "$sdk_files_dir/ucode/itask_splashscreen.iload" \
         "$workdir"
 
     p_run "$bmp2sdd" \
-        "$ja_files_dir/splash/artsystem-splash-2013-720p-32bpp.bmp" \
+        "$sdk_files_dir/splash/artsystem-splash-2013-720p-32bpp.bmp" \
         "$workdir/splash_picture.sdd"
 
     p_run genromfs -d "$workdir" -f "$targetdir/imaterial.romfs" -V imaterial
@@ -40,8 +40,8 @@ create_xmaterial() {
     rm -rf "$workdir" && mkdir -p "$workdir" || return $?
 
     p_run cp -f \
-        "$ja_files_dir/ucode/xtask_loader.xload" \
-        "$ja_files_dir/ucode/ios.bin.gz_8644_ES1_dev_0006.xload" \
+        "$sdk_files_dir/ucode/xtask_loader.xload" \
+        "$sdk_files_dir/ucode/ios.bin.gz_8644_ES1_dev_0006.xload" \
         "$workdir"
 
     p_run genromfs -d "$workdir" -f "$targetdir/xmaterial.romfs" -V xmaterial
@@ -53,7 +53,7 @@ pkg_material() {
 }
 
 copy_files() {
-    cp -af "$ja_files_dir"/firmware/* "$firmwaredir" || return $?
+    cp -af "$sdk_files_dir"/firmware/* "$firmwaredir" || return $?
 }
 
 install_chibi() {

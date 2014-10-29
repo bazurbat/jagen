@@ -1,18 +1,18 @@
 #!/bin/sh
 
-export ja_ezboot_dir="$ja_srcdir/sigma-ezboot"
-export ja_kernel_dir="$ja_srcdir/sigma-kernel"
-export ja_mrua_dir="$ja_srcdir/sigma-mrua"
+export sdk_files_dir="$ja_srcdir/misc"
 
-export sdk_rootfsdir="$ja_srcdir/sigma-rootfs"
-export sdk_rootfs_root="$sdk_rootfsdir/build_mipsel/root"
-export sdk_rootfs_prefix="$sdk_rootfsdir/cross_rootfs"
+export sdk_ezboot_dir="$ja_srcdir/sigma-ezboot"
+export sdk_kernel_dir="$ja_srcdir/sigma-kernel"
+export sdk_mrua_dir="$ja_srcdir/sigma-mrua"
+
+export sdk_rootfs_dir="$ja_srcdir/sigma-rootfs"
+export sdk_rootfs_root="$sdk_rootfs_dir/build_mipsel/root"
+export sdk_rootfs_prefix="$sdk_rootfs_dir/cross_rootfs"
 
 export rootfs_add_e2fs_tools="yes"
 
 export firmwaredir="$ja_builddir/firmware"
-
-export ja_files_dir="$ja_srcdir/misc"
 
 toolchain_gcc=$(which mips-linux-gnu-gcc 2>/dev/null)
 if [ $? = 0 ] && [ "$toolchain_gcc" ]; then

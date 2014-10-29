@@ -15,7 +15,7 @@ fi
 mkimage="./tools/mkimage -A arm -O linux -T script -C none -n TI_script -d"
 
 pkg_build_min() {
-    local dest="$sdk_rootfsdir/boot"
+    local dest="$sdk_rootfs_dir/boot"
 
     use_env target
 
@@ -28,7 +28,7 @@ pkg_build_min() {
 }
 
 pkg_build_target() {
-    local dest="$sdk_rootfsdir/boot"
+    local dest="$sdk_rootfs_dir/boot"
 
     p_run $CROSS_MAKE distclean
     p_run $CROSS_MAKE $config
@@ -39,5 +39,5 @@ pkg_build_target() {
 }
 
 pkg_mkimage_target() {
-    p_run $mkimage "${ja_srcdir}/misc/boot/${boot_scipt}" "${sdk_rootfsdir}/boot/boot.scr"
+    p_run $mkimage "${ja_srcdir}/misc/boot/${boot_scipt}" "${sdk_rootfs_dir}/boot/boot.scr"
 }

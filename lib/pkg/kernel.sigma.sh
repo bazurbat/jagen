@@ -2,7 +2,7 @@
 
 pworkdir="$ja_srcdir/sigma-kernel"
 
-protectordir="$ja_ezboot_dir/protector/"
+protectordir="$sdk_ezboot_dir/protector/"
 
 use_env tools target
 
