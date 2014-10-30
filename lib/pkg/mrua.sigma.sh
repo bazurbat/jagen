@@ -1,7 +1,7 @@
 #!/bin/sh
 
-psource="git git@bitbucket.org:art-system/sigma-mrua.git"
-psourcedir="$ja_srcdir/sigma-mrua"
+p_source="git git@bitbucket.org:art-system/sigma-mrua.git"
+p_source_dir="$ja_srcdir/sigma-mrua"
 
 use_env tools target
 
@@ -12,7 +12,7 @@ pkg_build() {
 }
 
 pkg_modules() {
-    p_run cd "$pworkdir/modules/$kernelrelease"
+    p_run cd "$p_work_dir/modules/$kernelrelease"
     p_install_modules em8xxx llad
 }
 
@@ -20,13 +20,13 @@ pkg_install() {
     p_run cd bin
     p_run cp -a ikc xkc "$sdk_firmware_dir/bin"
 
-    p_run cd "$pworkdir/MRUA_src/llad_smallapps"
+    p_run cd "$p_work_dir/MRUA_src/llad_smallapps"
     p_run cp -a gbus_read_bin_to_file gbus_read_uint32 "$sdk_firmware_dir/bin"
 
-    p_run cd "$pworkdir/MRUA_src/llad_xtest"
+    p_run cd "$p_work_dir/MRUA_src/llad_xtest"
     p_run cp -a rmfree rmmalloc "$sdk_firmware_dir/bin"
 
-    p_run cd "$pworkdir/lib"
+    p_run cd "$p_work_dir/lib"
     p_run cp -a \
         libgbus.so \
         libllad.so \
@@ -38,7 +38,7 @@ pkg_install() {
         librmmm_t.so \
         "$sdk_firmware_dir/lib"
 
-    p_run cd "$pworkdir/lib"
+    p_run cd "$p_work_dir/lib"
     p_run cp -a \
         librmcec.so \
         librmedid.so \

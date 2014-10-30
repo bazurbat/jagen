@@ -1,14 +1,14 @@
 #!/bin/sh
 
-psource="git git@bitbucket.org:art-system/sigma-rootfs.git"
-psourcedir="$ja_srcdir/sigma-rootfs"
-pworkdir="$sdk_rootfs_dir"
+p_source="git git@bitbucket.org:art-system/sigma-rootfs.git"
+p_source_dir="$ja_srcdir/sigma-rootfs"
+p_work_dir="$sdk_rootfs_dir"
 
 pkg_clean() {
     use_env tools
 
     p_run rm -rf "build_mipsel" "cross_rootfs"
-    [ -d dl ] || p_run cp -r "$pkg_distdir/dl" "$sdk_rootfs_dir"
+    [ -d dl ] || p_run cp -r "$p_dist_dir/dl" "$sdk_rootfs_dir"
     # p_run cd "package/target-shell/busybox"
     # p_run make clean
 }
@@ -223,5 +223,5 @@ pkg_install() {
 
     install_files || die "install_files failed"
 
-    p_strip "$sdk_rootfs_root" >>"$plog" 2>&1 || die "strip failed"
+    p_strip "$sdk_rootfs_root" >>"$p_log" 2>&1 || die "strip failed"
 }

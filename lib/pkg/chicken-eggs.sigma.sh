@@ -1,15 +1,15 @@
 #!/bin/sh
 
-psource="git git@github.com:bazurbat/chicken-eggs.git"
-psourcedir="$ja_srcdir/chicken-eggs"
-pbuilddir="$pworkdir${pconfig:+/$pconfig}"
+p_source="git git@github.com:bazurbat/chicken-eggs.git"
+p_source_dir="$ja_srcdir/chicken-eggs"
+p_build_dir="$p_work_dir${p_config:+/$p_config}"
 
 pkg_install_host() {
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$ja_buildtype" \
         -DCMAKE_C_FLAGS_RELEASE="" \
         -DCMAKE_PREFIX_PATH="$hostdir" \
-        "$psourcedir"
+        "$p_source_dir"
 
     p_run cmake --build . -- $cmake_build_options
 }
@@ -22,7 +22,7 @@ pkg_install_cross() {
         -DCMAKE_C_FLAGS_RELEASE="" \
         -DCMAKE_PREFIX_PATH="$toolsdir" \
         -DCHICKEN_SYSTEM="mipsel-linux" \
-        "$psourcedir"
+        "$p_source_dir"
 
     p_run cmake --build . -- $cmake_build_options
 }
@@ -37,7 +37,7 @@ pkg_install_target() {
         -DCMAKE_INSTALL_PREFIX="$targetprefix" \
         -DCMAKE_FIND_ROOT_PATH="${targetdir}${targetprefix}" \
         -DCHICKEN_HOST_SYSTEM="mipsel-linux" \
-        "$psourcedir"
+        "$p_source_dir"
 
     p_run cmake --build . -- $cmake_build_options
 }

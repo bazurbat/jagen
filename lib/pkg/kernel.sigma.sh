@@ -1,7 +1,7 @@
 #!/bin/sh
 
-psource="git git@bitbucket.org:art-system/sigma-kernel.git"
-psourcedir="$ja_srcdir/sigma-kernel"
+p_source="git git@bitbucket.org:art-system/sigma-kernel.git"
+p_source_dir="$ja_srcdir/sigma-kernel"
 
 protectordir="$sdk_ezboot_dir/protector/"
 
@@ -16,12 +16,12 @@ pkg_build() {
 
     p_run make
 
-    p_run cd "$pworkdir/proprietary"
+    p_run cd "$p_work_dir/proprietary"
     p_run make -C spinor clean
     p_run make -C spinor
     p_run make -C sd_block
 
-    p_run cd "$pworkdir/extra"
+    p_run cd "$p_work_dir/extra"
     p_run make clean
     p_run make all
 

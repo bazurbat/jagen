@@ -1,11 +1,11 @@
 #!/bin/sh
 
-psource="$pkg_distdir/sqlite-autoconf-3080403.tar.gz"
+p_source="$p_dist_dir/sqlite-autoconf-3080403.tar.gz"
 
 use_env target
 
 pkg_prepare() {
-    p_run patch -i "$pkg_distdir/patches/sqlite-3.8.1-autoconf-dlopen_check.patch"
+    p_run patch -i "$p_dist_dir/patches/sqlite-3.8.1-autoconf-dlopen_check.patch"
     p_run autoreconf -vif
     p_run sed -i 's/sqlite 3\.8\.4\.3/sqlite3.8.4.3/g' configure
 }

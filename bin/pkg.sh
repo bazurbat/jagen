@@ -10,35 +10,34 @@ fi
 include "$ja_libdir/env/cmake"
 include "$ja_libdir/env/sdk"
 
-pkg_builddir="$ja_builddir/pkg"
-pkg_distdir="$ja_libdir/dist/$ja_sdk"
+p_build_root="$ja_builddir/pkg"
 
-pname="$1"
-pstage="$2"
-pconfig="$3"
+p_name="$1"
+p_stage="$2"
+p_config="$3"
 
-plog="${ja_builddir}/${pname}-${pstage}${pconfig:+-${pconfig}}.log"
-pworkdir="$pkg_builddir/$pname"
+p_log="${ja_builddir}/${p_name}-${p_stage}${p_config:+-${p_config}}.log"
+p_work_dir="$p_build_root/$p_name"
 
-include "$ja_libdir/pkg/$pname" 
+include "$ja_libdir/pkg/$p_name" 
 
-if [ -z "$psourcedir" ]; then
-    p_source_name=$(basename "$psource" \
+if [ -z "$p_source_dir" ]; then
+    p_source_name=$(basename "$p_source" \
         | sed -r 's/\.t(ar\.)?(gz|bz2|xz)//')
-    psourcedir="$pworkdir/$p_source_name"
+    p_source_dir="$p_work_dir/$p_source_name"
 fi
 
-pbuilddir="${pbuilddir:-${psourcedir}}"
+p_build_dir="${p_build_dir:-${p_source_dir}}"
 
-rm -f "$plog"
-mkdir -p "$pbuilddir" && cd "$pbuilddir" || exit
+rm -f "$p_log"
+mkdir -p "$p_build_dir" && cd "$p_build_dir" || exit
 
-stage_function="pkg_${pstage}"
+p_stage_function="pkg_${p_stage}"
 
-if [ "$pconfig" ]; then
-    use_env "$pconfig"
-    stage_function="${stage_function}_${pconfig}"
+if [ "$p_config" ]; then
+    use_env "$p_config"
+    p_stage_function="${p_stage_function}_${p_config}"
 fi
 
-eval "$stage_function" || \
-    die "Failed to run '$pstage' stage of package $pname${pconfig:+ ($pconfig)}"
+eval "$p_stage_function" || \
+    die "Failed to run '$p_stage' stage of package $p_name${p_config:+ ($p_config)}"

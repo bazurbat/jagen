@@ -1,12 +1,12 @@
 #!/bin/sh
 
-psource="$pkg_distdir/ffmpeg-2.2.1.tar.bz2"
-pbuilddir="$pworkdir/build${pconfig:+-$pconfig}"
+p_source="$p_dist_dir/ffmpeg-2.2.1.tar.bz2"
+p_build_dir="$p_work_dir/build${p_config:+-$p_config}"
 
 pkg_build() {
     local prefix cross_options
 
-    if [ "$pconfig" = "host" ]; then
+    if [ "$p_config" = "host" ]; then
         prefix="$hostdir"
     else
         prefix="$targetprefix"
@@ -48,7 +48,7 @@ pkg_build() {
         options="--disable-optimizations"
     fi
 
-    p_run $psourcedir/configure --prefix="$prefix" \
+    p_run $p_source_dir/configure --prefix="$prefix" \
         --bindir="${prefix}/bin" \
         --enable-gpl --enable-nonfree \
         --disable-static --enable-shared --disable-runtime-cpudetect \

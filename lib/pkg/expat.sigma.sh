@@ -1,6 +1,6 @@
 #!/bin/sh
 
-psource="$pkg_distdir/expat-2.1.0.tar.gz"
+p_source="$p_dist_dir/expat-2.1.0.tar.gz"
 
 use_env target
 

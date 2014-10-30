@@ -1,7 +1,7 @@
 #!/bin/sh
 
-psource="git git@bitbucket.org:art-system/sigma-ezboot.git"
-psourcedir="$ja_srcdir/sigma-ezboot"
+p_source="git git@bitbucket.org:art-system/sigma-ezboot.git"
+p_source_dir="$ja_srcdir/sigma-ezboot"
 
 use_env tools target
 

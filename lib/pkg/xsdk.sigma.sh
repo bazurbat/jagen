@@ -1,3 +1,3 @@
 #!/bin/sh
 
-psource="$pkg_distdir/$cpukeys"
+p_source="$p_dist_dir/$cpukeys"

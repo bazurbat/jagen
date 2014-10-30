@@ -1,7 +1,7 @@
 #!/bin/sh
 
-psource="git git@bitbucket.org:art-system/u-boot.git"
-psourcedir="$ja_srcdir/$pname"
+p_source="git git@bitbucket.org:art-system/u-boot.git"
+p_source_dir="$ja_srcdir/$p_name"
 
 if [ "$target_board" = "ti_evm" ]; then
     config="ti8168_evm_config_sd"

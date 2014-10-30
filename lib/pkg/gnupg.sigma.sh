@@ -1,6 +1,6 @@
 #!/bin/sh
 
-psource="$pkg_distdir/gnupg-1.4.18.tar.bz2"
+p_source="$p_dist_dir/gnupg-1.4.18.tar.bz2"
 
 use_env target
 

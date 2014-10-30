@@ -1,7 +1,7 @@
 #!/bin/sh
 
-psource="git git@bitbucket.org:art-system/syslink.git"
-psourcedir="$ja_srcdir/$pname"
+p_source="git git@bitbucket.org:art-system/syslink.git"
+p_source_dir="$ja_srcdir/$p_name"
 
 rules="$EZSDK/Rules.make"
 
@@ -30,7 +30,7 @@ pkg_build() {
 }
 
 pkg_install() {
-    local src="$pworkdir/packages/ti/syslink"
+    local src="$p_work_dir/packages/ti/syslink"
     local dest="$sdk_rootfs_dir/lib/modules/$kernel_version/kernel/drivers/dsp"
 
     p_run install -v -d "$dest"

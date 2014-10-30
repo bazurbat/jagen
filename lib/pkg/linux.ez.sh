@@ -1,8 +1,8 @@
 #!/bin/sh
 
-psource="git git@bitbucket.org:art-system/linux.git"
+p_source="git git@bitbucket.org:art-system/linux.git"
 p_source_branch="ast200"
-psourcedir="$ja_srcdir/$pname"
+p_source_dir="$ja_srcdir/$p_name"
 
 if [ "$target_board" = "ti_evm" ]; then
     defconfig="ti8168_evm_defconfig"
@@ -22,9 +22,9 @@ pkg_install_target() {
     local dest="$sdk_rootfs_dir/boot"
 
     p_run install -d "$dest"
-    p_run install -m644 "${pworkdir}/arch/arm/boot/uImage" "$dest/$uimage"
-    p_run install -m644 "${pworkdir}/arch/arm/boot/uImage" "/tftproot/$uimage"
-    p_run install -m644 "${pworkdir}/System.map" "$dest"
+    p_run install -m644 "${p_work_dir}/arch/arm/boot/uImage" "$dest/$uimage"
+    p_run install -m644 "${p_work_dir}/arch/arm/boot/uImage" "/tftproot/$uimage"
+    p_run install -m644 "${p_work_dir}/System.map" "$dest"
 
     p_run $CROSS_MAKE INSTALL_MOD_PATH="${sdk_rootfs_dir}/" modules_install
 }
@@ -32,5 +32,5 @@ pkg_install_target() {
 pkg_depmod_target() {
     local depmod="/sbin/depmod"
 
-    p_run $depmod -ae -F "$pworkdir/System.map" -b "$sdk_rootfs_dir" "$kernel_version"
+    p_run $depmod -ae -F "$p_work_dir/System.map" -b "$sdk_rootfs_dir" "$kernel_version"
 }

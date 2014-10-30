@@ -1,4 +1,4 @@
 #!/bin/sh
 
-psource="hg ssh://hg@bitbucket.org/art-system/astindex"
-psourcedir="$ja_srcdir/karaoke-player/source/astindex"
+p_source="hg ssh://hg@bitbucket.org/art-system/astindex"
+p_source_dir="$ja_srcdir/karaoke-player/source/astindex"

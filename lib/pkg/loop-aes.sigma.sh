@@ -1,6 +1,6 @@
 #!/bin/sh
 
-psource="$pkg_distdir/loop-AES-v3.7a.tar.bz2"
+p_source="$p_dist_dir/loop-AES-v3.7a.tar.bz2"
 
 use_env target
 

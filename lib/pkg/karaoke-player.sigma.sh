@@ -1,15 +1,15 @@
 #!/bin/sh
 
-psource="hg ssh://hg@bitbucket.org/art-system/karaoke-player"
-psourcedir="$ja_srcdir/karaoke-player"
-pbuilddir="$pworkdir${pconfig:+/$pconfig}"
+p_source="hg ssh://hg@bitbucket.org/art-system/karaoke-player"
+p_source_dir="$ja_srcdir/karaoke-player"
+p_build_dir="$p_work_dir${p_config:+/$p_config}"
 
 pkg_build_host() {
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$ja_buildtype" \
         -DCMAKE_PREFIX_PATH="$hostdir" \
         -DCMAKE_INSTALL_PREFIX="$hostdir" \
-        "$psourcedir"
+        "$p_source_dir"
 
     p_run cmake --build . -- $cmake_build_options
 }
@@ -26,7 +26,7 @@ pkg_build_target() {
         -DCHICKEN_HOST_SYSTEM="mipsel-linux" \
         -DCHICKEN_BUILD_IMPORTS=NO \
         -DLIBUV_ROOT_DIR="$sdk_rootfs_prefix" \
-        "$psourcedir"
+        "$p_source_dir"
 
     p_run cmake --build . -- $cmake_build_options
 }

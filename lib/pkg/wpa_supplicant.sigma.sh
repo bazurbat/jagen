@@ -1,6 +1,6 @@
 #!/bin/sh
 
-psource="$pkg_distdir/wpa_supplicant-2.2.tar.gz"
+p_source="$p_dist_dir/wpa_supplicant-2.2.tar.gz"
 
 use_env target
 
@@ -9,9 +9,9 @@ pkg_prepare() {
 }
 
 pkg_build() {
-    local s="$pbuilddir/$pname"
+    local s="$p_build_dir/$p_name"
 
-    cd "$pname" || return $?
+    cd "$p_name" || return $?
 
     rm -f .config
 
@@ -41,7 +41,7 @@ pkg_build() {
 }
 
 pkg_install() {
-    local s="$pbuilddir/$pname"
+    local s="$p_build_dir/$p_name"
     local d="$sdk_rootfs_root"
 
     p_run install -vd "$d/bin" "$d/sbin" \

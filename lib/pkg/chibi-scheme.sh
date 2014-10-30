@@ -1,7 +1,7 @@
 #!/bin/sh
 
-psource="$pkg_distdir/chibi-scheme-0.7.tgz"
-pworkdir="$pworkdir${pconfig:+-$pconfig}"
+p_source="$p_dist_dir/chibi-scheme-0.7.tgz"
+p_work_dir="$p_work_dir${p_config:+-$p_config}"
 
 pkg_unpack_tools() {
     pkg_unpack "$@"

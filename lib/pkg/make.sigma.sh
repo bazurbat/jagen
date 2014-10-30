@@ -1,6 +1,6 @@
 #!/bin/sh
 
-psource="$pkg_distdir/make-3.80.tar.bz2"
+p_source="$p_dist_dir/make-3.80.tar.bz2"
 
 pkg_build_host() {
     use_env tools

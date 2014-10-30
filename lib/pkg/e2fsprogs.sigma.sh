@@ -1,6 +1,6 @@
 #!/bin/sh
 
-psource="$pkg_distdir/e2fsprogs-1.42.9.tar.gz"
+p_source="$p_dist_dir/e2fsprogs-1.42.9.tar.gz"
 
 use_env target
 

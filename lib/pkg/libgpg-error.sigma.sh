@@ -1,6 +1,6 @@
 #!/bin/sh
 
-psource="$pkg_distdir/libgpg-error-1.17.tar.bz2"
+p_source="$p_dist_dir/libgpg-error-1.17.tar.bz2"
 
 use_env target
 

@@ -2,14 +2,14 @@
 
 use_env target
 
-pworkdir="$sdk_firmware_dir"
-psourcedir="${targetdir}${targetprefix}"
+p_work_dir="$sdk_firmware_dir"
+p_source_dir="${targetdir}${targetprefix}"
 
 pkg_unpack() {
-    p_clean "$pworkdir"
-    p_clean "$psourcedir"
+    p_clean "$p_work_dir"
+    p_clean "$p_source_dir"
 
-    p_run cd "$pworkdir"
+    p_run cd "$p_work_dir"
 
     p_run install -d -m 755 bin dev etc home lib mnt proc run sbin sys usr var
     p_run install -d -m 700 root
@@ -57,7 +57,7 @@ copy_files() {
 }
 
 install_chibi() {
-    local src="$psourcedir"
+    local src="$p_source_dir"
     local dst="$sdk_firmware_dir"
 
     cd "$src" || return $?
@@ -75,10 +75,10 @@ pkg_install() {
     local bin="audioplayer bgaudio demo jabba midiplayer smplayer db-service \
         csi i2c_debug uart-shell ast-service pcf8563"
 
-    cd "$psourcedir/bin" || return $?
+    cd "$p_source_dir/bin" || return $?
     install -m 755 $bin "$sdk_firmware_dir/bin" || return $?
 
-    cd "$psourcedir/lib" || return $?
+    cd "$p_source_dir/lib" || return $?
     cp -a chicken "$sdk_firmware_dir/lib" || return $?
     cp -a *.so* "$sdk_firmware_dir/lib" || return $?
 
@@ -97,13 +97,13 @@ pkg_install() {
 }
 
 pkg_clean() {
-    cd "$pworkdir" || return $?
+    cd "$p_work_dir" || return $?
 
     find lib usr/lib -type f "(" \
         -name "*.a" -o \
         -name "*.la" \
         ")" -print -delete \
-        >"$plog" 2>&1
+        >"$p_log" 2>&1
 
     find lib/chicken -type f "(" \
         -name "*.o" -o \
@@ -111,7 +111,7 @@ pkg_clean() {
         -name "*.types" -o \
         -name "*.inline" -o \
         ")" -print -delete \
-        >>"$plog" 2>&1
+        >>"$p_log" 2>&1
 
     if [ "$ja_buildtype" = "Release" ]; then
         find lib/chicken -type f "(" \
@@ -119,8 +119,8 @@ pkg_clean() {
             -name "*.scm" -o \
             -name "types.db" -o \
             ")" -print -delete \
-            >>"$plog" 2>&1
+            >>"$p_log" 2>&1
 
-        p_strip "$pworkdir" >>"$plog" 2>&1
+        p_strip "$p_work_dir" >>"$p_log" 2>&1
     fi
 }

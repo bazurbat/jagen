@@ -1,9 +1,9 @@
 #!/bin/sh
 
-psource="git git@github.com:bazurbat/chicken-scheme.git"
+p_source="git git@github.com:bazurbat/chicken-scheme.git"
 p_source_branch="cmake"
-psourcedir="$ja_srcdir/chicken-scheme"
-pbuilddir="$pworkdir${pconfig:+/$pconfig}"
+p_source_dir="$ja_srcdir/chicken-scheme"
+p_build_dir="$p_work_dir${p_config:+/$p_config}"
 
 pkg_build_host() {
     p_run cmake -G"$cmake_generator" \
@@ -11,7 +11,7 @@ pkg_build_host() {
         -DCMAKE_INSTALL_PREFIX="$hostdir" \
         -DCMAKE_C_FLAGS_RELEASE="" \
         -DCHICKEN_API_VERSION=6 \
-        "$psourcedir"
+        "$p_source_dir"
 
     p_run cmake --build . -- $cmake_build_options
 }
@@ -28,7 +28,7 @@ pkg_build_cross() {
         -DCHICKEN_TARGET_SYSTEM="mipsel-linux" \
         -DCHICKEN_TARGET_ROOT_DIR="$targetdir" \
         -DCHICKEN_TARGET_RUN_PREFIX="$targetprefix" \
-        "$psourcedir"
+        "$p_source_dir"
 
     p_run cmake --build . -- $cmake_build_options
 }
@@ -45,7 +45,7 @@ pkg_build_target() {
         -DCMAKE_INSTALL_PREFIX="$targetprefix" \
         -DCHICKEN_HOST_SYSTEM="mipsel-linux" \
         -DCHICKEN_TARGET_FEATURES="-no-feature x86 -feature mips" \
-        "$psourcedir"
+        "$p_source_dir"
 
     p_run cmake --build . -- $cmake_build_options
 }

@@ -1,11 +1,11 @@
 #!/bin/sh
 
-psource="$pkg_distdir/oprofile-0.9.9.tar.gz"
+p_source="$p_dist_dir/oprofile-0.9.9.tar.gz"
 
 use_env target
 
 pkg_prepare() {
-    p_patch "${psource}-AT_BASE_PLATFORM"
+    p_patch "${p_source}-AT_BASE_PLATFORM"
 }
 
 pkg_build() {

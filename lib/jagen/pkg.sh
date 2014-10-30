@@ -6,7 +6,7 @@ p_is_function() {
 
 p_run() {
     debug "$*"
-    "$@" >>"$plog" 2>&1 || exit
+    "$@" >>"$p_log" 2>&1 || exit
 }
 
 p_clean() {
@@ -33,7 +33,7 @@ p_strip() {
 }
 
 p_patch() {
-    p_run patch -sp1 -i "$pkg_distdir/patches/${1}.patch"
+    p_run patch -sp1 -i "$p_dist_dir/patches/${1}.patch"
 }
 
 p_install_modules() {
@@ -62,7 +62,7 @@ p_fix_la() {
 }
 
 pkg_clean() {
-    p_run rm -rf "$pworkdir"/*
+    p_run rm -rf "$p_work_dir"/*
 }
 
 . "$ja_libdir/unpack.sh" || exit

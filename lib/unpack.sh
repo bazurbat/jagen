@@ -1,5 +1,7 @@
 #!/bin/sh
 
+p_dist_dir="$ja_libdir/dist/$ja_sdk"
+
 p_git_clone() {
     p_run git clone --progress "$1" "$2"
 }
@@ -38,16 +40,16 @@ p_scm_update() {
 }
 
 pkg_unpack() {
-    set -- $psource
+    set -- $p_source
     local kind="$1"
     local src="${2:-$1}"
 
     case $kind in
         git|hg)
-            p_scm_update "$kind" "$src" "$psourcedir" "$p_source_branch"
+            p_scm_update "$kind" "$src" "$p_source_dir" "$p_source_branch"
             ;;
         *)
-            p_run tar -C "$pworkdir" -xf "$src"
+            p_run tar -C "$p_work_dir" -xf "$src"
             ;;
     esac
 }
