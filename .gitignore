@@ -1,6 +1,6 @@
 /build*/
 /src/
-/lib/dist
+/dist
 
 /build.ninja
 /env.sh

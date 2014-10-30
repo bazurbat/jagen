@@ -13,7 +13,7 @@ export ja_basedir="$(realpath $(dirname $0))"
 
 cd "$ja_basedir"
 
-. lib/jagen/env.sh
+. lib/env.sh
 use_env tools
 
 case $1 in

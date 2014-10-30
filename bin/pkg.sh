@@ -4,8 +4,8 @@ if [ -z "$ja_basedir" ]; then
     export ja_basedir="$(realpath $(dirname $0)/..)"
 fi
 
-. "$ja_basedir/lib/jagen/env.sh" || exit
-. "$ja_basedir/lib/jagen/pkg.sh" || exit
+. "$ja_basedir/lib/env.sh" || exit
+. "$ja_basedir/lib/pkg.sh" || exit
 
 include "$ja_libdir/env/cmake"
 include "$ja_libdir/env/sdk"
