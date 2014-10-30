@@ -7,7 +7,8 @@ fi
 . "$ja_root/lib/env.sh" || exit
 . "$ja_root/lib/pkg.sh" || exit
 
-include "$ja_lib_dir/env/cmake"
+. "$ja_lib_dir/env/cmake.sh" || exit
+
 include "$ja_lib_dir/env/sdk"
 
 p_build_root="$ja_build_dir/pkg"
@@ -27,10 +28,17 @@ if [ -z "$p_source_dir" ]; then
     p_source_dir="$p_work_dir/$p_source_name"
 fi
 
-p_build_dir="${p_build_dir:-${p_source_dir}}"
+if [ -z "$p_build_dir" ]; then
+    p_build_dir="${p_work_dir}${p_config:+/$p_config}"
+fi
 
-rm -f "$p_log"
-mkdir -p "$p_build_dir" && cd "$p_build_dir" || exit
+rm -f "$p_log" || exit
+
+if [ ! -d "$p_build_dir" ]; then
+    p_run mkdir -p "$p_build_dir"
+fi
+
+p_run cd "$p_build_dir"
 
 p_stage_function="pkg_${p_stage}"
 

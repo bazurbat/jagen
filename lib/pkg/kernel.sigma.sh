@@ -16,12 +16,12 @@ pkg_build() {
 
     p_run make
 
-    p_run cd "$p_work_dir/proprietary"
+    p_run cd "$p_source_dir/proprietary"
     p_run make -C spinor clean
     p_run make -C spinor
     p_run make -C sd_block
 
-    p_run cd "$p_work_dir/extra"
+    p_run cd "$p_source_dir/extra"
     p_run make clean
     p_run make all
 

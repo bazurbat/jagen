@@ -2,7 +2,6 @@
 
 p_source="hg ssh://hg@bitbucket.org/art-system/karaoke-player"
 p_source_dir="$ja_src_dir/karaoke-player"
-p_build_dir="$p_work_dir${p_config:+/$p_config}"
 
 pkg_build_host() {
     p_run cmake -G"$cmake_generator" \
@@ -10,6 +9,10 @@ pkg_build_host() {
         -DCMAKE_PREFIX_PATH="$hostdir" \
         -DCMAKE_INSTALL_PREFIX="$hostdir" \
         "$p_source_dir"
+
+    if [ "$pkg_settings_newlibuv" ]; then
+        p_run cmake -DLIBUV_NEW=1 .
+    fi
 
     p_run cmake --build . -- $cmake_build_options
 }

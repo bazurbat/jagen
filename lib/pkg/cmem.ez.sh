@@ -1,6 +1,6 @@
 #!/bin/sh
 
-p_work_dir="$EZSDK/component-sources/linuxutils_3_22_00_02"
+p_source_dir="$EZSDK/component-sources/linuxutils_3_22_00_02"
 rules="$EZSDK/Rules.make"
 
 interface_dir="$p_work_dir/packages/ti/sdo/linuxutils/cmem/src/interface"

@@ -39,6 +39,40 @@ p_scm_update() {
     fi
 }
 
+p_scm_clean() {
+    local kind="$1" dir="$2"
+
+    [ -d "$dir" ] || return 0
+
+    p_run cd "$dir"
+
+    case $kind in
+        git)
+            p_run git clean -fxd
+            ;;
+        hg)
+            p_run hg purge --all
+            ;;
+    esac
+}
+
+pkg_clean() {
+    set -- $p_source
+    local kind="$1"
+
+    case $kind in
+        git|hg)
+            p_scm_clean "$kind" "$p_source_dir"
+            ;;
+        *)
+            if [ -d "$p_work_dir" ]; then
+                p_run rm -rf "$p_work_dir"
+                p_run mkdir -p "$p_work_dir"
+            fi
+            ;;
+    esac
+}
+
 pkg_unpack() {
     set -- $p_source
     local kind="$1"

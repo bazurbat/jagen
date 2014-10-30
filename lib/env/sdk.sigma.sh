@@ -8,7 +8,7 @@ export sdk_rootfs_dir="$ja_src_dir/sigma-rootfs"
 export sdk_rootfs_root="$sdk_rootfs_dir/build_mipsel/root"
 export sdk_rootfs_prefix="$sdk_rootfs_dir/cross_rootfs"
 
-export sdk_files_dir="$ja_src_dir/misc"
+export sdk_files_dir="$ja_src_dir/files"
 
 export sdk_firmware_dir="$ja_build_dir/firmware"
 

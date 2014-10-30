@@ -1,10 +1,11 @@
 #!/bin/sh
 
 p_source="$p_dist_dir/chibi-scheme-0.7.tgz"
-p_work_dir="$p_work_dir${p_config:+-$p_config}"
+p_work_dir="$p_work_dir${p_config:+/$p_config}"
+p_build_dir="$p_work_dir/chibi-scheme-0.7"
 
 pkg_unpack_tools() {
-    pkg_unpack "$@"
+    pkg_unpack
 }
 
 pkg_build_tools() {

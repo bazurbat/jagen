@@ -61,8 +61,4 @@ p_fix_la() {
     p_run p_run sed -ri "s|libdir='/lib'|libdir='$sdk_rootfs_prefix/lib'|" $1
 }
 
-pkg_clean() {
-    p_run rm -rf "$p_work_dir"/*
-}
-
 . "$ja_lib_dir/unpack.sh" || exit

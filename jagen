@@ -23,10 +23,11 @@ case $1 in
     refresh)
         if ! $(which chibi-scheme >/dev/null 2>&1); then
             for s in unpack build install; do
-                bin/pkg.sh chibi-scheme $s tools || exit
+                bin/pkg.sh chibi-scheme $s tools \
+                    || die "Failed to $s chibi-scheme"
             done
         fi
-        exec $ja_bin generate build.ninja "$ja_lib_dir/jagen/rules.scm"
+        exec $ja_bin generate build.ninja "$ja_lib_dir/rules.scm"
         ;;
     build)
         shift

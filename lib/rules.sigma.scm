@@ -1,3 +1,7 @@
+(pkg 'ast-files
+     '(clean)
+     '(unpack))
+
 ; host
 
 (pkg 'make
@@ -36,6 +40,7 @@
      '(install))
 
 (pkg 'ezboot
+     '(clean)
      '(unpack)
      '(build after
              (xsdk unpack)
@@ -55,6 +60,7 @@
 (pkg 'rootfs
      '(clean)
      '(unpack)
+     '(prepare)
      '(build after
              (make install host))
      '(install (kernel install)
@@ -205,15 +211,17 @@
 ;      '(install))
 
 (pkg 'linux
+     '(clean)
      '(unpack))
 
 (pkg 'kernel
+     '(clean)
      '(unpack)
      '(build (linux unpack)
              (rootfs build)
              after (xsdk unpack))
      '(install)
-     '(image))
+     '(image (ast-files unpack)))
 
 (pkg 'ralink
      '(unpack)
@@ -227,6 +235,7 @@
      '(install))
 
 (pkg 'mrua
+     '(clean)
      '(unpack)
      '(build (kernel build))
      '(modules)
@@ -262,10 +271,11 @@
 (pkg 'ffmpeg
      '(unpack)
      '(config host
-              (build)
+              (build (ast-files unpack))
               (install))
      '(config target
-              (build after (rootfs build))
+              (build (ast-files unpack)
+                     after (rootfs build))
               (install (firmware unpack))))
 
 (pkg 'soundtouch

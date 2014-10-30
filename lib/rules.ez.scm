@@ -3,6 +3,7 @@
      '(prepare))
 
 (pkg 'u-boot
+     '(clean)
      '(unpack)
      '(config min
               (build (rootfs prepare)))
@@ -11,6 +12,7 @@
               (mkimage)))
 
 (pkg 'linux
+     '(clean)
      '(unpack)
      '(config target
               (build)
@@ -25,6 +27,7 @@
               (install)))
 
 (pkg 'syslink
+     '(clean)
      '(unpack (rootfs prepare))
      '(build (linux install target))
      '(install))

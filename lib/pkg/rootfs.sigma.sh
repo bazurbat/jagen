@@ -2,15 +2,10 @@
 
 p_source="git git@bitbucket.org:art-system/sigma-rootfs.git"
 p_source_dir="$ja_src_dir/sigma-rootfs"
-p_work_dir="$sdk_rootfs_dir"
+p_build_dir="$p_source_dir"
 
-pkg_clean() {
-    use_env tools
-
-    p_run rm -rf "build_mipsel" "cross_rootfs"
+pkg_prepare() {
     [ -d dl ] || p_run cp -r "$p_dist_dir/dl" "$sdk_rootfs_dir"
-    # p_run cd "package/target-shell/busybox"
-    # p_run make clean
 }
 
 pkg_build() {
