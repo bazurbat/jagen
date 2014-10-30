@@ -1,8 +1,10 @@
 #!/bin/sh
 
+psource="git git@bitbucket.org:art-system/sigma-rootfs.git"
+psourcedir="$ja_srcdir/sigma-rootfs"
 pworkdir="$sdk_rootfs_dir"
 
-pkg_unpack() {
+pkg_clean() {
     use_env tools
 
     p_run rm -rf "build_mipsel" "cross_rootfs"

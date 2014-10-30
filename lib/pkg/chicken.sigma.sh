@@ -1,11 +1,9 @@
 #!/bin/sh
 
+psource="git git@github.com:bazurbat/chicken-scheme.git"
+p_source_branch="cmake"
 psourcedir="$ja_srcdir/chicken-scheme"
-pbuilddir="$pkg_builddir/$pname${pconfig:+-$pconfig}"
-
-pkg_unpack() {
-    :
-}
+pbuilddir="$pworkdir${pconfig:+/$pconfig}"
 
 pkg_build_host() {
     p_run cmake -G"$cmake_generator" \

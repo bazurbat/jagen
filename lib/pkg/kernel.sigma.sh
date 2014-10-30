@@ -1,16 +1,15 @@
 #!/bin/sh
 
-pworkdir="$ja_srcdir/sigma-kernel"
+psource="git git@bitbucket.org:art-system/sigma-kernel.git"
+psourcedir="$ja_srcdir/sigma-kernel"
 
 protectordir="$sdk_ezboot_dir/protector/"
 
 use_env tools target
 
-pkg_unpack() {
-    p_run ln -sfT "$ja_srcdir/linux" linux
-}
-
 pkg_build() {
+    p_run ln -sfT "$ja_srcdir/linux" linux
+
     p_run cp -f kernel-config linux/.config
 
     p_run cd linux

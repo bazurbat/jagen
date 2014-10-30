@@ -36,6 +36,7 @@
      '(install))
 
 (pkg 'ezboot
+     '(unpack)
      '(build after
              (xsdk unpack)
              (rootfs build))
@@ -52,6 +53,7 @@
 ; rootfs
 
 (pkg 'rootfs
+     '(clean)
      '(unpack)
      '(build after
              (make install host))
@@ -202,9 +204,13 @@
 ;              (rootfs build))
 ;      '(install))
 
+(pkg 'linux
+     '(unpack))
+
 (pkg 'kernel
      '(unpack)
-     '(build (rootfs build)
+     '(build (linux unpack)
+             (rootfs build)
              after (xsdk unpack))
      '(install)
      '(image))
@@ -221,11 +227,13 @@
      '(install))
 
 (pkg 'mrua
+     '(unpack)
      '(build (kernel build))
      '(modules)
      '(install (firmware unpack)))
 
 (pkg 'chicken
+     '(clean)
      '(unpack)
      '(config host
               (build)
@@ -238,6 +246,7 @@
               (install (firmware unpack))))
 
 (pkg 'chicken-eggs
+     '(clean)
      '(unpack)
      '(config host
               (install (chicken install host)))
@@ -265,14 +274,20 @@
      '(build after (rootfs build))
      '(install (firmware unpack)))
 
+(pkg 'astindex
+     '(unpack (karaoke-player unpack)))
+
 (pkg 'karaoke-player
+     '(clean)
      '(unpack)
      '(config host
-              (build (ffmpeg build host)
+              (build (astindex unpack)
+                     (ffmpeg build host)
                      (chicken-eggs install host))
               (install))
      '(config target
-              (build (mrua build)
+              (build (astindex unpack)
+                     (mrua build)
                      (ffmpeg install target)
                      (soundtouch install)
                      (chicken install target)

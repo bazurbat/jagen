@@ -1,11 +1,8 @@
 #!/bin/sh
 
+psource="hg ssh://hg@bitbucket.org/art-system/karaoke-player"
 psourcedir="$ja_srcdir/karaoke-player"
-pbuilddir="$pkg_builddir/${pname}${pconfig:+-$pconfig}"
-
-pkg_unpack() {
-    :
-}
+pbuilddir="$pworkdir${pconfig:+/$pconfig}"
 
 pkg_build_host() {
     p_run cmake -G"$cmake_generator" \

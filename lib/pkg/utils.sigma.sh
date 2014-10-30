@@ -1,8 +1,6 @@
 #!/bin/sh
 
-p_type="git"
-p_address="git@bitbucket.org:art-system/sigma-utils.git"
-
+psource="git git@bitbucket.org:art-system/sigma-utils.git"
 psourcedir="$ja_srcdir/sigma-utils"
 pbuilddir="$pworkdir${pconfig:+/$pconfig}"
 

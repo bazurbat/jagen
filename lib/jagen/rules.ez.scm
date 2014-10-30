@@ -3,6 +3,7 @@
      '(prepare))
 
 (pkg 'u-boot
+     '(unpack)
      '(config min
               (build (rootfs prepare)))
      '(config target
@@ -10,6 +11,7 @@
               (mkimage)))
 
 (pkg 'linux
+     '(unpack)
      '(config target
               (build)
               (install (rootfs prepare))

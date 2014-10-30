@@ -1,6 +1,8 @@
 #!/bin/sh
 
-pworkdir="$ja_srcdir/syslink"
+psource="git git@bitbucket.org:art-system/syslink.git"
+psourcedir="$ja_srcdir/$pname"
+
 rules="$EZSDK/Rules.make"
 
 platform=TI816X

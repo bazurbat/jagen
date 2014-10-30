@@ -1,13 +1,8 @@
 #!/bin/sh
 
+psource="git git@github.com:bazurbat/chicken-eggs.git"
 psourcedir="$ja_srcdir/chicken-eggs"
-pbuilddir="${pworkdir}/${pname}${pconfig:+-$pconfig}"
-
-use_env cmake
-
-pkg_unpack() {
-    :
-}
+pbuilddir="$pworkdir${pconfig:+/$pconfig}"
 
 pkg_install_host() {
     p_run cmake -G"$cmake_generator" \

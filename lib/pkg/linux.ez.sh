@@ -1,6 +1,8 @@
 #!/bin/sh
 
-pworkdir="$ja_srcdir/$pname"
+psource="git git@bitbucket.org:art-system/linux.git"
+p_source_branch="ast200"
+psourcedir="$ja_srcdir/$pname"
 
 if [ "$target_board" = "ti_evm" ]; then
     defconfig="ti8168_evm_defconfig"
