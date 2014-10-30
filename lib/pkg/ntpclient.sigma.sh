@@ -1,6 +1,6 @@
 #!/bin/sh
 
-psource="ntpclient-2010"
+psource="$pkg_distdir/ntpclient-2010.tar.gz"
 
 use_env target
 

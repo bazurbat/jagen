@@ -1,6 +1,6 @@
 #!/bin/sh
 
-psource="cryptsetup-1.6.2"
+psource="$pkg_distdir/cryptsetup-1.6.2.tar.bz2"
 
 use_env target
 

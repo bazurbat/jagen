@@ -1,6 +1,6 @@
 #!/bin/sh
 
-psource="rsync-3.1.1"
+psource="$pkg_distdir/rsync-3.1.1.tar.gz"
 
 use_env target
 

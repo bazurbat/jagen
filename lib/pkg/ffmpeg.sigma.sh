@@ -1,7 +1,6 @@
 #!/bin/sh
 
-psource="ffmpeg-2.2.1"
-# psource="ffmpeg-2.3.1"
+psource="$pkg_distdir/ffmpeg-2.2.1.tar.bz2"
 pbuilddir="$pworkdir/build${pconfig:+-$pconfig}"
 
 pkg_build() {

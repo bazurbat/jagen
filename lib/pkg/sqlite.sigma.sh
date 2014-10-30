@@ -1,6 +1,6 @@
 #!/bin/sh
 
-psource="sqlite-autoconf-3080403"
+psource="$pkg_distdir/sqlite-autoconf-3080403.tar.gz"
 
 use_env target
 

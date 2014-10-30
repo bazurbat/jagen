@@ -1,6 +1,6 @@
 #!/bin/sh
 
-psource="popt-1.16"
+psource="$pkg_distdir/popt-1.16.tar.gz"
 
 use_env target
 

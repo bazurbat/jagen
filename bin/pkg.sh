@@ -22,7 +22,12 @@ pworkdir="$pkg_builddir/$pname"
 
 include "$ja_libdir/pkg/$pname" 
 
-psourcedir="${psourcedir:-${pworkdir}${psource:+/${psource}}}"
+if [ -z "$psourcedir" ]; then
+    p_source_name=$(basename "$psource" \
+        | sed -r 's/\.t(ar\.)?(gz|bz2|xz)//')
+    psourcedir="$pworkdir/$p_source_name"
+fi
+
 pbuilddir="${pbuilddir:-${psourcedir}}"
 
 rm -f "$plog"

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-psource="libuv-v0.10.25"
+psource="$pkg_distdir/libuv-v0.10.25.tar.gz"
 
 use_env target
 

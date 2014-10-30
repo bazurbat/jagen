@@ -1,6 +1,6 @@
 #!/bin/sh
 
-psource="freetype-2.5.0.1"
+psource="$pkg_distdir/freetype-2.5.0.1.tar.bz2"
 
 use_env target
 

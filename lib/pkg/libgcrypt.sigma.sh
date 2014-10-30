@@ -1,6 +1,6 @@
 #!/bin/sh
 
-psource="libgcrypt-1.5.3"
+psource="$pkg_distdir/libgcrypt-1.5.3.tar.bz2"
 
 use_env target
 

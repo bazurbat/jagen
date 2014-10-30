@@ -1,6 +1,6 @@
 #!/bin/sh
 
-psource="dbus-1.6.18"
+psource="$pkg_distdir/dbus-1.6.18.tar.gz"
 
 use_env target
 

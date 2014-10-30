@@ -1,6 +1,6 @@
 #!/bin/sh
 
-psource="gdb-7.6.2"
+psource="$pkg_distdir/gdb-7.6.2.tar.bz2"
 
 use_env target
 

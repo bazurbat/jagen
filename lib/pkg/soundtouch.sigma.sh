@@ -1,6 +1,6 @@
 #!/bin/sh
 
-psource="soundtouch-1.8.0"
+psource="$pkg_distdir/soundtouch-1.8.0.tar.gz"
 psourcedir="$pworkdir/soundtouch"
 
 use_env target

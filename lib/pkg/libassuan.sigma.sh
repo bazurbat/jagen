@@ -1,6 +1,6 @@
 #!/bin/sh
 
-psource="libassuan-2.1.2"
+psource="$pkg_distdir/libassuan-2.1.2.tar.bz2"
 
 use_env target
 
