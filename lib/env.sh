@@ -1,10 +1,10 @@
 #!/bin/sh
 
-export ja_bindir="$ja_basedir/bin"
-export ja_libdir="$ja_basedir/lib"
-export ja_srcdir="$ja_basedir/src"
+export ja_bindir="$ja_root/bin"
+export ja_libdir="$ja_root/lib"
+export ja_srcdir="$ja_root/src"
 
-export ja_builddir="$ja_basedir/build"
+export ja_builddir="$ja_root/build"
 export ja_buildtype="Release"
 
 export ja_bin="chibi-scheme -r $ja_libdir/jagen/jagen.scm"
@@ -38,8 +38,8 @@ use_env() {
     done
 }
 
-if [ -z "$ja_basedir" ]; then
+if [ -z "$ja_root" ]; then
     die "base directory is not set"
 fi
 
-include "$ja_basedir/env"
+include "$ja_root/env"

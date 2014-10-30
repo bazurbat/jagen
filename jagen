@@ -9,9 +9,9 @@ Commands:
   refresh	regenerate build system"
 }
 
-export ja_basedir="$(realpath $(dirname $0))"
+export ja_root="$(realpath $(dirname $0))"
 
-cd "$ja_basedir"
+cd "$ja_root"
 
 . lib/env.sh
 use_env tools

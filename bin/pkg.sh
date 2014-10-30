@@ -1,11 +1,11 @@
 #!/bin/sh
 
-if [ -z "$ja_basedir" ]; then
-    export ja_basedir="$(realpath $(dirname $0)/..)"
+if [ -z "$ja_root" ]; then
+    export ja_root="$(realpath $(dirname $0)/..)"
 fi
 
-. "$ja_basedir/lib/env.sh" || exit
-. "$ja_basedir/lib/pkg.sh" || exit
+. "$ja_root/lib/env.sh" || exit
+. "$ja_root/lib/pkg.sh" || exit
 
 include "$ja_libdir/env/cmake"
 include "$ja_libdir/env/sdk"
