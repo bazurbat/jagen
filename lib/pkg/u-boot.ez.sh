@@ -1,7 +1,7 @@
 #!/bin/sh
 
 p_source="git git@bitbucket.org:art-system/u-boot.git"
-p_source_dir="$ja_srcdir/$p_name"
+p_source_dir="$ja_src_dir/$p_name"
 
 if [ "$target_board" = "ti_evm" ]; then
     config="ti8168_evm_config_sd"
@@ -40,5 +40,5 @@ pkg_build_target() {
 }
 
 pkg_mkimage_target() {
-    p_run $mkimage "${ja_srcdir}/misc/boot/${boot_scipt}" "${sdk_rootfs_dir}/boot/boot.scr"
+    p_run $mkimage "${ja_src_dir}/misc/boot/${boot_scipt}" "${sdk_rootfs_dir}/boot/boot.scr"
 }

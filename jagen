@@ -26,7 +26,7 @@ case $1 in
                 bin/pkg.sh chibi-scheme $s tools || exit
             done
         fi
-        exec $ja_bin generate build.ninja "$ja_libdir/jagen/rules.scm"
+        exec $ja_bin generate build.ninja "$ja_lib_dir/jagen/rules.scm"
         ;;
     build)
         shift

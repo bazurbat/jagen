@@ -2,4 +2,4 @@
 
 psource="git git@bitbucket.org:art-system/linux.git"
 p_source_branch="ast50"
-psourcedir="$ja_srcdir/$pname"
+psourcedir="$ja_src_dir/$pname"

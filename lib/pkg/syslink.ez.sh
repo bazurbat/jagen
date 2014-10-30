@@ -1,7 +1,7 @@
 #!/bin/sh
 
 p_source="git git@bitbucket.org:art-system/syslink.git"
-p_source_dir="$ja_srcdir/$p_name"
+p_source_dir="$ja_src_dir/$p_name"
 
 rules="$EZSDK/Rules.make"
 
@@ -14,7 +14,7 @@ MAKE="make DEVICE=$platform \
     IPC_INSTALL_DIR=$EZSDK/component-sources/ipc_1_24_03_32 \
     BIOS_INSTALL_DIR=$EZSDK/component-sources/bios_6_33_05_46 \
     XDC_INSTALL_DIR=$EZSDK/component-sources/xdctools_3_23_03_53 \
-    LINUXKERNEL=$ja_srcdir/linux \
+    LINUXKERNEL=$ja_src_dir/linux \
     CGT_ARM_INSTALL_DIR=/opt/local/arm-2009q1/ \
     CGT_ARM_PREFIX=/opt/local/arm-2009q1/bin/arm-none-linux-gnueabi- \
     CGT_C674_ELF_INSTALL_DIR=$EZSDK/dsp-devkit/cgt6x_7_3_4 \

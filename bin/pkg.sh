@@ -7,19 +7,19 @@ fi
 . "$ja_root/lib/env.sh" || exit
 . "$ja_root/lib/pkg.sh" || exit
 
-include "$ja_libdir/env/cmake"
-include "$ja_libdir/env/sdk"
+include "$ja_lib_dir/env/cmake"
+include "$ja_lib_dir/env/sdk"
 
-p_build_root="$ja_builddir/pkg"
+p_build_root="$ja_build_dir/pkg"
 
 p_name="$1"
 p_stage="$2"
 p_config="$3"
 
-p_log="${ja_builddir}/${p_name}-${p_stage}${p_config:+-${p_config}}.log"
+p_log="${ja_build_dir}/${p_name}-${p_stage}${p_config:+-${p_config}}.log"
 p_work_dir="$p_build_root/$p_name"
 
-include "$ja_libdir/pkg/$p_name" 
+include "$ja_lib_dir/pkg/$p_name" 
 
 if [ -z "$p_source_dir" ]; then
     p_source_name=$(basename "$p_source" \

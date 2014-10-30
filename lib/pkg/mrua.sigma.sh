@@ -1,7 +1,7 @@
 #!/bin/sh
 
 p_source="git git@bitbucket.org:art-system/sigma-mrua.git"
-p_source_dir="$ja_srcdir/sigma-mrua"
+p_source_dir="$ja_src_dir/sigma-mrua"
 
 use_env tools target
 

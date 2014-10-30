@@ -113,7 +113,7 @@ pkg_clean() {
         ")" -print -delete \
         >>"$p_log" 2>&1
 
-    if [ "$ja_buildtype" = "Release" ]; then
+    if [ "$ja_build_type" = "Release" ]; then
         find lib/chicken -type f "(" \
             -name "*.import.so" -o \
             -name "*.scm" -o \

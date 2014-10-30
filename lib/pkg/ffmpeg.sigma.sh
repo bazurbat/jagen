@@ -41,9 +41,9 @@ pkg_build() {
         filters="$filters --enable-filter=$i"
     done
 
-    if [ "$ja_buildtype" = "Release" ]; then
+    if [ "$ja_build_type" = "Release" ]; then
         options="--disable-debug"
-    elif [ "$ja_buildtype" = "Debug" ]; then
+    elif [ "$ja_build_type" = "Debug" ]; then
         export CFLAGS=""
         options="--disable-optimizations"
     fi

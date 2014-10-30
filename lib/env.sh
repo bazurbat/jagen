@@ -1,13 +1,13 @@
 #!/bin/sh
 
-export ja_bindir="$ja_root/bin"
-export ja_libdir="$ja_root/lib"
-export ja_srcdir="$ja_root/src"
+export ja_bin_dir="$ja_root/bin"
+export ja_lib_dir="$ja_root/lib"
+export ja_src_dir="$ja_root/src"
 
-export ja_builddir="$ja_root/build"
-export ja_buildtype="Release"
+export ja_build_dir="$ja_root/build"
+export ja_build_type="Release"
 
-export ja_bin="chibi-scheme -r $ja_libdir/jagen/jagen.scm"
+export ja_bin="chibi-scheme -r $ja_lib_dir/jagen/jagen.scm"
 
 debug() { [ "$ja_debug" ] && printf "\033[1;36m:::\033[0m %s\n" "$*"; }
 
@@ -34,7 +34,7 @@ include() {
 use_env() {
     local e
     for e in "$@"; do
-        include "$ja_libdir/env/$e"
+        include "$ja_lib_dir/env/$e"
     done
 }
 

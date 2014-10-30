@@ -65,4 +65,4 @@ pkg_clean() {
     p_run rm -rf "$p_work_dir"/*
 }
 
-. "$ja_libdir/unpack.sh" || exit
+. "$ja_lib_dir/unpack.sh" || exit

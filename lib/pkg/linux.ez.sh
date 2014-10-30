@@ -2,7 +2,7 @@
 
 p_source="git git@bitbucket.org:art-system/linux.git"
 p_source_branch="ast200"
-p_source_dir="$ja_srcdir/$p_name"
+p_source_dir="$ja_src_dir/$p_name"
 
 if [ "$target_board" = "ti_evm" ]; then
     defconfig="ti8168_evm_defconfig"

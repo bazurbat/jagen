@@ -1,14 +1,14 @@
 #!/bin/sh
 
 p_source="git git@bitbucket.org:art-system/sigma-utils.git"
-p_source_dir="$ja_srcdir/sigma-utils"
+p_source_dir="$ja_src_dir/sigma-utils"
 p_build_dir="$p_work_dir${p_config:+/$p_config}"
 
 pkg_build_host() {
     use_env tools
 
     p_run cmake -G"$cmake_generator" \
-        -DCMAKE_BUILD_TYPE="$ja_buildtype" \
+        -DCMAKE_BUILD_TYPE="$ja_build_type" \
         -DCMAKE_INSTALL_PREFIX="$toolsdir" \
         -DUSE_LOOPAES=0 \
         ${losetup:+"-DLOSETUP=$losetup"} \
@@ -19,7 +19,7 @@ pkg_build_host() {
 
 pkg_build_target() {
     p_run cmake -G"$cmake_generator" \
-        -DCMAKE_BUILD_TYPE="$ja_buildtype" \
+        -DCMAKE_BUILD_TYPE="$ja_build_type" \
         -DCMAKE_INSTALL_PREFIX="$sdk_rootfs_root" \
         -DUSE_LOOPAES=1 \
         "$p_source_dir"

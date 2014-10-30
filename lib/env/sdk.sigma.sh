@@ -1,16 +1,16 @@
 #!/bin/sh
 
-export sdk_ezboot_dir="$ja_srcdir/sigma-ezboot"
-export sdk_kernel_dir="$ja_srcdir/sigma-kernel"
-export sdk_mrua_dir="$ja_srcdir/sigma-mrua"
+export sdk_ezboot_dir="$ja_src_dir/sigma-ezboot"
+export sdk_kernel_dir="$ja_src_dir/sigma-kernel"
+export sdk_mrua_dir="$ja_src_dir/sigma-mrua"
 
-export sdk_rootfs_dir="$ja_srcdir/sigma-rootfs"
+export sdk_rootfs_dir="$ja_src_dir/sigma-rootfs"
 export sdk_rootfs_root="$sdk_rootfs_dir/build_mipsel/root"
 export sdk_rootfs_prefix="$sdk_rootfs_dir/cross_rootfs"
 
-export sdk_files_dir="$ja_srcdir/misc"
+export sdk_files_dir="$ja_src_dir/misc"
 
-export sdk_firmware_dir="$ja_builddir/firmware"
+export sdk_firmware_dir="$ja_build_dir/firmware"
 
 export rootfs_add_e2fs_tools="yes"
 
@@ -38,7 +38,7 @@ export RMCFLAGS="\
 -DXBOOT2_SMP8670=1 \
 "
 
-if [ "$ja_buildtype" = "Debug" ]; then
+if [ "$ja_build_type" = "Debug" ]; then
     COMPILKIND="debug glibc codesourcery hardfloat"
 else
     COMPILKIND="release glibc codesourcery hardfloat"
@@ -91,7 +91,7 @@ case $sdkver in
 esac
 export cpukeys kernelversion kernelrelease
 
-export ja_xsdk_dir="$ja_builddir/pkg/xsdk/$cpukeys"
+export ja_xsdk_dir="$ja_build_dir/pkg/xsdk/$cpukeys"
 
 # XSDK
 export XSDK_ROOT="$ja_xsdk_dir/signed_items"
@@ -103,7 +103,7 @@ if [ -d "$ja_xsdk_dir/xbin" ]; then
     PATH="$ja_xsdk_dir/xbin:$PATH"
 fi
 
-export kerneldir="$ja_srcdir/sigma-kernel"
+export kerneldir="$ja_src_dir/sigma-kernel"
 export kernelmodulesdir="$sdk_rootfs_root/lib/modules/$kernelrelease"
 export kernelextramodulesdir="$kernelmodulesdir/extra"
 
