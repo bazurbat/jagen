@@ -11,7 +11,7 @@
               (build)
               (install)))
 
-#;(pkg 'gdb
+(pkg 'gdb
      '(clean)
      '(unpack)
      '(prepare)
