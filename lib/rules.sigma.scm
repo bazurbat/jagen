@@ -1,3 +1,11 @@
+
+(define (define-rootfs-package name . deps)
+  (pkg name
+       `((clean)
+         (unpack)
+         (build (rootfs build) ,@deps)
+         (install))))
+
 (pkg 'ast-files
      '((clean)
        (unpack)))
