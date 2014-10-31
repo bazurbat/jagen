@@ -5,12 +5,14 @@
 ; host
 
 (pkg 'make
+     '(clean)
      '(unpack)
      '(config host
               (build)
               (install)))
 
-(pkg 'gdb
+#;(pkg 'gdb
+     '(clean)
      '(unpack)
      '(prepare)
      '(config host
@@ -33,9 +35,11 @@
 ; boot
 
 (pkg 'xsdk
+     '(clean)
      '(unpack))
 
 (pkg 'ucode
+     '(clean)
      '(unpack)
      '(install))
 
@@ -48,6 +52,7 @@
      '(install))
 
 (pkg 'yamon
+     '(clean)
      '(unpack)
      '(prepare)
      '(build after
@@ -82,43 +87,51 @@
                (wpa_supplicant install)))
 
 (pkg 'util-linux
+     '(clean)
      '(unpack)
      '(prepare)
      '(build (rootfs build))
      '(install))
 
 (pkg 'e2fsprogs
+     '(clean)
      '(unpack)
      '(prepare)
      '(build (util-linux install))
      '(install))
 
 (pkg 'libgpg-error
+     '(clean)
      '(unpack)
      '(build (rootfs build))
      '(install))
 
 (pkg 'libassuan
+     '(clean)
      '(unpack)
      '(build (libgpg-error install))
      '(install))
 
 (pkg 'gpgme
+     '(clean)
      '(unpack)
      '(build (libassuan install))
      '(install))
 
 (pkg 'gnupg
+     '(clean)
      '(unpack)
      '(build (rootfs build))
      '(install))
 
 (pkg 'expat
+     '(clean)
      '(unpack)
      '(build (rootfs build))
      '(install))
 
 (pkg 'wpa_supplicant
+     '(clean)
      '(unpack)
      '(prepare)
      '(build (rootfs build)
@@ -126,22 +139,26 @@
      '(install))
 
 ; (pkg 'popt
+;      '(clean)
 ;      '(unpack)
 ;      '(build (rootfs build))
 ;      '(install))
 ;
 ; (pkg 'device-mapper
+;      '(clean)
 ;      '(unpack)
 ;      '(build (libgpg-error install))
 ;      '(install))
 ;
 ; (pkg 'libgcrypt
+;      '(clean)
 ;      '(unpack)
 ;      '(prepare)
 ;      '(build (rootfs build))
 ;      '(install))
 ;
 ; (pkg 'cryptsetup
+;      '(clean)
 ;      '(unpack)
 ;      '(prepare)
 ;      '(build (e2fsprogs install)
@@ -151,50 +168,59 @@
 ;      '(install))
 
 (pkg 'dbus
+     '(clean)
      '(unpack)
      '(build (expat install))
      '(install))
 
 (pkg 'rsync
+     '(clean)
      '(unpack)
      '(build (rootfs build))
      '(install))
 
 (pkg 'ntpclient
+     '(clean)
      '(unpack)
      '(build (rootfs build))
      '(install))
 
 (pkg 'libuv
+     '(clean)
      '(unpack)
      '(prepare)
      '(build (rootfs build))
      '(install))
 
 (pkg 'gdbserver
+     '(clean)
      '(unpack)
      '(build (rootfs build))
      '(install))
 
 ; (pkg 'oprofile
+;      '(clean)
 ;      '(unpack)
 ;      '(prepare)
 ;      '(build (popt install))
 ;      '(install))
 
 (pkg 'freetype
+     '(clean)
      '(unpack)
      '(prepare)
      '(build (rootfs build))
      '(install))
 
 (pkg 'sqlite
+     '(clean)
      '(unpack)
      '(prepare)
      '(build (rootfs build))
      '(install))
 
 (pkg 'strace
+     '(clean)
      '(unpack)
      '(build (rootfs build))
      '(install))
@@ -224,12 +250,14 @@
      '(image (ast-files unpack)))
 
 (pkg 'ralink
+     '(clean)
      '(unpack)
      '(prepare)
      '(build (kernel build))
      '(install))
 
 (pkg 'loop-aes
+     '(clean)
      '(unpack)
      '(build (kernel build))
      '(install))
@@ -269,6 +297,7 @@
                        (dbus install))))
 
 (pkg 'ffmpeg
+     '(clean)
      '(unpack)
      '(config host
               (build (ast-files unpack))
@@ -279,12 +308,14 @@
               (install (firmware unpack))))
 
 (pkg 'soundtouch
+     '(clean)
      '(unpack)
      '(prepare)
      '(build after (rootfs build))
      '(install (firmware unpack)))
 
 (pkg 'astindex
+     '(clean)
      '(unpack (karaoke-player unpack)))
 
 (pkg 'karaoke-player
@@ -296,6 +327,7 @@
                      (chicken-eggs install host))
               (install))
      '(config target
+              (prepare)
               (build (astindex unpack)
                      (mrua build)
                      (ffmpeg install target)

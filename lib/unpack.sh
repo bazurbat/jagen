@@ -64,13 +64,10 @@ pkg_clean() {
         git|hg)
             p_scm_clean "$kind" "$p_source_dir"
             ;;
-        *)
-            if [ -d "$p_work_dir" ]; then
-                p_run rm -rf "$p_work_dir"
-                p_run mkdir -p "$p_work_dir"
-            fi
-            ;;
     esac
+
+    [ -d "$p_work_dir" ] && p_run rm -rf "$p_work_dir"
+    [ -d "$p_work_dir" ] || p_run mkdir -p "$p_work_dir"
 }
 
 pkg_unpack() {

@@ -2,6 +2,7 @@
 
 p_source="hg ssh://hg@bitbucket.org/art-system/karaoke-player"
 p_source_dir="$ja_src_dir/karaoke-player"
+p_build_dir="$p_work_dir/build${p_config:+-$p_config}"
 
 pkg_build_host() {
     p_run cmake -G"$cmake_generator" \
@@ -15,6 +16,12 @@ pkg_build_host() {
     fi
 
     p_run cmake --build . -- $cmake_build_options
+}
+
+pkg_prepare_target() {
+    p_run cd "$ja_src_dir"
+    p_run ln -sfT sigma-rootfs rootfs
+    p_run ln -sfT sigma-mrua mrua
 }
 
 pkg_build_target() {

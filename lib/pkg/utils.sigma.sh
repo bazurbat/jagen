@@ -2,6 +2,7 @@
 
 p_source="git git@bitbucket.org:art-system/sigma-utils.git"
 p_source_dir="$ja_src_dir/sigma-utils"
+p_build_dir="$p_work_dir/build${p_config:+-$p_config}"
 
 pkg_build_host() {
     use_env tools

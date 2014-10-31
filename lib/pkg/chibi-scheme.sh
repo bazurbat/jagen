@@ -1,19 +1,15 @@
 #!/bin/sh
 
 p_source="$p_dist_dir/chibi-scheme-0.7.tgz"
-p_work_dir="$p_work_dir${p_config:+/$p_config}"
-p_build_dir="$p_work_dir/chibi-scheme-0.7"
-
-pkg_unpack_tools() {
-    pkg_unpack
-}
+p_work_dir="$p_work_dir/build${p_config:+-$p_config}"
 
 pkg_build_tools() {
     p_run make PREFIX="${toolsdir}${toolsprefix}"
 }
 
 pkg_install_tools() {
-    p_run make install PREFIX="${toolsdir}${toolsprefix}"
+    p_run make PREFIX="${toolsdir}${toolsprefix}" \
+        install
 }
 
 pkg_build_target() {
@@ -25,6 +21,7 @@ pkg_build_target() {
 }
 
 pkg_install_target() {
+    use_env tools
     p_run make \
         PREFIX="$targetprefix" \
         CHIBI="$toolsdir/bin/chibi-scheme" \

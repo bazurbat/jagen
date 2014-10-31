@@ -3,6 +3,7 @@
 p_source="git git@github.com:bazurbat/chicken-scheme.git"
 p_source_dir="$ja_src_dir/chicken-scheme"
 p_source_branch="cmake"
+p_build_dir="$p_work_dir/build${p_config:+-$p_config}"
 
 pkg_build_host() {
     p_run cmake -G"$cmake_generator" \

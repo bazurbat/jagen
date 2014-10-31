@@ -7,7 +7,7 @@ use_env target
 workdir="gdb/gdbserver"
 
 pkg_build() {
-    cd "$workdir" || return $?
+    p_run cd "$workdir"
     p_run ./configure \
         --host="mipsel-linux" \
         --prefix=""
@@ -16,6 +16,6 @@ pkg_build() {
 }
 
 pkg_install() {
-    cd "$workdir" || return $?
+    p_run cd "$workdir"
     p_run make DESTDIR="$sdk_rootfs_prefix" install
 }
