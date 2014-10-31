@@ -46,18 +46,14 @@
 (pkg 'ezboot
      '((clean)
        (unpack)
-       (build after
-              (xsdk unpack)
-              (rootfs build))
+       (build after (rootfs build))
        (install)))
 
 (pkg 'yamon
      '((clean)
        (unpack)
        (prepare)
-       (build after
-              (xsdk unpack)
-              (rootfs build))
+       (build after (rootfs build))
        (install)))
 
 ; rootfs
@@ -67,6 +63,7 @@
        (unpack)
        (prepare)
        (build after
+              (xsdk unpack)
               (make install host))
        (install (kernel install)
                 (loop-aes install)
@@ -244,8 +241,7 @@
      '((clean)
        (unpack)
        (build (linux unpack)
-              (rootfs build)
-              after (xsdk unpack))
+              (rootfs build))
        (install)
        (image (ast-files unpack))))
 
