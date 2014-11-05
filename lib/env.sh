@@ -4,6 +4,8 @@ export ja_bin_dir="$ja_root/bin"
 export ja_lib_dir="$ja_root/lib"
 export ja_src_dir="$ja_root/src"
 
+export ja_files_dir="$ja_src_dir/files"
+
 export ja_build_dir="$ja_root/build"
 export ja_build_type="Release"
 

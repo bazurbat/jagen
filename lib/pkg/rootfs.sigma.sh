@@ -87,7 +87,7 @@ remove_libcurl() {
 
 install_keys() {
     mkdir -p "$sdk_rootfs_root/lib/firmware" || return $?
-    cp -a "$sdk_files_dir/keys/keyfile.gpg" "$sdk_rootfs_root/lib/firmware"
+    cp -a "$ja_files_dir/keys/keyfile.gpg" "$sdk_rootfs_root/lib/firmware"
 }
 
 install_gpg() {
@@ -185,7 +185,7 @@ clean_misc() {
 }
 
 install_files() {
-    cp -rf "$sdk_files_dir"/rootfs/* "$sdk_rootfs_root"
+    cp -rf "$ja_files_dir"/rootfs/* "$sdk_rootfs_root"
 }
 
 pkg_install() {

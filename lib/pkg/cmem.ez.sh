@@ -1,10 +1,12 @@
 #!/bin/sh
 
-p_source_dir="$EZSDK/component-sources/linuxutils_3_22_00_02"
+p_work_dir="$EZSDK/component-sources/linuxutils_3_22_00_02"
 rules="$EZSDK/Rules.make"
 
-interface_dir="$p_work_dir/packages/ti/sdo/linuxutils/cmem/src/interface"
-module_dir="$p_work_dir/packages/ti/sdo/linuxutils/cmem/src/module"
+src_dir="$p_work_dir/packages/ti/sdo/linuxutils/cmem/src"
+interface_dir="$src_dir/interface"
+module_dir="$src_dir/module"
+
 MAKE="make RULES_MAKE=$rules"
 
 pkg_unpack_target() {
@@ -18,8 +20,8 @@ pkg_build_target() {
 }
 
 pkg_install_target() {
-    local dest="$sdk_rootfs_dir/lib/modules/$kernel_version/kernel/drivers/dsp"
+    local dest="$kernel_modules_dir/kernel/drivers/dsp"
 
-    p_run install -d "$dest"
-    p_run install -m644 "$module_dir/cmemk.ko" "$dest"
+    p_run install -v -d "$dest"
+    p_run install -v -m644 "$module_dir/cmemk.ko" "$dest"
 }

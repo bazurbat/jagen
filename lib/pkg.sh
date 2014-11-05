@@ -37,16 +37,16 @@ p_patch() {
 }
 
 p_install_modules() {
-    mkdir -p "$kernelextramodulesdir"
-    touch "$kernelmodulesdir/modules.order"
-    touch "$kernelmodulesdir/modules.builtin"
+    mkdir -p "$kernel_extra_modules_dir"
+    touch "$kernel_modules_dir/modules.order"
+    touch "$kernel_modules_dir/modules.builtin"
     for m in "$@"; do
         local f="$PWD/${m}.ko"
-        cp "$f" "$kernelextramodulesdir"
+        cp "$f" "$kernel_extra_modules_dir"
     done &&
         (
-    cd $kerneldir/linux && \
-        /sbin/depmod -ae -F System.map -b $INSTALL_MOD_PATH $kernelrelease
+    cd $kernel_dir/linux && \
+        /sbin/depmod -ae -F System.map -b $INSTALL_MOD_PATH $kernel_release
     )
 }
 
@@ -54,7 +54,7 @@ p_depmod() {
     p_run /sbin/depmod -ae \
         -F "$LINUX_KERNEL/System.map" \
         -b "$INSTALL_MOD_PATH" \
-        "$kernelrelease"
+        "$kernel_release"
 }
 
 p_fix_la() {

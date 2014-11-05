@@ -1,7 +1,5 @@
 #!/bin/sh
 
-export target_board="ast200"
-
 export target_dir="$sdk_rootfs_dir"
 export target_prefix="/usr"
 

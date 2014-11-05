@@ -1,5 +1,7 @@
 #!/bin/sh
 
+export sdk_target_board="ast50"
+
 export sdk_ezboot_dir="$ja_src_dir/sigma-ezboot"
 export sdk_kernel_dir="$ja_src_dir/sigma-kernel"
 export sdk_mrua_dir="$ja_src_dir/sigma-mrua"
@@ -7,8 +9,6 @@ export sdk_mrua_dir="$ja_src_dir/sigma-mrua"
 export sdk_rootfs_dir="$ja_src_dir/sigma-rootfs"
 export sdk_rootfs_root="$sdk_rootfs_dir/build_mipsel/root"
 export sdk_rootfs_prefix="$sdk_rootfs_dir/cross_rootfs"
-
-export sdk_files_dir="$ja_src_dir/files"
 
 export sdk_firmware_dir="$ja_build_dir/firmware"
 
@@ -50,46 +50,46 @@ export sdkver="3.9-nk"
 case $sdkver in
     3.8)
         cpukeys="CPU_KEYS_SMP86xx_2010-02-12"
-        kernelversion="2.6.22.19"
-        kernelrelease="${kernelversion}-35-sigma"
+        kernel_version="2.6.22.19"
+        kernel_release="${kernel_version}-35-sigma"
         ;;
     3.9)
         cpukeys="CPU_KEYS_SMP86xx_2010-02-12"
-        kernelversion="2.6.22.19"
-        kernelrelease="${kernelversion}-35-sigma"
+        kernel_version="2.6.22.19"
+        kernel_release="${kernel_version}-35-sigma"
         ;;
     3.9-nk)
         cpukeys="CPU_KEYS_SMP86xx_2010-02-12"
-        kernelversion="2.6.32"
-        kernelrelease="${kernelversion}.15-21-sigma"
+        kernel_version="2.6.32"
+        kernel_release="${kernel_version}.15-21-sigma"
         ;;
     3.11)
         cpukeys="CPU_KEYS_SMP86xx_2011-09-22"
-        kernelversion="2.6.29"
-        kernelrelease="${kernelversion}.6-33-sigma"
+        kernel_version="2.6.29"
+        kernel_release="${kernel_version}.6-33-sigma"
         ;;
     3.11-ok)
         cpukeys="CPU_KEYS_SMP86xx_2011-09-22"
-        kernelversion="2.6.22.19"
-        kernelrelease="${kernelversion}-35-sigma"
+        kernel_version="2.6.22.19"
+        kernel_release="${kernel_version}-35-sigma"
         ;;
     3.11-nk)
         cpukeys="CPU_KEYS_SMP86xx_2011-09-22"
-        kernelversion="2.6.32"
-        kernelrelease="${kernelversion}.15-21-sigma"
+        kernel_version="2.6.32"
+        kernel_release="${kernel_version}.15-21-sigma"
         ;;
     4.0)
         cpukeys="CPU_KEYS_SMP86xx_2011-09-22"
-        kernelversion="2.6.32"
-        kernelrelease="${kernelversion}.15-21-sigma"
+        kernel_version="2.6.32"
+        kernel_release="${kernel_version}.15-21-sigma"
         ;;
     4.0-ok)
         cpukeys="CPU_KEYS_SMP86xx_2011-09-22"
-        kernelversion="2.6.29"
-        kernelrelease="${kernelversion}.6-33-sigma"
+        kernel_version="2.6.29"
+        kernel_release="${kernel_version}.6-33-sigma"
         ;;
 esac
-export cpukeys kernelversion kernelrelease
+export cpukeys kernel_version kernel_release
 
 export ja_xsdk_dir="$ja_build_dir/pkg/xsdk/$cpukeys"
 
@@ -103,9 +103,9 @@ if [ -d "$ja_xsdk_dir/xbin" ]; then
     PATH="$ja_xsdk_dir/xbin:$PATH"
 fi
 
-export kerneldir="$ja_src_dir/sigma-kernel"
-export kernelmodulesdir="$sdk_rootfs_root/lib/modules/$kernelrelease"
-export kernelextramodulesdir="$kernelmodulesdir/extra"
+export kernel_dir="$ja_src_dir/sigma-kernel"
+export kernel_modules_dir="$sdk_rootfs_root/lib/modules/$kernel_release"
+export kernel_extra_modules_dir="$kernel_modules_dir/extra"
 
-export LINUX_KERNEL="$kerneldir/linux"
+export LINUX_KERNEL="$kernel_dir/linux"
 export UCLINUX_KERNEL="$LINUX_KERNEL"

@@ -12,7 +12,7 @@ pkg_build() {
 }
 
 pkg_modules() {
-    p_run cd "$p_source_dir/modules/$kernelrelease"
+    p_run cd "$p_source_dir/modules/$kernel_release"
     p_install_modules em8xxx llad
 }
 

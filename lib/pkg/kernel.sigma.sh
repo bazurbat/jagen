@@ -33,21 +33,21 @@ pkg_install() {
 
     p_run make modules_install
 
-    p_run cd "$kerneldir/proprietary"
+    p_run cd "$kernel_dir/proprietary"
     p_run make -C spinor modules_install
     p_run make -C sd_block modules_install
 
-    p_run cd "$kerneldir/extra"
+    p_run cd "$kernel_dir/extra"
     p_run make modules_install
 
-    p_run cd "$kernelmodulesdir"
+    p_run cd "$kernel_modules_dir"
     p_run rm -f "build" "source"
 }
 
 pkg_image() {
     p_run cd linux
 
-    p_run cp -f "$sdk_files_dir/cfg/initramfs_default_node_list" "usr"
+    p_run cp -f "$ja_files_dir/cfg/initramfs_default_node_list" "usr"
 
     p_run make zbimage-linux-xload
 

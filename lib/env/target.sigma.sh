@@ -1,7 +1,5 @@
 #!/bin/sh
 
-export target_board="ast50"
-
 export target_dir="$ja_build_dir/target"
 export target_prefix="/firmware"
 

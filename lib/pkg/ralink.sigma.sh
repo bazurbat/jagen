@@ -19,7 +19,7 @@ pkg_build() {
 }
 
 pkg_install() {
-    local dest="$kernelmodulesdir/kernel/drivers/net/wireless"
+    local dest="$kernel_modules_dir/kernel/drivers/net/wireless"
     local cfg_dest="$sdk_rootfs_root/etc/Wireless/RT2870STA"
 
     p_run mkdir -p "$dest"

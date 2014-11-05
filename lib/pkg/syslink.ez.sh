@@ -30,8 +30,8 @@ pkg_build() {
 }
 
 pkg_install() {
-    local src="$p_work_dir/packages/ti/syslink"
-    local dest="$sdk_rootfs_dir/lib/modules/$kernel_version/kernel/drivers/dsp"
+    local src="$p_source_dir/packages/ti/syslink"
+    local dest="$kernel_modules_dir/kernel/drivers/dsp"
 
     p_run install -v -d "$dest"
     p_run install -v -m644 \

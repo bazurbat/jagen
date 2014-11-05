@@ -3,14 +3,16 @@
 p_source="git git@bitbucket.org:art-system/u-boot.git"
 p_source_dir="$ja_src_dir/$p_name"
 
-if [ "$target_board" = "ti_evm" ]; then
+if [ "$sdk_target_board" = "ti_evm" ]; then
     config="ti8168_evm_config_sd"
     config_min="ti8168_evm_min_sd"
     boot_scipt="boot_nfs_evm.txt"
-elif [ "$target_board" = "ast200" ]; then
+elif [ "$sdk_target_board" = "ast200" ]; then
     config="ast200_sd"
     config_min="ast200_sd_min"
     boot_scipt="boot_nfs.txt"
+else
+    die "Unknown target board: $sdk_target_board"
 fi
 
 mkimage="./tools/mkimage -A arm -O linux -T script -C none -n TI_script -d"
@@ -40,5 +42,5 @@ pkg_build_target() {
 }
 
 pkg_mkimage_target() {
-    p_run $mkimage "${ja_src_dir}/misc/boot/${boot_scipt}" "${sdk_rootfs_dir}/boot/boot.scr"
+    p_run $mkimage "$ja_files_dir/boot/$boot_scipt" "$sdk_rootfs_dir/boot/boot.scr"
 }

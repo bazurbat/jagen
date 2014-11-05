@@ -21,7 +21,7 @@ pkg_build() {
         encoders="$encoders --enable-encoder=$i"
     done
 
-    for i in $(cat "$sdk_files_dir/cfg/ffmpeg_audio_codecs.txt") cdgraphics hevc; do
+    for i in $(cat "$ja_files_dir/cfg/ffmpeg_audio_codecs.txt") cdgraphics hevc; do
         decoders="$decoders --enable-decoder=$i"
     done
 
@@ -37,7 +37,7 @@ pkg_build() {
         bsfs="$bsfs --enable-bsf=$i"
     done
 
-    for i in $(cat "$sdk_files_dir/cfg/ffmpeg_filters.txt"); do
+    for i in $(cat "$ja_files_dir/cfg/ffmpeg_filters.txt"); do
         filters="$filters --enable-filter=$i"
     done
 
