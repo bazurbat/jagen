@@ -51,7 +51,7 @@ p_install_modules() {
 }
 
 p_depmod() {
-    /sbin/depmod -ae \
+    p_run /sbin/depmod -ae \
         -F "$LINUX_KERNEL/System.map" \
         -b "$INSTALL_MOD_PATH" \
         "$kernelrelease"

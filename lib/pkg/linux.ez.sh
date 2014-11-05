@@ -1,7 +1,7 @@
 #!/bin/sh
 
 p_source="git git@bitbucket.org:art-system/linux.git"
-p_source_dir="$ja_src_dir/$p_name"
+p_source_dir="$ja_src_dir/linux"
 p_source_branch="ast200"
 
 if [ "$target_board" = "ti_evm" ]; then
@@ -26,7 +26,7 @@ pkg_install_target() {
     p_run install -m644 "${p_work_dir}/arch/arm/boot/uImage" "/tftproot/$uimage"
     p_run install -m644 "${p_work_dir}/System.map" "$dest"
 
-    p_run $CROSS_MAKE INSTALL_MOD_PATH="${sdk_rootfs_dir}/" modules_install
+    p_run $CROSS_MAKE modules_install
 }
 
 pkg_depmod_target() {
