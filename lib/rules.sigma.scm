@@ -3,12 +3,36 @@
   (pkg name
        `((clean)
          (unpack)
+         (prepare)
          (build (rootfs build) ,@deps)
          (install))))
+
+(define (define-kernel-package name . deps)
+  (pkg name
+       `((clean)
+         (unpack)
+         (prepare)
+         (build (kernel build) ,@deps)
+         (install))))
+
+; base
 
 (pkg 'ast-files
      '((clean)
        (unpack)))
+
+(pkg 'linux
+     '((clean)
+       (unpack)))
+
+(pkg 'xsdk
+     '((clean)
+       (unpack)))
+
+(pkg 'ucode
+     '((clean)
+       (unpack)
+       (install)))
 
 ; host
 
@@ -42,27 +66,9 @@
 
 ; boot
 
-(pkg 'xsdk
-     '((clean)
-       (unpack)))
+(define-rootfs-package 'ezboot)
 
-(pkg 'ucode
-     '((clean)
-       (unpack)
-       (install)))
-
-(pkg 'ezboot
-     '((clean)
-       (unpack)
-       (build after (rootfs build))
-       (install)))
-
-(pkg 'yamon
-     '((clean)
-       (unpack)
-       (prepare)
-       (build after (rootfs build))
-       (install)))
+(define-rootfs-package 'yamon)
 
 ; rootfs
 
@@ -74,176 +80,47 @@
               (xsdk unpack)
               (make install host))
        (install (kernel install)
+                (dbus install)
+                (e2fsprogs install)
+                (freetype install)
+                (gdbserver install)
+                (gnupg install)
+                (libuv install)
                 (loop-aes install)
                 (mrua modules)
-                (util-linux install)
-                (e2fsprogs install)
-                (gnupg install)
-                (dbus install)
-                (rsync install)
                 (ntpclient install)
-                (libuv install)
-                (utils install target)
-                (gdbserver install)
-                (freetype install)
+                (ralink install)
+                (rsync install)
                 (sqlite install)
                 (strace install)
-                (ralink install)
+                (util-linux install)
+                (utils install target)
                 (wpa_supplicant install))))
 
-(pkg 'util-linux
-     '((clean)
-       (unpack)
-       (prepare)
-       (build (rootfs build))
-       (install)))
+(define-rootfs-package 'expat)
+(define-rootfs-package 'dbus '(expat install))
+(define-rootfs-package 'wpa_supplicant '(dbus install))
 
-(pkg 'e2fsprogs
-     '((clean)
-       (unpack)
-       (prepare)
-       (build (util-linux install))
-       (install)))
+(define-rootfs-package 'util-linux)
+(define-rootfs-package 'e2fsprogs '(util-linux install))
 
-(pkg 'libgpg-error
-     '((clean)
-       (unpack)
-       (build (rootfs build))
-       (install)))
+(define-rootfs-package 'freetype)
+(define-rootfs-package 'gdbserver)
+(define-rootfs-package 'libuv)
+(define-rootfs-package 'ntpclient)
+(define-rootfs-package 'rsync)
+(define-rootfs-package 'sqlite)
+(define-rootfs-package 'strace)
 
-(pkg 'libassuan
-     '((clean)
-       (unpack)
-       (build (libgpg-error install))
-       (install)))
+; gpgme
 
-(pkg 'gpgme
-     '((clean)
-       (unpack)
-       (build (libassuan install))
-       (install)))
+(define-rootfs-package 'libgpg-error)
+(define-rootfs-package 'libassuan '(libgpg-error install))
+(define-rootfs-package 'gpgme '(libassuan install))
 
-(pkg 'gnupg
-     '((clean)
-       (unpack)
-       (build (rootfs build))
-       (install)))
+(define-rootfs-package 'gnupg)
 
-(pkg 'expat
-     '((clean)
-       (unpack)
-       (build (rootfs build))
-       (install)))
-
-(pkg 'wpa_supplicant
-     '((clean)
-       (unpack)
-       (prepare)
-       (build (rootfs build)
-              (dbus install))
-       (install)))
-
-; (pkg 'popt
-;      '((clean)
-;      (unpack)
-;      (build (rootfs build))
-;      (install)))
-;
-; (pkg 'device-mapper
-;      '((clean)
-;      (unpack)
-;      (build (libgpg-error install))
-;      (install)))
-;
-; (pkg 'libgcrypt
-;      '((clean)
-;      (unpack)
-;      (prepare)
-;      (build (rootfs build))
-;      (install)))
-;
-; (pkg 'cryptsetup
-;      '((clean)
-;      (unpack)
-;      (prepare)
-;      (build (e2fsprogs install)
-;              (popt install)
-;              (device-mapper install)
-;              (libgcrypt install))
-;      (install)))
-
-(pkg 'dbus
-     '((clean)
-       (unpack)
-       (build (expat install))
-       (install)))
-
-(pkg 'rsync
-     '((clean)
-       (unpack)
-       (build (rootfs build))
-       (install)))
-
-(pkg 'ntpclient
-     '((clean)
-       (unpack)
-       (build (rootfs build))
-       (install)))
-
-(pkg 'libuv
-     '((clean)
-       (unpack)
-       (prepare)
-       (build (rootfs build))
-       (install)))
-
-(pkg 'gdbserver
-     '((clean)
-       (unpack)
-       (build (rootfs build))
-       (install)))
-
-; (pkg 'oprofile
-;      '((clean)
-;      (unpack)
-;      (prepare)
-;      (build (popt install))
-;      (install)))
-
-(pkg 'freetype
-     '((clean)
-       (unpack)
-       (prepare)
-       (build (rootfs build))
-       (install)))
-
-(pkg 'sqlite
-     '((clean)
-       (unpack)
-       (prepare)
-       (build (rootfs build))
-       (install)))
-
-(pkg 'strace
-     '((clean)
-       (unpack)
-       (build (rootfs build))
-       (install)))
-
-; (pkg 'chibi-scheme
-;      '((config host
-;               (unpack)
-;               (build)
-;               (install))
-;      (unpack)
-;      (patch)
-;      (build (chibi-scheme install host)
-;              (rootfs build))
-;      (install)))
-
-(pkg 'linux
-     '((clean)
-       (unpack)))
+; kernel
 
 (pkg 'kernel
      '((clean)
@@ -253,18 +130,9 @@
        (install)
        (image (ast-files unpack))))
 
-(pkg 'ralink
-     '((clean)
-       (unpack)
-       (prepare)
-       (build (kernel build))
-       (install)))
+(define-kernel-package 'ralink)
 
-(pkg 'loop-aes
-     '((clean)
-       (unpack)
-       (build (kernel build))
-       (install)))
+(define-kernel-package 'loop-aes)
 
 (pkg 'mrua
      '((clean)
