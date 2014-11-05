@@ -41,5 +41,7 @@ if [ "$p_config" ]; then
     fi
 fi
 
-eval "$p_stage_function" || \
-    die "Failed to run '$p_stage' stage of package $p_name${p_config:+ ($p_config)}"
+if p_is_function "$p_stage_function"; then
+    eval "$p_stage_function" || \
+        die "Failed to run '$p_stage' stage of package $p_name${p_config:+ ($p_config)}"
+fi
