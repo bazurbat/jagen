@@ -8,6 +8,7 @@ export ja_build_dir="$ja_root/build"
 export ja_build_type="Release"
 
 export ja_bin="chibi-scheme -r $ja_lib_dir/jagen.scm"
+export ja_sdk="sigma"
 
 debug() { [ "$ja_debug" ] && printf "\033[1;36m:::\033[0m %s\n" "$*"; }
 
