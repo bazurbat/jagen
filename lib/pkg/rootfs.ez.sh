@@ -23,6 +23,13 @@ pkg_unpack() {
 pkg_prepare() {
     local platform=$(grep -e "^PLATFORM=" "$sdk_rules" | cut -d= -f2)
 
-    sed -i "s=^EXEC_DIR\=.*$=EXEC_DIR\=$p_work_dir/home/root/$platform=g" "$sdk_rules" || return $?
-    sed -i "s=^DESTDIR\=.*$=DESTDIR\=$p_work_dir=g" "$sdk_rules" || return $?
+    p_run sed -ri \
+        "s|(\s*DESTDIR)=\S+|\1=$p_work_dir|g" \
+        "$sdk_rules"
+    p_run sed -ri \
+        "s|(\s*EXEC_DIR)=\S+|\1=$p_work_dir/home/root/$platform|g" \
+        "$sdk_rules"
+    p_run sed -ri \
+        "s|(\s*LINUXKERNEL_INSTALL_DIR)=\S+|\1=$LINUX_KERNEL|g" \
+        "$sdk_rules"
 }
