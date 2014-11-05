@@ -51,9 +51,9 @@ pkg_image() {
 
     p_run make zbimage-linux-xload
 
-    p_run cp -f arch/mips/boot/zbimage-linux-xload "$targetdir"
+    p_run cp -f arch/mips/boot/zbimage-linux-xload "$target_dir"
 
     p_run "$protectordir/zbprotector" \
-        "$targetdir/zbimage-linux-xload" \
-        "$targetdir/zbimage-linux-xload.zbc"
+        "$target_dir/zbimage-linux-xload" \
+        "$target_dir/zbimage-linux-xload.zbc"
 }

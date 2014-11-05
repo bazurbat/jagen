@@ -2,8 +2,8 @@
 
 export target_board="ast50"
 
-export targetdir="$ja_build_dir/target"
-export targetprefix="/firmware"
+export target_dir="$ja_build_dir/target"
+export target_prefix="/firmware"
 
 export target_arch="mipsel"
 export target_cpu="24kf"
@@ -19,7 +19,7 @@ export LDFLAGS=""
 
 export PKG_CONFIG_SYSROOT_DIR="$sdk_rootfs_prefix"
 export PKG_CONFIG_LIBDIR="${PKG_CONFIG_SYSROOT_DIR}/lib/pkgconfig"
-export PKG_CONFIG_PATH="$targetdir$targetprefix/lib/pkgconfig"
+export PKG_CONFIG_PATH="$target_dir$target_prefix/lib/pkgconfig"
 
 export SMP86XX_ROOTFS_PATH="$sdk_rootfs_dir"
 export INSTALL_MOD_PATH="$sdk_rootfs_root"

@@ -8,7 +8,7 @@ pkg_install_host() {
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$ja_build_type" \
         -DCMAKE_C_FLAGS_RELEASE="" \
-        -DCMAKE_PREFIX_PATH="$hostdir" \
+        -DCMAKE_PREFIX_PATH="$host_dir" \
         "$p_source_dir"
 
     p_run cmake --build . -- $cmake_build_options
@@ -20,7 +20,7 @@ pkg_install_cross() {
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$ja_build_type" \
         -DCMAKE_C_FLAGS_RELEASE="" \
-        -DCMAKE_PREFIX_PATH="$toolsdir" \
+        -DCMAKE_PREFIX_PATH="$tools_dir" \
         -DCHICKEN_SYSTEM="mipsel-linux" \
         "$p_source_dir"
 
@@ -34,8 +34,8 @@ pkg_install_target() {
         -DCMAKE_BUILD_TYPE="$ja_build_type" \
         -DCMAKE_C_FLAGS_RELEASE="" \
         -DCMAKE_SYSTEM_NAME="Linux" \
-        -DCMAKE_INSTALL_PREFIX="$targetprefix" \
-        -DCMAKE_FIND_ROOT_PATH="${targetdir}${targetprefix}" \
+        -DCMAKE_INSTALL_PREFIX="$target_prefix" \
+        -DCMAKE_FIND_ROOT_PATH="${target_dir}${target_prefix}" \
         -DCHICKEN_HOST_SYSTEM="mipsel-linux" \
         "$p_source_dir"
 

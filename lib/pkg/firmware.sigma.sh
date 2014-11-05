@@ -3,7 +3,7 @@
 use_env target
 
 p_work_dir="$sdk_firmware_dir"
-p_source_dir="${targetdir}${targetprefix}"
+p_source_dir="${target_dir}${target_prefix}"
 
 pkg_unpack() {
     p_clean "$p_work_dir"
@@ -17,7 +17,7 @@ pkg_unpack() {
 }
 
 create_imaterial() {
-    local workdir="$targetdir/imaterial"
+    local workdir="$target_dir/imaterial"
     local bmp2sdd="$sdk_mrua_dir/MRUA_src/splashscreen/utils/bmp2sdd"
 
     rm -rf "$workdir" && mkdir -p "$workdir" || return $?
@@ -31,11 +31,11 @@ create_imaterial() {
         "$sdk_files_dir/splash/artsystem-splash-2013-720p-32bpp.bmp" \
         "$workdir/splash_picture.sdd"
 
-    p_run genromfs -d "$workdir" -f "$targetdir/imaterial.romfs" -V imaterial
+    p_run genromfs -d "$workdir" -f "$target_dir/imaterial.romfs" -V imaterial
 }
 
 create_xmaterial() {
-    local workdir="$targetdir/xmaterial"
+    local workdir="$target_dir/xmaterial"
 
     rm -rf "$workdir" && mkdir -p "$workdir" || return $?
 
@@ -44,7 +44,7 @@ create_xmaterial() {
         "$sdk_files_dir/ucode/ios.bin.gz_8644_ES1_dev_0006.xload" \
         "$workdir"
 
-    p_run genromfs -d "$workdir" -f "$targetdir/xmaterial.romfs" -V xmaterial
+    p_run genromfs -d "$workdir" -f "$target_dir/xmaterial.romfs" -V xmaterial
 }
 
 pkg_material() {
@@ -86,11 +86,11 @@ pkg_install() {
 
     # install_chibi || return $?
 
-    cp -f "$targetdir/xmaterial.romfs" "$sdk_firmware_dir/" || return $?
-    cp -f "$targetdir/imaterial.romfs" "$sdk_firmware_dir/" || return $?
-    cp -f "$targetdir/zbimage-linux-xload.zbc" "$sdk_firmware_dir/" || return $?
-    cp -f "$targetdir/phyblock0-0x20000padded.AST50" "$sdk_firmware_dir/" || return $?
-    cp -f "$targetdir/phyblock0-0x20000padded.AST100" "$sdk_firmware_dir/" || return $?
+    cp -f "$target_dir/xmaterial.romfs" "$sdk_firmware_dir/" || return $?
+    cp -f "$target_dir/imaterial.romfs" "$sdk_firmware_dir/" || return $?
+    cp -f "$target_dir/zbimage-linux-xload.zbc" "$sdk_firmware_dir/" || return $?
+    cp -f "$target_dir/phyblock0-0x20000padded.AST50" "$sdk_firmware_dir/" || return $?
+    cp -f "$target_dir/phyblock0-0x20000padded.AST100" "$sdk_firmware_dir/" || return $?
 
     cd "$sdk_rootfs_prefix/lib" || return $?
     cp -a libsqlite* "$sdk_firmware_dir/lib" || return $?

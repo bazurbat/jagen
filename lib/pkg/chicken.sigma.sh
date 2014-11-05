@@ -8,7 +8,7 @@ p_build_dir="$p_work_dir/build${p_config:+-$p_config}"
 pkg_build_host() {
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$ja_build_type" \
-        -DCMAKE_INSTALL_PREFIX="$hostdir" \
+        -DCMAKE_INSTALL_PREFIX="$host_dir" \
         -DCMAKE_C_FLAGS_RELEASE="" \
         -DCHICKEN_API_VERSION=6 \
         "$p_source_dir"
@@ -22,12 +22,12 @@ pkg_build_cross() {
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$ja_build_type" \
         -DCMAKE_C_FLAGS_RELEASE="" \
-        -DCMAKE_PREFIX_PATH="$hostdir" \
-        -DCMAKE_INSTALL_PREFIX="$toolsdir" \
+        -DCMAKE_PREFIX_PATH="$host_dir" \
+        -DCMAKE_INSTALL_PREFIX="$tools_dir" \
         -DCHICKEN_TARGET_NAME="chicken" \
         -DCHICKEN_TARGET_SYSTEM="mipsel-linux" \
-        -DCHICKEN_TARGET_ROOT_DIR="$targetdir" \
-        -DCHICKEN_TARGET_RUN_PREFIX="$targetprefix" \
+        -DCHICKEN_TARGET_ROOT_DIR="$target_dir" \
+        -DCHICKEN_TARGET_RUN_PREFIX="$target_prefix" \
         "$p_source_dir"
 
     p_run cmake --build . -- $cmake_build_options
@@ -41,8 +41,8 @@ pkg_build_target() {
         -DCMAKE_C_FLAGS_RELEASE="" \
         -DCMAKE_SYSTEM_NAME="Linux" \
         -DCMAKE_SYSTEM_PROCESSOR="mips32" \
-        -DCMAKE_PREFIX_PATH="$hostdir" \
-        -DCMAKE_INSTALL_PREFIX="$targetprefix" \
+        -DCMAKE_PREFIX_PATH="$host_dir" \
+        -DCMAKE_INSTALL_PREFIX="$target_prefix" \
         -DCHICKEN_HOST_SYSTEM="mipsel-linux" \
         -DCHICKEN_TARGET_FEATURES="-no-feature x86 -feature mips" \
         "$p_source_dir"
@@ -59,6 +59,6 @@ pkg_install_cross() {
 }
 
 pkg_install_target() {
-    DESTDIR="$targetdir" p_run cmake --build . \
+    DESTDIR="$target_dir" p_run cmake --build . \
         --target install -- $cmake_build_options
 }

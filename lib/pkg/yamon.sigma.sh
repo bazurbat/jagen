@@ -14,6 +14,6 @@ pkg_build() {
 }
 
 pkg_install() {
-    p_run mkdir -p "$targetdir"
-    p_run cp -f bin/zbimage-yamon-2.13 "$targetdir"
+    p_run mkdir -p "$target_dir"
+    p_run cp -f bin/zbimage-yamon-2.13 "$target_dir"
 }

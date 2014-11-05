@@ -1,10 +1,10 @@
 #!/bin/sh
 
-export hostdir="$ja_build_dir/host"
-export hostprefix=""
+export host_dir="$ja_build_dir/host"
+export host_prefix=""
 
-export PATH="$hostdir/bin:$PATH"
-export LD_LIBRARY_PATH="$hostdir/lib:$LD_LIBRARY_PATH"
+export PATH="$host_dir/bin:$PATH"
+export LD_LIBRARY_PATH="$host_dir/lib:$LD_LIBRARY_PATH"
 
 export CC="gcc"
 export CXX="g++"
@@ -16,4 +16,4 @@ export LDFLAGS=""
 
 unset PKG_CONFIG_SYSROOT_DIR
 unset PKG_CONFIG_LIBDIR
-export PKG_CONFIG_PATH="$hostdir/lib/pkgconfig"
+export PKG_CONFIG_PATH="$host_dir/lib/pkgconfig"

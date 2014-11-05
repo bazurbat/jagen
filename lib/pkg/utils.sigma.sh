@@ -9,7 +9,7 @@ pkg_build_host() {
 
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$ja_build_type" \
-        -DCMAKE_INSTALL_PREFIX="$toolsdir" \
+        -DCMAKE_INSTALL_PREFIX="$tools_dir" \
         -DUSE_LOOPAES=0 \
         ${losetup:+"-DLOSETUP=$losetup"} \
         "$p_source_dir"

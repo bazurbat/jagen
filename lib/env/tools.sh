@@ -1,9 +1,9 @@
 #!/bin/sh
 
-export toolsdir="$ja_build_dir/tools"
-export toolsprefix=""
+export tools_dir="$ja_build_dir/tools"
+export tools_prefix=""
 
-export PATH="$toolsdir/bin:$PATH"
-export LD_LIBRARY_PATH="$toolsdir/lib:$LD_LIBRARY_PATH"
+export PATH="$tools_dir/bin:$PATH"
+export LD_LIBRARY_PATH="$tools_dir/lib:$LD_LIBRARY_PATH"
 
-export PKG_CONFIG_PATH="$toolsdir/lib/pkgconfig:$PKG_CONFIG_PATH"
+export PKG_CONFIG_PATH="$tools_dir/lib/pkgconfig:$PKG_CONFIG_PATH"

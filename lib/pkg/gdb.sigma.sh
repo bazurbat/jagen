@@ -13,7 +13,7 @@ pkg_prepare() {
 pkg_build_host() {
     p_run ./configure \
         --target="mipsel-linux" \
-        --prefix="$toolsdir" \
+        --prefix="$tools_dir" \
         --program-transform-name='' \
         --disable-nls \
         --with-system-readline \

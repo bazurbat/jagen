@@ -7,9 +7,9 @@ pkg_build() {
     local prefix cross_options
 
     if [ "$p_config" = "host" ]; then
-        prefix="$hostdir"
+        prefix="$host_dir"
     else
-        prefix="$targetprefix"
+        prefix="$target_prefix"
         cross_options="--enable-cross-compile --cross-prefix=mipsel-linux- \
             --target-os=linux --arch=mipsel --cpu=24kf"
     fi
@@ -86,5 +86,5 @@ pkg_install_host() {
 }
 
 pkg_install_target() {
-    p_run make DESTDIR="$targetdir" install
+    p_run make DESTDIR="$target_dir" install
 }

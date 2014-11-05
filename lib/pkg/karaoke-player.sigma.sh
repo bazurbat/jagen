@@ -7,8 +7,8 @@ p_build_dir="$p_work_dir/build${p_config:+-$p_config}"
 pkg_build_host() {
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$ja_build_type" \
-        -DCMAKE_PREFIX_PATH="$hostdir" \
-        -DCMAKE_INSTALL_PREFIX="$hostdir" \
+        -DCMAKE_PREFIX_PATH="$host_dir" \
+        -DCMAKE_INSTALL_PREFIX="$host_dir" \
         "$p_source_dir"
 
     if [ "$pkg_settings_newlibuv" ]; then
@@ -30,8 +30,8 @@ pkg_build_target() {
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$ja_build_type" \
         -DCMAKE_SYSTEM_NAME="Linux" \
-        -DCMAKE_INSTALL_PREFIX="${targetdir}${targetprefix}" \
-        -DCMAKE_FIND_ROOT_PATH="${targetdir}${targetprefix}" \
+        -DCMAKE_INSTALL_PREFIX="${target_dir}${target_prefix}" \
+        -DCMAKE_FIND_ROOT_PATH="${target_dir}${target_prefix}" \
         -DSIGMA_ROOT_DIR="$ja_src_dir" \
         -DCHICKEN_HOST_SYSTEM="mipsel-linux" \
         -DCHICKEN_BUILD_IMPORTS=NO \

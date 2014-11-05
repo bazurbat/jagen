@@ -6,7 +6,7 @@ pkg_build_host() {
     use_env tools
 
     p_run ./configure \
-        --prefix="$toolsdir" \
+        --prefix="$tools_dir" \
         --disable-dependency-tracking \
         --disable-nls
 

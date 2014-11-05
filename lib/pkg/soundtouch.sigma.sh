@@ -12,7 +12,7 @@ pkg_prepare() {
 pkg_build() {
     p_run ./configure \
         --host="mipsel-linux" \
-        --prefix="$targetprefix" \
+        --prefix="$target_prefix" \
         --enable-integer-samples=yes \
         --enable-x86-optimizations=no
 
@@ -20,5 +20,5 @@ pkg_build() {
 }
 
 pkg_install() {
-    p_run make DESTDIR="$targetdir" install
+    p_run make DESTDIR="$target_dir" install
 }
