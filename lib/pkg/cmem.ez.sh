@@ -1,13 +1,12 @@
 #!/bin/sh
 
 p_work_dir="$EZSDK/component-sources/linuxutils_3_22_00_02"
-rules="$EZSDK/Rules.make"
 
 src_dir="$p_work_dir/packages/ti/sdo/linuxutils/cmem/src"
 interface_dir="$src_dir/interface"
 module_dir="$src_dir/module"
 
-MAKE="make RULES_MAKE=$rules"
+MAKE="make RULES_MAKE=$sdk_rules"
 
 pkg_unpack_target() {
     p_run $MAKE -C $interface_dir clean

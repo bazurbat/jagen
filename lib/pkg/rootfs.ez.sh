@@ -21,9 +21,8 @@ pkg_unpack() {
 }
 
 pkg_prepare() {
-    local rules="$EZSDK/Rules.make"
-    local platform=$(grep -e "^PLATFORM=" "$rules" | cut -d= -f2)
+    local platform=$(grep -e "^PLATFORM=" "$sdk_rules" | cut -d= -f2)
 
-    sed -i "s=^EXEC_DIR\=.*$=EXEC_DIR\=$p_work_dir/home/root/$platform=g" "$rules" || return $?
-    sed -i "s=^DESTDIR\=.*$=DESTDIR\=$p_work_dir=g" "$rules" || return $?
+    sed -i "s=^EXEC_DIR\=.*$=EXEC_DIR\=$p_work_dir/home/root/$platform=g" "$sdk_rules" || return $?
+    sed -i "s=^DESTDIR\=.*$=DESTDIR\=$p_work_dir=g" "$sdk_rules" || return $?
 }

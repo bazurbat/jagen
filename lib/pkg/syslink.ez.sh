@@ -3,8 +3,6 @@
 p_source="git git@bitbucket.org:art-system/syslink.git"
 p_source_dir="$ja_src_dir/$p_name"
 
-rules="$EZSDK/Rules.make"
-
 platform=TI816X
 
 MAKE="make DEVICE=$platform \
