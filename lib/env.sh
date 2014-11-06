@@ -1,5 +1,9 @@
 #!/bin/sh
 
+if [ -z "$ja_root" ]; then
+    export ja_root="."
+fi
+
 export ja_bin_dir="$ja_root/bin"
 export ja_lib_dir="$ja_root/lib"
 export ja_src_dir="$ja_root/src"
@@ -13,7 +17,9 @@ export ja_bin="chibi-scheme -r $ja_lib_dir/jagen.scm"
 export ja_sdk="sigma"
 
 debug() {
-    [ "$ja_debug" ] && printf "\033[1;36m:::\033[0m %s\n" "$*"
+    if [ "$ja_debug" = "yes" ]; then
+        printf "\033[1;36m:::\033[0m %s\n" "$*"
+    fi
     return 0
 }
 
@@ -44,8 +50,6 @@ use_env() {
     done
 }
 
-if [ -z "$ja_root" ]; then
-    die "base directory is not set"
-fi
-
+include "$ja_lib_dir/env/cmake"
+include "$ja_lib_dir/env/sdk"
 include "$ja_root/env"

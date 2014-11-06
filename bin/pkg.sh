@@ -7,10 +7,6 @@ fi
 . "$ja_root/lib/env.sh" || { echo "Failed to load env"; exit 1; }
 . "$ja_root/lib/pkg.sh" || die "Failed to load pkg env"
 
-. "$ja_lib_dir/env/cmake.sh" || exit
-
-include "$ja_lib_dir/env/sdk"
-
 p_build_root="$ja_build_dir/pkg"
 
 p_name="$1"
