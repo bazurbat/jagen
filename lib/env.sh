@@ -50,6 +50,6 @@ use_env() {
     done
 }
 
+include "$ja_root/env"
 include "$ja_lib_dir/env/cmake"
 include "$ja_lib_dir/env/sdk"
-include "$ja_root/env"
