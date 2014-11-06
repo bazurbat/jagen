@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export sdk_target_board="ast50"
+export sdk_target_board="ast100"
 
 export sdk_ezboot_dir="$ja_src_dir/sigma-ezboot"
 export sdk_kernel_dir="$ja_src_dir/sigma-kernel"
