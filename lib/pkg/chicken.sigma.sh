@@ -55,10 +55,12 @@ pkg_install_host() {
 }
 
 pkg_install_cross() {
+    use_env host tools
     p_run cmake --build . --target install -- $cmake_build_options
 }
 
 pkg_install_target() {
+    use_env tools
     DESTDIR="$target_dir" p_run cmake --build . \
         --target install -- $cmake_build_options
 }
