@@ -77,6 +77,7 @@
        (unpack)
        (prepare)
        (build after
+              (ast-files unpack)
               (xsdk unpack)
               (make install host))
        (install (kernel install)
@@ -128,7 +129,7 @@
        (build (linux unpack)
               (rootfs build))
        (install)
-       (image (ast-files unpack))))
+       (image)))
 
 (define-kernel-package 'ralink)
 
