@@ -32,7 +32,7 @@
 (pkg 'ucode
      '((clean)
        (unpack)
-       (install)))
+       (install (firmware unpack))))
 
 ; host
 
