@@ -129,7 +129,7 @@
        (build (linux unpack)
               (rootfs build))
        (install)
-       (image)))
+       (image (rootfs install))))
 
 (define-kernel-package 'ralink)
 
