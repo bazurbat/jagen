@@ -19,7 +19,7 @@ if [ $? = 0 ] && [ "$toolchain_gcc" ]; then
     export SMP86XX_TOOLCHAIN_PATH=$(realpath $(dirname "$toolchain_gcc")/..)
 fi
 
-[ -d "$SMP86XX_TOOLCHAIN_PATH" ] || die "Toolchain path is not found"
+#[ -d "$SMP86XX_TOOLCHAIN_PATH" ] || die "Toolchain path is not found"
 
 export TOOLCHAIN_RUNTIME_PATH="${SMP86XX_TOOLCHAIN_PATH}/mips-linux-gnu/libc/el"
 
