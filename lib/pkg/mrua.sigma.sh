@@ -2,8 +2,13 @@
 
 p_source="git git@bitbucket.org:art-system/sigma-mrua.git"
 p_source_dir="$ja_src_dir/sigma-mrua"
+p_jobs=1
 
 use_env tools target
+
+pkg_clean() {
+    p_run make clean
+}
 
 pkg_build() {
     p_run make
