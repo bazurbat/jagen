@@ -1,3 +1,11 @@
+(pkg 'gdb
+     '((clean)
+       (unpack)
+       (prepare)
+       (config host
+               (build)
+               (install))))
+
 (pkg 'rootfs
      '((unpack)
        (prepare)))
