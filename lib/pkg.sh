@@ -22,9 +22,9 @@ p_run() {
 
 p_clean() {
     if [ -d "$1" ]; then
-        p_run rm -fr "$1"
+        p_run rm -vfr "$1"
     fi
-    p_run mkdir -p "$1"
+    p_run mkdir -vp "$1"
 }
 
 p_strip() {
