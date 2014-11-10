@@ -11,7 +11,8 @@ p_git_update() {
 }
 
 p_git_checkout() {
-    [ "$(git status --porcelain)" ] || p_run git checkout "${1:-master}"
+    [ "$(git status --porcelain)" ] \
+        || p_run git checkout -b ${1:-master} origin/${1:-master}
 }
 
 p_hg_clone() {
