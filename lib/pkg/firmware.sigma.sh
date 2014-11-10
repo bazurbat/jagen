@@ -5,13 +5,16 @@ use_env target
 p_work_dir="$sdk_firmware_dir"
 p_source_dir="${target_dir}${target_prefix}"
 
-pkg_unpack() {
+pkg_clean() {
     p_clean "$p_work_dir"
     p_clean "$p_source_dir"
+}
 
+pkg_unpack() {
     p_run cd "$p_work_dir"
 
     p_run install -d -m 755 bin dev etc home lib mnt proc run sbin sys usr var
+    p_run install -d -m 755 usr/bin usr/lib usr/sbin
     p_run install -d -m 700 root
     p_run install -d -m 1777 tmp
 }
@@ -52,10 +55,6 @@ pkg_material() {
     create_xmaterial || return $?
 }
 
-copy_files() {
-    cp -af "$ja_files_dir"/firmware/* "$sdk_firmware_dir" || return $?
-}
-
 install_chibi() {
     local src="$p_source_dir"
     local dst="$sdk_firmware_dir"
@@ -75,51 +74,47 @@ pkg_install() {
     local bin="audioplayer bgaudio demo jabba midiplayer smplayer db-service \
         csi i2c_debug uart-shell ast-service pcf8563"
 
-    cd "$p_source_dir/bin" || return $?
-    install -m 755 $bin "$sdk_firmware_dir/bin" || return $?
+    p_run cd "$p_source_dir/bin"
+    p_run install -vm 755 $bin "$sdk_firmware_dir/bin"
 
-    cd "$p_source_dir/lib" || return $?
-    cp -a chicken "$sdk_firmware_dir/lib" || return $?
-    cp -a *.so* "$sdk_firmware_dir/lib" || return $?
+    p_run cd "$p_source_dir/lib"
+    p_run cp -va chicken "$sdk_firmware_dir/lib"
+    p_run cp -va *.so* "$sdk_firmware_dir/lib"
 
-    copy_files || return $?
+    p_run cp -af "$ja_files_dir"/firmware/* "$sdk_firmware_dir"
 
     # install_chibi || return $?
 
-    cp -f "$target_dir/xmaterial.romfs" "$sdk_firmware_dir/" || return $?
-    cp -f "$target_dir/imaterial.romfs" "$sdk_firmware_dir/" || return $?
-    cp -f "$target_dir/zbimage-linux-xload.zbc" "$sdk_firmware_dir/" || return $?
-    cp -f "$target_dir/phyblock0-0x20000padded.AST50" "$sdk_firmware_dir/" || return $?
-    cp -f "$target_dir/phyblock0-0x20000padded.AST100" "$sdk_firmware_dir/" || return $?
+    p_run cp -vf "$target_dir/xmaterial.romfs" "$sdk_firmware_dir/"
+    p_run cp -vf "$target_dir/imaterial.romfs" "$sdk_firmware_dir/"
+    p_run cp -vf "$target_dir/zbimage-linux-xload.zbc" "$sdk_firmware_dir/"
+    p_run cp -vf "$target_dir/phyblock0-0x20000padded.AST50" "$sdk_firmware_dir/"
+    p_run cp -vf "$target_dir/phyblock0-0x20000padded.AST100" "$sdk_firmware_dir/"
 
-    cd "$sdk_rootfs_prefix/lib" || return $?
-    cp -a libsqlite* "$sdk_firmware_dir/lib" || return $?
+    p_run cd "$sdk_rootfs_prefix/lib" || return $?
+    p_run cp -va libsqlite* "$sdk_firmware_dir/lib" || return $?
 }
 
-pkg_clean() {
-    cd "$p_work_dir" || return $?
+pkg_strip() {
+    p_run cd "$p_work_dir"
 
-    find lib usr/lib -type f "(" \
-        -name "*.a" -o \
-        -name "*.la" \
-        ")" -print -delete \
-        >"$p_log" 2>&1
+    p_run find lib usr/lib -type f \
+        "(" -name "*.a" -o -name "*.la" ")" \
+        -print -delete
 
-    find lib/chicken -type f "(" \
-        -name "*.o" -o \
-        -name "*.setup-info" -o \
-        -name "*.types" -o \
-        -name "*.inline" -o \
-        ")" -print -delete \
-        >>"$p_log" 2>&1
+    p_run find lib/chicken -type f "(" \
+        -name "*.o" \
+        -o -name "*.setup-info" \
+        -o -name "*.inline" \
+        -o -name "*.types" \
+        ")" -print -delete
 
     if [ "$ja_build_type" = "Release" ]; then
-        find lib/chicken -type f "(" \
-            -name "*.import.so" -o \
-            -name "*.scm" -o \
-            -name "types.db" -o \
-            ")" -print -delete \
-            >>"$p_log" 2>&1
+        p_run find lib/chicken -type f "(" \
+            -name "*.import.*" \
+            -o -name "*.scm" \
+            -o -name "types.db" \
+            ")" -print -delete
 
         p_strip "$p_work_dir" >>"$p_log" 2>&1
     fi

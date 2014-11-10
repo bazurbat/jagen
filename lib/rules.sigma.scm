@@ -210,8 +210,8 @@
                (install after (chicken-eggs install target)))))
 
 (pkg 'firmware
-     '((unpack)
+     '((clean)
+       (unpack)
        (material (mrua build))
        (install (karaoke-player install target)) ; files/firmware/fwversion.sexp
-       (clean (firmware material)
-              (mrua install))))
+       (strip (mrua install))))
