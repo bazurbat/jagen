@@ -41,4 +41,7 @@ case $1 in
         ninja "$@"
         cat "${target_path}.log"
         ;;
+    *)
+        die "Unknown command: $1"
+        ;;
 esac
