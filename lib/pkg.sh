@@ -1,12 +1,23 @@
 #!/bin/sh
 
+: ${p_jobs:=1}
+
 p_is_function() {
     type "$1" 2>/dev/null | grep -q 'function'
 }
 
 p_run() {
+    local cmd="$1"
     debug "$*"
-    "$@" >>"$p_log" 2>&1 || exit
+    shift
+
+    case $cmd in
+        make|ninja)
+            cmd="$cmd -j$p_jobs"
+            ;;
+    esac
+
+    $cmd "$@" >>"$p_log" 2>&1 || exit
 }
 
 p_clean() {
