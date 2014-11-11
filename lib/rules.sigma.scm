@@ -136,9 +136,9 @@
 (define-kernel-package 'loop-aes)
 
 (pkg 'mrua
-     '((clean)
+     '((clean (kernel build))
        (unpack)
-       (build (kernel build))
+       (build)
        (modules)
        (install (firmware unpack))))
 
