@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_dist_dir="$ja_root/dist/$ja_sdk"
-
 p_git_clone() {
     p_run git clone --progress "$1" "$2"
 }

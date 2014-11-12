@@ -7,6 +7,7 @@ fi
 . "$ja_root/lib/env.sh" || { echo "Failed to load env"; exit 1; }
 . "$ja_root/lib/pkg.sh" || die "Failed to load pkg env"
 
+: ${p_dist_dir:="$ja_root/dist/$ja_sdk"}
 p_build_root="$ja_build_dir/pkg"
 
 p_name="$1"
