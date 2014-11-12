@@ -30,6 +30,8 @@
   (stage  target-stage)
   (config target-config))
 
+(define *width* 4)
+
 (define main
   (match-lambda
     ((_) (show #t "pbuild" nl))
@@ -87,6 +89,18 @@
 
 (define (%include file)
   (show #t "include " file nl nl))
+
+(define (%variable name value . level)
+  (let ((level (or (and (pair? level) (car level)) 0)))
+    (show #t (space-to (* level *width*)) name " = " value nl)))
+
+(define (%rule r)
+  (define (variable p)
+    (%variable (car p) (cdr p) 1))
+
+  (show #t "rule " (rule-name r) nl)
+  (for-each variable (rule-variables r))
+  (show #t nl))
 
 (define (%build b)
   (define (target name)

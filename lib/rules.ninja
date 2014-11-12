@@ -1,7 +1,0 @@
-builddir = build
-
-rule command
-    command = $command
-
-rule script
-    command = bin/$script && touch $out
