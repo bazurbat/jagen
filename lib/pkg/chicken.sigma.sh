@@ -61,6 +61,7 @@ pkg_install_cross() {
 
 pkg_install_target() {
     use_env tools
-    DESTDIR="$target_dir" p_run cmake --build . \
-        --target install -- $cmake_build_options
+    # supplying this directly on command line fails on Ubuntu
+    export DESTDIR="$target_dir"
+    p_run cmake --build . --target install -- $cmake_build_options
 }
