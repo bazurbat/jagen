@@ -8,8 +8,6 @@ export ja_bin_dir="$ja_root/bin"
 export ja_lib_dir="$ja_root/lib"
 export ja_src_dir="$ja_root/src"
 
-export ja_files_dir="$ja_src_dir/files"
-
 export ja_build_dir="$ja_root/build"
 export ja_build_type="Release"
 
@@ -53,3 +51,6 @@ use_env() {
 include "$ja_root/env"
 include "$ja_lib_dir/env/cmake"
 include "$ja_lib_dir/env/sdk"
+
+: ${ja_files_dir:="$ja_src_dir/files"}
+export ja_files_dir
