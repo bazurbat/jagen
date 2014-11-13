@@ -18,7 +18,7 @@ pkg_build_host() {
         --disable-nls \
         --with-system-readline \
         --with-expat \
-        --with-python="/usr/bin/python2" \
+        --with-python="/usr/bin/python2.7" \
         --with-zlib
 
     p_run make
