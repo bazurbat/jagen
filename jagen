@@ -19,6 +19,7 @@ case $1 in
         print_help
         ;;
     refresh)
+        p_src_pull .
         if ! $(which chibi-scheme >/dev/null 2>&1); then
             for s in clean unpack build install; do
                 bin/pkg.sh chibi-scheme $s tools \
