@@ -4,7 +4,6 @@ if [ -z "$ja_root" ]; then
     export ja_root="$(realpath $(dirname $0)/..)"
 fi
 
-. "$ja_root/lib/env.sh" || { echo "Failed to load env"; exit 1; }
 . "$ja_root/lib/pkg.sh" || die "Failed to load pkg env"
 
 : ${p_dist_dir:="$ja_root/dist/$ja_sdk"}

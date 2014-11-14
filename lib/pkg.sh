@@ -1,5 +1,7 @@
 #!/bin/sh
 
+. "$ja_root/lib/env.sh" || { echo "Failed to load env"; exit 1; }
+
 : ${p_jobs:=1}
 
 p_is_function() {
@@ -17,7 +19,11 @@ p_run() {
             ;;
     esac
 
-    $cmd "$@" >>"$p_log" 2>&1 || exit
+    if [ "$p_log" ]; then
+        $cmd "$@" >>"$p_log" 2>&1 || exit
+    else
+        $cmd "$@" || exit
+    fi
 }
 
 p_clean() {
@@ -72,4 +78,5 @@ p_fix_la() {
     p_run p_run sed -ri "s|libdir='/lib'|libdir='$sdk_rootfs_prefix/lib'|" $1
 }
 
-. "$ja_lib_dir/unpack.sh" || exit
+. "$ja_lib_dir/src.sh" || exit
+. "$ja_lib_dir/stages.sh" || exit

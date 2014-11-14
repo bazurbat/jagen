@@ -22,7 +22,7 @@ debug() {
 }
 
 message() { printf "\033[1;34m:::\033[0m %s\n" "$*"; }
-
+warning() { printf "\033[1;33m:::\033[0m %s\n" "$*"; }
 error() { printf "\033[1;31m:::\033[0m %s\n" "$*" >&2; }
 
 die() { error "$*"; exit 1; }
@@ -48,6 +48,7 @@ use_env() {
     done
 }
 
+include "${HOME}/.config/jagen/env"
 include "$ja_root/env"
 include "$ja_lib_dir/env/cmake"
 include "$ja_lib_dir/env/sdk"
