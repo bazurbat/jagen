@@ -159,4 +159,4 @@
     (make-build "script"
                 (list (format-target t))
                 (map format-dep deps)
-                `(("script" . ,(show #f "pkg.sh " (format-target t " ")))))))
+                `(("script" . ,(show #f "jagen-pkg " (format-target t " ")))))))
