@@ -22,7 +22,7 @@ case $1 in
         p_src_pull .
         if ! $(which chibi-scheme >/dev/null 2>&1); then
             for s in clean unpack build install; do
-                bin/pkg.sh chibi-scheme $s tools \
+                "$ja_bin_dir/pkg.sh" chibi-scheme $s tools \
                     || die "Failed to $s chibi-scheme"
             done
         fi
