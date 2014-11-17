@@ -28,6 +28,8 @@ pkg_unpack() {
         git|hg)
             if p_in_list "$p_name" "$pkg_source_exclude"; then
                 message "pkg source '$p_name' excluded from pulling"
+            elif p_src_is_dirty "$p_source_dir"; then
+                warning "$p_source_dir is dirty, not updating"
             elif [ -d "$p_source_dir" ]; then
                 p_src_pull "$p_source_dir"
                 p_src_checkout "$p_source_dir" "$p_source_branch"

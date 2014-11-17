@@ -1,11 +1,13 @@
 #!/bin/sh
 
+p_git_is_dirty() { test "$(git status --porcelain)"; }
+
 p_git_clone() {
     p_run git clone --progress "$1" "$2"
 }
 
 p_git_pull() {
-    if test "$(git status --porcelain)"; then
+    if p_git_is_dirty; then
         warning "$PWD is dirty, not pulling"
     else
         p_run git fetch
@@ -15,7 +17,7 @@ p_git_pull() {
 p_git_checkout() {
     local branch=${1:-master}
 
-    if test "$(git status --porcelain)" ; then
+    if p_git_is_dirty; then
         warning "$PWD is dirty, not checking out"
     else
         p_run git checkout origin/$branch
@@ -30,12 +32,14 @@ p_git_clean() {
     p_run git clean -fxd
 }
 
+p_hg_is_dirty() { test "$(hg status)" ; }
+
 p_hg_clone() {
     p_run hg clone "$1" "$2"
 }
 
 p_hg_pull() {
-    if test "$(hg status)"; then
+    if p_hg_is_dirty; then
         warning "$PWD is dirty, not pulling"
     else
         p_run hg pull -u
@@ -51,6 +55,8 @@ p_hg_discard() {
 p_hg_clean() {
     p_run hg purge --all
 }
+
+p__is_dirty() { :; }
 
 p__clone() { :; }
 
@@ -69,6 +75,13 @@ p_src_kind() {
     elif [ -d "${dir}/.hg" ]; then
         printf "hg"
     fi
+}
+
+p_src_is_dirty() {
+    local dir=$(realpath "$1")
+    local kind=$(p_src_kind "$dir")
+
+    ( cd "$dir" && p_${kind}_is_dirty )
 }
 
 p_src_clone() {
