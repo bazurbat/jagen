@@ -8,6 +8,8 @@ p_is_function() {
     type "$1" 2>/dev/null | grep -q 'function'
 }
 
+p_in_list() { echo "$2" | grep -qw "$1"; }
+
 p_run() {
     local cmd="$1"
     debug "$*"
