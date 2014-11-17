@@ -43,14 +43,6 @@
                (build)
                (install))))
 
-(pkg 'gdb
-     '((clean)
-       (unpack)
-       (prepare)
-       (config host
-               (build)
-               (install))))
-
 ; utils
 
 (pkg 'utils
@@ -70,21 +62,38 @@
 
 (define-rootfs-package 'yamon)
 
+; debugging
+
+(when (string=? "Debug" (env 'build-type))
+  (pkg 'gdb
+       '((clean)
+         (unpack)
+         (prepare)
+         (config host
+                 (build)
+                 (install))))
+  (define-rootfs-package 'gdbserver)
+  (define-rootfs-package 'strace)
+)
+
 ; rootfs
 
 (pkg 'rootfs
-     '((clean)
+     `((clean)
        (unpack)
        (prepare)
        (build after
               (ast-files unpack)
               (xsdk unpack)
               (make install host))
-       (install (kernel install)
+       (install ,@(if (string=? "Debug" (env 'build-type))
+                    '((gdbserver install)
+                      (strace install))
+                    '())
+                (kernel install)
                 (dbus install)
                 (e2fsprogs install)
                 (freetype install)
-                (gdbserver install)
                 (gnupg install)
                 (libuv install)
                 (loop-aes install)
@@ -93,7 +102,6 @@
                 (ralink install)
                 (rsync install)
                 (sqlite install)
-                (strace install)
                 (util-linux install)
                 (utils install target)
                 (wpa_supplicant install))))
@@ -106,12 +114,10 @@
 (define-rootfs-package 'e2fsprogs '(util-linux install))
 
 (define-rootfs-package 'freetype)
-(define-rootfs-package 'gdbserver)
 (define-rootfs-package 'libuv)
 (define-rootfs-package 'ntpclient)
 (define-rootfs-package 'rsync)
 (define-rootfs-package 'sqlite)
-(define-rootfs-package 'strace)
 
 ; gpgme
 
