@@ -18,11 +18,11 @@ p_git_checkout() {
     if test "$(git status --porcelain)" ; then
         warning "$PWD is dirty, not checking out"
     else
-        p_run git checkout -b $branch origin/$branch
+        p_run git checkout origin/$branch
     fi
 }
 
-p_git_reset() {
+p_git_discard() {
     p_run git checkout .
 }
 
@@ -44,7 +44,7 @@ p_hg_pull() {
 
 p_hg_checkout() { :; }
 
-p_hg_reset() {
+p_hg_discard() {
     p_run hg update -C 
 }
 
@@ -58,7 +58,7 @@ p__pull() { :; }
 
 p__checkout() { :; }
 
-p__reset() { :; }
+p__discard() { :; }
 
 p__clean() { :; }
 
@@ -72,7 +72,7 @@ p_src_kind() {
 }
 
 p_src_clone() {
-    local kind="$1" src="$2" dst=$(realpath "$3")
+    local kind="$1" src="$2" dst="$3"
 
     p_${kind}_clone "$src" "$dst"
 }
@@ -91,11 +91,11 @@ p_src_checkout() {
     ( cd "$dir" && p_${kind}_checkout "$2" ) || exit
 }
 
-p_src_reset() {
+p_src_discard() {
     local dir=$(realpath "$1")
     local kind=$(p_src_kind "$dir")
 
-    ( cd "$dir" && p_${kind}_reset ) || exit
+    ( cd "$dir" && p_${kind}_discard ) || exit
 }
 
 p_src_clean() {
@@ -120,5 +120,5 @@ p_src_download() {
 
     [ -d "$dst" ] || mkdir -p "$dst"
     p_run tar -C "$dst" -xpf "$src"
-    p_src_reset "$dst/$name"
+    p_src_discard "$dst/$name"
 }

@@ -6,7 +6,12 @@ pkg_clean() {
 
     case $kind in
         git|hg)
-            p_src_clean "$p_source_dir"
+            if p_in_list "$p_name" "$pkg_clean_exclude"; then
+                message "pkg '$p_name' excluded from cleaning"
+            elif [ -d "$p_source_dir" ]; then
+                p_src_discard "$p_source_dir"
+                p_src_clean "$p_source_dir"
+            fi
             ;;
     esac
 
@@ -21,7 +26,9 @@ pkg_unpack() {
 
     case $kind in
         git|hg)
-            if [ -d "$p_source_dir" ]; then
+            if p_in_list "$p_name" "$pkg_pull_exclude"; then
+                message "pkg '$p_name' excluded from pulling"
+            elif [ -d "$p_source_dir" ]; then
                 p_src_pull "$p_source_dir"
             else
                 p_src_clone "$kind" "$src" "$p_source_dir"
