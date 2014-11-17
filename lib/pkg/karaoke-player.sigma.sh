@@ -36,6 +36,8 @@ pkg_build_target() {
         -DCHICKEN_HOST_SYSTEM="mipsel-linux" \
         -DCHICKEN_BUILD_IMPORTS=NO \
         -DLIBUV_ROOT_DIR="$sdk_rootfs_prefix" \
+        -DCHICKEN_COMPILER="$tools_dir/bin/chicken" \
+        -DCHICKEN_INTERPRETER="$tools_dir/bin/csi" \
         "$p_source_dir"
 
     p_run cmake --build . -- $cmake_build_options
