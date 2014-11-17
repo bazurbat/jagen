@@ -30,6 +30,7 @@ pkg_unpack() {
                 message "pkg source '$p_name' excluded from pulling"
             elif [ -d "$p_source_dir" ]; then
                 p_src_pull "$p_source_dir"
+                p_src_checkout "$p_source_dir" "$p_source_branch"
             else
                 p_src_clone "$kind" "$src" "$p_source_dir"
                 p_src_checkout "$p_source_dir" "$p_source_branch"

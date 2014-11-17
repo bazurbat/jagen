@@ -8,7 +8,7 @@ p_git_pull() {
     if test "$(git status --porcelain)"; then
         warning "$PWD is dirty, not pulling"
     else
-        p_run git pull --progress
+        p_run git fetch
     fi
 }
 
