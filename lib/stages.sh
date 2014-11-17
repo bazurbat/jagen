@@ -6,8 +6,8 @@ pkg_clean() {
 
     case $kind in
         git|hg)
-            if p_in_list "$p_name" "$pkg_clean_exclude"; then
-                message "pkg '$p_name' excluded from cleaning"
+            if p_in_list "$p_name" "$pkg_source_exclude"; then
+                message "pkg source '$p_name' excluded from cleaning"
             elif [ -d "$p_source_dir" ]; then
                 p_src_discard "$p_source_dir"
                 p_src_clean "$p_source_dir"
@@ -26,8 +26,8 @@ pkg_unpack() {
 
     case $kind in
         git|hg)
-            if p_in_list "$p_name" "$pkg_pull_exclude"; then
-                message "pkg '$p_name' excluded from pulling"
+            if p_in_list "$p_name" "$pkg_source_exclude"; then
+                message "pkg source '$p_name' excluded from pulling"
             elif [ -d "$p_source_dir" ]; then
                 p_src_pull "$p_source_dir"
             else
