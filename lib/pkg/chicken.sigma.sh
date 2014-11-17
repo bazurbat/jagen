@@ -7,7 +7,7 @@ p_build_dir="$p_work_dir/build${p_config:+-$p_config}"
 
 pkg_build_host() {
     p_run cmake -G"$cmake_generator" \
-        -DCMAKE_BUILD_TYPE="$ja_build_type" \
+        -DCMAKE_BUILD_TYPE="$cmake_build_type" \
         -DCMAKE_INSTALL_PREFIX="$host_dir" \
         -DCMAKE_C_FLAGS_RELEASE="" \
         -DCHICKEN_API_VERSION=6 \
@@ -20,7 +20,7 @@ pkg_build_cross() {
     use_env host tools
 
     p_run cmake -G"$cmake_generator" \
-        -DCMAKE_BUILD_TYPE="$ja_build_type" \
+        -DCMAKE_BUILD_TYPE="$cmake_build_type" \
         -DCMAKE_C_FLAGS_RELEASE="" \
         -DCMAKE_PREFIX_PATH="$host_dir" \
         -DCMAKE_INSTALL_PREFIX="$tools_dir" \
@@ -37,7 +37,7 @@ pkg_build_target() {
     use_env tools
 
     p_run cmake -G"$cmake_generator" \
-        -DCMAKE_BUILD_TYPE="$ja_build_type" \
+        -DCMAKE_BUILD_TYPE="$cmake_build_type" \
         -DCMAKE_C_FLAGS_RELEASE="" \
         -DCMAKE_SYSTEM_NAME="Linux" \
         -DCMAKE_SYSTEM_PROCESSOR="mips32" \

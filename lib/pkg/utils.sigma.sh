@@ -8,7 +8,7 @@ pkg_build_host() {
     use_env tools
 
     p_run cmake -G"$cmake_generator" \
-        -DCMAKE_BUILD_TYPE="$ja_build_type" \
+        -DCMAKE_BUILD_TYPE="$cmake_build_type" \
         -DCMAKE_INSTALL_PREFIX="$tools_dir" \
         -DUSE_LOOPAES=0 \
         ${losetup:+"-DLOSETUP=$losetup"} \
@@ -19,7 +19,7 @@ pkg_build_host() {
 
 pkg_build_target() {
     p_run cmake -G"$cmake_generator" \
-        -DCMAKE_BUILD_TYPE="$ja_build_type" \
+        -DCMAKE_BUILD_TYPE="$cmake_build_type" \
         -DCMAKE_INSTALL_PREFIX="$sdk_rootfs_root" \
         -DUSE_LOOPAES=1 \
         "$p_source_dir"
