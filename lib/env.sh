@@ -49,7 +49,7 @@ use_env() {
 }
 
 include "${HOME}/.config/jagen/env"
-include "$ja_root/env.local"
+include "$ja_root/local"
 include "$ja_lib_dir/env/cmake"
 include "$ja_lib_dir/env/sdk"
 

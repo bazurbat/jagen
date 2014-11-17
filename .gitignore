@@ -3,4 +3,4 @@
 /dist
 
 /build.ninja
-/env.local*
+/local*.sh
