@@ -25,16 +25,6 @@ p_source_name=$(basename "$p_source" | sed -r 's/\.t(ar\.)?(gz|bz2|xz)//')
 p_source_dir="${p_source_dir:-$p_work_dir/$p_source_name}"
 p_build_dir="${p_build_dir:-$p_source_dir}"
 
-[ -d "$p_build_dir" ] && cd "$p_build_dir"
-
-p_stage_function="pkg_${p_stage}"
-if [ "$p_config" ]; then
-    use_env "$p_config"
-    if p_is_function "${p_stage_function}_${p_config}"; then
-        p_stage_function="${p_stage_function}_${p_config}"
-    fi
-fi
-
 run_stage() {
     local name="$1"
     local pkg="$p_name${p_config:+ ($p_config)}"
@@ -46,9 +36,14 @@ run_stage() {
 }
 
 [ "$p_config" ] && use_env "$p_config"
+[ -d "$p_build_dir" ] && cd "$p_build_dir"
 
 run_stage "pkg_${p_stage}_pre"
 
-run_stage "pkg_${p_stage}${p_config:+_${p_config}}"
+if p_is_function "pkg_${p_stage}_${p_config}"; then
+    run_stage "pkg_${p_stage}_${p_config}"
+else
+    run_stage "pkg_${p_stage}"
+fi
 
 run_stage "pkg_${p_stage}_post"
