@@ -1,6 +1,6 @@
 #!/bin/sh
 
-p_source="$p_dist_dir/gpgme-1.5.1.tar.bz2"
+p_source="$pkg_dist_dir/gpgme-1.5.1.tar.bz2"
 
 use_env target
 

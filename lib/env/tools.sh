@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export tools_dir="$ja_build_dir/tools"
+export tools_dir="$pkg_build_dir/tools"
 export tools_prefix=""
 
 export PATH="$tools_dir/bin:$PATH"

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-p_source="$p_dist_dir/strace-4.8.tar.xz"
+p_source="$pkg_dist_dir/strace-4.8.tar.xz"
 
 use_env target
 

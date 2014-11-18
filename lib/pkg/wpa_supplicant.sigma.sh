@@ -1,6 +1,6 @@
 #!/bin/sh
 
-p_source="$p_dist_dir/wpa_supplicant-2.2.tar.gz"
+p_source="$pkg_dist_dir/wpa_supplicant-2.2.tar.gz"
 
 use_env target
 

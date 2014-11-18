@@ -109,7 +109,7 @@ pkg_strip() {
         -o -name "*.types" \
         ")" -print -delete
 
-    if [ "$ja_build_type" = "Release" ]; then
+    if [ "$pkg_build_type" = "Release" ]; then
         p_run find lib/chicken -type f "(" \
             -name "*.import.*" \
             -o -name "*.scm" \

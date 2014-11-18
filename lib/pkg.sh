@@ -54,7 +54,7 @@ p_strip() {
 }
 
 p_patch() {
-    p_run patch -sp1 -i "$p_dist_dir/patches/${1}.patch"
+    p_run patch -sp1 -i "$pkg_dist_dir/patches/${1}.patch"
 }
 
 p_install_modules() {

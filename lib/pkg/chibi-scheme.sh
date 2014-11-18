@@ -1,6 +1,6 @@
 #!/bin/sh
 
-p_source="$p_dist_dir/chibi-scheme-0.7.tgz"
+p_source="$pkg_dist_dir/chibi-scheme-0.7.tgz"
 p_work_dir="$p_work_dir/build${p_config:+-$p_config}"
 
 pkg_build_tools() {

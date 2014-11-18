@@ -6,14 +6,13 @@ fi
 
 . "$ja_root/lib/pkg.sh" || die "Failed to load pkg env"
 
-: ${p_dist_dir:="$ja_root/dist/$ja_sdk"}
-p_build_root="$ja_build_dir/pkg"
+p_build_root="$pkg_build_dir/pkg"
 
 p_name="$1"
 p_stage="$2"
 p_config="$3"
 
-p_log="${ja_build_dir}/${p_name}-${p_stage}${p_config:+-${p_config}}.log"
+p_log="${pkg_build_dir}/${p_name}-${p_stage}${p_config:+-${p_config}}.log"
 p_work_dir="$p_build_root/$p_name"
 
 rm -f "$p_log" || die "Failed to rm $p_log"

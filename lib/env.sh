@@ -8,11 +8,13 @@ export ja_bin_dir="$ja_root/bin"
 export ja_lib_dir="$ja_root/lib"
 export ja_src_dir="$ja_root/src"
 
-export ja_build_dir="$ja_root/build"
-export ja_build_type="Release"
+export ja_sdk="sigma"
+
+export pkg_build_type="Release"
+export pkg_build_dir="$ja_root/build"
+export pkg_dist_dir="$ja_root/dist/$ja_sdk"
 
 export ja_bin="chibi-scheme -r $ja_lib_dir/jagen.scm"
-export ja_sdk="sigma"
 
 debug() {
     if [ "$ja_debug" = "yes" ]; then
@@ -53,6 +55,8 @@ include "$ja_root/local"
 include "$ja_lib_dir/env/cmake"
 include "$ja_lib_dir/env/sdk"
 
-ja_build_dir=$(realpath "$ja_build_dir")
+pkg_build_dir=$(realpath "$pkg_build_dir")
+pkg_dist_dir=$(realpath "$pkg_dist_dir")
+
 : ${ja_files_dir:="$ja_src_dir/files"}
 export ja_files_dir

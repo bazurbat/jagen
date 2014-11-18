@@ -4,13 +4,13 @@ p_source="git git@bitbucket.org:art-system/sigma-rootfs.git"
 p_source_dir="$ja_src_dir/sigma-rootfs"
 
 pkg_prepare() {
-    [ -d dl ] || p_run cp -r "$p_dist_dir/dl" "$sdk_rootfs_dir"
+    [ -d dl ] || p_run cp -r "$pkg_dist_dir/dl" "$sdk_rootfs_dir"
 }
 
 pkg_build() {
     use_env tools
 
-    if [ "$ja_build_type" = Release ]; then
+    if [ "$pkg_build_type" = Release ]; then
         cp config.release .config
     else
         cp config.dev .config
@@ -171,7 +171,7 @@ clean_misc() {
 
     rm -f bin/mtd_*
 
-    if [ "$ja_build_type" = "Release" ]; then
+    if [ "$pkg_build_type" = "Release" ]; then
         rm -rf usr/local || return $?
     fi
 
@@ -179,7 +179,7 @@ clean_misc() {
 
     remove_nss_libs || return $?
 
-    if [ "$ja_build_type" = "Release" ]; then
+    if [ "$pkg_build_type" = "Release" ]; then
         remove_ncurses
     fi
 }

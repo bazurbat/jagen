@@ -1,6 +1,6 @@
 #!/bin/sh
 
-p_source="$p_dist_dir/oprofile-0.9.9.tar.gz"
+p_source="$pkg_dist_dir/oprofile-0.9.9.tar.gz"
 
 use_env target
 

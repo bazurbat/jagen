@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export host_dir="$ja_build_dir/host"
+export host_dir="$pkg_build_dir/host"
 export host_prefix=""
 
 export PATH="$host_dir/bin:$PATH"

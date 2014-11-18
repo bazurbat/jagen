@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export target_dir="$ja_build_dir/target"
+export target_dir="$pkg_build_dir/target"
 export target_prefix="/firmware"
 
 export target_arch="mipsel"

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-p_source="$p_dist_dir/LVM2.2.02.95.tgz"
+p_source="$pkg_dist_dir/LVM2.2.02.95.tgz"
 
 use_env target
 

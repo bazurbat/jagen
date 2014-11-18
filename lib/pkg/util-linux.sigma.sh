@@ -1,6 +1,6 @@
 #!/bin/sh
 
-p_source="$p_dist_dir/util-linux-2.23.2.tar.xz"
+p_source="$pkg_dist_dir/util-linux-2.23.2.tar.xz"
 
 use_env target
 

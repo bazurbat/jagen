@@ -1,6 +1,6 @@
 #!/bin/sh
 
-p_source="$p_dist_dir/DPO_RT5572_LinuxSTA_2.6.1.3_20121022.tar.bz2"
+p_source="$pkg_dist_dir/DPO_RT5572_LinuxSTA_2.6.1.3_20121022.tar.bz2"
 
 use_env target
 

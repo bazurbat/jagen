@@ -1,6 +1,6 @@
 #!/bin/sh
 
-p_source="$p_dist_dir/ffmpeg-2.2.1.tar.bz2"
+p_source="$pkg_dist_dir/ffmpeg-2.2.1.tar.bz2"
 p_build_dir="$p_work_dir/build${p_config:+-$p_config}"
 
 pkg_build() {
@@ -41,9 +41,9 @@ pkg_build() {
         filters="$filters --enable-filter=$i"
     done
 
-    if [ "$ja_build_type" = "Release" ]; then
+    if [ "$pkg_build_type" = "Release" ]; then
         options="--disable-debug"
-    elif [ "$ja_build_type" = "Debug" ]; then
+    elif [ "$pkg_build_type" = "Debug" ]; then
         export CFLAGS=""
         options="--disable-optimizations"
     fi
