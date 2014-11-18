@@ -17,7 +17,7 @@ p_work_dir="$p_build_root/$p_name"
 
 rm -f "$p_log" || die "Failed to rm $p_log"
 mkdir -p "$p_work_dir" || die "Failed to mkdir $p_work_dir"
-cd "$p_work_dir" || die "Failed to cd $p_work_dir"
+cd "$p_work_dir" || die "Failed to cd to $p_work_dir"
 
 include "$ja_lib_dir/pkg/$p_name" 
 
@@ -35,7 +35,20 @@ if [ "$p_config" ]; then
     fi
 fi
 
-if p_is_function "$p_stage_function"; then
-    eval "$p_stage_function" || \
-        die "Failed to run '$p_stage' stage of package $p_name${p_config:+ ($p_config)}"
-fi
+run_stage() {
+    local name="$1"
+    local pkg="$p_name${p_config:+ ($p_config)}"
+
+    if p_is_function "$name"; then
+        debug "$pkg: $name"
+        eval "$name" || die "Failed to run '$name' stage of package $pkg"
+    fi
+}
+
+[ "$p_config" ] && use_env "$p_config"
+
+run_stage "pkg_${p_stage}_pre"
+
+run_stage "pkg_${p_stage}${p_config:+_${p_config}}"
+
+run_stage "pkg_${p_stage}_post"
