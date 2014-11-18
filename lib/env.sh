@@ -55,8 +55,5 @@ include "$ja_root/local"
 include "$ja_lib_dir/env/cmake"
 include "$ja_lib_dir/env/sdk"
 
-pkg_build_dir=$(realpath "$pkg_build_dir")
-pkg_dist_dir=$(realpath "$pkg_dist_dir")
-
 : ${ja_files_dir:="$ja_src_dir/files"}
 export ja_files_dir
