@@ -14,6 +14,11 @@ Commands:
 . "$ja_root/lib/pkg.sh"
 use_env tools
 
+if [ $# = 0 ]; then
+    print_help
+    exit
+fi
+
 case $1 in
     help)
         print_help
