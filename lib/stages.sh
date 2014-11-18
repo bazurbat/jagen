@@ -42,4 +42,8 @@ pkg_unpack() {
             p_run tar -C "$p_work_dir" -xf "$src"
             ;;
     esac
+
+    if ! [ -d "$p_build_dir" ]; then
+        p_run mkdir -p "$p_build_dir"
+    fi
 }

@@ -25,8 +25,7 @@ p_source_name=$(basename "$p_source" | sed -r 's/\.t(ar\.)?(gz|bz2|xz)//')
 p_source_dir="${p_source_dir:-$p_work_dir/$p_source_name}"
 p_build_dir="${p_build_dir:-$p_source_dir}"
 
-mkdir -p "$p_build_dir" || die "Failed to mkdir $p_build_dir"
-cd "$p_build_dir" || die "Failed to cd $p_build_dir"
+[ -d "$p_build_dir" ] && cd "$p_build_dir"
 
 p_stage_function="pkg_${p_stage}"
 if [ "$p_config" ]; then
