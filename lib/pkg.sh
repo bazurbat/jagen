@@ -10,6 +10,8 @@ p_is_function() {
 
 p_in_list() { echo "$2" | grep -qw "$1"; }
 
+p_flags() { p_in_list "$1" "$pkg_flags"; }
+
 p_run() {
     local cmd="$1"
     debug "$*"

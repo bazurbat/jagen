@@ -5,12 +5,12 @@ p_source_dir="$ja_src_dir/chicken-eggs"
 p_source_branch="master"
 p_build_dir="$p_work_dir/build${p_config:+-$p_config}"
 
-if [ "pkg_chicken_next" ]; then
+if p_flags chicken_next; then
     p_source_branch="next"
 fi
 
 pkg_install_host() {
-    [ "$pkg_chicken_next" ] && return 0
+    p_flags chicken_next && return 0
 
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$cmake_build_type" \
@@ -24,7 +24,7 @@ pkg_install_host() {
 pkg_install_cross() {
     use_env tools
 
-    if [ "$pkg_chicken_next" ]; then
+    if p_flags chicken_next; then
         p_run cmake -G"$cmake_generator" \
             -DCMAKE_BUILD_TYPE="$cmake_build_type" \
             -DCMAKE_C_FLAGS_RELEASE="" \
@@ -43,7 +43,7 @@ pkg_install_cross() {
 }
 
 pkg_install_target() {
-    if [ "$pkg_chicken_next" ]; then
+    if p_flags chicken_next; then
         use_env host
     else
         use_env tools

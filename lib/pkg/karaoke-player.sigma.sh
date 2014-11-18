@@ -11,7 +11,7 @@ pkg_build_host() {
         -DCMAKE_INSTALL_PREFIX="$host_dir" \
         "$p_source_dir"
 
-    if [ "$pkg_settings_newlibuv" ]; then
+    if p_flags libuv_next; then
         p_run cmake -DLIBUV_NEW=1 .
     fi
 
