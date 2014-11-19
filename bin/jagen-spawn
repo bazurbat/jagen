@@ -1,0 +1,9 @@
+#!/bin/sh
+
+exec docker run -it --rm --privileged \
+    --env SSH_AUTH_SOCK=$SSH_AUTH_SOCK \
+    --volume $(dirname $SSH_AUTH_SOCK):$(dirname $SSH_AUTH_SOCK) \
+    --volume /tmp/build:/tmp/build \
+    --volumes-from build-data \
+    ${1:+--entrypoint "$1"} \
+    build
