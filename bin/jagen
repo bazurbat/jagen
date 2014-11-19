@@ -37,6 +37,7 @@ case $1 in
                     || die "Failed to $s chibi-scheme"
             done
         fi
+        exec jagen refresh
         ;;
     refresh)
         $(which chibi-scheme >/dev/null 2>&1) ||
