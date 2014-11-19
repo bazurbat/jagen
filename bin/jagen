@@ -39,8 +39,8 @@ case $1 in
         fi
         ;;
     refresh)
-        [ -x "$(realpath "$ja_bin")" ] ||
-            die "Could not find $ja_bin, try update"
+        $(which chibi-scheme >/dev/null 2>&1) ||
+            die "Could not find chibi-scheme, try update"
         exec $ja_bin generate build.ninja "$ja_lib_dir/rules.scm"
         ;;
     build)
