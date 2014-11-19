@@ -50,3 +50,8 @@ pkg_build_pre() {
     [ -d "$p_build_dir" ] || p_run mkdir -p "$p_build_dir"
     p_run cd "$p_build_dir"
 }
+
+pkg_install_pre() {
+    # for packages that do not have build stage
+    pkg_build_pre
+}
