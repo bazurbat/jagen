@@ -29,13 +29,18 @@ case $1 in
                 die "Failed to clean $pkg_build_dir"
         fi
         ;;
-    refresh)
+    update)
+        p_src_pull .
         if ! $(which chibi-scheme >/dev/null 2>&1); then
             for s in clean unpack build install; do
                 "$ja_bin_dir/jagen-pkg" chibi-scheme $s tools \
                     || die "Failed to $s chibi-scheme"
             done
         fi
+        ;;
+    refresh)
+        [ -x "$(realpath "$ja_bin")" ] ||
+            die "Could not find $ja_bin, try update"
         exec $ja_bin generate build.ninja "$ja_lib_dir/rules.scm"
         ;;
     build)
