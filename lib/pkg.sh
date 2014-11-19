@@ -1,7 +1,5 @@
 #!/bin/sh
 
-. "$ja_root/lib/env.sh" || { echo "Failed to load env"; exit 1; }
-
 : ${p_jobs:=1}
 
 p_is_function() {

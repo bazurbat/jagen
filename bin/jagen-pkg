@@ -1,9 +1,5 @@
 #!/bin/sh
 
-if [ -z "$ja_root" ]; then
-    export ja_root="$(realpath $(dirname $0)/..)"
-fi
-
 . "$ja_root/lib/pkg.sh" || die "Failed to load pkg env"
 
 p_build_root="$pkg_build_dir/pkg"

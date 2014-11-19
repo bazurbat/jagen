@@ -2,4 +2,7 @@
 
 export ja_root=$(realpath .)
 
-PATH="$ja_root/bin:$PATH"
+. "$ja_root/lib/env.sh" ||
+    { echo "Failed to load environment"; exit 1; }
+
+PATH="$ja_root/bin:$ja_files_dir/bin:$PATH"

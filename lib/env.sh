@@ -1,9 +1,5 @@
 #!/bin/sh
 
-if [ -z "$ja_root" ]; then
-    export ja_root="."
-fi
-
 export ja_bin_dir="$ja_root/bin"
 export ja_lib_dir="$ja_root/lib"
 export ja_src_dir="$ja_root/src"
