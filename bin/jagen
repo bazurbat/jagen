@@ -23,6 +23,12 @@ case $1 in
     help)
         print_help
         ;;
+    clean)
+        if [ -d "$pkg_build_dir" ]; then
+            rm -rf "$pkg_build_dir"/* ||
+                die "Failed to clean $pkg_build_dir"
+        fi
+        ;;
     refresh)
         p_src_pull .
         if ! $(which chibi-scheme >/dev/null 2>&1); then
