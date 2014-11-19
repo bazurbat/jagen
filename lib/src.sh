@@ -6,11 +6,19 @@ p_git_clone() {
     p_run git clone --progress "$1" "$2"
 }
 
+p_git_fetch() {
+    if p_git_is_dirty; then
+        warning "$PWD is dirty, not fetching"
+    else
+        p_run git fetch
+    fi
+}
+
 p_git_pull() {
     if p_git_is_dirty; then
         warning "$PWD is dirty, not pulling"
     else
-        p_run git fetch
+        p_run git pull
     fi
 }
 
@@ -38,6 +46,14 @@ p_hg_clone() {
     p_run hg clone "$1" "$2"
 }
 
+p_hg_fetch() {
+    if p_hg_is_dirty; then
+        warning "$PWD is dirty, not fetching"
+    else
+        p_run hg pull -u
+    fi
+}
+
 p_hg_pull() {
     if p_hg_is_dirty; then
         warning "$PWD is dirty, not pulling"
@@ -59,6 +75,8 @@ p_hg_clean() {
 p__is_dirty() { :; }
 
 p__clone() { :; }
+
+p__fetch() { :; }
 
 p__pull() { :; }
 
@@ -88,6 +106,13 @@ p_src_clone() {
     local kind="$1" src="$2" dst="$3"
 
     p_${kind}_clone "$src" "$dst"
+}
+
+p_src_fetch() {
+    local dir=$(realpath "$1")
+    local kind=$(p_src_kind "$dir")
+
+    ( cd "$dir" && p_${kind}_fetch ) || exit
 }
 
 p_src_pull() {

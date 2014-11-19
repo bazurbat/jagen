@@ -32,7 +32,7 @@ pkg_unpack() {
                 if p_src_is_dirty "$p_source_dir"; then
                     warning "$p_source_dir is dirty, not updating"
                 else
-                    p_src_pull "$p_source_dir"
+                    p_src_fetch "$p_source_dir"
                     p_src_checkout "$p_source_dir" "$p_source_branch"
                 fi
             else
