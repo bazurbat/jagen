@@ -4,6 +4,7 @@
     { echo "Failed to load environment"; exit 1; }
 
 : ${p_jobs:=1}
+: ${p_run_on_error:=exit}
 
 p_is_function() {
     type "$1" 2>/dev/null | grep -q 'function'
@@ -25,9 +26,9 @@ p_run() {
     esac
 
     if [ "$p_log" ]; then
-        $cmd "$@" >>"$p_log" 2>&1 || exit
+        $cmd "$@" >>"$p_log" 2>&1 || $p_run_on_error
     else
-        $cmd "$@" || exit
+        $cmd "$@" || $p_run_on_error
     fi
 }
 
