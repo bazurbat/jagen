@@ -1,9 +1,14 @@
 #!/bin/sh
 
+if [ "$SSH_AUTH_SOCK" ]; then
+    sock_dir="$(dirname $SSH_AUTH_SOCK)"
+else
+    echo "Warning: SSH_AUTH_SOCK is not set, not forwarding SSH agent"
+fi
+
 exec docker run -it --rm --privileged \
     --env SSH_AUTH_SOCK=$SSH_AUTH_SOCK \
-    --volume $(dirname $SSH_AUTH_SOCK):$(dirname $SSH_AUTH_SOCK) \
+    ${sock_dir:+--volume "$sock_dir:$sock_dir"} \
     --volume /tmp/build:/tmp/build \
     --volumes-from build-data \
-    ${1:+--entrypoint "$1"} \
-    build
+    build "$@"
