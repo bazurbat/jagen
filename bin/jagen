@@ -46,7 +46,7 @@ case $1 in
         ;;
     build)
         shift
-        exec ninja "$@"
+        exec ninja "$@" || die "Build failed"
         ;;
     rebuild)
         shift
