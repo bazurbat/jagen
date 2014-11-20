@@ -53,11 +53,11 @@ case $1 in
         ;;
     rebuild)
         shift
-        target_path="$1"
-        shift
-        rm -f "$target_path"
-        ninja "$@"
-        cat "${target_path}.log"
+        target="$1"; log="${1}.log"
+        rm -f "$target"
+        : > "$log"; tail -F "$log" 2>/dev/null &
+        ninja "$target" >/dev/null; status=$?
+        kill $!; exit $status
         ;;
     *)
         die "Unknown command: $1"
