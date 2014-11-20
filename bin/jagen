@@ -11,8 +11,8 @@ Commands:
 
 [ "$ja_root" ] || { echo "ja_root is not set"; exit 1; }
 
-. "$ja_root/lib/pkg.sh"
-use_env tools
+. "$ja_root/lib/pkg.sh" ||
+    { echo "Failed to load pkg environment"; exit 1; }
 
 if [ $# = 0 ]; then
     print_help
@@ -31,6 +31,7 @@ case $1 in
         ;;
     update)
         p_src_pull .
+        use_env tools
         if ! $(which chibi-scheme >/dev/null 2>&1); then
             for s in clean unpack build install; do
                 "$ja_bin_dir/jagen-pkg" chibi-scheme $s tools \
@@ -40,13 +41,15 @@ case $1 in
         exec jagen refresh
         ;;
     refresh)
+        use_env tools
         $(which chibi-scheme >/dev/null 2>&1) ||
             die "Could not find chibi-scheme, try update"
-        exec $ja_bin generate build.ninja "$ja_lib_dir/rules.scm"
+        $ja_bin generate build.ninja "$ja_lib_dir/rules.scm" ||
+            die "Failed to generate build rules"
         ;;
     build)
         shift
-        exec ninja "$@" || die "Build failed"
+        ninja "$@" || die "Build failed"
         ;;
     rebuild)
         shift
