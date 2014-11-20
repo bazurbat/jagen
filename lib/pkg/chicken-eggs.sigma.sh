@@ -43,11 +43,7 @@ pkg_install_cross() {
 }
 
 pkg_install_target() {
-    if p_flags chicken_next; then
-        use_env host
-    else
-        use_env tools
-    fi
+    use_env tools
 
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$cmake_build_type" \

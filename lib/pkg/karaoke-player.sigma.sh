@@ -5,6 +5,8 @@ p_source_dir="$ja_src_dir/karaoke-player"
 p_build_dir="$p_work_dir/build${p_config:+-$p_config}"
 
 pkg_build_host() {
+    p_flags chicken_next && use_env tools
+
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$cmake_build_type" \
         -DCMAKE_PREFIX_PATH="$host_dir" \
@@ -38,6 +40,7 @@ pkg_build_target() {
         -DLIBUV_ROOT_DIR="$sdk_rootfs_prefix" \
         -DCHICKEN_COMPILER="$tools_dir/bin/chicken" \
         -DCHICKEN_INTERPRETER="$tools_dir/bin/csi" \
+        -DCHICKEN_DEPENDS="$tools_dir/bin/chicken-depends" \
         "$p_source_dir"
 
     p_run cmake --build . -- $cmake_build_options
