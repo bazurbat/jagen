@@ -20,7 +20,7 @@ pkg_unpack() {
     rm etc/rc0.d/K20psplash || return $?
 }
 
-pkg_prepare() {
+pkg_patch() {
     local platform=$(grep -e "^PLATFORM=" "$sdk_rules" | cut -d= -f2)
 
     p_run sed -ri \

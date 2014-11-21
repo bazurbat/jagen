@@ -4,7 +4,7 @@ p_source="$pkg_dist_dir/util-linux-2.23.2.tar.xz"
 
 use_env target
 
-pkg_prepare() {
+pkg_patch() {
     p_patch "util-linux-2.23.2"
     p_run autoreconf -vif
 }

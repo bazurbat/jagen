@@ -4,7 +4,7 @@ p_source="$pkg_dist_dir/smp86xx_yamon_R2.13-31.tar.bz2"
 
 use_env tools target
 
-pkg_prepare() {
+pkg_patch() {
     p_run mkdir -p "$p_source_dir/sources"
     p_run cp "$pkg_dist_dir/dl/yamon-src-02.13.tar.gz" "$p_source_dir/sources"
 }

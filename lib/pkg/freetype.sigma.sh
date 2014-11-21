@@ -4,7 +4,7 @@ p_source="$pkg_dist_dir/freetype-2.5.0.1.tar.bz2"
 
 use_env target
 
-pkg_prepare() {
+pkg_patch() {
     enable_option() {
         sed -i -e "/#define $1/a #define $1" \
             include/freetype/config/ftoption.h \

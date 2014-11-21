@@ -72,8 +72,10 @@
   (if (file-exists? out-file) (delete-file out-file))
   (with-output-to-file out-file (cut load in-file)))
 
-(define (pkg name stages)
-  (let loop ((stages stages) (config #f) (prev '()))
+(define (pkg name . stages)
+  (define pre '((update) (clean) (unpack) (patch)))
+  (define post '((finalize)))
+  (let loop ((stages (append pre stages post)) (config #f) (prev '()))
     (unless (null? stages)
       (match (car stages)
              (('config config stages ...)

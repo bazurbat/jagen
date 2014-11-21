@@ -4,7 +4,7 @@ p_source="$pkg_dist_dir/oprofile-0.9.9.tar.gz"
 
 use_env target
 
-pkg_prepare() {
+pkg_patch() {
     p_patch "${p_source}-AT_BASE_PLATFORM"
 }
 

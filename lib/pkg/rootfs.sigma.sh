@@ -3,7 +3,7 @@
 p_source="git git@bitbucket.org:art-system/sigma-rootfs.git"
 p_source_dir="$ja_src_dir/sigma-rootfs"
 
-pkg_prepare() {
+pkg_patch() {
     [ -d dl ] || p_run cp -r "$pkg_dist_dir/dl" "$sdk_rootfs_dir"
 }
 

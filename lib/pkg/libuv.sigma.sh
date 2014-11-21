@@ -4,7 +4,7 @@ p_source="$pkg_dist_dir/libuv-v0.10.25.tar.gz"
 
 use_env target
 
-pkg_prepare() {
+pkg_patch() {
     if [ -x ./autogen.sh ]; then
         p_run ./autogen.sh
     fi

@@ -1,60 +1,42 @@
 
 (define (define-rootfs-package name . deps)
   (pkg name
-       `((clean)
-         (unpack)
-         (prepare)
-         (build (rootfs build) ,@deps)
-         (install))))
+       `(build (rootfs build) ,@deps)
+       '(install)))
 
 (define (define-kernel-package name . deps)
   (pkg name
-       `((clean)
-         (unpack)
-         (prepare)
-         (build (kernel build) ,@deps)
-         (install))))
+       `(build (kernel build) ,@deps)
+       '(install)))
 
 ; base
 
-(pkg 'ast-files
-     '((clean)
-       (unpack)))
+(pkg 'ast-files)
 
-(pkg 'linux
-     '((clean)
-       (unpack)))
+(pkg 'linux)
 
-(pkg 'xsdk
-     '((clean)
-       (unpack)))
+(pkg 'xsdk)
 
 (pkg 'ucode
-     '((clean)
-       (unpack)
-       (install (firmware unpack))))
+     '(install (firmware unpack)))
 
 ; host
 
 (pkg 'make
-     '((clean)
-       (unpack)
-       (config host
-               (build)
-               (install))))
+     '(config host
+              (build)
+              (install)))
 
 ; utils
 
 (pkg 'utils
-     '((clean)
-       (unpack)
-       (config host
-               (build)
-               (install))
-       (config target
-               (build (gpgme install)
-                      (dbus install))
-               (install))))
+     '(config host
+              (build)
+              (install))
+     '(config target
+              (build (gpgme install)
+                     (dbus install))
+              (install)))
 
 ; boot
 
@@ -66,45 +48,39 @@
 
 (when (string=? "Debug" (env 'build-type))
   (pkg 'gdb
-       '((clean)
-         (unpack)
-         (prepare)
-         (config host
-                 (build)
-                 (install))))
+       '(config host
+                (build)
+                (install)))
   (define-rootfs-package 'gdbserver)
   (define-rootfs-package 'strace)
-)
+  )
 
 ; rootfs
 
 (pkg 'rootfs
-     `((clean)
-       (unpack)
-       (prepare)
-       (build after
-              (ast-files unpack)
-              (xsdk unpack)
-              (make install host))
-       (install ,@(if (string=? "Debug" (env 'build-type))
-                    '((gdbserver install)
-                      (strace install))
-                    '())
-                (kernel install)
-                (dbus install)
-                (e2fsprogs install)
-                (freetype install)
-                (gnupg install)
-                (libuv install)
-                (loop-aes install)
-                (mrua modules)
-                (ntpclient install)
-                (ralink install)
-                (rsync install)
-                (sqlite install)
-                (util-linux install)
-                (utils install target)
-                (wpa_supplicant install))))
+     '(build after
+             (ast-files unpack)
+             (xsdk unpack)
+             (make install host))
+     `(install ,@(if (string=? "Debug" (env 'build-type))
+                   '((gdbserver install)
+                     (strace install))
+                   '())
+               (kernel install)
+               (dbus install)
+               (e2fsprogs install)
+               (freetype install)
+               (gnupg install)
+               (libuv install)
+               (loop-aes install)
+               (mrua modules)
+               (ntpclient install)
+               (ralink install)
+               (rsync install)
+               (sqlite install)
+               (util-linux install)
+               (utils install target)
+               (wpa_supplicant install)))
 
 (define-rootfs-package 'expat)
 (define-rootfs-package 'dbus '(expat install))
@@ -130,94 +106,76 @@
 ; kernel
 
 (pkg 'kernel
-     '((clean)
-       (unpack)
-       (build (linux unpack)
-              (rootfs build))
-       (install)
-       (image (rootfs install))))
+     '(build (linux unpack)
+             (rootfs build))
+     '(install)
+     '(image (rootfs install)))
 
 (define-kernel-package 'ralink)
 
 (define-kernel-package 'loop-aes)
 
 (pkg 'mrua
-     '((clean (kernel build))
-       (unpack)
-       (build)
-       (modules)
-       (install (firmware unpack))))
+     '(build (kernel build))
+     '(modules)
+     '(install (firmware unpack)))
 
 (pkg 'chicken
-     '((clean)
-       (unpack)
-       (config host
-               (build)
-               (install))
-       (config cross
-               (build after (chicken install host))
-               (install))
-       (config target
-               (build after (rootfs build) (chicken install cross))
-               (install (firmware unpack)))))
+     '(config host
+              (build)
+              (install))
+     '(config cross
+              (build after (chicken install host))
+              (install))
+     '(config target
+              (build after (rootfs build) (chicken install cross))
+              (install (firmware unpack))))
 
 (pkg 'chicken-eggs
-     '((clean)
-       (unpack)
-       (config host
-               (install (chicken install host)))
-       (config cross
-               (install (chicken install cross)
-                        after (chicken-eggs install host)))
-       (config target
-               (install (chicken install target)
-                        after
-                        (chicken-eggs install cross)
-                        (dbus install)))))
+     '(config host
+              (install (chicken install host)))
+     '(config cross
+              (install (chicken install cross)
+                       after (chicken-eggs install host)))
+     '(config target
+              (install (chicken install target)
+                       after
+                       (chicken-eggs install cross)
+                       (dbus install))))
 
 (pkg 'ffmpeg
-     '((clean)
-       (unpack)
-       (config host
-               (build (ast-files unpack))
-               (install))
-       (config target
-               (build (ast-files unpack)
-                      after (rootfs build))
-               (install (firmware unpack)))))
+     '(config host
+              (build (ast-files unpack))
+              (install))
+     '(config target
+              (build (ast-files unpack)
+                     after (rootfs build))
+              (install (firmware unpack))))
 
 (pkg 'soundtouch
-     '((clean)
-       (unpack)
-       (prepare)
-       (build after (rootfs build))
-       (install (firmware unpack))))
+     '(build after (rootfs build))
+     '(install (firmware unpack)))
 
-(pkg 'astindex
-     '((clean)
-       (unpack (karaoke-player unpack))))
+; (pkg 'astindex
+;      '(unpack (karaoke-player unpack)))
 
 (pkg 'karaoke-player
-     '((clean)
-       (unpack)
-       (config host
-               (build (astindex unpack)
-                      (ffmpeg build host)
-                      (chicken-eggs install host))
-               (install))
-       (config target
-               (prepare)
-               (build (astindex unpack)
-                      (mrua build)
-                      (ffmpeg install target)
-                      (soundtouch install)
-                      (chicken install target)
-                      (chicken-eggs install cross))
-               (install after (chicken-eggs install target)))))
+     '(config host
+              (build (astindex unpack)
+                     (ffmpeg build host)
+                     (chicken-eggs install host))
+              (install))
+     '(config target
+              (prepare)
+              (build (astindex unpack)
+                     (mrua build)
+                     (ffmpeg install target)
+                     (soundtouch install)
+                     (chicken install target)
+                     (chicken-eggs install cross))
+              (install after (chicken-eggs install target))))
 
 (pkg 'firmware
-     '((clean)
-       (unpack)
-       (material (mrua build))
-       (install (karaoke-player install target)) ; files/firmware/fwversion.sexp
-       (strip (mrua install))))
+     '(material (mrua build))
+     '(install (karaoke-player install target)) ; files/firmware/fwversion.sexp
+     '(strip (mrua install)))

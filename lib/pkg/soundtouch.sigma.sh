@@ -5,7 +5,7 @@ p_source_dir="$p_work_dir/soundtouch"
 
 use_env target
 
-pkg_prepare() {
+pkg_patch() {
     p_run ./bootstrap
 }
 
