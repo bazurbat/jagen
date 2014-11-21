@@ -11,6 +11,7 @@ pkg_build_host() {
         -DCMAKE_BUILD_TYPE="$cmake_build_type" \
         -DCMAKE_PREFIX_PATH="$host_dir" \
         -DCMAKE_INSTALL_PREFIX="$host_dir" \
+        -DCHICKEN_DEPENDS="$tools_dir/bin/chicken-depends" \
         "$p_source_dir"
 
     if p_flags libuv_next; then
