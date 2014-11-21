@@ -19,6 +19,31 @@ if [ $# = 0 ]; then
     exit
 fi
 
+rebuild() {
+    local IFS tab targets_only targets logs tp lp status
+    IFS="$(printf '\n\t')"; tab="$(printf '\t')"
+    [ $1 = only ] && { shift; targets_only=1; }
+
+    for target in "$@"; do
+        tp="$pkg_build_dir/$target"; lp="${tp}.log"
+        targets="${targets}${tab}${tp}"
+        logs="${logs}${tab}${lp}"
+    done
+
+    rm -f $targets
+    tail --quiet --lines=0 --follow=name --retry \
+        "$pkg_build_dir"/*.log 2>/dev/null &
+
+    if [ "$targets_only" ]; then
+        ninja $targets >/dev/null; status=$?
+    else
+        ninja >/dev/null; status=$?
+    fi
+
+    kill $!
+    return $status
+}
+
 case $1 in
     help)
         print_help
@@ -53,11 +78,7 @@ case $1 in
         ;;
     rebuild)
         shift
-        target="$1"; log="${1}.log"
-        rm -f "$target"
-        : > "$log"; tail -F "$log" 2>/dev/null &
-        ninja "$target" >/dev/null; status=$?
-        kill $!; exit $status
+        rebuild "$@"
         ;;
     *)
         die "Unknown command: $1"
