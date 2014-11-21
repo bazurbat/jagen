@@ -156,8 +156,8 @@
      '(build after (rootfs build))
      '(install (firmware unpack)))
 
-; (pkg 'astindex
-;      '(unpack (karaoke-player unpack)))
+(pkg 'astindex
+     '(unpack (karaoke-player unpack)))
 
 (pkg 'karaoke-player
      '(config host
