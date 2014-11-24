@@ -39,6 +39,9 @@ p_clean_dir() {
     if [ -d "$dir" ]; then
         rm -rf "$dir"/* ||
             die "Failed to clean directory: $dir"
+    else
+        mkdir -p "$dir" ||
+            die "Failed to create directory: $dir"
     fi
 }
 

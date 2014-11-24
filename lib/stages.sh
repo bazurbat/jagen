@@ -15,8 +15,7 @@ pkg_clean() {
             ;;
     esac
 
-    [ -d "$p_work_dir" ] && p_run rm -rf "$p_work_dir"
-    [ -d "$p_work_dir" ] || p_run mkdir -p "$p_work_dir"
+    p_clean_dir "$p_work_dir"
 }
 
 pkg_unpack() {
