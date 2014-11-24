@@ -6,8 +6,8 @@ p_work_dir="$sdk_firmware_dir"
 p_source_dir="${target_dir}${target_prefix}"
 
 pkg_clean() {
-    p_clean "$p_work_dir"
-    p_clean "$p_source_dir"
+    p_clean_dir "$p_work_dir"
+    p_clean_dir "$p_source_dir"
 }
 
 pkg_unpack() {

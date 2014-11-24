@@ -58,10 +58,7 @@ case $1 in
         print_help
         ;;
     clean)
-        if [ -d "$pkg_build_dir" ]; then
-            rm -rf "$pkg_build_dir"/* ||
-                die "Failed to clean $pkg_build_dir"
-        fi
+        p_clean_dir "$pkg_build_dir"
         ;;
     update)
         p_src_pull .

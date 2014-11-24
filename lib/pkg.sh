@@ -34,11 +34,12 @@ p_run() {
     fi
 }
 
-p_clean() {
-    if [ -d "$1" ]; then
-        p_run rm -vfr "$1"
+p_clean_dir() {
+    local dir="$1"
+    if [ -d "$dir" ]; then
+        rm -rf "$dir"/* ||
+            die "Failed to clean directory: $dir"
     fi
-    p_run mkdir -vp "$1"
 }
 
 p_strip() {
