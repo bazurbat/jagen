@@ -24,13 +24,14 @@
      '(build (linux install target))
      '(install))
 
+(when (string=? "Debug" (env 'build-type))
+  (pkg 'gdb
+       '(config host
+                (build)
+                (install))))
+
 (if #f
   (begin
-
-(pkg 'gdb
-     '(config host
-              (build)
-              (install)))
 
 (pkg 'chibi-scheme
      '(config target

@@ -15,7 +15,9 @@ else
 fi
 
 pkg_build_target() {
-    p_run $CROSS_MAKE $defconfig
+    if [ "$pkg_build_type" = "Release" ]; then
+        p_run $CROSS_MAKE $defconfig
+    fi
     p_run $CROSS_MAKE uImage
     p_run $CROSS_MAKE modules
 }
