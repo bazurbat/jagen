@@ -21,25 +21,56 @@ if [ $# = 0 ]; then
     exit
 fi
 
-rebuild() {
-    local IFS tab targets_only targets logs tp lp status
+build() {
+    local IFS tab
+    local target target_path targets
+
     IFS="$(printf '\n\t')"; tab="$(printf '\t')"
-    [ $1 = only ] && { shift; targets_only=1; }
 
     for target in "$@"; do
-        tp="$pkg_build_dir/$target"; lp="${tp}.log"
-        targets="${targets}${tab}${tp}"
-        logs="${logs}${tab}${lp}"
+        target_path="$pkg_build_dir/$target"
+        targets="${targets}${tab}${target_path}"
     done
 
-    rm -f $targets
-    tail --quiet --lines=0 --follow=name --retry \
-        "$pkg_build_dir"/*.log 2>/dev/null &
+    ninja -f "$build_file" $targets
+
+    return $?
+}
+
+rebuild() {
+    local IFS tab
+    local targets_only show_all
+    local target target_path targets logs status
+    local rebuild_log
+
+    IFS="$(printf '\n\t')"; tab="$(printf '\t')"
+
+    [ $1 = "--targets-only" ] && { shift; targets_only=1; }
+    [ $1 = "--show-all" ] && { shift; show_all=1; }
+
+    rebuild_log="$pkg_build_dir/rebuild.log"
+
+    for target in "$@"; do
+        target_path="$pkg_build_dir/$target"
+        targets="${targets}${tab}${target_path}"
+        logs="${logs}${tab}${target_path}.log"
+        if [ -f "$target_path" ]; then
+            rm -f "$target_path"
+        else
+            warning "Target $target is not exists"
+        fi
+    done
+
+    if [ "$show_all" ]; then
+        tail -qFn0 "$pkg_build_dir"/*.log 2>/dev/null &
+    else
+        tail -qFn0 $logs $rebuild_log 2>/dev/null &
+    fi
 
     if [ "$targets_only" ]; then
-        ninja -f "$build_file" $targets >/dev/null; status=$?
+        ninja -f "$build_file" $targets >"$rebuild_log"; status=$?
     else
-        ninja -f "$build_file" >/dev/null; status=$?
+        ninja -f "$build_file" >"$rebuild_log"; status=$?
     fi
 
     kill $!
@@ -47,7 +78,7 @@ rebuild() {
 }
 
 rebuild_chibi() {
-    message "Rebuilding Chibi Scheme"
+    debug "Rebuilding Chibi Scheme"
     for s in clean unpack build install; do
         "$ja_bin_dir/jagen-pkg" chibi-scheme $s tools \
             || die "Failed to $s chibi-scheme"
@@ -73,7 +104,7 @@ case $1 in
         ;;
     build)
         shift
-        ninja -f "$build_file" "$@" || die "Build failed"
+        build "$@" || die "Build failed"
         ;;
     rebuild)
         shift
