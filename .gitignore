@@ -2,5 +2,4 @@
 /src/
 /dist
 
-/build.ninja
 /local*.sh

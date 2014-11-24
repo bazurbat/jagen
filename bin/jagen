@@ -14,6 +14,8 @@ Commands:
 . "$ja_root/lib/pkg.sh" ||
     { echo "Failed to load pkg environment"; exit 1; }
 
+build_file="$pkg_build_dir/build.ninja"
+
 if [ $# = 0 ]; then
     print_help
     exit
@@ -35,13 +37,20 @@ rebuild() {
         "$pkg_build_dir"/*.log 2>/dev/null &
 
     if [ "$targets_only" ]; then
-        ninja $targets >/dev/null; status=$?
+        ninja -f "$build_file" $targets >/dev/null; status=$?
     else
-        ninja >/dev/null; status=$?
+        ninja -f "$build_file" >/dev/null; status=$?
     fi
 
     kill $!
     return $status
+}
+
+rebuild_chibi() {
+    for s in clean unpack build install; do
+        "$ja_bin_dir/jagen-pkg" chibi-scheme $s tools \
+            || die "Failed to $s chibi-scheme"
+    done
 }
 
 case $1 in
@@ -56,25 +65,17 @@ case $1 in
         ;;
     update)
         p_src_pull .
-        use_env tools
-        if ! $(which chibi-scheme >/dev/null 2>&1); then
-            for s in clean unpack build install; do
-                "$ja_bin_dir/jagen-pkg" chibi-scheme $s tools \
-                    || die "Failed to $s chibi-scheme"
-            done
-        fi
         exec jagen refresh
         ;;
     refresh)
         use_env tools
-        $(which chibi-scheme >/dev/null 2>&1) ||
-            die "Could not find chibi-scheme, try update"
-        $ja_bin generate build.ninja "$ja_lib_dir/rules.scm" ||
+        p_in_path chibi-scheme || rebuild_chibi
+        $ja_bin generate "$build_file" "$ja_lib_dir/rules.scm" ||
             die "Failed to generate build rules"
         ;;
     build)
         shift
-        ninja "$@" || die "Build failed"
+        ninja -f "$build_file" "$@" || die "Build failed"
         ;;
     rebuild)
         shift
