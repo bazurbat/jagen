@@ -18,9 +18,11 @@ MAKE="make DEVICE=$platform \
     CGT_C674_ELF_INSTALL_DIR=$EZSDK/dsp-devkit/cgt6x_7_3_4 \
     USE_SYSLINK_NOTIFY=0"
 
-pkg_unpack() {
+pkg_clean() {
     p_run $MAKE clean
 }
+
+pkg_unpack() { :; }
 
 pkg_build() {
     # do not use parallel jobs here
