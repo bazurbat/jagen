@@ -2,6 +2,7 @@
 
 p_source="git git@bitbucket.org:art-system/u-boot.git"
 p_source_dir="$ja_src_dir/$p_name"
+p_source_branch="ast200"
 
 if [ "$sdk_target_board" = "ti_evm" ]; then
     config="ti8168_evm_config_sd"
