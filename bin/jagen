@@ -67,7 +67,7 @@ rebuild() {
     if [ "$show_all" ]; then
         tail -qFn0 "$pkg_build_dir"/*.log 2>/dev/null &
     else
-        tail -qFn0 $logs $rebuild_log 2>/dev/null &
+        tail -qFn0 $logs "$rebuild_log" 2>/dev/null &
     fi
 
     if [ "$targets_only" ]; then
