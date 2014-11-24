@@ -2,12 +2,15 @@
 
 p_work_dir="$sdk_rootfs_dir"
 
+pkg_clean() {
+    sudo -n rm -rf "$p_work_dir" || return $?
+    sudo -n mkdir -p "$p_work_dir" || return $?
+}
+
 pkg_unpack() {
     local A=$(ls -1 $EZSDK/filesystem/ezsdk-dm816x-evm-rootfs.tar.gz)
     local me=$(whoami)
 
-    sudo -n rm -rf "$p_work_dir" || return $?
-    mkdir "$p_work_dir" || return $?
     sudo -n tar -C "$p_work_dir" -xf "$A" || return $?
     sudo -n chown "$me" "$p_work_dir" || return $?
 

@@ -8,17 +8,21 @@ module_dir="$src_dir/module"
 
 MAKE="make RULES_MAKE=$sdk_rules"
 
-pkg_unpack_target() {
+use_env target
+
+pkg_clean() {
     p_run $MAKE -C $interface_dir clean
     p_run $MAKE -C $module_dir clean
 }
 
-pkg_build_target() {
+pkg_unpack() { :; }
+
+pkg_build() {
     p_run $MAKE -C $interface_dir ../../lib/cmem.a470MV
     p_run $MAKE -C $module_dir
 }
 
-pkg_install_target() {
+pkg_install() {
     local dest="$kernel_modules_dir/kernel/drivers/dsp"
 
     p_run install -v -d "$dest"

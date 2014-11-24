@@ -2,7 +2,7 @@
 
 (pkg 'u-boot
      '(config min
-              (build (rootfs prepare)))
+              (build (rootfs patch)))
      '(config target
               (build (u-boot build min))
               (mkimage)))
@@ -10,18 +10,17 @@
 (pkg 'linux
      '(config target
               (build)
-              (install (rootfs prepare))
-              (depmod (cmem install target)
+              (install (rootfs patch))
+              (depmod (cmem install)
                       (syslink install))))
 
 (pkg 'cmem
-     '(config target
-              (unpack (rootfs prepare))
-              (build (linux install target))
-              (install)))
+     '(unpack (rootfs patch))
+     '(build (linux install target))
+     '(install))
 
 (pkg 'syslink
-     '(unpack (rootfs prepare))
+     '(unpack (rootfs patch))
      '(build (linux install target))
      '(install))
 
@@ -48,7 +47,7 @@
               (install))
      '(config target
               (build after (chicken install cross))
-              (install (rootfs prepare))))
+              (install (rootfs patch))))
 
 (pkg 'libuv
      '(config host
@@ -60,7 +59,7 @@
               (unpack)
               (prepare)
               (build (libuv install host))
-              (install (rootfs prepare))))
+              (install (rootfs patch))))
 
 (pkg 'luajit
      '(config host
@@ -70,7 +69,7 @@
      '(config target
               (unpack)
               (build (luajit install host))
-              (install (rootfs prepare))))
+              (install (rootfs patch))))
 
 (pkg 'ffmpeg
      '(config host
@@ -78,11 +77,11 @@
               (install))
      '(config target
               (build)
-              (install (rootfs prepare))))
+              (install (rootfs patch))))
 
 (pkg 'soundtouch
      '(config target
               (build)
-              (install (rootfs prepare))))
+              (install (rootfs patch))))
 
 ))
