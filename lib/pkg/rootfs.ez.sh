@@ -35,4 +35,10 @@ pkg_patch() {
     p_run sed -ri \
         "s|(\s*LINUXKERNEL_INSTALL_DIR)=\S+|\1=$LINUX_KERNEL|g" \
         "$sdk_rules"
+
+    if [ "$sdk_target_board" = "ast200" ]; then
+        p_run sed -ri \
+            "s|^(S:.*ttyO).$|\10|g" \
+            "$p_work_dir/etc/inittab"
+    fi
 }
