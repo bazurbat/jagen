@@ -1,8 +1,15 @@
 #!/bin/sh
 
+export target_dir="/src/nfs/rootfs"
+export target_prefix="/usr"
+
+export target_arch="arm"
+export target_cpu="armv7-a"
+export target_system="arm-none-linux-gnueabi"
+
 export sdk_target_board="ast200"
 
-export sdk_rootfs_dir="/srv/nfs/rootfs"
+export sdk_rootfs_dir="$target_dir"
 
 export EZSDK="$ja_src_dir/ez"
 export LINUX_KERNEL="$ja_src_dir/linux"

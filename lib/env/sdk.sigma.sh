@@ -1,5 +1,12 @@
 #!/bin/sh
 
+export target_dir="$pkg_build_dir/target"
+export target_prefix="/firmware"
+
+export target_arch="mipsel"
+export target_cpu="24kf"
+export target_system="mipsel-linux"
+
 export sdk_target_board="ast100"
 
 export sdk_ezboot_dir="$ja_src_dir/sigma-ezboot"

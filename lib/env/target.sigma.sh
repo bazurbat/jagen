@@ -1,12 +1,5 @@
 #!/bin/sh
 
-export target_dir="$pkg_build_dir/target"
-export target_prefix="/firmware"
-
-export target_arch="mipsel"
-export target_cpu="24kf"
-export target_system="mipsel-linux"
-
 export CC="${target_system}-gcc"
 export CXX="${target_system}-g++"
 export STRIP="${target_system}-strip"

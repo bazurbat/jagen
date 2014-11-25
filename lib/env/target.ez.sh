@@ -1,12 +1,5 @@
 #!/bin/sh
 
-export target_dir="$sdk_rootfs_dir"
-export target_prefix="/usr"
-
-export target_arch="arm"
-export target_cpu="armv7-a"
-export target_system="arm-none-linux-gnueabi"
-
 export CC="${target_system}-gcc"
 export CXX="${target_system}-g++"
 export STRIP="${target_system}-strip"
