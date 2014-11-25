@@ -6,9 +6,15 @@ else
     echo "Warning: SSH_AUTH_SOCK is not set, not forwarding SSH agent"
 fi
 
+if [ "$1" = "--work-dir" ]; then
+    work_dir=$(realpath "$2")
+    shift 2
+fi
+
 exec docker run -it --rm --privileged \
     --env SSH_AUTH_SOCK=$SSH_AUTH_SOCK \
     ${sock_dir:+--volume "$sock_dir:$sock_dir"} \
+    ${work_dir:+--volume "$work_dir:/mnt/src/jagen"} \
     --volume /tmp/build:/tmp/build \
     --volumes-from build-data \
     build "$@"
