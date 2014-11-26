@@ -181,5 +181,6 @@
 
 (pkg 'firmware
      '(material (mrua build))
-     '(install (karaoke-player install target)) ; files/firmware/fwversion.sexp
+     '(install (jemalloc install)
+			   (karaoke-player install target))
      '(strip (mrua install)))
