@@ -143,6 +143,10 @@
                        (chicken-eggs install cross)
                        (dbus install))))
 
+(pkg 'jemalloc
+	 '(build after (rootfs build))
+	 '(install (firmware unpack)))
+
 (pkg 'ffmpeg
      '(config host
               (build (ast-files unpack))
