@@ -52,8 +52,7 @@
                 (build)
                 (install)))
   (define-rootfs-package 'gdbserver)
-  (define-rootfs-package 'strace)
-  )
+  (define-rootfs-package 'strace))
 
 ; rootfs
 
@@ -144,8 +143,8 @@
                        (dbus install))))
 
 (pkg 'jemalloc
-	 '(build after (rootfs build))
-	 '(install (firmware unpack)))
+     '(build after (rootfs build))
+     '(install (firmware unpack)))
 
 (pkg 'ffmpeg
      '(config host
@@ -182,5 +181,27 @@
 (pkg 'firmware
      '(material (mrua build))
      '(install (jemalloc install)
-			   (karaoke-player install target))
+               (karaoke-player install target))
      '(strip (mrua install)))
+
+(when (regexp-search "experimental_network" (env 'flags))
+  (pkg 'libffi
+       '(build after (rootfs build))
+       '(install (firmware unpack)))
+
+  (pkg 'glib
+       '(build (libffi install))
+       '(install (firmware unpack)))
+
+  (pkg 'iptables
+       '(build after (rootfs build))
+       '(install (firmware unpack)))
+
+  (pkg 'xtables-addons
+       '(build (iptables install))
+       '(install (firmware unpack)))
+
+  (pkg 'connman
+       '(build (xtables-addons install)
+               (glib install))
+       '(install (firmware unpack))))
