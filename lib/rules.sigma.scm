@@ -176,8 +176,7 @@
 
 (pkg 'firmware
      '(material (mrua build))
-     '(install (jemalloc install)
-               (karaoke-player install target))
+     '(install (karaoke-player install target))
      '(strip (mrua install)))
 
 (when (regexp-search "jemalloc" *flags*)
