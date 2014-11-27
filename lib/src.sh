@@ -3,7 +3,7 @@
 p_git_is_dirty() { test "$(git status --porcelain)"; }
 
 p_git_clone() {
-    p_run git clone --progress "$1" "$2"
+    p_run git clone --progress --depth 1 "$1" "$2"
 }
 
 p_git_fetch() {
@@ -43,7 +43,7 @@ p_git_clean() {
 p_hg_is_dirty() { test "$(hg status)" ; }
 
 p_hg_clone() {
-    p_run hg clone "$1" "$2"
+    p_run hg clone --verbose -r tip "$1" "$2"
 }
 
 p_hg_fetch() {
