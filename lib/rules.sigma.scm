@@ -142,10 +142,6 @@
                        (chicken-eggs install cross)
                        (dbus install))))
 
-(pkg 'jemalloc
-     '(build after (rootfs build))
-     '(install (firmware unpack)))
-
 (pkg 'ffmpeg
      '(config host
               (build (ast-files unpack))
@@ -183,6 +179,11 @@
      '(install (jemalloc install)
                (karaoke-player install target))
      '(strip (mrua install)))
+
+(when (regexp-search "jemalloc" *flags*)
+  (pkg 'jemalloc
+       '(build after (rootfs build))
+       '(install (firmware unpack))))
 
 (when (regexp-search "experimental_network" *flags*)
   (pkg 'libffi
