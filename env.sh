@@ -12,7 +12,5 @@ export pkg_sdk="sigma"
 export pkg_build_type="Release"
 
 export pkg_build_dir="$pkg_root/build"
-export pkg_dist_dir="$pkg_root/dist/$pkg_sdk"
-export pkg_private_dir="$pkg_src_dir/files"
 
-PATH="$pkg_root/bin:$pkg_private_dir/bin:$PATH"
+PATH="$pkg_root/bin:$PATH"
