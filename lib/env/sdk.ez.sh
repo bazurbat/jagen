@@ -11,8 +11,8 @@ export sdk_target_board="ast200"
 
 export sdk_rootfs_dir="$target_dir"
 
-export EZSDK="$ja_src_dir/ez"
-export LINUX_KERNEL="$ja_src_dir/linux"
+export EZSDK="$pkg_src_dir/ez"
+export LINUX_KERNEL="$pkg_src_dir/linux"
 export INSTALL_MOD_PATH="$sdk_rootfs_dir"
 
 export kernel_version="2.6.37+"

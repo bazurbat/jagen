@@ -1,14 +1,14 @@
 #!/bin/sh
 
 p_source="git git@bitbucket.org:art-system/sigma-kernel.git"
-p_source_dir="$ja_src_dir/sigma-kernel"
+p_source_dir="$pkg_src_dir/sigma-kernel"
 
 protectordir="$sdk_ezboot_dir/protector/"
 
 use_env tools target
 
 pkg_build() {
-    p_run ln -sfT "$ja_src_dir/linux" linux
+    p_run ln -sfT "$pkg_src_dir/linux" linux
 
     p_run cp -f kernel-config linux/.config
 
@@ -47,7 +47,7 @@ pkg_install() {
 pkg_image() {
     p_run cd linux
 
-    p_run cp -f "$ja_files_dir/cfg/initramfs_default_node_list" "usr"
+    p_run cp -f "$pkg_private_dir/cfg/initramfs_default_node_list" "usr"
 
     p_run make zbimage-linux-xload
 

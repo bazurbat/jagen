@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. "$ja_root/lib/env.sh" ||
+. "$pkg_root/lib/env.sh" ||
     { echo "Failed to load environment"; exit 1; }
 
 : ${p_jobs:=1}
@@ -90,5 +90,5 @@ p_fix_la() {
     p_run p_run sed -ri "s|libdir='/lib'|libdir='$sdk_rootfs_prefix/lib'|" $1
 }
 
-. "$ja_lib_dir/src.sh" || exit
-. "$ja_lib_dir/stages.sh" || exit
+. "$pkg_lib_dir/src.sh" || exit
+. "$pkg_lib_dir/stages.sh" || exit

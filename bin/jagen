@@ -1,12 +1,12 @@
 #!/bin/sh
 
-[ "$ja_root" ] ||
-    { echo "ja_root is not set, please source env.sh in the project root.";
+[ "$pkg_root" ] ||
+    { echo "pkg_root is not set, please source env.sh in the project root.";
       exit 1; }
 
-. "$ja_root/lib/pkg.sh" ||
+. "$pkg_root/lib/pkg.sh" ||
     { echo "Failed to load pkg environment"; exit 1; }
-. "$ja_root/lib/help.sh" ||
+. "$pkg_root/lib/help.sh" ||
     { echo "Failed to load help"; exit 1; }
 
 if [ $# = 0 ]; then
@@ -78,7 +78,7 @@ rebuild() {
 rebuild_chibi() {
     debug "Rebuilding Chibi Scheme"
     for s in clean unpack build install; do
-        "$ja_bin_dir/jagen-pkg" chibi-scheme $s tools \
+        "$pkg_bin_dir/jagen-pkg" chibi-scheme $s tools \
             || die "Failed to $s chibi-scheme"
     done
 }
@@ -97,7 +97,7 @@ case $1 in
     refresh)
         use_env tools
         p_in_path chibi-scheme || rebuild_chibi
-        $ja_bin generate "$build_file" "$ja_lib_dir/rules.scm" ||
+        $pkg_bin generate "$build_file" "$pkg_lib_dir/rules.scm" ||
             die "Failed to generate build rules"
         ;;
     build)

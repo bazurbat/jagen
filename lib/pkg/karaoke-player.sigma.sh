@@ -1,7 +1,7 @@
 #!/bin/sh
 
 p_source="hg ssh://hg@bitbucket.org/art-system/karaoke-player"
-p_source_dir="$ja_src_dir/karaoke-player"
+p_source_dir="$pkg_src_dir/karaoke-player"
 p_build_dir="$p_work_dir/build${p_config:+-$p_config}"
 
 pkg_build_host() {
@@ -22,7 +22,7 @@ pkg_build_host() {
 }
 
 pkg_prepare_target() {
-    p_run cd "$ja_src_dir"
+    p_run cd "$pkg_src_dir"
     p_run ln -sfT sigma-rootfs rootfs
     p_run ln -sfT sigma-mrua mrua
 }
@@ -35,7 +35,7 @@ pkg_build_target() {
         -DCMAKE_SYSTEM_NAME="Linux" \
         -DCMAKE_INSTALL_PREFIX="${target_dir}${target_prefix}" \
         -DCMAKE_FIND_ROOT_PATH="${target_dir}${target_prefix}" \
-        -DSIGMA_ROOT_DIR="$ja_src_dir" \
+        -DSIGMA_ROOT_DIR="$pkg_src_dir" \
         -DCHICKEN_HOST_SYSTEM="mipsel-linux" \
         -DCHICKEN_BUILD_IMPORTS=NO \
         -DLIBUV_ROOT_DIR="$sdk_rootfs_prefix" \

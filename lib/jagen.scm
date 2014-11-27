@@ -43,7 +43,7 @@
 (define (import-shell-variable p)
   (let* ((k (car p))
          (v (cdr p))
-         (rx '(: (or "ja_" "pkg_") (-> name (+ any))))
+         (rx '(: "pkg_" (-> name (+ any))))
          (m (regexp-matches rx k)))
     (if m
       (let* ((submatch (regexp-match-submatch m 'name))

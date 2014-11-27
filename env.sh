@@ -1,8 +1,18 @@
 #!/bin/sh
 
-export ja_root=$(realpath .)
+export pkg_root=$(realpath .)
 
-. "$ja_root/lib/env.sh" ||
-    { echo "Failed to load environment"; exit 1; }
+export pkg_bin_dir="$pkg_root/bin"
+export pkg_lib_dir="$pkg_root/lib"
+export pkg_src_dir="$pkg_root/src"
 
-PATH="$ja_root/bin:$ja_files_dir/bin:$PATH"
+export pkg_bin="chibi-scheme -r $pkg_lib_dir/jagen.scm"
+
+export pkg_sdk="sigma"
+export pkg_build_type="Release"
+
+export pkg_build_dir="$pkg_root/build"
+export pkg_dist_dir="$pkg_root/dist/$pkg_sdk"
+export pkg_private_dir="$pkg_src_dir/files"
+
+PATH="$pkg_root/bin:$pkg_private_dir/bin:$PATH"

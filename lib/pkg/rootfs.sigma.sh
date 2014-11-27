@@ -1,7 +1,7 @@
 #!/bin/sh
 
 p_source="git git@bitbucket.org:art-system/sigma-rootfs.git"
-p_source_dir="$ja_src_dir/sigma-rootfs"
+p_source_dir="$pkg_src_dir/sigma-rootfs"
 
 pkg_patch() {
     [ -d dl ] || p_run cp -r "$pkg_dist_dir/dl" "$sdk_rootfs_dir"
@@ -87,7 +87,7 @@ remove_libcurl() {
 
 install_keys() {
     mkdir -p "$sdk_rootfs_root/lib/firmware" || return $?
-    cp -a "$ja_files_dir/keys/keyfile.gpg" "$sdk_rootfs_root/lib/firmware"
+    cp -a "$pkg_private_dir/keys/keyfile.gpg" "$sdk_rootfs_root/lib/firmware"
 }
 
 install_gpg() {
@@ -185,7 +185,7 @@ clean_misc() {
 }
 
 install_files() {
-    cp -rf "$ja_files_dir"/rootfs/* "$sdk_rootfs_root"
+    cp -rf "$pkg_private_dir"/rootfs/* "$sdk_rootfs_root"
 }
 
 pkg_install() {

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 p_source="git git@bitbucket.org:art-system/u-boot.git"
-p_source_dir="$ja_src_dir/$p_name"
+p_source_dir="$pkg_src_dir/$p_name"
 p_source_branch="ast200"
 
 if [ "$sdk_target_board" = "ti_evm" ]; then
@@ -43,5 +43,5 @@ pkg_build_target() {
 }
 
 pkg_mkimage_target() {
-    p_run $mkimage "$ja_files_dir/boot/$boot_scipt" "$sdk_rootfs_dir/boot/boot.scr"
+    p_run $mkimage "$pkg_private_dir/boot/$boot_scipt" "$sdk_rootfs_dir/boot/boot.scr"
 }

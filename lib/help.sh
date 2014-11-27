@@ -40,7 +40,7 @@ CONFIGURATION:
   \"<jagen>/local.sh\" files. These are sourced during the build process and
   should be the shell variable declarations, for example:
 
-  export ja_sdk=\"sigma\"
+  export pkg_sdk=\"sigma\"
   export pkg_build_dir=\"/tmp/build\"
   export pkg_source_exclude=\"chicken karaoke-player\"
 

@@ -1,19 +1,7 @@
 #!/bin/sh
 
-export ja_bin_dir="$ja_root/bin"
-export ja_lib_dir="$ja_root/lib"
-export ja_src_dir="$ja_root/src"
-
-export ja_sdk="sigma"
-
-export pkg_build_type="Release"
-export pkg_build_dir="$ja_root/build"
-export pkg_dist_dir="$ja_root/dist/$ja_sdk"
-
-export ja_bin="chibi-scheme -r $ja_lib_dir/jagen.scm"
-
 debug() {
-    if [ "$ja_debug" = "yes" ]; then
+    if [ "$pkg_debug" = "yes" ]; then
         printf "\033[1;36m:::\033[0m %s\n" "$*"
     fi
     return 0
@@ -28,9 +16,9 @@ die() { error "$*"; exit 1; }
 include() {
     local basepath="$1"
 
-    if [ -f "${basepath}.${ja_sdk}.sh" ]; then
-        debug include ${basepath}.${ja_sdk}.sh
-        . "${basepath}.${ja_sdk}.sh"
+    if [ -f "${basepath}.${pkg_sdk}.sh" ]; then
+        debug include ${basepath}.${pkg_sdk}.sh
+        . "${basepath}.${pkg_sdk}.sh"
     elif [ -f "${basepath}.sh" ]; then
         debug include ${basepath}.sh
         . "${basepath}.sh"
@@ -42,14 +30,11 @@ include() {
 use_env() {
     local e
     for e in "$@"; do
-        include "$ja_lib_dir/env/$e"
+        include "$pkg_lib_dir/env/$e"
     done
 }
 
 include "${HOME}/.config/jagen/env"
-include "$ja_root/local"
-include "$ja_lib_dir/env/cmake"
-include "$ja_lib_dir/env/sdk"
-
-: ${ja_files_dir:="$ja_src_dir/files"}
-export ja_files_dir
+include "$pkg_root/local"
+include "$pkg_lib_dir/env/cmake"
+include "$pkg_lib_dir/env/sdk"

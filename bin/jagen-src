@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. "$ja_root/lib/pkg.sh" || die "Failed to load pkg env"
+. "$pkg_root/lib/pkg.sh" || die "Failed to load pkg env"
 
 cmd="$1"
 src="$2"

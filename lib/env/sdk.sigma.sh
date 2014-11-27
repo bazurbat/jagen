@@ -9,11 +9,11 @@ export target_system="mipsel-linux"
 
 export sdk_target_board="ast100"
 
-export sdk_ezboot_dir="$ja_src_dir/sigma-ezboot"
-export sdk_kernel_dir="$ja_src_dir/sigma-kernel"
-export sdk_mrua_dir="$ja_src_dir/sigma-mrua"
+export sdk_ezboot_dir="$pkg_src_dir/sigma-ezboot"
+export sdk_kernel_dir="$pkg_src_dir/sigma-kernel"
+export sdk_mrua_dir="$pkg_src_dir/sigma-mrua"
 
-export sdk_rootfs_dir="$ja_src_dir/sigma-rootfs"
+export sdk_rootfs_dir="$pkg_src_dir/sigma-rootfs"
 export sdk_rootfs_root="$sdk_rootfs_dir/build_mipsel/root"
 export sdk_rootfs_prefix="$sdk_rootfs_dir/cross_rootfs"
 
@@ -98,19 +98,19 @@ case $sdkver in
 esac
 export cpukeys kernel_version kernel_release
 
-export ja_xsdk_dir="$pkg_build_dir/pkg/xsdk/$cpukeys"
+xsdk_dir="$pkg_build_dir/pkg/xsdk/$cpukeys"
 
 # XSDK
-export XSDK_ROOT="$ja_xsdk_dir/signed_items"
+export XSDK_ROOT="$xsdk_dir/signed_items"
 export XSDK_DEFAULT_KEY_DOMAIN=8644_ES1_prod
 export XSDK_DEFAULT_ZBOOT_CERTID=0000
 export XSDK_DEFAULT_CPU_CERTID=0001
 
-if [ -d "$ja_xsdk_dir/xbin" ]; then
-    PATH="$ja_xsdk_dir/xbin:$PATH"
+if [ -d "$xsdk_dir/xbin" ]; then
+    PATH="$xsdk_dir/xbin:$PATH"
 fi
 
-export kernel_dir="$ja_src_dir/sigma-kernel"
+export kernel_dir="$pkg_src_dir/sigma-kernel"
 export kernel_modules_dir="$sdk_rootfs_root/lib/modules/$kernel_release"
 export kernel_extra_modules_dir="$kernel_modules_dir/extra"
 
