@@ -9,7 +9,10 @@
 
 (%rule (make-rule
          "script"
-         (list (cons "command" "bin/$script && touch $out"))))
+         (list (cons "command"
+                     (string-append (env 'bin-dir)
+                                    "/$script && touch $out")))))
 
 (when (env 'sdk)
-  (load (string-append "lib/rules." (env 'sdk) ".scm")))
+  (load (string-append
+          (env 'lib-dir) "/rules." (env 'sdk) ".scm")))
