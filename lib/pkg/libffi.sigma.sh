@@ -16,6 +16,8 @@ pkg_patch() {
 }
 
 pkg_build() {
+    # CFLAGS="$CFLAGS -mno-compact-eh"
+
     p_run ./configure \
         --host="$target_system" \
         --prefix="$target_prefix"
