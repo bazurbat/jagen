@@ -28,10 +28,10 @@ pkg_build() {
         --disable-nmcompat \
         --disable-polkit \
         --disable-selinux \
-        --disable-loopback \
-        --disable-ethernet \
+        --enable-loopback \
+        --enable-ethernet \
         --disable-gadget \
-        --disable-wifi \
+        --enable-wifi \
         --disable-bluetooth \
         --disable-ofono \
         --disable-dundee \
