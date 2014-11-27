@@ -1,6 +1,8 @@
 (%variable "builddir" (env 'build-dir))
 (show #t nl)
 
+(define *flags* (or (env 'flags) ""))
+
 (%rule (make-rule
          "command"
          (list (cons "command" "$command"))))

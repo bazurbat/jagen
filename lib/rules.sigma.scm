@@ -184,7 +184,7 @@
                (karaoke-player install target))
      '(strip (mrua install)))
 
-(when (regexp-search "experimental_network" (env 'flags))
+(when (regexp-search "experimental_network" *flags*)
   (pkg 'libffi
        '(build after (rootfs build))
        '(install (firmware unpack)))
