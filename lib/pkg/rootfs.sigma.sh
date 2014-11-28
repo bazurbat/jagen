@@ -4,7 +4,7 @@ p_source="git git@bitbucket.org:art-system/sigma-rootfs.git"
 p_source_dir="$pkg_src_dir/sigma-rootfs"
 
 pkg_patch() {
-    [ -d dl ] || p_src_copy "$pkg_dist_dir/dl" "$p_build_dir"
+    [ -d dl ] || p_src_copy "$pkg_dist_dir/dl" "$p_build_dir/dl"
 }
 
 pkg_build() {
