@@ -1,5 +1,7 @@
 #!/bin/sh
 
+use_env target
+
 export CC="${target_system}-gcc"
 export CXX="${target_system}-g++"
 export STRIP="${target_system}-strip"

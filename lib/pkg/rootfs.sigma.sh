@@ -193,7 +193,7 @@ install_files() {
 }
 
 pkg_install() {
-    use_env target
+    use_toolchain target
 
     create_dirs || die "create_dirs failed"
     fix_init_link || die "fix_init_link failed"

@@ -2,7 +2,7 @@
 
 p_source="$pkg_dist_dir/sqlite-autoconf-3080403.tar.gz"
 
-use_env target
+use_toolchain target
 
 pkg_patch() {
     p_run patch -i "$pkg_dist_dir/patches/sqlite-3.8.1-autoconf-dlopen_check.patch"

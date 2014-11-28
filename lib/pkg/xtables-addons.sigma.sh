@@ -2,7 +2,7 @@
 
 p_source="$pkg_dist_dir/xtables-addons-1.47.1.tar.xz"
 
-use_env target
+use_toolchain target
 
 pkg_build() {
     export libxtables_CFLAGS="-I${target_dir}${target_prefix}/include"

@@ -2,7 +2,7 @@
 
 p_source="$pkg_dist_dir/libgpg-error-1.17.tar.bz2"
 
-use_env target
+use_toolchain target
 
 pkg_build() {
     p_run ./configure \

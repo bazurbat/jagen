@@ -2,7 +2,7 @@
 
 p_source="$pkg_dist_dir/oprofile-0.9.9.tar.gz"
 
-use_env target
+use_toolchain target
 
 pkg_patch() {
     p_patch "${p_source}-AT_BASE_PLATFORM"

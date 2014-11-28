@@ -2,7 +2,7 @@
 
 p_source="$pkg_dist_dir/libffi-3.1.tar.gz"
 
-use_env target
+use_toolchain target
 
 pkg_patch() {
     p_run patch -p0 -i \

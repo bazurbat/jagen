@@ -2,7 +2,7 @@
 
 p_source="$pkg_dist_dir/strace-4.8.tar.xz"
 
-use_env target
+use_toolchain target
 
 pkg_build() {
     p_run ./configure \

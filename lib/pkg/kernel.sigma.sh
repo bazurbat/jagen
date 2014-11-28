@@ -5,7 +5,8 @@ p_source_dir="$pkg_src_dir/sigma-kernel"
 
 protectordir="$sdk_ezboot_dir/protector/"
 
-use_env tools target
+use_env tools
+use_toolchain target
 
 pkg_build() {
     p_run ln -sfT "$pkg_src_dir/linux" linux

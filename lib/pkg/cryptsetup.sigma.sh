@@ -2,7 +2,7 @@
 
 p_source="$pkg_dist_dir/cryptsetup-1.6.2.tar.bz2"
 
-use_env target
+use_toolchain target
 
 pkg_patch() {
     p_run autoreconf -vif

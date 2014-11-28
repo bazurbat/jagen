@@ -2,7 +2,7 @@
 
 p_source="$pkg_dist_dir/libuv-v0.10.25.tar.gz"
 
-use_env target
+use_toolchain target
 
 pkg_patch() {
     if [ -x ./autogen.sh ]; then

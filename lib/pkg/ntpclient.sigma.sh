@@ -2,7 +2,7 @@
 
 p_source="$pkg_dist_dir/ntpclient-2010.tar.gz"
 
-use_env target
+use_toolchain target
 
 pkg_build() {
     p_run sed -ri 's|^(CFLAGS.*ENABLE_DEBUG)|# \1|' Makefile

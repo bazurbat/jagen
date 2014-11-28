@@ -4,7 +4,8 @@ p_source="git git@bitbucket.org:art-system/sigma-ezboot.git"
 p_source_dir="$pkg_src_dir/sigma-ezboot"
 p_source_branch="sdk4"
 
-use_env tools target
+use_env tools
+use_toolchain target
 
 pkg_build() {
     p_run cd "xos/xboot2/xmasboot/nand_st2"

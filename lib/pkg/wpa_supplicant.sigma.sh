@@ -2,7 +2,7 @@
 
 p_source="$pkg_dist_dir/wpa_supplicant-2.2.tar.gz"
 
-use_env target
+use_toolchain target
 
 pkg_patch() {
     p_patch "wpa_supplicant-2.2-do-not-call-dbus-functions-with-NULL-path"

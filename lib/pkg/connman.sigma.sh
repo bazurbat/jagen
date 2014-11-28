@@ -2,7 +2,7 @@
 
 p_source="$pkg_dist_dir/connman-1.26.tar.xz"
 
-use_env target
+use_toolchain target
 
 pkg_build() {
     export ac_cv_lib_resolv_ns_initparse=yes

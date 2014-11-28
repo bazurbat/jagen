@@ -2,7 +2,7 @@
 
 p_source="$pkg_dist_dir/freetype-2.5.0.1.tar.bz2"
 
-use_env target
+use_toolchain target
 
 pkg_patch() {
     enable_option() {

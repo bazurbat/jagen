@@ -2,7 +2,7 @@
 
 p_source="$pkg_dist_dir/gnupg-1.4.18.tar.bz2"
 
-use_env target
+use_toolchain target
 
 pkg_build() {
     p_run ./configure \

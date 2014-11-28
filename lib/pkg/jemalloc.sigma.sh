@@ -2,7 +2,7 @@
 
 p_source="$pkg_dist_dir/jemalloc-3.6.0.tar.bz2"
 
-use_env target
+use_toolchain target
 
 pkg_build() {
 	export je_cv_static_page_shift=12

@@ -8,7 +8,7 @@ module_dir="$src_dir/module"
 
 MAKE="make RULES_MAKE=$sdk_rules"
 
-use_env target
+use_toolchain target
 
 pkg_clean() {
     p_run $MAKE -C $interface_dir clean

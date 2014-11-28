@@ -2,7 +2,7 @@
 
 p_source="$pkg_dist_dir/libgcrypt-1.5.3.tar.bz2"
 
-use_env target
+use_toolchain target
 
 pkg_patch() {
     p_patch "libgcrypt-1.5.0-uscore"

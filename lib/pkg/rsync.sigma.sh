@@ -2,7 +2,7 @@
 
 p_source="$pkg_dist_dir/rsync-3.1.1.tar.gz"
 
-use_env target
+use_toolchain target
 
 pkg_build() {
     p_run ./configure \

@@ -2,7 +2,8 @@
 
 p_source="$pkg_dist_dir/smp86xx_yamon_R2.13-31.tar.bz2"
 
-use_env tools target
+use_env tools
+use_toolchain target
 
 pkg_patch() {
     p_run mkdir -p "$p_source_dir/sources"

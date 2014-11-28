@@ -2,7 +2,7 @@
 
 p_source="$pkg_dist_dir/glib-2.40.2.tar.xz"
 
-use_env target
+use_toolchain target
 
 pkg_patch() {
     # removes hard dependency on python

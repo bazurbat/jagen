@@ -2,7 +2,7 @@
 
 p_source="$pkg_dist_dir/e2fsprogs-1.42.9.tar.gz"
 
-use_env target
+use_toolchain target
 
 pkg_patch() {
     p_patch "e2fsprogs-1.41.8-makefile"

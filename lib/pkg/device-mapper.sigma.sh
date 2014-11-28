@@ -2,7 +2,7 @@
 
 p_source="$pkg_dist_dir/LVM2.2.02.95.tgz"
 
-use_env target
+use_toolchain target
 
 pkg_build() {
     p_run ./configure \

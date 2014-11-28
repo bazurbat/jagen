@@ -1,5 +1,7 @@
 #!/bin/sh
 
+use_env host
+
 export CC="gcc"
 export CXX="g++"
 export STRIP="strip"

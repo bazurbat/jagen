@@ -21,7 +21,7 @@ mkimage="./tools/mkimage -A arm -O linux -T script -C none -n TI_script -d"
 pkg_build_min() {
     local dest="$sdk_rootfs_dir/boot"
 
-    use_env target
+    use_toolchain target
 
     p_run $CROSS_MAKE distclean
     p_run $CROSS_MAKE $config_min
