@@ -41,3 +41,10 @@ use_env() {
         include "$pkg_lib_dir/env/$e"
     done
 }
+
+use_toolchain() {
+    local f
+    for f in "$@"; do
+        include "$pkg_lib_dir/toolchain/$f"
+    done
+}

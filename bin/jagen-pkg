@@ -31,7 +31,11 @@ run_stage() {
     fi
 }
 
-[ "$p_config" ] && use_env "$p_config"
+if [ "$p_config" ]; then
+    use_env "$p_config"
+    use_toolchain "$p_config"
+fi
+
 [ -d "$p_build_dir" ] && cd "$p_build_dir"
 
 run_stage "pkg_${p_stage}_pre"
