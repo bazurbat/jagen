@@ -2,6 +2,10 @@
 
 p_source="git git@bitbucket.org:art-system/sigma-rootfs.git"
 p_source_dir="$pkg_src_dir/sigma-rootfs"
+p_jobs=1
+
+[ -d "$SMP86XX_TOOLCHAIN_PATH" ] ||
+    die "SMP86XX_TOOLCHAIN_PATH ($SMP86XX_TOOLCHAIN_PATH) is not found"
 
 pkg_patch() {
     [ -d dl ] || p_src_copy "$pkg_dist_dir/dl" "$p_build_dir/dl"
