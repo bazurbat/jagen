@@ -1,5 +1,8 @@
 #!/bin/sh
 
+run_refresh="yes"
+[ "$1" = "--no-refresh" ] && run_refresh="no"
+
 export pkg_root=$(realpath .)
 
 . "$pkg_root/lib/env.sh" ||
@@ -7,4 +10,4 @@ export pkg_root=$(realpath .)
 
 PATH="$pkg_root/bin:$pkg_private_dir/bin:$PATH"
 
-jagen refresh
+[ "$run_refresh" = "yes" ] && jagen refresh
