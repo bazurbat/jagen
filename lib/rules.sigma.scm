@@ -169,6 +169,7 @@
               (build (astindex unpack)
                      (mrua build)
                      (ffmpeg install target)
+                     (libuv install)
                      (soundtouch install)
                      (chicken install target)
                      (chicken-eggs install cross))
