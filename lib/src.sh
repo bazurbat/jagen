@@ -3,74 +3,45 @@
 p_git_is_dirty() { test "$(git status --porcelain)"; }
 
 p_git_clone() {
-    p_run git clone --progress --depth 1 "$1" "$2"
+    p_run git clone \
+        --progress \
+        --depth 1 \
+        --no-single-branch \
+        --no-checkout \
+        "$1" "$2"
 }
 
-p_git_fetch() {
-    if p_git_is_dirty; then
-        warning "$PWD is dirty, not fetching"
-    else
-        p_run git fetch
-    fi
-}
+p_git_fetch() { p_run git fetch --progress -np; }
 
-p_git_pull() {
-    if p_git_is_dirty; then
-        warning "$PWD is dirty, not pulling"
-    else
-        p_run git pull
-    fi
-}
+p_git_pull() { p_run git pull --progress --ff-only; }
 
 p_git_checkout() {
     local branch=${1:-master}
 
-    if p_git_is_dirty; then
-        warning "$PWD is dirty, not checking out"
+    if [ "$(git branch --list $branch)" ]; then
+        p_run git checkout "$branch"
     else
-        p_run git checkout origin/$branch
+        p_run git checkout -b "$branch" -t origin/$branch
     fi
 }
 
-p_git_discard() {
-    p_run git checkout .
-}
+p_git_discard() { p_run git checkout .; }
 
-p_git_clean() {
-    p_run git clean -fxd
-}
+p_git_clean() { p_run git clean -fxd; }
 
-p_hg_is_dirty() { test "$(hg status)" ; }
+p_hg_is_dirty() { test "$(hg status)"; }
 
-p_hg_clone() {
-    p_run hg clone --verbose -r tip "$1" "$2"
-}
+p_hg_clone() { p_run hg clone -r tip "$1" "$2"; }
 
-p_hg_fetch() {
-    if p_hg_is_dirty; then
-        warning "$PWD is dirty, not fetching"
-    else
-        p_run hg pull -u
-    fi
-}
+p_hg_fetch() { p_run hg pull; }
 
-p_hg_pull() {
-    if p_hg_is_dirty; then
-        warning "$PWD is dirty, not pulling"
-    else
-        p_run hg pull -u
-    fi
-}
+p_hg_pull() { p_run hg pull -u; }
 
 p_hg_checkout() { :; }
 
-p_hg_discard() {
-    p_run hg update -C 
-}
+p_hg_discard() { p_run hg update -C; }
 
-p_hg_clean() {
-    p_run hg purge --all
-}
+p_hg_clean() { p_run hg purge --all; }
 
 p__is_dirty() { :; }
 
@@ -159,4 +130,10 @@ p_src_download() {
     [ -d "$dst" ] || mkdir -p "$dst"
     p_run tar -C "$dst" -xpf "$src"
     p_src_discard "$dst/$name"
+}
+
+p_src_copy() {
+    local src=$(realpath "$1") dst=$(realpath "$2")
+
+    p_run rsync -Ca "${src}/" "$dst"
 }

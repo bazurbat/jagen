@@ -91,7 +91,11 @@ case $1 in
         exec jagen refresh
         ;;
     update)
-        p_src_pull .
+        if p_src_is_dirty "$pkg_root"; then
+            warning "$pkg_root is dirty, not updating"
+        else
+            p_src_pull "$pkg_root"
+        fi
         exec jagen refresh
         ;;
     refresh)
