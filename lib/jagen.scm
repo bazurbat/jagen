@@ -12,13 +12,15 @@
 
 (define-record-type
   rule
-  (make-rule name variables) rule?
+  (make-rule name variables)
+  rule?
   (name      rule-name)
   (variables rule-variables))
 
 (define-record-type
   build
-  (make-build rule outputs inputs variables) build?
+  (make-build rule outputs inputs variables)
+  build?
   (rule      build-rule)
   (outputs   build-outputs)
   (inputs    build-inputs)
@@ -26,11 +28,28 @@
 
 (define-record-type
   target
-  (make-target name stage config) target?
+  (make-target name stage config)
+  target?
   (name   target-name)
   (stage  target-stage)
   (config target-config))
 
+(define-record-type
+  link
+  (make-link type from to)
+  link?
+  (type link-type)
+  (from link-from)
+  (to   link-to))
+
+(define-record-type
+  package
+  (make-package name)
+  package?
+  (name   package-name))
+
+(define *packages* '())
+(define *stages* '())
 (define *width* 4)
 
 (define main
@@ -60,18 +79,58 @@
              ((not (zero? (string-length value)))))
     value))
 
-(define (intersperse ls x)
-  (if (or (null? ls) (null? (cdr ls)))
-    ls
-    (let loop ((ls (cdr ls)) (res (list (car ls))))
-      (let ((res (cons (car ls) (cons x res))))
-        (if (null? (cdr ls))
-          (reverse res)
-          (loop (cdr ls) res))))))
-
 (define (generate-build out-file in-file)
   (if (file-exists? out-file) (delete-file out-file))
   (with-output-to-file out-file (cut load in-file)))
+
+#;(define (pkg name . stages)
+  (define (find-stage stage lst)
+    (find (lambda (s) (eq? (car s) (car stage))) lst))
+
+  (define (pull-stage stage lst)
+    (let ((found (find-stage stage lst)))
+      (if found found stage)))
+
+  (define match-config
+    (match-lambda
+      (('config config stages ...)
+       (map (cut match-stage <> config) stages))
+      ((stage ...)
+       (list (match-stage stage #f)))))
+
+  (define (match-stage stage config)
+    (match stage
+           ((stage)
+            (list (list (make-link 'implicit (make-target name stage #f) '()))))
+           ((stage dependencies ...)
+            (map (cut match-inputs (make-target name stage config) <>)
+                 dependencies))))
+
+  (define (match-inputs target dep)
+    (match dep
+           (('after deps ...)
+            (map (cut match-link 'order-only target <>) deps))
+           ((dep ...)
+            (list (match-link 'explicit target dep)))))
+
+  (define (match-link type from to)
+    (match to
+           ((package stage)
+            (make-link type from (make-target package stage #f)))
+           ((package stage config)
+            (make-link type from (make-target package stage config)))))
+
+  (define (collect-stages stages)
+    (define pre '((update) (clean) (unpack) (patch)))
+
+    (let loop ((stages (append (map (cut pull-stage <> stages) pre)
+                               (remove (cut find-stage <> pre) stages))))
+      (if (null? stages)
+        '()
+        (cons (match-config (car stages)) (loop (cdr stages))))))
+
+  (set! *packages* (cons (make-package name) *packages*))
+  (set! *stages* (append *stages* (apply append (apply append (apply append (collect-stages stages)))))))
 
 (define (pkg name . stages)
   (define (find-stage stage lst)

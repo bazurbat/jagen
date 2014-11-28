@@ -57,10 +57,9 @@
 ; rootfs
 
 (pkg 'rootfs
-     '(build after
-             (ast-files unpack)
-             (xsdk unpack)
-             (make install host))
+     '(build (after (ast-files unpack)
+                    (xsdk unpack)
+                    (make install host)))
      `(install ,@(if (string=? "Debug" (env 'build-type))
                    '((gdbserver install)
                      (strace install))
@@ -124,10 +123,10 @@
               (build)
               (install))
      '(config cross
-              (build after (chicken install host))
+              (build (after (chicken install host)))
               (install))
      '(config target
-              (build after (rootfs build) (chicken install cross))
+              (build (after (rootfs build) (chicken install cross)))
               (install (firmware unpack))))
 
 (pkg 'chicken-eggs
@@ -135,12 +134,11 @@
               (install (chicken install host)))
      '(config cross
               (install (chicken install cross)
-                       after (chicken-eggs install host)))
+                       (after (chicken-eggs install host))))
      '(config target
               (install (chicken install target)
-                       after
-                       (chicken-eggs install cross)
-                       (dbus install))))
+                       (after (chicken-eggs install cross)
+                              (dbus install)))))
 
 (pkg 'ffmpeg
      '(config host
@@ -148,11 +146,11 @@
               (install))
      '(config target
               (build (ast-files unpack)
-                     after (rootfs build))
+                     (after (rootfs build)))
               (install (firmware unpack))))
 
 (pkg 'soundtouch
-     '(build after (rootfs build))
+     '(build (after (rootfs build)))
      '(install (firmware unpack)))
 
 (pkg 'astindex
@@ -172,7 +170,7 @@
                      (soundtouch install)
                      (chicken install target)
                      (chicken-eggs install cross))
-              (install after (chicken-eggs install target))))
+              (install (after (chicken-eggs install target)))))
 
 (pkg 'firmware
      '(material (mrua build))
@@ -183,12 +181,12 @@
 
 (when (regexp-search "jemalloc" *flags*)
   (pkg 'jemalloc
-       '(build after (rootfs build))
+       '(build (after (rootfs build)))
        '(install (firmware unpack))))
 
 (when (regexp-search "experimental_network" *flags*)
   (pkg 'libffi
-       '(build after (rootfs build))
+       '(build (after (rootfs build)))
        '(install (firmware unpack)))
 
   (pkg 'glib
@@ -196,7 +194,7 @@
        '(install (firmware unpack)))
 
   (pkg 'iptables
-       '(build after (rootfs build))
+       '(build (after (rootfs build)))
        '(install (firmware unpack)))
 
   (pkg 'xtables-addons
@@ -207,3 +205,6 @@
        '(build (xtables-addons install)
                (glib install))
        '(install (firmware unpack))))
+
+; (for-each (lambda (i) (show #t i nl)) (reverse *packages*))
+; (for-each (lambda (i) (show #t i nl)) *stages*)
