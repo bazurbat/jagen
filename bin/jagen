@@ -76,7 +76,6 @@ rebuild() {
 }
 
 rebuild_chibi() {
-    debug "Rebuilding Chibi Scheme"
     for s in clean unpack build install; do
         "$pkg_bin_dir/jagen-pkg" chibi-scheme $s tools \
             || die "Failed to $s chibi-scheme"
@@ -89,6 +88,7 @@ case $1 in
         ;;
     clean)
         p_clean_dir "$pkg_build_dir"
+        exec jagen refresh
         ;;
     update)
         p_src_pull .
@@ -96,6 +96,7 @@ case $1 in
         ;;
     refresh)
         use_env tools
+        message "Refreshing build rules"
         p_in_path chibi-scheme || rebuild_chibi
         $pkg_bin generate "$build_file" "$pkg_lib_dir/rules.scm" ||
             die "Failed to generate build rules"
