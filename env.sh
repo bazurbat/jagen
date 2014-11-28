@@ -2,15 +2,9 @@
 
 export pkg_root=$(realpath .)
 
-export pkg_bin_dir="$pkg_root/bin"
-export pkg_lib_dir="$pkg_root/lib"
-export pkg_src_dir="$pkg_root/src"
+. "$pkg_root/lib/env.sh" ||
+    { echo "Failed to load environment"; exit 1; }
 
-export pkg_bin="chibi-scheme -r $pkg_lib_dir/jagen.scm"
+PATH="$pkg_root/bin:$pkg_private_dir/bin:$PATH"
 
-export pkg_sdk="sigma"
-export pkg_build_type="Release"
-
-export pkg_build_dir="$pkg_root/build"
-
-PATH="$pkg_root/bin:$PATH"
+jagen refresh
