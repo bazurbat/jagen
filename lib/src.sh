@@ -133,7 +133,9 @@ p_src_download() {
 }
 
 p_src_copy() {
-    local src=$(realpath "$1") dst=$(realpath "$2")
+    local src="$1" dst="$2"
+    [ -d "$src" ] || die "The source directory does not exist: $src"
+    [ -d "$dst" ] || mkdir -p "$dst"
 
     p_run rsync -Ca "${src}/" "$dst"
 }
