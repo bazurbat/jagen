@@ -42,7 +42,7 @@
 
 (define-rootfs-package 'ezboot)
 
-(define-rootfs-package 'yamon)
+;(define-rootfs-package 'yamon)
 
 ; debugging
 
