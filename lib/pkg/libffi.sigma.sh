@@ -16,7 +16,7 @@ pkg_patch() {
 }
 
 pkg_build() {
-    # CFLAGS="$CFLAGS -mno-compact-eh"
+    p_flags "new_toolchain" && CFLAGS="$CFLAGS -mno-compact-eh"
 
     p_run ./configure \
         --host="$target_system" \

@@ -4,6 +4,8 @@ p_source="$pkg_dist_dir/glib-2.40.2.tar.xz"
 
 use_toolchain target
 
+PKG_CONFIG_SYSROOT_DIR="$target_dir"
+
 pkg_patch() {
     # removes hard dependency on python
     p_run patch -p1 \
@@ -21,8 +23,8 @@ pkg_build() {
     echo "ac_cv_func_posix_getgrgid_r=yes" >> "$cache"
     echo "glib_cv_uscore=yes" >> "$cache"
 
-    export LIBFFI_CFLAGS="-I$(echo ${target_dir}${target_prefix}/lib/libffi-*/include)"
-    export LIBFFI_LIBS="-L${target_dir}${target_prefix}/lib -lffi"
+    # export LIBFFI_CFLAGS="-I$(echo ${target_dir}${target_prefix}/lib/libffi-*/include)"
+    # export LIBFFI_LIBS="-L${target_dir}${target_prefix}/lib -lffi"
 
     p_run ./configure \
         --cache-file="$cache" \

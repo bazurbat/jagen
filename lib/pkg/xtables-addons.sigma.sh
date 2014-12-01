@@ -4,9 +4,11 @@ p_source="$pkg_dist_dir/xtables-addons-1.47.1.tar.xz"
 
 use_toolchain target
 
+PKG_CONFIG_SYSROOT_DIR="$target_dir"
+
 pkg_build() {
-    export libxtables_CFLAGS="-I${target_dir}${target_prefix}/include"
-    export libxtables_LIBS="-L${target_dir}${target_prefix}/lib"
+    # export libxtables_CFLAGS="-I${target_dir}${target_prefix}/include"
+    # export libxtables_LIBS="-L${target_dir}${target_prefix}/lib"
 
     p_run ./configure \
         --host="$target_system" \

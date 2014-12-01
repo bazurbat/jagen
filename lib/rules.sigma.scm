@@ -164,7 +164,7 @@
                      (ffmpeg build host)
                      (chicken-eggs install host))
               (install))
-     '(config target
+     `(config target
               (prepare)
               (build (astindex unpack)
                      (mrua build)
@@ -172,7 +172,9 @@
                      (libuv install)
                      (soundtouch install)
                      (chicken install target)
-                     (chicken-eggs install cross))
+                     (chicken-eggs install cross)
+                     ,(when (regexp-search "experimental_network" *flags*)
+                        '(connman install)))
               (install after (chicken-eggs install target))))
 
 (pkg 'firmware
@@ -197,7 +199,7 @@
        '(install (firmware unpack)))
 
   (pkg 'iptables
-       '(build after (rootfs build))
+       '(build after (kernel build))
        '(install (firmware unpack)))
 
   (pkg 'xtables-addons

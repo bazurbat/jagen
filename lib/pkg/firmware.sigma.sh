@@ -73,9 +73,13 @@ install_chibi() {
 pkg_install() {
     local bin="audioplayer bgaudio demo jabba midiplayer smplayer db-service \
         csi i2c_debug uart-shell ast-service pcf8563"
+    local sbin="connmand"
 
     p_run cd "$p_source_dir/bin"
     p_run install -vm 755 $bin "$sdk_firmware_dir/bin"
+
+    p_run cd "$p_source_dir/sbin"
+    p_run install -vm 755 $sbin "$sdk_firmware_dir/sbin"
 
     p_run cd "$p_source_dir/lib"
     p_run cp -va chicken "$sdk_firmware_dir/lib"
