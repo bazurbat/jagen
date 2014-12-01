@@ -78,17 +78,6 @@ remove_image_libs() {
     rm -f libungif*
 }
 
-remove_ssl() {
-    cd "$sdk_rootfs_root" || return $?
-    rm -f lib/libssl* lib/libcrypto*
-    rm -f usr/bin/openssl
-}
-
-remove_libcurl() {
-    cd "$sdk_rootfs_root/lib" || return $?
-    rm -f libcurl*
-}
-
 install_keys() {
     mkdir -p "$sdk_rootfs_root/lib/firmware" || return $?
     cp -a "$pkg_private_dir/keys/keyfile.gpg" "$sdk_rootfs_root/lib/firmware"
@@ -164,12 +153,6 @@ install_zoneinfo() {
     ln -sf /usr/share/zoneinfo/GMT localtime
 }
 
-install_gdbserver() {
-    # GDB Server
-    cp -f "$sdk_rootfs_prefix/bin/gdbserver" \
-        "$sdk_rootfs_root/bin"
-}
-
 clean_misc() {
     cd "$sdk_rootfs_root" || return $?
 
@@ -213,12 +196,6 @@ pkg_install() {
     install_zoneinfo || die "install_zoneinfo failed"
     clean_misc || die "clean_misc failed"
     remove_image_libs || die "remove_image_libs failed"
-
-    if [ "$sdkver" != "3.11" ]; then
-        remove_ssl || die "remove_ssl failed"
-        remove_libcurl || die "remove_libcurl failed"
-    fi
-
     install_files || die "install_files failed"
 
     p_strip "$sdk_rootfs_root" >>"$p_log" 2>&1 || die "strip failed"
