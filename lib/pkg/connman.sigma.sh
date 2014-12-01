@@ -21,6 +21,7 @@ pkg_build() {
     p_run ./configure \
         --host="$target_system" \
         --prefix="$target_prefix" \
+        --enable-pie \
         --disable-gadget \
         --disable-bluetooth \
         --disable-ofono \
@@ -34,6 +35,16 @@ pkg_build() {
     p_run make
 }
 
+install_dbus_conf() {
+    local conf_path="/etc/dbus-1/system.d"
+
+    p_run install -vd "$sdk_rootfs_root$conf_path"
+    p_run install -vm 644 \
+        "$target_dir$conf_path/connman.conf" \
+        "$sdk_rootfs_root$conf_path"
+}
+
 pkg_install() {
     p_run make DESTDIR="$target_dir" install
+    install_dbus_conf
 }

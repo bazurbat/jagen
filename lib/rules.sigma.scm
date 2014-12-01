@@ -79,7 +79,9 @@
                (sqlite install)
                (util-linux install)
                (utils install target)
-               (wpa_supplicant install)))
+               (wpa_supplicant install)
+               ,(when (regexp-search "experimental_network" *flags*)
+                  '(connman install))))
 
 (define-rootfs-package 'expat)
 (define-rootfs-package 'dbus '(expat install))

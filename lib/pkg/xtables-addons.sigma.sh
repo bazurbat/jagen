@@ -20,4 +20,5 @@ pkg_build() {
 
 pkg_install() {
     p_run make DESTDIR="$target_dir" install
+    p_run rm -rf "$target_dir/lib"
 }

@@ -97,6 +97,10 @@ pkg_install() {
 
     p_run cd "$sdk_rootfs_prefix/lib" || return $?
     p_run cp -va libsqlite* "$sdk_firmware_dir/lib" || return $?
+
+    if p_flags "experimental_network"; then
+        p_run mkdir -p "$sdk_firmware_dir/var/lib/connman"
+    fi
 }
 
 pkg_strip() {
