@@ -152,7 +152,7 @@ install_chibi() {
 
 install_ldconfig() {
     cd "$TOOLCHAIN_RUNTIME_PATH" || return $?
-    cp -a sbin/ldconfig "$sdk_rootfs_root/sbin"
+    cp -a usr/lib/bin/ldconfig "$sdk_rootfs_root/sbin"
 }
 
 install_zoneinfo() {
