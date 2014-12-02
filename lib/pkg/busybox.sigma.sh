@@ -7,14 +7,14 @@ use_toolchain target
 p_prefix=""
 p_dest_dir="$sdk_rootfs_root"
 
-pkg_build() {
-    export CROSS_COMPILE="${target_system}-"
+export CROSS_COMPILE="${target_system}-"
 
+pkg_build() {
     p_run cp -f "$pkg_private_dir/cfg/busybox.config" ".config"
     p_run make oldconfig
     p_run make
 }
 
 pkg_install() {
-    p_run install -vm755 busybox "$p_dest_dir/bin/busybox"
+    p_run make CONFIG_PREFIX="$p_dest_dir" install
 }

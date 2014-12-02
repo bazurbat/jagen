@@ -33,6 +33,8 @@ create_dirs() {
     if [ ! -d libexec ]
     then mkdir libexec
     fi
+
+    p_run install -dm1777 "$sdk_rootfs_root/tmp"
 }
 
 fix_init_link() {
