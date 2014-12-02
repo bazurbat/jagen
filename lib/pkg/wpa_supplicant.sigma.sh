@@ -45,7 +45,7 @@ pkg_build() {
 
 pkg_install() {
     local s="$p_build_dir/$p_name"
-    local d="$p_dest_dir"
+    local d="$p_dest_dir$p_prefix"
 
     p_run install -vd "$d/bin" "$d/sbin" \
         "$d/etc/dbus-1/system.d" \
