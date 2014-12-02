@@ -27,14 +27,9 @@ pkg_build() {
 }
 
 create_dirs() {
-    cd "$sdk_rootfs_root" &&
-    rm -rf dev opt proc sys root tmp var/run &&
-    install -m 700 -d root &&
-    if [ ! -d libexec ]
-    then mkdir libexec
-    fi
-
-    p_run install -dm1777 "$sdk_rootfs_root/tmp"
+    p_run cd "$sdk_rootfs_root"
+    rm -rf dev opt proc sys root tmp usr var/run &&
+    install -m 700 -d root
 }
 
 fix_init_link() {
@@ -57,11 +52,11 @@ clean_etc() {
     for d in up down pre-up post-down; do
         mkdir -p network/if-${d}.d
     done
-}
 
-move_usr_lib() {
-    p_run cp -vaf "$sdk_rootfs_root"/usr/lib/* "$sdk_rootfs_root/lib"
-    p_run rm -rf "$sdk_rootfs_root/usr/lib"
+    p_run rm -f "$sdk_rootfs_root/etc/TZ"
+    p_run install -m644 \
+        "$TOOLCHAIN_RUNTIME_PATH/usr/share/zoneinfo/GMT" \
+        "$sdk_rootfs_root/etc/localtime"
 }
 
 remove_nss_libs() {
@@ -106,15 +101,6 @@ install_ldconfig() {
     cp -a usr/lib/bin/ldconfig "$sdk_rootfs_root/sbin"
 }
 
-install_zoneinfo() {
-    mkdir -p "$sdk_rootfs_root/usr/share/zoneinfo" &&
-    cd "${TOOLCHAIN_RUNTIME_PATH}/usr/share/zoneinfo" &&
-    cp -r Etc Europe Factory GMT UTC "$sdk_rootfs_root/usr/share/zoneinfo" &&
-    cd "$sdk_rootfs_root/etc" &&
-    rm -f TZ &&
-    ln -sf /usr/share/zoneinfo/GMT localtime
-}
-
 clean_misc() {
     cd "$sdk_rootfs_root" || return $?
 
@@ -124,7 +110,7 @@ clean_misc() {
         rm -rf usr/local || return $?
     fi
 
-    find lib usr/lib \( -name "*.a" -o -name "*.la" \) -delete
+    find lib \( -name "*.a" -o -name "*.la" \) -delete
 
     remove_nss_libs || return $?
 
@@ -144,12 +130,10 @@ pkg_install() {
     fix_init_link || die "fix_init_link failed"
     fix_xenv_bins || die "fix_xenv_bins failed"
     clean_etc || die "clean_etc failed"
-    # move_usr_lib
     install_keys || die "install_keys failed"
     install_gpg || die "install_gpg failed"
     install_util_linux || die "install_util_linux failed"
     install_ldconfig || die "install_ldconfig failed"
-    install_zoneinfo || die "install_zoneinfo failed"
     clean_misc || die "clean_misc failed"
     remove_image_libs || die "remove_image_libs failed"
     install_files || die "install_files failed"
