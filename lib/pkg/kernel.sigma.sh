@@ -48,8 +48,6 @@ pkg_install() {
 pkg_image() {
     p_run cd linux
 
-    p_run cp -f "$pkg_private_dir/cfg/initramfs_default_node_list" "usr"
-
     p_run make zbimage-linux-xload
 
     p_run cp -f arch/mips/boot/zbimage-linux-xload "$target_dir"
