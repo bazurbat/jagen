@@ -55,21 +55,6 @@ pkg_material() {
     create_xmaterial || return $?
 }
 
-install_chibi() {
-    local src="$p_source_dir"
-    local dst="$sdk_firmware_dir"
-
-    cd "$src" || return $?
-    cp -a bin/chibi-scheme "$dst/bin" || return $?
-    cp -a lib/*chibi* "$dst/lib" || return $?
-    mkdir -p "$dst/share"
-    cp -a share/chibi "$dst/share" || return $?
-
-    cd "$dst/lib"
-    ln -sf "libchibi-scheme.so.0.7" "libchibi-scheme.so"
-    ln -sf "libchibi-scheme.so.0.7" "libchibi-scheme.so.0"
-}
-
 pkg_install() {
     local bin="audioplayer bgaudio demo jabba midiplayer smplayer db-service \
         csi i2c_debug uart-shell ast-service pcf8563"
@@ -88,8 +73,6 @@ pkg_install() {
     p_run cp -va *.so* "$sdk_firmware_dir/lib"
 
     p_run cp -af "$pkg_private_dir"/firmware/* "$sdk_firmware_dir"
-
-    # install_chibi || return $?
 
     p_run cp -vf "$target_dir/xmaterial.romfs" "$sdk_firmware_dir/"
     p_run cp -vf "$target_dir/imaterial.romfs" "$sdk_firmware_dir/"
