@@ -178,10 +178,24 @@
 
 (pkg 'firmware
      '(material (mrua build))
-     '(install (ezboot install)
+     `(install (ezboot install)
+               (mrua install)
                (kernel image)
-               (karaoke-player install target))
-     '(strip (mrua install)))
+               (karaoke-player install target)
+               (dbus install)
+               (expat install)
+               (freetype install)
+               (libuv install)
+               (rsync install)
+               (sqlite install)
+               (wpa_supplicant install)
+               (zlib install)
+               ,@(if (regexp-search "experimental_network" *flags*)
+                   '((libffi install)
+                     (glib install)
+                     (connman install))
+                   '()))
+     '(strip))
 
 (when (regexp-search "jemalloc" *flags*)
   (pkg 'jemalloc

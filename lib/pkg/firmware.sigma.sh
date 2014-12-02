@@ -13,7 +13,7 @@ pkg_clean() {
 pkg_unpack() {
     p_run cd "$p_work_dir"
 
-    p_run install -d -m 755 bin dev etc home lib mnt proc run sbin sys usr var
+    p_run install -d -m 755 bin dev etc home lib libexec mnt proc run sbin sys usr var
     p_run install -d -m 755 usr/bin usr/lib usr/sbin
     p_run install -d -m 700 root
     p_run install -d -m 1777 tmp
@@ -55,6 +55,18 @@ pkg_material() {
     create_xmaterial || return $?
 }
 
+install_dbus() {
+    p_run cp -va "$p_source_dir/etc/dbus-1" "$p_work_dir/etc"
+    p_run install -vm755 "$p_source_dir"/bin/dbus-* "$p_work_dir/bin"
+    p_run install -vm755 \
+        "$p_source_dir/libexec/dbus-daemon-launch-helper" \
+        "$p_work_dir/libexec"
+}
+
+install_rsync() {
+    p_run install -vm755 "$p_source_dir/bin/rsync" "$p_work_dir/bin"
+}
+
 pkg_install() {
     local bin="audioplayer bgaudio demo jabba midiplayer smplayer db-service \
         csi i2c_debug uart-shell ast-service pcf8563"
@@ -83,6 +95,16 @@ pkg_install() {
     if p_flags "experimental_network"; then
         p_run mkdir -p "$sdk_firmware_dir/var/lib/connman"
     fi
+
+    install_dbus
+    install_rsync
+
+    # delete not used libraries
+    p_run rm -f "$p_work_dir"/lib/libxt_*
+    p_run rm -f \
+        "$p_work_dir"/lib/libgio* \
+        "$p_work_dir"/lib/libgmodule* \
+        "$p_work_dir"/lib/libgobject*
 }
 
 pkg_strip() {

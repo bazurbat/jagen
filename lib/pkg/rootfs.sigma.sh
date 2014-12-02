@@ -94,43 +94,6 @@ install_util_linux() {
     cp -a sbin/losetup "$sdk_rootfs_root/sbin"
 }
 
-install_cryptsetup() {
-    cd "$sdk_rootfs_prefix" || return $?
-    cp -af lib/libcryptsetup* lib/libuuid* lib/libdevmapper* lib/libgcrypt* \
-        lib/libpopt* "$sdk_rootfs_root/lib"
-    cp -af sbin/cryptsetup "$sdk_rootfs_root/sbin"
-}
-
-install_freetype() {
-    cd "$sdk_rootfs_prefix" || return $?
-    cp -af lib/libfreetype*.so* "$sdk_rootfs_root/lib"
-}
-
-install_dbus() {
-    cd "$sdk_rootfs_prefix" || return $?
-    cp -a bin/dbus-* "$sdk_rootfs_root/bin" || return $?
-    cp -a "etc/dbus-1" "$sdk_rootfs_root/etc" || return $?
-    cp -a lib/libexpat* lib/libdbus* "$sdk_rootfs_root/lib" || return $?
-    cp -a "libexec/dbus-daemon-launch-helper" "$sdk_rootfs_root/libexec"
-}
-
-install_rsync() {
-    cd "$sdk_rootfs_prefix" || return $?
-    cp -a bin/rsync "$sdk_rootfs_root/bin" || return $?
-}
-
-install_libuv() {
-    cd "$sdk_rootfs_prefix" || return $?
-    cp -a lib/libuv.so* "$sdk_rootfs_root/lib" || return $?
-}
-
-install_chibi() {
-    cd "$sdk_rootfs_prefix" || return $?
-    cp -a bin/chibi-scheme "$sdk_rootfs_root/bin" || return $?
-    cp -a lib/*chibi* "$sdk_rootfs_root/lib" || return $?
-    cp -a share/chibi "$sdk_rootfs_root/share" || return $?
-}
-
 install_ldconfig() {
     cd "$TOOLCHAIN_RUNTIME_PATH" || return $?
     cp -a usr/lib/bin/ldconfig "$sdk_rootfs_root/sbin"
@@ -177,12 +140,6 @@ pkg_install() {
     install_keys || die "install_keys failed"
     install_gpg || die "install_gpg failed"
     install_util_linux || die "install_util_linux failed"
-    # install_cryptsetup || return $?
-    # install_freetype || die "install_freetype failed"
-    # install_dbus || die "install_dbus failed"
-    # install_rsync || die "install_rsync failed"
-    # install_libuv || die "install_libuv failed"
-    # install_chibi || die "install_chibi failed"
     install_ldconfig || die "install_ldconfig failed"
     install_zoneinfo || die "install_zoneinfo failed"
     clean_misc || die "clean_misc failed"
