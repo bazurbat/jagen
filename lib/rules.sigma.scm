@@ -66,6 +66,7 @@
              (xsdk unpack)
              (make install host))
      '(install (kernel install)
+               (busybox install)
                (gnupg install)
                (loop-aes install)
                (mrua modules)
@@ -74,6 +75,7 @@
                (util-linux install)
                (utils install target)))
 
+(define-rootfs-package 'busybox)
 (define-rootfs-package 'ntpclient)
 (define-rootfs-package 'util-linux)
 
