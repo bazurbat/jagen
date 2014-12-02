@@ -38,7 +38,6 @@ pkg_build_target() {
         -DSIGMA_ROOT_DIR="$pkg_src_dir" \
         -DCHICKEN_HOST_SYSTEM="mipsel-linux" \
         -DCHICKEN_BUILD_IMPORTS=NO \
-        -DLIBUV_ROOT_DIR="$sdk_rootfs_prefix" \
         -DCHICKEN_COMPILER="$tools_dir/bin/chicken" \
         -DCHICKEN_INTERPRETER="$tools_dir/bin/csi" \
         -DCHICKEN_DEPENDS="$tools_dir/bin/chicken-depends" \

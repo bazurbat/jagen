@@ -4,6 +4,9 @@ p_source="$pkg_dist_dir/freetype-2.5.0.1.tar.bz2"
 
 use_toolchain target
 
+p_prefix="$target_prefix"
+p_dest_dir="$target_dir"
+
 pkg_patch() {
     enable_option() {
         sed -i -e "/#define $1/a #define $1" \
@@ -28,8 +31,8 @@ pkg_patch() {
 
 pkg_build() {
     p_run ./configure \
-        --host="mipsel-linux" \
-        --prefix="" \
+        --host="$target_system" \
+        --prefix="$p_prefix" \
         --disable-static \
         --without-bzip2 \
         --without-png \
@@ -38,11 +41,11 @@ pkg_build() {
         --without-fsref \
         --without-quickdraw-toolbox \
         --without-quickdraw-carbon \
-        --without-ats \
-        --with-sysroot="$sdk_rootfs_prefix"
+        --without-ats
+
     p_run make
 }
 
 pkg_install() {
-    p_run make DESTDIR="$sdk_rootfs_prefix" install
+    p_run make DESTDIR="$p_dest_dir" install
 }

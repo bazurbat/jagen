@@ -10,9 +10,9 @@ export CFLAGS="-O2 -fomit-frame-pointer -Wa,-mips32r2 -march=24kf -mtune=24kf -f
 export CXXFLAGS="$CFLAGS"
 export LDFLAGS=""
 
-export PKG_CONFIG_SYSROOT_DIR="$sdk_rootfs_prefix"
-export PKG_CONFIG_LIBDIR="${PKG_CONFIG_SYSROOT_DIR}/lib/pkgconfig"
-export PKG_CONFIG_PATH="$target_dir$target_prefix/lib/pkgconfig"
+export PKG_CONFIG_SYSROOT_DIR="$target_dir"
+export PKG_CONFIG_LIBDIR="$target_dir$target_prefix/lib/pkgconfig"
+export PKG_CONFIG_PATH=""
 
 gcc_version() { "mips-linux-gnu-gcc" --version | awk "/gcc/ { print \$NF; }"; }
 

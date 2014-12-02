@@ -73,13 +73,15 @@ install_chibi() {
 pkg_install() {
     local bin="audioplayer bgaudio demo jabba midiplayer smplayer db-service \
         csi i2c_debug uart-shell ast-service pcf8563"
-    local sbin="connmand"
 
     p_run cd "$p_source_dir/bin"
     p_run install -vm 755 $bin "$sdk_firmware_dir/bin"
 
-    p_run cd "$p_source_dir/sbin"
-    p_run install -vm 755 $sbin "$sdk_firmware_dir/sbin"
+    if p_flags "experimental_network"; then
+        p_run install -vm 755 \
+            "$p_source_dir/sbin/connmand" \
+            "$sdk_firmware_dir/sbin"
+    fi
 
     p_run cd "$p_source_dir/lib"
     p_run cp -va chicken "$sdk_firmware_dir/lib"
@@ -94,9 +96,6 @@ pkg_install() {
     p_run cp -vf "$target_dir/zbimage-linux-xload.zbc" "$sdk_firmware_dir/"
     p_run cp -vf "$target_dir/phyblock0-0x20000padded.AST50" "$sdk_firmware_dir/"
     p_run cp -vf "$target_dir/phyblock0-0x20000padded.AST100" "$sdk_firmware_dir/"
-
-    p_run cd "$sdk_rootfs_prefix/lib" || return $?
-    p_run cp -va libsqlite* "$sdk_firmware_dir/lib" || return $?
 
     if p_flags "experimental_network"; then
         p_run mkdir -p "$sdk_firmware_dir/var/lib/connman"

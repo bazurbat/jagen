@@ -1,4 +1,3 @@
-
 (define (define-rootfs-package name . deps)
   (pkg name
        `(build (rootfs build) ,@deps)
@@ -8,6 +7,11 @@
   (pkg name
        `(build (kernel build) ,@deps)
        '(install)))
+
+(define (define-firmware-package name . deps)
+  (pkg name
+       `(build ,@deps after (rootfs build))
+       '(install (firmware unpack))))
 
 ; base
 
@@ -61,40 +65,17 @@
              (ast-files unpack)
              (xsdk unpack)
              (make install host))
-     `(install ,@(if (string=? "Debug" (env 'build-type))
-                   '((gdbserver install)
-                     (strace install))
-                   '())
-               (kernel install)
-               (dbus install)
-               (e2fsprogs install)
-               (freetype install)
+     '(install (kernel install)
                (gnupg install)
-               (libuv install)
                (loop-aes install)
                (mrua modules)
                (ntpclient install)
                (ralink install)
-               (rsync install)
-               (sqlite install)
                (util-linux install)
-               (utils install target)
-               (wpa_supplicant install)
-               ,(when (regexp-search "experimental_network" *flags*)
-                  '(connman install))))
+               (utils install target)))
 
-(define-rootfs-package 'expat)
-(define-rootfs-package 'dbus '(expat install))
-(define-rootfs-package 'wpa_supplicant '(dbus install))
-
-(define-rootfs-package 'util-linux)
-(define-rootfs-package 'e2fsprogs '(util-linux install))
-
-(define-rootfs-package 'freetype)
-(define-rootfs-package 'libuv)
 (define-rootfs-package 'ntpclient)
-(define-rootfs-package 'rsync)
-(define-rootfs-package 'sqlite)
+(define-rootfs-package 'util-linux)
 
 ; gpgme
 
@@ -108,6 +89,7 @@
 
 (pkg 'kernel
      '(build (linux unpack)
+             (ezboot build)
              (rootfs build))
      '(install)
      '(image (rootfs install)))
@@ -144,6 +126,17 @@
                        (chicken-eggs install cross)
                        (dbus install))))
 
+(define-firmware-package 'dbus '(expat install))
+(define-firmware-package 'expat)
+(define-firmware-package 'freetype)
+(define-firmware-package 'libuv)
+(define-firmware-package 'rsync)
+(define-firmware-package 'sqlite)
+(define-firmware-package 'wpa_supplicant '(dbus install))
+
+(define-firmware-package 'xtables)
+(define-firmware-package 'xtables-addons '(xtables install))
+
 (pkg 'ffmpeg
      '(config host
               (build (ast-files unpack))
@@ -169,14 +162,14 @@
      `(config target
               (prepare)
               (build (astindex unpack)
-                     (mrua build)
-                     (ffmpeg install target)
-                     (libuv install)
-                     (soundtouch install)
                      (chicken install target)
                      (chicken-eggs install cross)
-                     ,(when (regexp-search "experimental_network" *flags*)
-                        '(connman install)))
+                     (dbus install)
+                     (ffmpeg install target)
+                     (freetype install)
+                     (libuv install)
+                     (mrua build)
+                     (soundtouch install))
               (install after (chicken-eggs install target))))
 
 (pkg 'firmware
@@ -200,15 +193,8 @@
        '(build (libffi install))
        '(install (firmware unpack)))
 
-  (pkg 'iptables
-       '(build after (kernel build))
-       '(install (firmware unpack)))
-
-  (pkg 'xtables-addons
-       '(build (iptables install))
-       '(install (firmware unpack)))
-
   (pkg 'connman
-       '(build (xtables-addons install)
-               (glib install))
+       '(build (dbus install)
+               (glib install)
+               (xtables-addons install))
        '(install (firmware unpack))))

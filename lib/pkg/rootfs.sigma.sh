@@ -94,14 +94,6 @@ install_util_linux() {
     cp -a sbin/losetup "$sdk_rootfs_root/sbin"
 }
 
-install_e2fsprogs() {
-    cd "$sdk_rootfs_prefix/sbin" || return $?
-    cp -a badblocks blkid e2fsck "$sdk_rootfs_root/sbin" || return $?
-    if [ "$rootfs_add_e2fs_tools" = "yes" ]; then
-        cp -a dumpe2fs mke2fs tune2fs "$sdk_rootfs_root/sbin" || return $?
-    fi
-}
-
 install_cryptsetup() {
     cd "$sdk_rootfs_prefix" || return $?
     cp -af lib/libcryptsetup* lib/libuuid* lib/libdevmapper* lib/libgcrypt* \
@@ -185,12 +177,11 @@ pkg_install() {
     install_keys || die "install_keys failed"
     install_gpg || die "install_gpg failed"
     install_util_linux || die "install_util_linux failed"
-    install_e2fsprogs || die "install_e2fsprogs failed"
     # install_cryptsetup || return $?
-    install_freetype || die "install_freetype failed"
-    install_dbus || die "install_dbus failed"
-    install_rsync || die "install_rsync failed"
-    install_libuv || die "install_libuv failed"
+    # install_freetype || die "install_freetype failed"
+    # install_dbus || die "install_dbus failed"
+    # install_rsync || die "install_rsync failed"
+    # install_libuv || die "install_libuv failed"
     # install_chibi || die "install_chibi failed"
     install_ldconfig || die "install_ldconfig failed"
     install_zoneinfo || die "install_zoneinfo failed"

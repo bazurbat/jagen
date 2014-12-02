@@ -4,6 +4,9 @@ p_source="$pkg_dist_dir/wpa_supplicant-2.2.tar.gz"
 
 use_toolchain target
 
+p_prefix="$target_prefix"
+p_dest_dir="$target_dir"
+
 pkg_patch() {
     p_patch "wpa_supplicant-2.2-do-not-call-dbus-functions-with-NULL-path"
 }
@@ -15,7 +18,7 @@ pkg_build() {
 
     rm -f .config
 
-    echo "BINDIR=/bin"                       >> .config
+    echo "BINDIR=$p_prefix/bin"              >> .config
 
     echo "CONFIG_CTRL_IFACE=y"               >> .config
     echo "CONFIG_BACKEND=file"               >> .config
@@ -42,7 +45,7 @@ pkg_build() {
 
 pkg_install() {
     local s="$p_build_dir/$p_name"
-    local d="$sdk_rootfs_root"
+    local d="$p_dest_dir"
 
     p_run install -vd "$d/bin" "$d/sbin" \
         "$d/etc/dbus-1/system.d" \

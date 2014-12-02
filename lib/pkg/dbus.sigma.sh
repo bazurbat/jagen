@@ -4,10 +4,17 @@ p_source="$pkg_dist_dir/dbus-1.6.18.tar.gz"
 
 use_toolchain target
 
+p_prefix="$target_prefix"
+p_dest_dir="$target_dir"
+
 pkg_build() {
+    # configure fails to run expat test program without this
+    CFLAGS="$CFLAGS -I$p_dest_dir$p_prefix/include"
+    LDFLAGS="$LDFLAGS -L$p_dest_dir$p_prefix/lib"
+
     p_run ./configure \
-        --host="mipsel-linux" \
-        --prefix="" \
+        --host="$target_system" \
+        --prefix="$p_prefix" \
         --with-system-pid-file=/run/dbus.pid \
         --with-system-socket=/run/dbus/system_bus_socket \
         --disable-compiler-coverage \
@@ -44,5 +51,5 @@ pkg_build() {
 }
 
 pkg_install() {
-    p_run make DESTDIR="$sdk_rootfs_prefix" install
+    p_run make DESTDIR="$p_dest_dir" install
 }
