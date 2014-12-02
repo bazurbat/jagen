@@ -9,8 +9,11 @@ p_dest_dir="$sdk_rootfs_root"
 
 export CROSS_COMPILE="${target_system}-"
 
-pkg_build() {
+pkg_patch() {
     p_run cp -f "$pkg_private_dir/cfg/busybox.config" ".config"
+}
+
+pkg_build() {
     p_run make oldconfig
     p_run make
 }

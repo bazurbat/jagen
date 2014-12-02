@@ -4,20 +4,20 @@ p_source="$pkg_dist_dir/util-linux-2.23.2.tar.xz"
 
 use_toolchain target
 
+p_prefix=""
+p_dest_dir="$sdk_rootfs_prefix"
+
 pkg_patch() {
     p_patch "util-linux-2.23.2"
-    p_run autoreconf -vif
+    p_run autoreconf -if
 }
 
 pkg_build() {
     p_run ./configure \
-        --host="mipsel-linux" \
-        --prefix="" \
-        --disable-dependency-tracking \
+        --host="$target_system" \
+        --prefix="$p_prefix" \
         --disable-shared \
-        --enable-static \
-        --disable-gtk-doc \
-        --enable-largefile \
+        --disable-static \
         --disable-nls \
         --disable-rpath \
         --disable-most-builds \
@@ -73,7 +73,6 @@ pkg_build() {
         --disable-pg-bell \
         --disable-makeinstall-chown \
         --disable-makeinstall-setuid \
-        --with-sysroot="$sdk_rootfs_prefix" \
         --without-selinux \
         --without-audit \
         --without-udev \
@@ -86,5 +85,5 @@ pkg_build() {
 }
 
 pkg_install() {
-    p_run make DESTDIR="$sdk_rootfs_prefix" install
+    p_run make DESTDIR="$p_dest_dir" install
 }
