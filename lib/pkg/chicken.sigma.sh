@@ -49,7 +49,7 @@ pkg_build_cross() {
 }
 
 pkg_build_target() {
-    use_env tools
+    use_env host
 
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$cmake_build_type" \
@@ -60,6 +60,7 @@ pkg_build_target() {
         -DCMAKE_INSTALL_PREFIX="$target_prefix" \
         -DCHICKEN_HOST_SYSTEM="mipsel-linux" \
         -DCHICKEN_TARGET_FEATURES="-no-feature x86 -feature mips" \
+		-DCHICKEN_EXECUTABLE="$host_dir/bin/chicken" \
         "$p_source_dir"
 
     p_run cmake --build . -- $cmake_build_options

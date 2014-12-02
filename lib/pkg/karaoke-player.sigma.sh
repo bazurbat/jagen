@@ -28,7 +28,7 @@ pkg_prepare_target() {
 }
 
 pkg_build_target() {
-    use_env tools
+    use_env host
 
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$cmake_build_type" \
@@ -38,9 +38,8 @@ pkg_build_target() {
         -DSIGMA_ROOT_DIR="$pkg_src_dir" \
         -DCHICKEN_HOST_SYSTEM="mipsel-linux" \
         -DCHICKEN_BUILD_IMPORTS=NO \
-        -DCHICKEN_COMPILER="$tools_dir/bin/chicken" \
-        -DCHICKEN_INTERPRETER="$tools_dir/bin/csi" \
-        -DCHICKEN_DEPENDS="$tools_dir/bin/chicken-depends" \
+        -DCHICKEN_EXECUTABLE="$host_dir/bin/chicken" \
+        -DCHICKEN_CSI_EXECUTABLE="$host_dir/bin/csi" \
         "$p_source_dir"
 
     p_run cmake --build . -- $cmake_build_options

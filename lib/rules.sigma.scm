@@ -109,23 +109,17 @@
      '(config host
               (build)
               (install))
-     '(config cross
-              (build after (chicken install host))
-              (install))
      '(config target
-              (build after (rootfs build) (chicken install cross))
+              (build after (rootfs build) (chicken install host))
               (install (firmware unpack))))
 
 (pkg 'chicken-eggs
      '(config host
               (install (chicken install host)))
-     '(config cross
-              (install (chicken install cross)
-                       after (chicken-eggs install host)))
      '(config target
               (install (chicken install target)
                        after
-                       (chicken-eggs install cross)
+                       (chicken-eggs install host)
                        (dbus install))))
 
 (define-firmware-package 'dbus '(expat install))
@@ -166,7 +160,7 @@
               (prepare)
               (build (astindex unpack)
                      (chicken install target)
-                     (chicken-eggs install cross)
+                     (chicken-eggs install host)
                      (dbus install)
                      (ffmpeg install target)
                      (freetype install)
