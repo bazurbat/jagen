@@ -56,7 +56,7 @@ pkg_material() {
 }
 
 install_dbus() {
-    p_run cp -va "$p_source_dir/etc/dbus-1" "$p_work_dir/etc"
+    p_run cp -vaf "$p_source_dir/etc/dbus-1" "$p_work_dir/etc"
     p_run install -vm755 "$p_source_dir"/bin/dbus-* "$p_work_dir/bin"
     p_run install -vm755 \
         "$p_source_dir/libexec/dbus-daemon-launch-helper" \
@@ -84,8 +84,6 @@ pkg_install() {
     p_run cp -va chicken "$sdk_firmware_dir/lib"
     p_run cp -va *.so* "$sdk_firmware_dir/lib"
 
-    p_run cp -af "$pkg_private_dir"/firmware/* "$sdk_firmware_dir"
-
     p_run cp -vf "$target_dir/xmaterial.romfs" "$sdk_firmware_dir/"
     p_run cp -vf "$target_dir/imaterial.romfs" "$sdk_firmware_dir/"
     p_run cp -vf "$target_dir/zbimage-linux-xload.zbc" "$sdk_firmware_dir/"
@@ -105,6 +103,8 @@ pkg_install() {
         "$p_work_dir"/lib/libgio* \
         "$p_work_dir"/lib/libgmodule* \
         "$p_work_dir"/lib/libgobject*
+
+    p_run cp -vaf "$pkg_private_dir"/firmware/* "$sdk_firmware_dir"
 }
 
 pkg_strip() {

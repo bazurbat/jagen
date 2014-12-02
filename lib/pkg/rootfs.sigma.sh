@@ -57,6 +57,11 @@ clean_etc() {
     done
 }
 
+move_usr_lib() {
+    p_run cp -vaf "$sdk_rootfs_root"/usr/lib/* "$sdk_rootfs_root/lib"
+    p_run rm -rf "$sdk_rootfs_root/usr/lib"
+}
+
 remove_nss_libs() {
     cd "$sdk_rootfs_root/lib" &&
     rm -f libnss_compat* libnss_hesiod* libnss_nis*
@@ -137,6 +142,7 @@ pkg_install() {
     fix_init_link || die "fix_init_link failed"
     fix_xenv_bins || die "fix_xenv_bins failed"
     clean_etc || die "clean_etc failed"
+    move_usr_lib
     install_keys || die "install_keys failed"
     install_gpg || die "install_gpg failed"
     install_util_linux || die "install_util_linux failed"
