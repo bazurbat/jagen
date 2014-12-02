@@ -133,6 +133,7 @@
 (define-firmware-package 'rsync)
 (define-firmware-package 'sqlite)
 (define-firmware-package 'wpa_supplicant '(dbus install))
+(define-firmware-package 'zlib)
 
 (define-firmware-package 'xtables)
 (define-firmware-package 'xtables-addons '(xtables install))
@@ -169,7 +170,10 @@
                      (freetype install)
                      (libuv install)
                      (mrua build)
-                     (soundtouch install))
+                     (soundtouch install)
+                     ,@(if (regexp-search "experimental_network" *flags*)
+                         '((connman install))
+                         '()))
               (install after (chicken-eggs install target))))
 
 (pkg 'firmware
@@ -190,7 +194,8 @@
        '(install (firmware unpack)))
 
   (pkg 'glib
-       '(build (libffi install))
+       '(build (zlib install)
+               (libffi install))
        '(install (firmware unpack)))
 
   (pkg 'connman
