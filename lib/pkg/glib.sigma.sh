@@ -9,11 +9,11 @@ PKG_CONFIG_SYSROOT_DIR="$target_dir"
 pkg_patch() {
     # removes hard dependency on python
     p_run patch -p1 \
-        < "$pkg_dist_dir"/patches/glib-2.40.0-external-gdbus-codegen.patch
+        < "$pkg_patch_dir/glib-2.40.0-external-gdbus-codegen.patch"
     # leave python shebang alone
     p_run sed -e '/${PYTHON}/d' \
         -i glib/Makefile.{am,in}
-    p_run autoreconf -vif
+    p_run autoreconf -if
 }
 
 pkg_build() {

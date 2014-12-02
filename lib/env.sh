@@ -24,5 +24,6 @@ include "$pkg_lib_dir/env/sdk"
 : ${pkg_private_dir:="$pkg_src_dir/files"}
 : ${pkg_dist_dir:="$pkg_root/dist/$pkg_sdk"}
 : ${pkg_build_dir:="$pkg_root/build"}
+: ${pkg_patch_dir:="$pkg_dist_dir/patches"}
 
-export pkg_private_dir pkg_dist_dir pkg_build_dir
+export pkg_private_dir pkg_dist_dir pkg_build_dir pkg_patch_dir
