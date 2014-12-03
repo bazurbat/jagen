@@ -24,9 +24,6 @@ pkg_build() {
     echo "ac_cv_func_posix_getgrgid_r=yes" >> "$cache"
     echo "glib_cv_uscore=yes" >> "$cache"
 
-    # export LIBFFI_CFLAGS="-I$(echo ${target_dir}${target_prefix}/lib/libffi-*/include)"
-    # export LIBFFI_LIBS="-L${target_dir}${target_prefix}/lib -lffi"
-
     p_run ./configure \
         --cache-file="$cache" \
         --host="$target_system" \
