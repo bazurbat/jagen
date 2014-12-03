@@ -6,8 +6,10 @@
         (srfi 1)
         (srfi 2)
         (srfi 26)
-        (chibi regexp)
+        (chibi filesystem)
         (chibi match)
+        (chibi pathname)
+        (chibi regexp)
         (chibi show))
 
 (define-record-type
@@ -30,6 +32,13 @@
   (name   target-name)
   (stage  target-stage)
   (config target-config))
+
+(define-record-type
+  source@
+  (source type location)
+  source?
+  (type     source-type)
+  (location source-location))
 
 (define *width* 4)
 
@@ -73,7 +82,35 @@
   (if (file-exists? out-file) (delete-file out-file))
   (with-output-to-file out-file (cut load in-file)))
 
-(define (pkg name . stages)
+(define (stages . lst) lst)
+
+(define (%sh:variable name value)
+  (show #t name "=\"" value "\"" nl))
+
+(define (pkg:generate name source)
+  (define (create-script)
+    (let ((t (source-type source))
+          (l (source-location source)))
+      (show #t "#!/bin/sh" nl)
+      (%sh:variable "p_source" (if t (string-append t " " l) l))))
+  (let ((path (make-path (env 'build-include-dir)
+                         (string-append (symbol->string name) ".sh"))))
+    (create-directory* (path-directory path))
+    (with-output-to-file path create-script)))
+
+(define (pkg name . args)
+  (let ((source (source "" ""))
+        (stages '()))
+    (let loop ((args args))
+      (unless (null? args)
+        (cond ((source? (car args))
+               (set! source (car args))
+               (loop (cdr args)))
+              (else (set! stages (car args))))))
+    (pkg:generate name source)
+    (%pkg name stages)))
+
+(define (%pkg name stages)
   (define (find-stage stage lst)
     (find (lambda (s) (eq? (car s) (car stage))) lst))
   (define (pull-stage stage lst)

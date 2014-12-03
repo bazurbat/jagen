@@ -15,6 +15,7 @@ rm -f "$p_log" || die "Failed to rm $p_log"
 mkdir -p "$p_work_dir" || die "Failed to mkdir $p_work_dir"
 cd "$p_work_dir" || die "Failed to cd to $p_work_dir"
 
+include "$pkg_build_include_dir/$p_name"
 include "$pkg_lib_dir/pkg/$p_name" 
 
 p_source_name=$(basename "$p_source" | sed -r 's/\.t(ar\.)?(gz|bz2|xz)//')

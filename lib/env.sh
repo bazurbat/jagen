@@ -20,10 +20,12 @@ include "$pkg_root/local"
 
 : ${pkg_private_dir:="$pkg_src_dir/files"}
 : ${pkg_dist_dir:="$pkg_root/dist/$pkg_sdk"}
-: ${pkg_build_dir:="$pkg_root/build"}
 : ${pkg_patch_dir:="$pkg_dist_dir/patches"}
+: ${pkg_build_dir:="$pkg_root/build"}
+: ${pkg_build_include_dir:="$pkg_build_dir/include"}
 
-export pkg_private_dir pkg_dist_dir pkg_build_dir pkg_patch_dir
+export pkg_private_dir pkg_dist_dir pkg_patch_dir
+export pkg_build_dir pkg_build_include_dir
 
 include "$pkg_lib_dir/env/cmake"
 include "$pkg_lib_dir/env/sdk"
