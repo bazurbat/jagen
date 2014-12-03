@@ -18,12 +18,12 @@ export pkg_source_exclude=""
 include "${HOME}/.config/jagen/env"
 include "$pkg_root/local"
 
-include "$pkg_lib_dir/env/cmake"
-include "$pkg_lib_dir/env/sdk"
-
 : ${pkg_private_dir:="$pkg_src_dir/files"}
 : ${pkg_dist_dir:="$pkg_root/dist/$pkg_sdk"}
 : ${pkg_build_dir:="$pkg_root/build"}
 : ${pkg_patch_dir:="$pkg_dist_dir/patches"}
 
 export pkg_private_dir pkg_dist_dir pkg_build_dir pkg_patch_dir
+
+include "$pkg_lib_dir/env/cmake"
+include "$pkg_lib_dir/env/sdk"
