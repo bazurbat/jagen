@@ -10,7 +10,7 @@
 
 (define (define-firmware-package name . deps)
   (pkg name
-       `(build ,@deps after (rootfs build))
+       `(build ,@deps)
        '(install (firmware unpack))))
 
 ; base
@@ -110,7 +110,7 @@
               (build)
               (install))
      '(config target
-              (build after (rootfs build) (chicken install host))
+              (build (chicken install host))
               (install (firmware unpack))))
 
 (pkg 'chicken-eggs
@@ -139,12 +139,11 @@
               (build (ast-files unpack))
               (install))
      '(config target
-              (build (ast-files unpack)
-                     after (rootfs build))
+              (build (ast-files unpack))
               (install (firmware unpack))))
 
 (pkg 'soundtouch
-     '(build after (rootfs build))
+     '(build)
      '(install (firmware unpack)))
 
 (pkg 'astindex
@@ -195,12 +194,12 @@
 
 (when (regexp-search "jemalloc" *flags*)
   (pkg 'jemalloc
-       '(build after (rootfs build))
+       '(build)
        '(install (firmware unpack))))
 
 (when (regexp-search "experimental_network" *flags*)
   (pkg 'libffi
-       '(build after (rootfs build))
+       '(build)
        '(install (firmware unpack)))
 
   (pkg 'glib
