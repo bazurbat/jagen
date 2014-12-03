@@ -11,8 +11,8 @@ pkg_patch() {
     p_run patch -p1 \
         < "$pkg_patch_dir/glib-2.40.0-external-gdbus-codegen.patch"
     # leave python shebang alone
-    p_run sed -e '/${PYTHON}/d' \
-        -i glib/Makefile.{am,in}
+    p_run sed -ie '/${PYTHON}/d' \
+        glib/Makefile.am glib/Makefile.in
     p_run autoreconf -if
 }
 
