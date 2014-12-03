@@ -5,7 +5,7 @@ export target_prefix="/firmware"
 
 export target_arch="mipsel"
 export target_cpu="24kf"
-export target_system="mipsel-linux"
+export target_system="mips-linux-gnu"
 
 export sdk_target_board="ast100"
 

@@ -11,7 +11,7 @@ pkg_patch() {
 
 pkg_build() {
     p_run ./configure \
-        --host="mipsel-linux" \
+        --host="$target_system" \
         --prefix="$target_prefix" \
         --enable-integer-samples=yes \
         --enable-x86-optimizations=no

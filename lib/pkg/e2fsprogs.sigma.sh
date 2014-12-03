@@ -19,7 +19,7 @@ pkg_build() {
     QUOTA_CMT='#' \
     p_run ./configure \
         --prefix="" \
-        --host="mipsel-linux" \
+        --host="$target_system" \
         --enable-symlink-install \
         --enable-relative-symlinks \
         --disable-compression \

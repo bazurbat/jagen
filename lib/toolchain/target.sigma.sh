@@ -6,9 +6,13 @@ export CC="${target_system}-gcc"
 export CXX="${target_system}-g++"
 export STRIP="${target_system}-strip"
 
-export CFLAGS="-O2 -fomit-frame-pointer -Wa,-mips32r2 -march=24kf -mtune=24kf -fno-strict-aliasing -pipe"
+cflags_optimize="-O2 -fomit-frame-pointer -fno-strict-aliasing"
+cflags_tune="-Wa,-mips32r2 -march=24kf -mtune=24kf"
+cflags_paths="-isystem $sdk_rootfs_prefix/include"
+
+export CFLAGS="$cflags_optimize $cflags_tune $cflags_paths -pipe"
 export CXXFLAGS="$CFLAGS"
-export LDFLAGS=""
+export LDFLAGS="-L$sdk_rootfs_prefix/lib"
 
 export PKG_CONFIG_SYSROOT_DIR="$target_dir"
 export PKG_CONFIG_LIBDIR="$target_dir$target_prefix/lib/pkgconfig"

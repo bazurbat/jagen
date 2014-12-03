@@ -11,7 +11,7 @@ pkg_patch() {
 pkg_build() {
     CFLAGS="$CFLAGS -I$target_dir/$target_prefix/include" \
     p_run ./configure \
-        --host="mipsel-linux" \
+        --host="$target_system" \
         --prefix="$target_prefix" \
         --disable-dependency-tracking \
         --enable-shared \

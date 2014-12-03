@@ -87,7 +87,9 @@ p_depmod() {
 }
 
 p_fix_la() {
-    p_run p_run sed -ri "s|libdir='/lib'|libdir='$sdk_rootfs_prefix/lib'|" $1
+    local filename="$1"
+    local prefix=${2:-"$sdk_rootfs_prefix"}
+    p_run sed -ri -e "s|^(libdir=)'(.*)'$|\1'${prefix}\2'|" "$filename"
 }
 
 . "$pkg_lib_dir/src.sh" || exit

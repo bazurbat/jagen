@@ -36,7 +36,7 @@ pkg_build_target() {
         -DCMAKE_INSTALL_PREFIX="${target_dir}${target_prefix}" \
         -DCMAKE_FIND_ROOT_PATH="${target_dir}${target_prefix}" \
         -DSIGMA_ROOT_DIR="$pkg_src_dir" \
-        -DCHICKEN_HOST_SYSTEM="mipsel-linux" \
+        -DCHICKEN_HOST_SYSTEM="$target_system" \
         -DCHICKEN_BUILD_IMPORTS=NO \
         -DCHICKEN_EXECUTABLE="$host_dir/bin/chicken" \
         -DCHICKEN_CSI_EXECUTABLE="$host_dir/bin/csi" \

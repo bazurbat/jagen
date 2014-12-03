@@ -39,7 +39,7 @@ pkg_build_cross() {
             -DCMAKE_PREFIX_PATH="$host_dir" \
             -DCMAKE_INSTALL_PREFIX="$tools_dir" \
             -DCHICKEN_TARGET_NAME="chicken" \
-            -DCHICKEN_TARGET_SYSTEM="mipsel-linux" \
+            -DCHICKEN_TARGET_SYSTEM="$target_system" \
             -DCHICKEN_TARGET_ROOT_DIR="$target_dir" \
             -DCHICKEN_TARGET_RUN_PREFIX="$target_prefix" \
             "$p_source_dir"
@@ -58,7 +58,7 @@ pkg_build_target() {
         -DCMAKE_SYSTEM_PROCESSOR="mips32" \
         -DCMAKE_PREFIX_PATH="$host_dir" \
         -DCMAKE_INSTALL_PREFIX="$target_prefix" \
-        -DCHICKEN_HOST_SYSTEM="mipsel-linux" \
+        -DCHICKEN_HOST_SYSTEM="$target_system" \
         -DCHICKEN_TARGET_FEATURES="-no-feature x86 -feature mips" \
 		-DCHICKEN_EXECUTABLE="$host_dir/bin/chicken" \
         "$p_source_dir"

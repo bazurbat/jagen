@@ -6,7 +6,7 @@ use_toolchain target
 
 pkg_build() {
     p_run ./configure \
-        --host="mipsel-linux" \
+        --host="$target_system" \
         --prefix="" \
         --disable-dependency-tracking
 

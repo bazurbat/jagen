@@ -9,7 +9,7 @@ workdir="gdb/gdbserver"
 pkg_build() {
     p_run cd "$workdir"
     p_run ./configure \
-        --host="mipsel-linux" \
+        --host="$target_system" \
         --prefix=""
 
     p_run make

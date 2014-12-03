@@ -35,7 +35,7 @@ pkg_install_cross() {
             -DCMAKE_BUILD_TYPE="$cmake_build_type" \
             -DCMAKE_C_FLAGS_RELEASE="" \
             -DCMAKE_PREFIX_PATH="$tools_dir" \
-            -DCHICKEN_SYSTEM="mipsel-linux" \
+            -DCHICKEN_SYSTEM="$target_system" \
             "$p_source_dir"
     fi
 
@@ -51,7 +51,7 @@ pkg_install_target() {
         -DCMAKE_SYSTEM_NAME="Linux" \
         -DCMAKE_INSTALL_PREFIX="$target_prefix" \
         -DCMAKE_FIND_ROOT_PATH="${target_dir}${target_prefix}" \
-        -DCHICKEN_HOST_SYSTEM="mipsel-linux" \
+        -DCHICKEN_HOST_SYSTEM="$target_system" \
         -DCHICKEN_EXECUTABLE="$host_dir/bin/chicken" \
         -DCHICKEN_CSI_EXECUTABLE="$host_dir/bin/csi" \
         "$p_source_dir"

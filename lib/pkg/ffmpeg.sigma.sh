@@ -10,7 +10,7 @@ pkg_build() {
         prefix="$host_dir"
     else
         prefix="$target_prefix"
-        cross_options="--enable-cross-compile --cross-prefix=mipsel-linux- \
+        cross_options="--enable-cross-compile --cross-prefix=$target_system- \
             --target-os=linux --arch=mipsel --cpu=24kf"
     fi
 
