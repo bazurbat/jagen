@@ -10,7 +10,7 @@ cflags_optimize="-O2 -fomit-frame-pointer -fno-strict-aliasing"
 cflags_tune="-Wa,-mips32r2 -march=24kf -mtune=24kf"
 cflags_paths="-isystem $sdk_rootfs_prefix/include"
 
-export CFLAGS="$cflags_optimize $cflags_tune $cflags_paths -pipe"
+export CFLAGS="-EL $cflags_optimize $cflags_tune $cflags_paths -pipe"
 export CXXFLAGS="$CFLAGS"
 export LDFLAGS="-L$sdk_rootfs_prefix/lib"
 
