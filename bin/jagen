@@ -104,6 +104,8 @@ case $1 in
         p_in_path chibi-scheme || rebuild_chibi
         $pkg_bin generate "$build_file" "$pkg_lib_dir/rules.scm" ||
             die "Failed to generate build rules"
+        include "$pkg_root/lib/toolchain"
+        generate_toolchain_wrappers
         ;;
     build)
         shift
