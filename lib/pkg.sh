@@ -10,8 +10,6 @@ p_is_function() {
     type "$1" 2>/dev/null | grep -q 'function'
 }
 
-p_in_list() { echo "$2" | grep -qw "$1"; }
-
 p_flags() { p_in_list "$1" "$pkg_flags"; }
 
 p_in_path() { $(which "$1" >/dev/null 2>&1); }
