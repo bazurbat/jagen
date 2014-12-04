@@ -288,8 +288,8 @@
 
   (pkg 'glib
        (source 'dist "glib-2.40.2.tar.xz")
-       (stages '(build (libtool install)
-                       (zlib install)
+       (stages '(patch (libtool install))
+               '(build (zlib install)
                        (libffi install))
                '(install (firmware unpack))))
 
