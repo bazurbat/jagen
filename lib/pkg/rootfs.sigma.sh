@@ -55,7 +55,7 @@ clean_etc() {
 
     p_run rm -f "$sdk_rootfs_root/etc/TZ"
     p_run install -m644 \
-        "$TOOLCHAIN_RUNTIME_PATH/usr/share/zoneinfo/GMT" \
+        "$TOOLCHAIN_RUNTIME_PATH/usr/share/zoneinfo/Europe/Moscow" \
         "$sdk_rootfs_root/etc/localtime"
 }
 
