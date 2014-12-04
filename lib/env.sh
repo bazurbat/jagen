@@ -10,6 +10,7 @@ export pkg_debug="no"
 export pkg_sdk="sigma"
 export pkg_flags=""
 export pkg_build_type="Release"
+export pkg_build_verbose="no"
 export pkg_source_exclude=""
 
 . "$pkg_lib_dir/common.sh" ||

@@ -22,8 +22,13 @@ p_run() {
     shift
 
     case $cmd in
-        make|ninja)
+        make)
             cmd="$cmd -j$p_jobs"
+            [ "$pkg_build_verbose" = "yes" ] && cmd="$cmd V=1"
+            ;;
+        ninja)
+            cmd="$cmd -j$p_jobs"
+            [ "$pkg_build_verbose" = "yes" ] && cmd="$cmd -v"
             ;;
     esac
 
