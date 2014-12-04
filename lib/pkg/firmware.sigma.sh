@@ -67,6 +67,16 @@ install_rsync() {
     p_run install -vm755 "$p_source_dir/bin/rsync" "$p_work_dir/bin"
 }
 
+install_wpa_supplicant() {
+    p_run install -m755 \
+        "$p_source_dir/bin/wpa_cli" \
+        "$p_source_dir/bin/wpa_passphrase" \
+        "$p_work_dir/bin"
+    p_run install -m755 \
+        "$p_source_dir/sbin/wpa_supplicant" \
+        "$p_work_dir/sbin"
+}
+
 pkg_install() {
     local bin="audioplayer bgaudio demo jabba midiplayer smplayer db-service \
         csi i2c_debug uart-shell ast-service pcf8563"
@@ -84,6 +94,9 @@ pkg_install() {
     p_run cp -va chicken "$sdk_firmware_dir/lib"
     p_run cp -va *.so* "$sdk_firmware_dir/lib"
 
+    p_run cp -af "$p_source_dir/etc" "$sdk_firmware_dir"
+    p_run cp -af "$p_source_dir/share/dbus-1" "$sdk_firmware_dir/share"
+
     p_run cp -vf "$target_dir/xmaterial.romfs" "$sdk_firmware_dir/"
     p_run cp -vf "$target_dir/imaterial.romfs" "$sdk_firmware_dir/"
     p_run cp -vf "$target_dir/zbimage-linux-xload.zbc" "$sdk_firmware_dir/"
@@ -96,6 +109,7 @@ pkg_install() {
 
     install_dbus
     install_rsync
+    install_wpa_supplicant
 
     # delete not used libraries
     p_run rm -f "$p_work_dir"/lib/libxt_*

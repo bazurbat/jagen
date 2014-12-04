@@ -63,6 +63,7 @@ pkg_install() {
         "$s/dbus/fi.w1.wpa_supplicant1.service" \
         "$d/share/dbus-1/system-services"
 
-    p_run sed -i 's|^\(Exec=\)/bin|\1/sbin|' \
+    p_run sed -ri \
+        -e "s|^Exec=.*(/wpa_supplicant.*)|Exec=$p_prefix/sbin\1|" \
         $d/share/dbus-1/system-services/fi.w1.wpa_supplicant1.service
 }
