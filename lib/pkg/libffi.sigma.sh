@@ -2,6 +2,7 @@
 
 p_source="$pkg_dist_dir/libffi-3.1.tar.gz"
 
+use_env tools
 use_toolchain target
 
 p_prefix="$target_prefix"

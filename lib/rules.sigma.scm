@@ -276,20 +276,27 @@
                '(install (firmware unpack)))))
 
 (when (regexp-search "experimental_network" *flags*)
+  (pkg 'libtool
+       (source 'dist "libtool-2.4.3.tar.xz")
+       (stages '(build)
+               '(install)))
+
   (pkg 'libffi
        (source 'dist "libffi-3.1.tar.gz")
-       (stages '(build)
+       (stages '(build (libtool install))
                '(install (firmware unpack))))
 
   (pkg 'glib
        (source 'dist "glib-2.40.2.tar.xz")
-       (stages '(build (zlib install)
+       (stages '(build (libtool install)
+                       (zlib install)
                        (libffi install))
                '(install (firmware unpack))))
 
   (pkg 'connman
        (source 'dist "connman-1.26.tar.xz")
-       (stages '(build (dbus install)
+       (stages '(build (libtool install)
+                       (dbus install)
                        (glib install)
                        (xtables-addons install))
                '(install (firmware unpack)))))
