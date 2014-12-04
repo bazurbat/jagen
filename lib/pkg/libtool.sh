@@ -1,6 +1,6 @@
 #!/bin/sh
 
-use_env tools
+use_toolchain host
 
 pkg_patch() {
 	export LIBTOOLIZE=echo

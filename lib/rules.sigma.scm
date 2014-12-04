@@ -31,13 +31,20 @@
      (source 'dist "mruafw_SMP8654F_prod_3_9_2.tgz")
      (stages '(install (firmware unpack))))
 
-; host
+; tools
 
 (pkg 'make
      (source 'dist "make-3.80.tar.bz2")
      (stages '(config host
                       (build)
                       (install))))
+
+; host
+
+(pkg 'libtool
+     (source 'dist "libtool-2.4.3.tar.xz")
+     (stages '(build)
+             '(install)))
 
 ; utils
 
@@ -276,11 +283,6 @@
                '(install (firmware unpack)))))
 
 (when (regexp-search "experimental_network" *flags*)
-  (pkg 'libtool
-       (source 'dist "libtool-2.4.3.tar.xz")
-       (stages '(build)
-               '(install)))
-
   (pkg 'libffi
        (source 'dist "libffi-3.1.tar.gz")
        (stages '(build (libtool install))

@@ -2,7 +2,7 @@
 
 p_source="$pkg_dist_dir/connman-1.26.tar.xz"
 
-use_env tools
+use_env host
 use_toolchain target
 
 p_prefix="$target_prefix"
