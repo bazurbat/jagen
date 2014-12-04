@@ -19,7 +19,7 @@ pkg_build() {
 	export CONFIG_SHELL=/bin/bash
 
     p_run ./configure \
-        --prefix="$tools_dir$tools_prefix" \
+        --prefix="$host_dir$host_prefix" \
 		--disable-ltdl-install
 
 	p_run make
