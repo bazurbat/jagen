@@ -2,9 +2,6 @@
 
 use_env tools
 
-p_prefix="$tools_prefix"
-p_dest_dir="$tools_dir"
-
 pkg_patch() {
 	export LIBTOOLIZE=echo
 
@@ -22,12 +19,12 @@ pkg_build() {
 	export CONFIG_SHELL=/bin/bash
 
     p_run ./configure \
-        --prefix="$p_prefix" \
+        --prefix="$tools_dir$tools_prefix" \
 		--disable-ltdl-install
 
 	p_run make
 }
 
 pkg_install() {
-    p_run make DESTDIR="$p_dest_dir" install
+    p_run make install
 }
