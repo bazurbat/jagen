@@ -9,9 +9,9 @@ pkg_patch() {
 		< "$pkg_patch_dir/libtool-2.4.3-no-clean-gnulib.patch"
 	p_run patch -p1 \
 		< "$pkg_patch_dir/libtool-2.4.3-test-cmdline_wrap.patch"
-	pushd libltdl >/dev/null
+	p_run cd libltdl
 	p_run autoreconf -if
-	popd >/dev/null
+	p_run cd -
 	p_run autoreconf -if
 }
 
