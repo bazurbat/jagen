@@ -12,6 +12,8 @@
         (chibi regexp)
         (chibi show))
 
+(define *width* 4)
+
 (define-record-type
   rule
   (make-rule name variables) rule?
@@ -40,7 +42,34 @@
   (type     source-type)
   (location source-location))
 
-(define *width* 4)
+(define-record-type
+  patch@
+  (patch name strip)
+  patch?
+  (name  patch-name)
+  (strip patch-strip))
+
+(define-record-type
+  stage@
+  (make-stage name config deps)
+  stage?
+  (name   stage-name)
+  (config stage-config)
+  (deps   stage-deps))
+
+(define (stage . args)
+  (match args
+         (((? string? config) (? string? name) deps ...)
+          (make-stage name config deps))
+         (((? string? name) deps ...)
+          (make-stage name #f deps))
+         (((? string? name))
+          (make-stage name #f '()))))
+
+(define (depends . deps)
+  (if (pair? deps) (cons 'depends (car deps)) deps))
+(define (after . deps)
+  (if (pair? deps) (cons 'after (car deps)) deps))
 
 (define main
   (match-lambda
@@ -69,20 +98,9 @@
              ((not (zero? (string-length value)))))
     value))
 
-(define (intersperse ls x)
-  (if (or (null? ls) (null? (cdr ls)))
-    ls
-    (let loop ((ls (cdr ls)) (res (list (car ls))))
-      (let ((res (cons (car ls) (cons x res))))
-        (if (null? (cdr ls))
-          (reverse res)
-          (loop (cdr ls) res))))))
-
 (define (generate-build out-file in-file)
   (if (file-exists? out-file) (delete-file out-file))
   (with-output-to-file out-file (cut load in-file)))
-
-(define (stages . lst) lst)
 
 (define (%sh:variable name value)
   (show #t name "=\"" value "\"" nl))
@@ -102,21 +120,30 @@
     (show #t "#!/bin/sh" nl)
     (%sh:variable "p_source" (source->string source)))
   (let ((path (make-path (env 'build-include-dir)
-                         (string-append (symbol->string name) ".sh"))))
+                         (string-append name ".sh"))))
     (create-directory* (path-directory path))
     (with-output-to-file path create-script)))
 
 (define (pkg name . args)
   (let ((source (source #f ""))
-        (stages '()))
-    (let loop ((args args))
-      (unless (null? args)
-        (cond ((source? (car args))
-               (set! source (car args))
-               (loop (cdr args)))
-              (else (set! stages (car args))))))
+        (patches '())
+        (stages (map (cut make-stage <> #f '())
+                     (reverse (list "update" "clean" "unpack" "patch")))))
+    (show #t "pkg: " name nl)
+    (do ((args args (cdr args))) ((null? args))
+      (let ((arg (car args)))
+        (cond ((source? arg)
+               (set! source arg))
+              ((patch? arg)
+               (set! patches (cons arg patches)))
+              ((stage? arg)
+               (set! stages (cons arg stages))))))
     (pkg:generate name source)
-    (%pkg name stages)))
+    (for-each
+      (lambda (s)
+        (%target (make-target name (stage-name s) (stage-config s)) '()))
+      (reverse stages))
+    (show #t "stages: " stages nl)))
 
 (define (%pkg name stages)
   (define (find-stage stage lst)
