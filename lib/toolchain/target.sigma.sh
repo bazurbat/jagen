@@ -19,17 +19,12 @@ export PKG_CONFIG_PATH="$sdk_rootfs_prefix/lib/pkgconfig"
 gcc_version() { "mips-linux-gnu-gcc" --version | awk "/gcc/ { print \$NF; }"; }
 
 check_toolchain() {
-    local IFS version=$(gcc_version)
-    IFS="."
-    set -- $version
+    local version=$(gcc_version)
 
-    [ $1 != 4 ] && die "Unsupported GCC version: $version"
-
-    if [ $2 -ge 3 ]; then
+    # FIXME: figure out portable IFS use
+    if [ "$version" = "4.6.3" ]; then
         pkg_flags="$pkg_flags new_toolchain"
     fi
-
-    CXXFLAGS="$CFLAGS"
 }
 
 check_toolchain
