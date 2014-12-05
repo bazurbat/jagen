@@ -205,14 +205,15 @@
   'zlib
   (source 'dist "zlib-1.2.8.tar.gz"))
 
-(define-firmware-package
-  'xtables
-  (source 'dist "iptables-1.4.21.tar.bz2"))
+(when (regexp-search "experimental_network" *flags*)
+  (define-firmware-package
+    'xtables
+    (source 'dist "iptables-1.4.21.tar.bz2"))
 
-(define-firmware-package
-  'xtables-addons
-  (source 'dist "xtables-addons-1.47.1.tar.xz")
-  '(xtables install))
+  (define-firmware-package
+    'xtables-addons
+    (source 'dist "xtables-addons-1.47.1.tar.xz")
+    '(xtables install)))
 
 (pkg 'ffmpeg
      (source 'dist "ffmpeg-2.2.1.tar.bz2")
