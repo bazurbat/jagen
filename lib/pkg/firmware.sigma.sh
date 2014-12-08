@@ -86,6 +86,9 @@ pkg_install() {
 
     if p_flags "experimental_network"; then
         p_run install -vm 755 \
+            "$p_source_dir/bin/gdbus" \
+            "$sdk_firmware_dir/bin"
+        p_run install -vm 755 \
             "$p_source_dir/sbin/connmand" \
             "$sdk_firmware_dir/sbin"
     fi
