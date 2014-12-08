@@ -75,7 +75,7 @@ pkg_install() {
 
     p_run cd "$sdk_rootfs_root"
 
-    p_run rm -fr dev opt proc sys root tmp usr
+    p_run rm -fr dev opt proc sys root tmp usr var/run
     p_run install -m 700 -d root
     p_run rm -f init linuxrc
     p_run ln -s /bin/busybox init
