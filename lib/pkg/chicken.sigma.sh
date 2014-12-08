@@ -9,6 +9,12 @@ if p_flags chicken_next; then
     p_source_branch="next"
 fi
 
+# FIXME: add proper support for other build types to chicken
+case $cmake_build_type in
+    Debug|Release) ;;
+    *) cmake_build_type=Release ;;
+esac
+
 pkg_build_host() {
     p_flags chicken_next && return 0
 

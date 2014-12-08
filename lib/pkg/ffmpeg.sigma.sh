@@ -41,12 +41,13 @@ pkg_build() {
         filters="$filters --enable-filter=$i"
     done
 
-    if [ "$pkg_build_type" = "Release" ]; then
-        options="--disable-debug"
-    elif [ "$pkg_build_type" = "Debug" ]; then
-        export CFLAGS=""
-        options="--disable-optimizations"
-    fi
+    case $pkg_build_type in
+        Rel*) options="--disable-debug" ;;
+        Debug)
+            export CFLAGS=""
+            options="--disable-optimizations"
+            ;;
+    esac
 
     p_run $p_source_dir/configure --prefix="$prefix" \
         --bindir="${prefix}/bin" \
