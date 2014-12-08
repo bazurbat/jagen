@@ -5,13 +5,13 @@ warning() { printf "\033[1;33m:::\033[0m %s\n" "$*"; }
 error() { printf "\033[1;31m:::\033[0m %s\n" "$*" >&2; }
 
 die() {
-    local status=$?
+    local ret=$?
     if [ $# = 0 ]; then
-        error "The command exited with status: $status"
+        error "The command exited with status: $ret"
     else
         error "$*"
     fi
-    exit $status
+    exit $ret
 }
 
 debug() {
