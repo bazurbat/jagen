@@ -142,6 +142,6 @@ pkg_strip() {
             -o -name "types.db" \
             ")" -print -delete
 
-        p_strip "$p_work_dir" >>"$p_log" 2>&1
+        p_strip "$p_work_dir"
     fi
 }

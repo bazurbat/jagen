@@ -51,10 +51,4 @@ pkg_install_host() {
 
 pkg_install_target() {
     p_run cmake --build . --target install
-
-    # FIXME: these should be installed by install_modules macro inside project
-    # but I've no time to debug this
-    p_run cp -a \
-        _chicken/repository/* \
-        "$sdk_firmware_dir/lib/chicken/7"
 }
