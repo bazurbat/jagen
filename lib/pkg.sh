@@ -56,7 +56,7 @@ p_strip() {
         xargs -r file | grep "ELF.*\(executable\|shared object\).*not stripped" | cut -d: -f1)
 
     for f in $files; do
-        "$STRIP" -v --strip-unneeded \
+        p_run "$STRIP" -v --strip-unneeded \
             -R .comment \
             -R .GCC.command.line \
             -R .note.gnu.gold-version \

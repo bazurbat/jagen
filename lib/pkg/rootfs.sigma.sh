@@ -28,29 +28,29 @@ pkg_build() {
 
 create_dirs() {
     p_run cd "$sdk_rootfs_root"
-    rm -rf dev opt proc sys root tmp usr var/run &&
-    install -m 700 -d root
+    p_run rm -rf dev opt proc sys root tmp usr var/run
+    p_run install -m 700 -d root
 }
 
 fix_init_link() {
-    cd "$sdk_rootfs_root" &&
-    rm -f init linuxrc &&
-    ln -s /bin/busybox init
+    p_run cd "$sdk_rootfs_root"
+    p_run rm -f init linuxrc
+    p_run ln -s /bin/busybox init
 }
 
 fix_xenv_bins() {
-    cd "$sdk_rootfs_root/bin" &&
-    rm -f setxenv setxenv.bash unsetxenv &&
-    ln -sf setxenv2_mipsel setxenv2 &&
-    ln -sf setxenv2_mipsel unsetxenv2
+    p_run cd "$sdk_rootfs_root/bin"
+    p_run rm -f setxenv setxenv.bash unsetxenv
+    p_run ln -sf setxenv2_mipsel setxenv2
+    p_run ln -sf setxenv2_mipsel unsetxenv2
 }
 
 clean_etc() {
-    cd "$sdk_rootfs_root/etc" &&
-    rm -rf init.d rc.d network cs_rootfs_* &&
-    rm -f ld.so.cache mtab
+    p_run cd "$sdk_rootfs_root/etc"
+    p_run rm -rf init.d rc.d network cs_rootfs_*
+    p_run rm -f ld.so.cache mtab
     for d in up down pre-up post-down; do
-        mkdir -p network/if-${d}.d
+        p_run mkdir -p network/if-${d}.d
     done
 
     p_run rm -f "$sdk_rootfs_root/etc/TZ"
@@ -60,57 +60,59 @@ clean_etc() {
 }
 
 remove_nss_libs() {
-    cd "$sdk_rootfs_root/lib" &&
-    rm -f libnss_compat* libnss_hesiod* libnss_nis*
+    p_run cd "$sdk_rootfs_root/lib"
+    p_run rm -f libnss_compat* libnss_hesiod* libnss_nis*
 }
 
 remove_ncurses() {
-    cd "$sdk_rootfs_root" &&
-    rm -f etc/inputrc &&
-    rm -rf usr/share/terminfo &&
-    cd "$sdk_rootfs_root/lib" &&
-    rm -f libmenu* libpanel* libform* libncurses*
+    p_run cd "$sdk_rootfs_root"
+    p_run rm -f etc/inputrc
+    p_run rm -rf usr/share/terminfo
+    p_run cd "$sdk_rootfs_root/lib"
+    p_run rm -f libmenu* libpanel* libform* libncurses*
 }
 
 remove_image_libs() {
-    cd "$sdk_rootfs_root/lib" || return $?
-    rm -f libjpeg*
-    rm -f libpng*
-    rm -f libtiff*
-    rm -f libungif*
+    p_run cd "$sdk_rootfs_root/lib"
+    p_run rm -f libjpeg*
+    p_run rm -f libpng*
+    p_run rm -f libtiff*
+    p_run rm -f libungif*
 }
 
 install_keys() {
-    mkdir -p "$sdk_rootfs_root/lib/firmware" || return $?
-    cp -a "$pkg_private_dir/keys/keyfile.gpg" "$sdk_rootfs_root/lib/firmware"
+    p_run mkdir -p "$sdk_rootfs_root/lib/firmware"
+    p_run cp -a \
+        "$pkg_private_dir/keys/keyfile.gpg" \
+        "$sdk_rootfs_root/lib/firmware"
 }
 
 install_gpg() {
-    cd "$sdk_rootfs_prefix" || return $?
-    cp -a bin/gpg "$sdk_rootfs_root/bin" || return $?
-    cp -a lib/libgpg* lib/libassuan* "$sdk_rootfs_root/lib"
+    p_run cd "$sdk_rootfs_prefix"
+    p_run cp -a bin/gpg "$sdk_rootfs_root/bin"
+    p_run cp -a lib/libgpg* lib/libassuan* "$sdk_rootfs_root/lib"
 }
 
 install_util_linux() {
-    cd "$sdk_rootfs_prefix" || return $?
-    cp -a sbin/losetup "$sdk_rootfs_root/sbin"
+    p_run cd "$sdk_rootfs_prefix"
+    p_run cp -a sbin/losetup "$sdk_rootfs_root/sbin"
 }
 
 install_ldconfig() {
-    cd "$TOOLCHAIN_RUNTIME_PATH" || return $?
-    cp -a usr/lib/bin/ldconfig "$sdk_rootfs_root/sbin"
+    p_run cd "$TOOLCHAIN_RUNTIME_PATH"
+    p_run cp -a usr/lib/bin/ldconfig "$sdk_rootfs_root/sbin"
 }
 
 clean_misc() {
-    cd "$sdk_rootfs_root" || return $?
+    p_run cd "$sdk_rootfs_root"
 
-    rm -f bin/mtd_*
+    p_run rm -f bin/mtd_*
 
     if [ "$pkg_build_type" = "Release" ]; then
-        rm -rf usr/local || return $?
+        p_run rm -rf usr/local
     fi
 
-    find lib \( -name "*.a" -o -name "*.la" \) -delete
+    p_run find lib \( -name "*.a" -o -name "*.la" \) -delete
 
     remove_nss_libs || return $?
 
@@ -120,23 +122,23 @@ clean_misc() {
 }
 
 install_files() {
-    cp -rf "$pkg_private_dir"/rootfs/* "$sdk_rootfs_root"
+    p_run cp -rf "$pkg_private_dir"/rootfs/* "$sdk_rootfs_root"
 }
 
 pkg_install() {
     use_toolchain target
 
-    create_dirs || die "create_dirs failed"
-    fix_init_link || die "fix_init_link failed"
-    fix_xenv_bins || die "fix_xenv_bins failed"
-    clean_etc || die "clean_etc failed"
-    install_keys || die "install_keys failed"
-    install_gpg || die "install_gpg failed"
-    install_util_linux || die "install_util_linux failed"
-    install_ldconfig || die "install_ldconfig failed"
-    clean_misc || die "clean_misc failed"
-    remove_image_libs || die "remove_image_libs failed"
-    install_files || die "install_files failed"
+    create_dirs
+    fix_init_link
+    fix_xenv_bins
+    clean_etc
+    install_keys
+    install_gpg
+    install_util_linux
+    install_ldconfig
+    clean_misc
+    remove_image_libs
+    install_files
 
-    p_strip "$sdk_rootfs_root" >>"$p_log" 2>&1 || die "strip failed"
+    p_strip "$sdk_rootfs_root"
 }
