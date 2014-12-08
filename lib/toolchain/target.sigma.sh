@@ -19,14 +19,15 @@ export PKG_CONFIG_PATH="$sdk_rootfs_prefix/lib/pkgconfig"
 gcc_version() { "mips-linux-gnu-gcc" --version | awk "/gcc/ { print \$NF; }"; }
 
 check_toolchain() {
-    local IFS version=$(gcc_version) major minor patch rest
-    IFS=.
+    local IFS=. version=$(gcc_version)
 
-    echo "$version" | read major minor patch rest
+    read major minor patch rest <<EOF
+$version
+EOF
 
-    [ $major = 4 ] || die "Unsupported compiler version: $version"
+    [ "$major" = 4 ] || die "Unsupported compiler version: $version"
 
-    if [ $minor -ge 4 ]; then
+    if [ "$minor" -ge 4 ]; then
         pkg_flags="$pkg_flags new_toolchain"
     fi
 }
