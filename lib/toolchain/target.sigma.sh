@@ -21,6 +21,7 @@ gcc_version() { "mips-linux-gnu-gcc" --version | awk "/gcc/ { print \$NF; }"; }
 check_toolchain() {
     local IFS=. version=$(gcc_version)
 
+    # NOTE: reading from pipe does not work
     read major minor patch rest <<EOF
 $version
 EOF
