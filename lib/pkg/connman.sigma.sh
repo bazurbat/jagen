@@ -14,6 +14,7 @@ pkg_build() {
     p_run ./configure \
         --host="$target_system" \
         --prefix="$p_prefix" \
+        --sysconfdir="/settings" \
         --localstatedir="/var" \
         --enable-pie \
         --disable-gadget \
