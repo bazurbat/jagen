@@ -15,7 +15,7 @@ pkg_build() {
         --host="$target_system" \
         --prefix="$p_prefix" \
         --sysconfdir="/settings" \
-        --localstatedir="/var" \
+        --localstatedir="/settings" \
         --enable-pie \
         --disable-gadget \
         --disable-bluetooth \
