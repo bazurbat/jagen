@@ -84,14 +84,9 @@ pkg_install() {
     p_run cd "$p_source_dir/bin"
     p_run install -vm 755 $bin "$sdk_firmware_dir/bin"
 
-    if p_flags "experimental_network"; then
-        p_run install -vm 755 \
-            "$p_source_dir/bin/gdbus" \
-            "$sdk_firmware_dir/bin"
-        p_run install -vm 755 \
-            "$p_source_dir/sbin/connmand" \
-            "$sdk_firmware_dir/sbin"
-    fi
+    p_run install -vm 755 \
+        "$p_source_dir/sbin/connmand" \
+        "$sdk_firmware_dir/sbin"
 
     p_run cd "$p_source_dir/lib"
     p_run cp -va chicken "$sdk_firmware_dir/lib"
@@ -105,10 +100,6 @@ pkg_install() {
     p_run cp -vf "$target_dir/zbimage-linux-xload.zbc" "$sdk_firmware_dir/"
     p_run cp -vf "$target_dir/phyblock0-0x20000padded.AST50" "$sdk_firmware_dir/"
     p_run cp -vf "$target_dir/phyblock0-0x20000padded.AST100" "$sdk_firmware_dir/"
-
-    if p_flags "experimental_network"; then
-        p_run mkdir -p "$sdk_firmware_dir/var/lib/connman"
-    fi
 
     install_dbus
     install_rsync

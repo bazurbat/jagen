@@ -205,15 +205,14 @@
   'zlib
   (source 'dist "zlib-1.2.8.tar.gz"))
 
-(when (regexp-search "experimental_network" *flags*)
-  (define-firmware-package
-    'xtables
-    (source 'dist "iptables-1.4.21.tar.bz2"))
+(define-firmware-package
+  'xtables
+  (source 'dist "iptables-1.4.21.tar.bz2"))
 
-  (define-firmware-package
-    'xtables-addons
-    (source 'dist "xtables-addons-1.47.1.tar.xz")
-    '(xtables install)))
+(define-firmware-package
+  'xtables-addons
+  (source 'dist "xtables-addons-1.47.1.tar.xz")
+  '(xtables install))
 
 (pkg 'ffmpeg
      (source 'dist "ffmpeg-2.2.1.tar.bz2")
@@ -240,7 +239,7 @@
                              (ffmpeg build host)
                              (chicken-eggs install host))
                       (install))
-             `(config target
+             '(config target
                       (prepare)
                       (build (astindex unpack)
                              (chicken install target)
@@ -251,14 +250,12 @@
                              (libuv install)
                              (mrua build)
                              (soundtouch install)
-                             ,@(if (regexp-search "experimental_network" *flags*)
-                                 '((connman install))
-                                 '()))
+                             (connman install))
                       (install after (chicken-eggs install target)))))
 
 (pkg 'firmware
      (stages '(material (mrua build))
-             `(install (ezboot install)
+             '(install (ezboot install)
                        (mrua install)
                        (kernel image)
                        (karaoke-player install target)
@@ -270,11 +267,9 @@
                        (sqlite install)
                        (wpa_supplicant install)
                        (zlib install)
-                       ,@(if (regexp-search "experimental_network" *flags*)
-                           '((libffi install)
-                             (glib install)
-                             (connman install))
-                           '()))
+                       (libffi install)
+                       (glib install)
+                       (connman install))
              '(strip)))
 
 (when (regexp-search "jemalloc" *flags*)
@@ -283,23 +278,22 @@
        (stages '(build)
                '(install (firmware unpack)))))
 
-(when (regexp-search "experimental_network" *flags*)
-  (pkg 'libffi
-       (source 'dist "libffi-3.1.tar.gz")
-       (stages '(build (libtool install))
-               '(install (firmware unpack))))
+(pkg 'libffi
+     (source 'dist "libffi-3.1.tar.gz")
+     (stages '(build (libtool install))
+             '(install (firmware unpack))))
 
-  (pkg 'glib
-       (source 'dist "glib-2.40.2.tar.xz")
-       (stages '(patch (libtool install))
-               '(build (zlib install)
-                       (libffi install))
-               '(install (firmware unpack))))
+(pkg 'glib
+     (source 'dist "glib-2.40.2.tar.xz")
+     (stages '(patch (libtool install))
+             '(build (zlib install)
+                     (libffi install))
+             '(install (firmware unpack))))
 
-  (pkg 'connman
-       (source 'dist "connman-1.26.tar.xz")
-       (stages '(build (libtool install)
-                       (dbus install)
-                       (glib install)
-                       (xtables-addons install))
-               '(install (firmware unpack)))))
+(pkg 'connman
+     (source 'dist "connman-1.26.tar.xz")
+     (stages '(build (libtool install)
+                     (dbus install)
+                     (glib install)
+                     (xtables-addons install))
+             '(install (firmware unpack))))
