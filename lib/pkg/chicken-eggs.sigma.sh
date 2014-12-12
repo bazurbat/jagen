@@ -16,50 +16,26 @@ case $cmake_build_type in
 esac
 
 pkg_install_host() {
-    p_flags chicken_next && return 0
-
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$cmake_build_type" \
-        -DCMAKE_C_FLAGS_RELEASE="" \
-        -DCMAKE_PREFIX_PATH="$host_dir" \
+        -DCMAKE_INSTALL_PREFIX="$host_dir" \
         "$p_source_dir"
-
-    p_run cmake --build . -- $cmake_build_options
-}
-
-pkg_install_cross() {
-    use_env tools
-
-    if p_flags chicken_next; then
-        p_run cmake -G"$cmake_generator" \
-            -DCMAKE_BUILD_TYPE="$cmake_build_type" \
-            -DCMAKE_C_FLAGS_RELEASE="" \
-            -DCMAKE_PREFIX_PATH="$tools_dir" \
-            "$p_source_dir"
-    else
-        p_run cmake -G"$cmake_generator" \
-            -DCMAKE_BUILD_TYPE="$cmake_build_type" \
-            -DCMAKE_C_FLAGS_RELEASE="" \
-            -DCMAKE_PREFIX_PATH="$tools_dir" \
-            -DCHICKEN_SYSTEM="$target_system" \
-            "$p_source_dir"
-    fi
 
     p_run cmake --build . -- $cmake_build_options
 }
 
 pkg_install_target() {
     use_env host
+    export DESTDIR="$target_dir"
 
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$cmake_build_type" \
-        -DCMAKE_C_FLAGS_RELEASE="" \
         -DCMAKE_SYSTEM_NAME="Linux" \
         -DCMAKE_INSTALL_PREFIX="$target_prefix" \
-        -DCMAKE_FIND_ROOT_PATH="${target_dir}${target_prefix}" \
-        -DCHICKEN_HOST_SYSTEM="$target_system" \
-        -DCHICKEN_EXECUTABLE="$host_dir/bin/chicken" \
-        -DCHICKEN_CSI_EXECUTABLE="$host_dir/bin/csi" \
+        -DCMAKE_FIND_ROOT_PATH="$target_dir$target_prefix" \
+        -DCHICKEN_COMPILER="$host_dir/bin/chicken" \
+        -DCHICKEN_INTERPRETER="$host_dir/bin/csi" \
+        -DCHICKEN_DEPENDS="$host_dir/bin/chicken-depends" \
         "$p_source_dir"
 
     p_run cmake --build . -- $cmake_build_options

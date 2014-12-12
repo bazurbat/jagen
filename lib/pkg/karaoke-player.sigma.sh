@@ -9,9 +9,8 @@ pkg_build_host() {
 
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$cmake_build_type" \
-        -DCMAKE_PREFIX_PATH="$host_dir" \
         -DCMAKE_INSTALL_PREFIX="$host_dir" \
-        -DCHICKEN_DEPENDS="$tools_dir/bin/chicken-depends" \
+        -DCMAKE_FIND_ROOT_PATH="$host_dir" \
         "$p_source_dir"
 
     if p_flags libuv_next; then
@@ -36,10 +35,9 @@ pkg_build_target() {
         -DCMAKE_INSTALL_PREFIX="${target_dir}${target_prefix}" \
         -DCMAKE_FIND_ROOT_PATH="${target_dir}${target_prefix}" \
         -DSIGMA_ROOT_DIR="$pkg_src_dir" \
-        -DCHICKEN_HOST_SYSTEM="$target_system" \
-        -DCHICKEN_BUILD_IMPORTS=NO \
-        -DCHICKEN_EXECUTABLE="$host_dir/bin/chicken" \
-        -DCHICKEN_CSI_EXECUTABLE="$host_dir/bin/csi" \
+        -DCHICKEN_COMPILER="$host_dir/bin/chicken" \
+        -DCHICKEN_INTERPRETER="$host_dir/bin/csi" \
+        -DCHICKEN_DEPENDS="$host_dir/bin/chicken-depends" \
         "$p_source_dir"
 
     p_run cmake --build . -- $cmake_build_options
