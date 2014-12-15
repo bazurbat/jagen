@@ -26,12 +26,10 @@ pkg_install_host() {
 
 pkg_install_target() {
     use_env host
-    export DESTDIR="$target_dir"
 
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$cmake_build_type" \
         -DCMAKE_SYSTEM_NAME="Linux" \
-        -DCMAKE_INSTALL_PREFIX="$target_prefix" \
         -DCMAKE_FIND_ROOT_PATH="$target_dir$target_prefix" \
         -DCHICKEN_COMPILER="$host_dir/bin/chicken" \
         -DCHICKEN_INTERPRETER="$host_dir/bin/csi" \
