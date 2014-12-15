@@ -167,6 +167,7 @@
                       (install (chicken install host)))
              '(config target
                       (install (chicken install target)
+                               (sqlite install)
                                after
                                (chicken-eggs install host)
                                (dbus install)))))
