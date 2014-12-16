@@ -13,8 +13,7 @@ pkg_clean() {
 pkg_unpack() {
     p_run cd "$p_work_dir"
 
-    p_run install -d -m 755 bin dev etc home lib libexec mnt proc run sbin sys usr var
-    p_run install -d -m 755 usr/bin usr/lib usr/sbin
+    p_run install -d -m 755 bin dev etc home lib libexec mnt proc run sbin share sys usr var
     p_run install -d -m 700 root
     p_run install -d -m 1777 tmp
 }
@@ -118,7 +117,7 @@ pkg_install() {
 pkg_strip() {
     p_run cd "$p_work_dir"
 
-    p_run find lib usr/lib -type f \
+    p_run find lib -type f \
         "(" -name "*.a" -o -name "*.la" ")" \
         -print -delete
 
