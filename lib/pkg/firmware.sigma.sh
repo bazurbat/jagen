@@ -79,7 +79,7 @@ install_wpa_supplicant() {
 
 pkg_install() {
     local bin="audioplayer bgaudio demo jabba midiplayer smplayer db-service \
-        csi i2c_debug uart-shell ast-service pcf8563"
+        csi i2c_debug uart-shell ast-service pcf8563 agent-smith"
 
     p_run cd "$p_source_dir/bin"
     p_run install -vm 755 $bin "$sdk_firmware_dir/bin"
