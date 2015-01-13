@@ -1,7 +1,9 @@
 (define (package name . args)
   (apply define-package name
+         (stage 'update)
          (stage 'clean)
          (stage 'unpack)
+         (stage 'patch)
          args))
 
 (define (rootfs-package name . args)
