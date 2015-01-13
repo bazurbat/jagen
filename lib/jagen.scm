@@ -170,14 +170,20 @@
 
 (define (%ninja:build b)
   (define (targets state ts)
-    (mapreduce %target (lambda (p r) (show #f (p state))) "" ts))
+    (mapreduce %target (lambda (p r) (show #f "$builddir/" (p state))) "" ts))
+  (define (deps state ds)
+    (map (compose (cut show #f (space-to 16) "$builddir/" <>)
+                  (cut <> state))
+         (map %target ds)))
 
   (let ((rule    (build-rule      b))
         (out     (build-outputs   b))
         (depends (build-depends   b))
         (vars    (build-variables b)))
     (lambda (state)
-      (show #f "build " (targets state out) ": " (targets state depends) nl
+      (show #f "build " (targets state out) ": " rule
+            (joined/prefix (lambda (x) x) (deps state depends)
+                           (show #f " $" nl)) nl
             (mapreduce %ninja:variable
                        (lambda (p r) (show #f (p (make-state 1)))) ""
                        (build-variables b))
@@ -188,11 +194,16 @@
     (apply run-with-state (make-package name #f '() '()) rest))
 
   (define (stage->build stage)
-    (make-build
-      "script"
-      (list (make-target name (stage-name stage) (stage-config stage)))
-      (stage-depends stage)
-      (list (make-variable "script" "jagen-pkg"))))
+    (let ((sn (stage-name stage))
+          (sc (stage-config stage)))
+      (make-build
+        "script"
+        (list (make-target name sn sc))
+        (stage-depends stage)
+        (list (make-variable "script"
+                             (let ((args (if sc (list name sn sc) (list name sn))))
+                               (show #f "jagen-pkg "
+                                     (joined (lambda (x) x) args " "))))))))
 
   (let* ((state (make-state 0))
          (pkg (create-package name))
