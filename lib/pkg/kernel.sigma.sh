@@ -15,31 +15,31 @@ pkg_build() {
 
     p_run cd linux
 
-    p_run make
+    p_run $CROSS_MAKE
 
     p_run cd "$p_source_dir/proprietary"
-    p_run make -C spinor clean
-    p_run make -C spinor
-    p_run make -C sd_block
+    p_run $CROSS_MAKE -C spinor clean
+    p_run $CROSS_MAKE -C spinor
+    p_run $CROSS_MAKE -C sd_block
 
     p_run cd "$p_source_dir/extra"
-    p_run make clean
-    p_run make all
+    p_run $CROSS_MAKE clean
+    p_run $CROSS_MAKE all
 
-    p_run make -C "$protectordir"
+    p_run $CROSS_MAKE -C "$protectordir"
 }
 
 pkg_install() {
     cd linux || return $?
 
-    p_run make modules_install
+    p_run $CROSS_MAKE modules_install
 
     p_run cd "$kernel_dir/proprietary"
-    p_run make -C spinor modules_install
-    p_run make -C sd_block modules_install
+    p_run $CROSS_MAKE -C spinor modules_install
+    p_run $CROSS_MAKE -C sd_block modules_install
 
     p_run cd "$kernel_dir/extra"
-    p_run make modules_install
+    p_run $CROSS_MAKE modules_install
 
     p_run cd "$kernel_modules_dir"
     p_run rm -f "build" "source"
@@ -48,7 +48,7 @@ pkg_install() {
 pkg_image() {
     p_run cd linux
 
-    p_run make zbimage-linux-xload
+    p_run $CROSS_MAKE zbimage-linux-xload
 
     p_run cp -f arch/mips/boot/zbimage-linux-xload "$target_dir"
 
