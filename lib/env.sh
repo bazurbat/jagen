@@ -33,3 +33,5 @@ export pkg_build_dir pkg_build_include_dir
 
 include "$pkg_lib_dir/env/cmake"
 include "$pkg_lib_dir/env/sdk"
+
+export CROSS_MAKE="make ARCH=${target_arch} CROSS_COMPILE=${target_system}-"
