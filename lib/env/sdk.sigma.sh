@@ -3,7 +3,7 @@
 export target_dir="$pkg_build_dir/target"
 export target_prefix="/firmware"
 
-export target_arch="mipsel"
+export target_arch="mips"
 export target_cpu="24kf"
 export target_system="mipsel-linux-gnu"
 
