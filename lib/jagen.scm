@@ -94,7 +94,7 @@
   (make-stage name config depends) stage?
   (name    stage-name)
   (config  stage-config)
-  (depends stage-depends))
+  (depends stage-depends set-stage-depends!))
 
 (define (stage . args)
   (define (create-stage args)
@@ -111,11 +111,23 @@
           (next-config (stage-config next)))
       (or (eq? this-config next-config) (not next-config))))
 
+  (define (same? this next)
+    (let ((this-name (stage-name this))
+          (next-name (stage-name next))
+          (this-config (stage-config this))
+          (next-config (stage-config next)))
+      (and (eq? this-name next-name) (eq? this-config next-config))))
+
   (define (find-previous this stages)
     (find (cut previous? this <>) stages))
 
+  (define (find-same this stages)
+    (find (cut same? this <>) stages))
+
   (lambda (pkg)
-    (let ((stages (package-stages pkg)))
+    (let* ((stage (create-stage args))
+           (stages (package-stages pkg))
+           (same (find-same stage stages)))
       (define (add-previous stage)
         (let ((previous (find-previous stage stages)))
           (if previous
@@ -131,7 +143,11 @@
         (package-name pkg)
         (package-source pkg)
         (package-patches pkg)
-        (cons (add-previous (create-stage args)) stages)))))
+        (cond (same
+                (set-stage-depends! same (append (stage-depends same)
+                                                 (stage-depends stage)))
+                stages)
+              (else (cons (add-previous stage) stages)))))))
 
 (define (depends . args)
   (lambda (stage)
