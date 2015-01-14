@@ -169,6 +169,7 @@
   (stage 'host   'install (depends (target 'chicken 'install 'host)))
   (stage 'target 'install
          (depends (target 'chicken      'install 'target))
+         (depends (target 'sqlite       'install))
          (after   (target 'chicken-eggs 'install 'host)
                   (target 'dbus         'install))))
 
@@ -244,7 +245,7 @@
                                  (target 'soundtouch   'install))
          (if (regexp-search "experimental_network" *flags*)
            (depends (target 'connman 'install))))
-  (stage 'install (after (target 'chicken-eggs 'install 'target))))
+  (stage 'target 'install (after (target 'chicken-eggs 'install 'target))))
 
 (package 'firmware
   (stage 'material (depends (target 'mrua           'build)))
