@@ -96,6 +96,11 @@
   (config  stage-config)
   (depends stage-depends set-stage-depends!))
 
+(define-record-type <dependency>
+  (make-dependency type target) dependency?
+  (type   dependency-type)
+  (target dependency-target))
+
 (define (stage . args)
   (define (create-stage args)
     (match args
@@ -134,9 +139,10 @@
             (make-stage
               (stage-name stage)
               (stage-config stage)
-              (cons (target (package-name pkg)
-                            (stage-name previous)
-                            (stage-config previous))
+              (cons (make-dependency 'explicit
+                                     (target (package-name pkg)
+                                             (stage-name previous)
+                                             (stage-config previous)))
                     (stage-depends stage)))
             stage)))
       (make-package
@@ -154,14 +160,16 @@
     (make-stage
       (stage-name stage)
       (stage-config stage)
-      (append (stage-depends stage) args))))
+      (append (stage-depends stage)
+              (map (cut make-dependency 'explicit <>) args)))))
 
 (define (after . args)
   (lambda (stage)
     (make-stage
       (stage-name stage)
       (stage-config stage)
-      (append (stage-depends stage) args))))
+      (append (stage-depends stage)
+              (map (cut make-dependency 'order-only <>) args)))))
 
 (define-record-type <package>
   (make-package name source patches stages) package?
@@ -181,25 +189,33 @@
 
 (define (%ninja:variable v)
   (lambda (state)
-    (show #f (space-to (* (state-depth state) *width*))
+    (show #f nl (space-to (* (state-depth state) *width*))
           (variable-name v) " = " (variable-value v))))
 
 (define (%ninja:build b)
-  (define (targets state ts)
+  (define (%targets state ts)
     (mapreduce %target (lambda (p r) (show #f "$builddir/" (p state))) "" ts))
-  (define (deps state ds)
-    (map (compose (cut show #f (space-to 16) "$builddir/" <>)
-                  (cut <> state))
-         (map %target ds)))
+  (define (%dependency state d)
+    (let ((t (dependency-target d)))
+      (show #f (space-to 16) "$builddir/" ((%target t) state))))
+  (define (filter-type type ds)
+    (filter (lambda (d) (eq? type (dependency-type d))) ds))
 
-  (let ((rule    (build-rule      b))
-        (out     (build-outputs   b))
-        (depends (build-depends   b))
-        (vars    (build-variables b)))
+  (let* ((rule       (build-rule      b))
+         (out        (build-outputs   b))
+         (depends    (build-depends   b))
+         (explicit   (filter-type 'explicit depends))
+         (order-only (filter-type 'order-only depends))
+         (vars       (build-variables b)))
     (lambda (state)
-      (show #f "build " (targets state out) ": " rule
-            (joined/prefix (lambda (x) x) (deps state depends)
-                           (show #f " $" nl)) nl
+      (show #f "build " (%targets state out) ": " rule
+            (joined/prefix (cut %dependency state <>) explicit
+                           (show #f " $" nl))
+            (if (pair? order-only)
+              (show #f " $" nl (space-to 13) "|| $" nl
+                    (joined (cut %dependency state <>) order-only
+                            (show #f " $" nl)))
+              "")
             (mapreduce %ninja:variable
                        (lambda (p r) (show #f (p (make-state 1)))) ""
                        (build-variables b))
