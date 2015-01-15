@@ -45,12 +45,32 @@ pkg_install() {
     p_run rm -f "build" "source"
 }
 
+get_start_addr() {
+    local NM="${target_system}-nm"
+    echo 0x$($NM $1 | awk '/\<kernel_entry\>/ { print $1 }')
+}
+
 pkg_image() {
+    local tmpdir="$target_dir/kernel-image"
+    p_clean_dir "$tmpdir"
+
     p_run cd linux
+    p_run $CROSS_MAKE vmlinux.bin
+    gzip -9cnf arch/mips/boot/vmlinux.bin > "$tmpdir/vmlinux_gz.zbf" || exit
 
-    p_run $CROSS_MAKE zbimage-linux-xload
+    p_run cd "$tmpdir"
+    p_run bash "$pkg_private_dir/scripts/build_cpu_xload.bash" \
+        vmlinux_gz $XSDK_DEFAULT_CPU_CERTID $XSDK_DEFAULT_KEY_DOMAIN
+    p_run genzbf \
+        -l 0x84000000 \
+        -s $(get_start_addr "$LINUX_KERNEL/vmlinux") \
+        -a lzef -o vmlinux_xload.zbf \
+        vmlinux_gz_${XSDK_DEFAULT_KEY_DOMAIN}.xload
 
-    p_run cp -f arch/mips/boot/zbimage-linux-xload "$target_dir"
+    p_clean_dir romfs
+    p_run cp vmlinux_xload.zbf romfs
+    p_run genromfs -V MIPSLINUX_XLOAD -d romfs \
+        -f "$target_dir/zbimage-linux-xload"
 
     p_run "$protectordir/zbprotector" \
         "$target_dir/zbimage-linux-xload" \
