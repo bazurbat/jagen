@@ -242,9 +242,8 @@
                                  (target 'freetype     'install)
                                  (target 'libuv        'install)
                                  (target 'mrua         'build)
-                                 (target 'soundtouch   'install))
-         (if (regexp-search "experimental_network" *flags*)
-           (depends (target 'connman 'install))))
+                                 (target 'soundtouch   'install)
+                                 (target 'connman      'install)))
   (stage 'target 'install (after (target 'chicken-eggs 'install 'target))))
 
 (package 'firmware
@@ -260,11 +259,10 @@
                             (target 'rsync          'install)
                             (target 'sqlite         'install)
                             (target 'wpa_supplicant 'install)
-                            (target 'zlib           'install))
-         (if (regexp-search "experimental_network" *flags*)
-           (depends (target 'libffi  'install)
-                    (target 'glib    'install)
-                    (target 'connman 'install))))
+                            (target 'zlib           'install)
+                            (target 'libffi         'install)
+                            (target 'glib           'install)
+                            (target 'connman        'install)))
   (stage 'strip))
 
 (when (regexp-search "jemalloc" *flags*)
@@ -273,28 +271,27 @@
     (stage 'build)
     (stage 'install (depends (target 'firmware 'unpack)))))
 
-(when (regexp-search "experimental_network" *flags*)
-  (package 'libffi
-    (source 'dist "libffi-3.1.tar.gz")
-    (patch "libffi-3.1-execstack" 1)
-    (patch "libffi-3.1-typing_error" 1)
-    (stage 'build   (depends (target 'libtool  'install)))
-    (stage 'install (depends (target 'firmware 'unpack))))
+(package 'libffi
+  (source 'dist "libffi-3.1.tar.gz")
+  (patch "libffi-3.1-execstack" 1)
+  (patch "libffi-3.1-typing_error" 1)
+  (stage 'build   (depends (target 'libtool  'install)))
+  (stage 'install (depends (target 'firmware 'unpack))))
 
-  (package 'glib
-    (source 'dist "glib-2.40.2.tar.xz")
-    (patch "glib-2.40.0-external-gdbus-codegen" 1)
-    (stage 'patch   (depends (target 'libtool  'install)))
-    (stage 'build   (depends (target 'zlib     'install)
-                             (target 'libffi   'install)))
-    (stage 'install (depends (target 'firmware 'unpack))))
+(package 'glib
+  (source 'dist "glib-2.40.2.tar.xz")
+  (patch "glib-2.40.0-external-gdbus-codegen" 1)
+  (stage 'patch   (depends (target 'libtool  'install)))
+  (stage 'build   (depends (target 'zlib     'install)
+                           (target 'libffi   'install)))
+  (stage 'install (depends (target 'firmware 'unpack))))
 
-  (package 'connman
-    (source 'dist "connman-1.26.tar.xz")
-    (stage 'build   (depends (target 'libtool        'install)
-                             (target 'dbus           'install)
-                             (target 'glib           'install)
-                             (target 'xtables-addons 'install)))
-    (stage 'install (depends (target 'firmware       'unpack)))))
+(package 'connman
+  (source 'dist "connman-1.26.tar.xz")
+  (stage 'build   (depends (target 'libtool        'install)
+                           (target 'dbus           'install)
+                           (target 'glib           'install)
+                           (target 'xtables-addons 'install)))
+  (stage 'install (depends (target 'firmware       'unpack))))
 
 ; vim: lw+=package,rootfs-package,kernel-package,firmware-package
