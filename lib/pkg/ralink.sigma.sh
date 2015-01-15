@@ -4,11 +4,6 @@ p_source="$pkg_dist_dir/DPO_RT5572_LinuxSTA_2.6.1.3_20121022.tar.bz2"
 
 use_toolchain target
 
-pkg_patch() {
-    p_patch "DPO_RT5572_LinuxSTA_2.6.1.3_20121022-no-tftpboot"
-    p_patch "DPO_RT5572_LinuxSTA_2.6.1.3_20121022-encrypt"
-}
-
 pkg_build() {
     p_run sed -i 's|^\(HAS_WPA_SUPPLICANT=\).*$|\1y|' \
         os/linux/config.mk

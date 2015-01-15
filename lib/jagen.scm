@@ -87,7 +87,7 @@
     (make-package
       (package-name pkg)
       (package-source pkg)
-      (make-patch name strip)
+      (append (package-patches pkg) (list (make-patch name strip)))
       (package-stages pkg))))
 
 (define-record-type <stage>
@@ -234,12 +234,23 @@
        (show #f (symbol->string type) " " location))
       (else location))))
 
+(define (%sh:patch patch)
+  (let ((name  (patch-name patch))
+        (strip (patch-strip patch)))
+    (show #f (space-to 4)
+          "p_patch " strip " \"" name "\"")))
+
 (define (pkg:generate pkg)
   (define (create-script)
-    (let ((source (package-source pkg)))
+    (let ((source (package-source pkg))
+          (patches (package-patches pkg)))
       (show #t "#!/bin/sh" nl)
       (when source
-        (show #t (%sh:variable "p_source" (%sh:source source))))))
+        (show #t (%sh:variable "p_source" (%sh:source source))))
+      (unless (null? patches)
+        (show #t nl "pkg_patch_pre() {" nl
+              (joined/suffix %sh:patch patches nl)
+              "}" nl))))
 
   (let* ((name (package-name pkg))
          (path (make-path (env 'build-include-dir)

@@ -5,8 +5,6 @@ p_source="$pkg_dist_dir/libgcrypt-1.5.3.tar.bz2"
 use_toolchain target
 
 pkg_patch() {
-    p_patch "libgcrypt-1.5.0-uscore"
-    p_patch "libgcrypt-multilib-syspath"
     p_run autoreconf -vif
 }
 

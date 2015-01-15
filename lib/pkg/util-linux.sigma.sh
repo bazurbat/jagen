@@ -8,7 +8,6 @@ p_prefix=""
 p_dest_dir="$sdk_rootfs_prefix"
 
 pkg_patch() {
-    p_patch "util-linux-2.23.2"
     p_run autoreconf -if
 }
 

@@ -8,9 +8,9 @@ p_prefix=""
 p_dest_dir="$sdk_rootfs_prefix"
 
 pkg_patch() {
-	p_run sed -ri \
-		's:^(pkgconfigdir = ).*$:\1$(libdir)/pkgconfig:g' \
-		Makefile.in
+    p_run sed -ri \
+        's:^(pkgconfigdir = ).*$:\1$(libdir)/pkgconfig:g' \
+        Makefile.in
 }
 
 pkg_build() {
@@ -20,8 +20,8 @@ pkg_build() {
     p_run ./configure \
         --host="$target_system" \
         --prefix="$p_prefix" \
-		--disable-zlib \
-		--disable-usbids
+        --disable-zlib \
+        --disable-usbids
 
     p_run make
 }

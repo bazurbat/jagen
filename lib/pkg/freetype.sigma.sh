@@ -23,10 +23,6 @@ pkg_patch() {
     enable_option FT_CONFIG_OPTION_SUBPIXEL_RENDERING
     disable_option TT_CONFIG_OPTION_BYTECODE_INTERPRETER
     enable_option TT_CONFIG_OPTION_UNPATENTED_HINTING
-
-    p_patch "freetype-2.3.2-enable-valid" || return $?
-    p_patch "freetype-2.4.11-sizeof-types" || return $?
-    p_patch "freetype-2.4.12-clean-include" || return $?
 }
 
 pkg_build() {

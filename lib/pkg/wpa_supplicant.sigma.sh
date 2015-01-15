@@ -7,10 +7,6 @@ use_toolchain target
 p_prefix="$target_prefix"
 p_dest_dir="$target_dir"
 
-pkg_patch() {
-    p_patch "wpa_supplicant-2.2-do-not-call-dbus-functions-with-NULL-path"
-}
-
 pkg_build() {
     local s="$p_build_dir/$p_name"
 

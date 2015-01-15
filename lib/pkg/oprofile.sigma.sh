@@ -4,10 +4,6 @@ p_source="$pkg_dist_dir/oprofile-0.9.9.tar.gz"
 
 use_toolchain target
 
-pkg_patch() {
-    p_patch "${p_source}-AT_BASE_PLATFORM"
-}
-
 pkg_build() {
     CFLAGS="$CFLAGS -I$target_dir/$target_prefix/include" \
     p_run ./configure \

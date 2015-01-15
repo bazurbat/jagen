@@ -9,9 +9,6 @@ p_prefix="$target_prefix"
 p_dest_dir="$target_dir"
 
 pkg_patch() {
-    # removes hard dependency on python
-    p_run patch -p1 \
-        < "$pkg_patch_dir/glib-2.40.0-external-gdbus-codegen.patch"
     # leave python shebang alone
     p_run sed -ie '/${PYTHON}/d' \
         glib/Makefile.am glib/Makefile.in

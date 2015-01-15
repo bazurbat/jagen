@@ -3,26 +3,22 @@
 use_toolchain host
 
 pkg_patch() {
-	export LIBTOOLIZE=echo
+    export LIBTOOLIZE=echo
 
-	p_run patch -p1 \
-		< "$pkg_patch_dir/libtool-2.4.3-no-clean-gnulib.patch"
-	p_run patch -p1 \
-		< "$pkg_patch_dir/libtool-2.4.3-test-cmdline_wrap.patch"
-	p_run cd libltdl
-	p_run autoreconf -if
-	p_run cd -
-	p_run autoreconf -if
+    p_run cd libltdl
+    p_run autoreconf -if
+    p_run cd -
+    p_run autoreconf -if
 }
 
 pkg_build() {
-	export CONFIG_SHELL=/bin/bash
+    export CONFIG_SHELL=/bin/bash
 
     p_run ./configure \
         --prefix="$host_dir$host_prefix" \
-		--disable-ltdl-install
+        --disable-ltdl-install
 
-	p_run make
+    p_run make
 }
 
 pkg_install() {
