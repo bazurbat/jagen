@@ -16,8 +16,8 @@ export pkg_source_exclude=""
 [ -d "$pkg_lib_dir" ] ||
     die "Could not find library dir: $pkg_lib_dir"
 
-. "$pkg_lib_dir/common.sh"
 . "$pkg_lib_dir/list.sh"
+. "$pkg_lib_dir/common.sh"
 
 include "${HOME}/.config/jagen/env"
 include "$pkg_root/local"

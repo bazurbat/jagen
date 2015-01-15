@@ -50,7 +50,7 @@ else
 fi
 export COMPILKIND
 
-if p_flags "new_kernel"; then
+if in_flags "new_kernel"; then
     kernel_release="2.6.32.15-sigma"
 else
     kernel_release="2.6.32.15-21-sigma"

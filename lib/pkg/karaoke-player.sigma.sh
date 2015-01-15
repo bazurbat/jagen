@@ -5,7 +5,7 @@ p_source_dir="$pkg_src_dir/karaoke-player"
 p_build_dir="$p_work_dir/build${p_config:+-$p_config}"
 
 pkg_build_host() {
-    p_flags chicken_next && use_env tools
+    in_flags chicken_next && use_env tools
 
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$cmake_build_type" \
@@ -13,7 +13,7 @@ pkg_build_host() {
         -DCMAKE_FIND_ROOT_PATH="$host_dir" \
         "$p_source_dir"
 
-    if p_flags libuv_next; then
+    if in_flags libuv_next; then
         p_run cmake -DLIBUV_NEW=1 .
     fi
 

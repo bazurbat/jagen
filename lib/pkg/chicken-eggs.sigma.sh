@@ -5,7 +5,7 @@ p_source_dir="$pkg_src_dir/chicken-eggs"
 p_source_branch="master"
 p_build_dir="$p_work_dir/build${p_config:+-$p_config}"
 
-if p_flags chicken_next; then
+if in_flags chicken_next; then
     p_source_branch="next"
 fi
 

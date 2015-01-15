@@ -101,7 +101,7 @@ case $1 in
     refresh)
         use_env tools
         message "Refreshing build rules"
-        p_in_path chibi-scheme || rebuild_chibi
+        in_path chibi-scheme || rebuild_chibi
         $pkg_bin generate "$build_file" "$pkg_lib_dir/rules.scm" ||
             die "Failed to generate build rules"
         include "$pkg_root/lib/toolchain"

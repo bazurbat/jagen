@@ -6,14 +6,6 @@
 : ${p_jobs:=1}
 : ${p_run_on_error:=exit}
 
-p_is_function() {
-    type "$1" 2>/dev/null | grep -q 'function'
-}
-
-p_flags() { p_in_list "$1" "$pkg_flags"; }
-
-p_in_path() { $(which "$1" >/dev/null 2>&1); }
-
 p_run() {
     local cmd="$1"
     debug "$*"

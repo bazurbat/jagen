@@ -25,7 +25,7 @@ pkg_unpack() {
 
     case $kind in
         git|hg)
-            if p_flags "offline"; then
+            if in_flags "offline"; then
                 message "Offline mode, not checking $p_name"
             elif p_in_list "$p_name" "$pkg_source_exclude"; then
                 message "pkg source '$p_name' excluded from pulling"

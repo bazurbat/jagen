@@ -48,3 +48,9 @@ use_toolchain() {
         include "$pkg_lib_dir/toolchain/$f"
     done
 }
+
+is_function() { type "$1" 2>/dev/null | grep -q 'function'; }
+
+in_path() { $(which "$1" >/dev/null 2>&1); }
+
+in_flags() { p_in_list "$1" "$pkg_flags"; }

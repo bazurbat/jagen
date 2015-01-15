@@ -26,7 +26,7 @@ run_stage() {
     local name="$1"
     local pkg="$p_name${p_config:+ ($p_config)}"
 
-    if p_is_function "$name"; then
+    if is_function "$name"; then
         debug "$pkg: $name"
         eval "$name" || die "Failed to run '$name' stage of package $pkg"
     fi
@@ -37,7 +37,7 @@ run_stage() {
 
 run_stage "pkg_${p_stage}_pre"
 
-if p_is_function "pkg_${p_stage}_${p_config}"; then
+if is_function "pkg_${p_stage}_${p_config}"; then
     run_stage "pkg_${p_stage}_${p_config}"
 else
     run_stage "pkg_${p_stage}"
