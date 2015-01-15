@@ -8,23 +8,33 @@ protectordir="$sdk_ezboot_dir/protector/"
 use_env tools
 use_toolchain target
 
+: ${with_kernel_config_default:=yes}
+: ${with_kernel_proprietary_modules:=yes}
+: ${with_kernel_extras:=yes}
+
 pkg_build() {
     p_run ln -sfT "$pkg_src_dir/linux" linux
 
-    p_run cp -f kernel-config linux/.config
+    if [ $with_kernel_config_default = yes ]; then
+        p_run cp -f kernel-config linux/.config
+    fi
 
     p_run cd linux
 
     p_run $CROSS_MAKE
 
-    p_run cd "$p_source_dir/proprietary"
-    p_run $CROSS_MAKE -C spinor clean
-    p_run $CROSS_MAKE -C spinor
-    p_run $CROSS_MAKE -C sd_block
+    if [ $with_kernel_proprietary_modules = yes ]; then
+        p_run cd "$p_source_dir/proprietary"
+        p_run $CROSS_MAKE -C spinor clean
+        p_run $CROSS_MAKE -C spinor
+        p_run $CROSS_MAKE -C sd_block
+    fi
 
-    p_run cd "$p_source_dir/extra"
-    p_run $CROSS_MAKE clean
-    p_run $CROSS_MAKE all
+    if [ $with_kernel_extras = yes ]; then
+        p_run cd "$p_source_dir/extra"
+        p_run $CROSS_MAKE clean
+        p_run $CROSS_MAKE all
+    fi
 
     p_run $CROSS_MAKE -C "$protectordir"
 }
@@ -34,12 +44,16 @@ pkg_install() {
 
     p_run $CROSS_MAKE modules_install
 
-    p_run cd "$kernel_dir/proprietary"
-    p_run $CROSS_MAKE -C spinor modules_install
-    p_run $CROSS_MAKE -C sd_block modules_install
+    if [ $with_kernel_proprietary_modules = yes ]; then
+        p_run cd "$kernel_dir/proprietary"
+        p_run $CROSS_MAKE -C spinor modules_install
+        p_run $CROSS_MAKE -C sd_block modules_install
+    fi
 
-    p_run cd "$kernel_dir/extra"
-    p_run $CROSS_MAKE modules_install
+    if [ $with_kernel_extras = yes ]; then
+        p_run cd "$kernel_dir/extra"
+        p_run $CROSS_MAKE modules_install
+    fi
 
     p_run cd "$kernel_modules_dir"
     p_run rm -f "build" "source"
