@@ -50,51 +50,13 @@ else
 fi
 export COMPILKIND
 
-export sdkver="3.9-nk"
-
-case $sdkver in
-    3.8)
-        cpukeys="CPU_KEYS_SMP86xx_2010-02-12"
-        kernel_version="2.6.22.19"
-        kernel_release="${kernel_version}-35-sigma"
-        ;;
-    3.9)
-        cpukeys="CPU_KEYS_SMP86xx_2010-02-12"
-        kernel_version="2.6.22.19"
-        kernel_release="${kernel_version}-35-sigma"
-        ;;
-    3.9-nk)
-        cpukeys="CPU_KEYS_SMP86xx_2010-02-12"
-        kernel_version="2.6.32"
-        kernel_release="${kernel_version}.15-21-sigma"
-        ;;
-    3.11)
-        cpukeys="CPU_KEYS_SMP86xx_2011-09-22"
-        kernel_version="2.6.29"
-        kernel_release="${kernel_version}.6-33-sigma"
-        ;;
-    3.11-ok)
-        cpukeys="CPU_KEYS_SMP86xx_2011-09-22"
-        kernel_version="2.6.22.19"
-        kernel_release="${kernel_version}-35-sigma"
-        ;;
-    3.11-nk)
-        cpukeys="CPU_KEYS_SMP86xx_2011-09-22"
-        kernel_version="2.6.32"
-        kernel_release="${kernel_version}.15-21-sigma"
-        ;;
-    4.0)
-        cpukeys="CPU_KEYS_SMP86xx_2011-09-22"
-        kernel_version="2.6.32"
-        kernel_release="${kernel_version}.15-21-sigma"
-        ;;
-    4.0-ok)
-        cpukeys="CPU_KEYS_SMP86xx_2011-09-22"
-        kernel_version="2.6.29"
-        kernel_release="${kernel_version}.6-33-sigma"
-        ;;
-esac
-export cpukeys kernel_version kernel_release
+if p_flags "new_kernel"; then
+    kernel_release="2.6.32.15-sigma"
+else
+    kernel_release="2.6.32.15-21-sigma"
+fi
+export kernel_release
+export cpukeys="CPU_KEYS_SMP86xx_2010-02-12"
 
 xsdk_dir="$pkg_build_dir/pkg/xsdk/$cpukeys"
 

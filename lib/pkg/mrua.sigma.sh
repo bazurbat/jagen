@@ -53,8 +53,4 @@ pkg_install() {
         librua.so \
         libruaoutput.so \
         "$sdk_firmware_dir/lib"
-
-    if [ "$sdkver" = "4.0" ]; then
-        p_run cp -a librminfoframe.so "$sdk_firmware_dir/lib"
-    fi
 }

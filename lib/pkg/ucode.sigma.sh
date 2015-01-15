@@ -1,10 +1,6 @@
 #!/bin/sh
 
-case $sdkver in
-    3.9*)  p_source="$pkg_dist_dir/mruafw_SMP8654F_prod_3_9_2.tgz" ;;
-    3.11*) p_source="$pkg_dist_dir/mruafw_SMP8654F_3_11_3_prod.tgz" ;;
-    4.0)   p_source="$pkg_dist_dir/mruafw_SMP8670F_prod_4_0_0.tgz" ;;
-esac
+p_source="$pkg_dist_dir/mruafw_SMP8654F_prod_3_9_2.tgz"
 
 pkg_install() {
     local dst="$sdk_firmware_dir/xload"
