@@ -53,7 +53,7 @@ export COMPILKIND
 if in_flags "new_kernel"; then
     kernel_release="2.6.32.15-sigma"
 else
-    kernel_release="2.6.32.15-21-sigma"
+    kernel_release="2.6.32.15-sigma"
 fi
 export kernel_release
 export cpukeys="CPU_KEYS_SMP86xx_2010-02-12"
