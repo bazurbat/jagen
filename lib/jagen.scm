@@ -221,6 +221,32 @@
                        (build-variables b))
             nl))))
 
+(define (%sh:variable name value)
+  (show #f name "=\"" value "\"" nl))
+
+(define (%sh:source source)
+  (let ((type     (source-type source))
+        (location (source-location source)))
+    (case type
+      ((dist)
+       (show #f "$pkg_dist_dir/" location))
+      ((git hg)
+       (show #f (symbol->string type) " " location))
+      (else location))))
+
+(define (pkg:generate pkg)
+  (define (create-script)
+    (let ((source (package-source pkg)))
+      (show #t "#!/bin/sh" nl)
+      (when source
+        (show #t (%sh:variable "p_source" (%sh:source source))))))
+
+  (let* ((name (package-name pkg))
+         (path (make-path (env 'build-include-dir)
+                          (show #f (symbol->string name) ".sh"))))
+    (create-directory* (path-directory path))
+    (with-output-to-file path create-script)))
+
 (define (define-package name . rest)
   (define (create-package name)
     (apply run-with-state (make-package name #f '() '()) rest))
@@ -240,6 +266,7 @@
   (let* ((state (make-state 0))
          (pkg (create-package name))
          (builds (map (cut stage->build <>) (reverse (package-stages pkg)))))
+    (pkg:generate pkg)
     (show #t (joined (lambda (x) x)
                      (map (cut <> state) (map %ninja:build builds)))
           nl)))
