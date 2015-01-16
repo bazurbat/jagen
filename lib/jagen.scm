@@ -161,7 +161,7 @@
       (stage-name stage)
       (stage-config stage)
       (append (stage-depends stage)
-              (map (cut make-dependency 'explicit <>) args)))))
+              (map (cut make-dependency 'explicit <>) (remove not args))))))
 
 (define (after . args)
   (lambda (stage)
@@ -169,7 +169,7 @@
       (stage-name stage)
       (stage-config stage)
       (append (stage-depends stage)
-              (map (cut make-dependency 'order-only <>) args)))))
+              (map (cut make-dependency 'order-only <>) (remove not args))))))
 
 (define-record-type <package>
   (make-package name source patches stages) package?

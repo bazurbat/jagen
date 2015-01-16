@@ -103,7 +103,9 @@
                            (target 'loop-aes   'install)
                            (target 'mrua       'modules)
                            (target 'ntpclient  'install)
-                           (target 'ralink     'install)
+                           (if (regexp-search "new_kernel" *flags*)
+                             #f
+                             (target 'ralink 'install))
                            (target 'util-linux 'install)
                            (target 'utils      'install 'target))))
 
@@ -143,10 +145,11 @@
   (stage 'install)
   (stage 'image (depends (target 'rootfs 'install))))
 
-(kernel-package 'ralink
-  (source 'dist "DPO_RT5572_LinuxSTA_2.6.1.3_20121022.tar.bz2")
-  (patch "DPO_RT5572_LinuxSTA_2.6.1.3_20121022-no-tftpboot" 1)
-  (patch "DPO_RT5572_LinuxSTA_2.6.1.3_20121022-encrypt" 1))
+(unless (regexp-search "new_kernel" *flags*)
+  (kernel-package 'ralink
+    (source 'dist "DPO_RT5572_LinuxSTA_2.6.1.3_20121022.tar.bz2")
+    (patch "DPO_RT5572_LinuxSTA_2.6.1.3_20121022-no-tftpboot" 1)
+    (patch "DPO_RT5572_LinuxSTA_2.6.1.3_20121022-encrypt" 1)))
 
 (kernel-package 'loop-aes
   (source 'dist "loop-AES-v3.7a.tar.bz2"))
