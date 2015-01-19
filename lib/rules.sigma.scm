@@ -197,7 +197,7 @@
 
 (firmware-package 'sqlite
   (source 'dist "sqlite-autoconf-3080403.tar.gz")
-  (patch "sqlite-3.8.1-autoconf-dlopen_check" 1))
+  (patch "sqlite-3.8.1-autoconf-dlopen_check" 0))
 
 (firmware-package 'wpa_supplicant
   (source 'dist "wpa_supplicant-2.2.tar.gz")
@@ -276,8 +276,8 @@
 
 (package 'libffi
   (source 'dist "libffi-3.1.tar.gz")
-  (patch "libffi-3.1-execstack" 1)
-  (patch "libffi-3.1-typing_error" 1)
+  (patch "libffi-3.1-execstack" 0)
+  (patch "libffi-3.1-typing_error" 0)
   (stage 'build   (depends (target 'libtool  'install)))
   (stage 'install (depends (target 'firmware 'unpack))))
 
