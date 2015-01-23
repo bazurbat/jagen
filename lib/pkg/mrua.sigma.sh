@@ -7,6 +7,9 @@ p_jobs=1
 use_env tools
 use_toolchain target
 
+export ARCH=mips
+export KCFLAGS="-mhard-float -Wa,-mhard-float"
+
 pkg_build() {
     p_run make
     p_run make

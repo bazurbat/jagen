@@ -5,12 +5,14 @@ p_source_dir="$pkg_src_dir/sigma-kernel"
 
 protectordir="$sdk_ezboot_dir/protector/"
 
-use_env tools
+in_flags "new_kernel" || use_env tools
 use_toolchain target
 
 : ${with_kernel_config_default:=yes}
 : ${with_kernel_proprietary_modules:=yes}
 : ${with_kernel_extras:=yes}
+
+export KCFLAGS="-mhard-float -Wa,-mhard-float"
 
 pkg_build() {
     p_run ln -sfT "$pkg_src_dir/linux" linux
