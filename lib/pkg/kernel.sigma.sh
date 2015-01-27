@@ -2,6 +2,7 @@
 
 p_source="git git@bitbucket.org:art-system/sigma-kernel.git"
 p_source_dir="$pkg_src_dir/sigma-kernel"
+p_source_branch="sigma-2.6"
 
 protectordir="$sdk_ezboot_dir/protector/"
 
