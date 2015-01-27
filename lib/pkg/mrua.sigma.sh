@@ -2,6 +2,7 @@
 
 p_source="git git@bitbucket.org:art-system/sigma-mrua.git"
 p_source_dir="$pkg_src_dir/sigma-mrua"
+p_source_branch="sigma-2.6"
 p_jobs=1
 
 use_env tools
