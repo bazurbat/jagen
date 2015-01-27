@@ -51,7 +51,7 @@ fi
 export COMPILKIND
 
 if in_flags "new_kernel"; then
-    kernel_release="3.14.29-sigma+"
+    kernel_release="3.18.3-sigma+"
 else
     kernel_release="2.6.32.15-sigma"
 fi
