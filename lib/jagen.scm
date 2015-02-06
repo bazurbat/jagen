@@ -1,3 +1,4 @@
+;{{{ imports
 (import (scheme base)
         (scheme file)
         (scheme write)
@@ -12,8 +13,8 @@
         (chibi regexp)
         (chibi show))
 
-(define *packages* '())
-(define *width* 4)
+;}}}
+;{{{ helper functions
 
 (define (compose f g)
   (lambda args (f (apply g args))))
@@ -48,10 +49,19 @@
              ((not (zero? (string-length value)))))
     value))
 
+;}}}
+;{{{ globals
+
+(define *packages* '())
+(define *width* 4)
+
 (define *env*
   (apply append (map import-shell-variable (get-environment-variables))))
 
 (define *flags* (or (env 'flags) ""))
+
+;}}}
+;{{{ types
 
 (define-record-type <state>
   (make-state depth) state?
@@ -80,39 +90,6 @@
   (stage  target-stage)
   (config target-config))
 
-(define target
-  (match-lambda*
-    ((name stage config)
-     (make-target name stage config))
-    ((name stage)
-     (make-target name stage #f))))
-
-(define-record-type <source>
-  (make-source type location) source?
-  (type     source-type)
-  (location source-location))
-
-(define (source type location)
-  (lambda (pkg)
-    (make-package
-      (package-name pkg)
-      (make-source type location)
-      (package-patches pkg)
-      (package-stages pkg))))
-
-(define-record-type <patch>
-  (make-patch name strip) patch?
-  (name  patch-name)
-  (strip patch-strip))
-
-(define (patch name strip)
-  (lambda (pkg)
-    (make-package
-      (package-name pkg)
-      (package-source pkg)
-      (append (package-patches pkg) (list (make-patch name strip)))
-      (package-stages pkg))))
-
 (define-record-type <stage>
   (make-stage name config depends) stage?
   (name    stage-name)
@@ -123,6 +100,49 @@
   (make-dependency type target) dependency?
   (type   dependency-type)
   (target dependency-target))
+
+(define-record-type <source>
+  (make-source type location) source?
+  (type     source-type)
+  (location source-location))
+
+(define-record-type <patch>
+  (make-patch name strip) patch?
+  (name  patch-name)
+  (strip patch-strip))
+
+(define-record-type <package>
+  (make-package name source patches stages) package?
+  (name    package-name)
+  (source  package-source)
+  (patches package-patches)
+  (stages  package-stages))
+
+;}}}
+;{{{ constructors
+
+(define target
+  (match-lambda*
+    ((name stage config)
+     (make-target name stage config))
+    ((name stage)
+     (make-target name stage #f))))
+
+(define (source type location)
+  (lambda (pkg)
+    (make-package
+      (package-name pkg)
+      (make-source type location)
+      (package-patches pkg)
+      (package-stages pkg))))
+
+(define (patch name strip)
+  (lambda (pkg)
+    (make-package
+      (package-name pkg)
+      (package-source pkg)
+      (append (package-patches pkg) (list (make-patch name strip)))
+      (package-stages pkg))))
 
 (define (stage . args)
   (define (create-stage args)
@@ -194,12 +214,8 @@
       (append (stage-depends stage)
               (map (cut make-dependency 'order-only <>) (remove not args))))))
 
-(define-record-type <package>
-  (make-package name source patches stages) package?
-  (name    package-name)
-  (source  package-source)
-  (patches package-patches)
-  (stages  package-stages))
+;}}}
+;{{{ common generators
 
 (define (%target t)
   (lambda (state)
@@ -209,6 +225,13 @@
       (if c
         (show #f n "-" s "-" c)
         (show #f n "-" s)))))
+
+(define (%variable name value . level)
+  (let ((level (or (and (pair? level) (car level)) 0)))
+    (show #t (space-to (* level *width*)) name " = " value nl)))
+
+;}}}
+;{{{ ninja generators
 
 (define (%ninja:variable v)
   (lambda (state)
@@ -244,33 +267,9 @@
                        (build-variables b))
             nl))))
 
-(define (%sh:variable name value)
-  (show #f name "=\"" value "\"" nl))
-
-(define (%sh:source source)
-  (let ((type     (source-type source))
-        (location (source-location source)))
-    (case type
-      ((dist)
-       (show #f "$pkg_dist_dir/" location))
-      ((git hg)
-       (show #f (symbol->string type) " " location))
-      (else location))))
-
-(define (%sh:patch patch)
-  (let ((name  (patch-name patch))
-        (strip (patch-strip patch)))
-    (show #f (space-to 4)
-          "p_patch " strip " \"" name "\"")))
-
-(define (%variable name value . level)
-  (let ((level (or (and (pair? level) (car level)) 0)))
-    (show #t (space-to (* level *width*)) name " = " value nl)))
-
 (define (%ninja:rule r)
   (define (variable p)
     (%variable (car p) (cdr p) 1))
-
   (show #t "rule " (rule-name r) nl)
   (for-each variable (rule-variables r))
   (show #t nl))
@@ -308,6 +307,28 @@
                                             "/$script && touch $out")))))
   (for-each %ninja:package packages))
 
+;}}}
+;{{{ shell generators
+
+(define (%sh:variable name value)
+  (show #f name "=\"" value "\"" nl))
+
+(define (%sh:source source)
+  (let ((type     (source-type source))
+        (location (source-location source)))
+    (case type
+      ((dist)
+       (show #f "$pkg_dist_dir/" location))
+      ((git hg)
+       (show #f (symbol->string type) " " location))
+      (else location))))
+
+(define (%sh:patch patch)
+  (let ((name  (patch-name patch))
+        (strip (patch-strip patch)))
+    (show #f (space-to 4)
+          "p_patch " strip " \"" name "\"")))
+
 (define (generate-include-script pkg)
   (define (create-script)
     (let ((source (package-source pkg))
@@ -325,6 +346,8 @@
                           (show #f (symbol->string name) ".sh"))))
     (create-directory* (path-directory path))
     (with-output-to-file path create-script)))
+
+;}}}
 
 (define (define-package name . rest)
   (let* ((state (make-package name #f '() '()))
