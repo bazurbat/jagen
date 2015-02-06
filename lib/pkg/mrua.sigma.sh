@@ -2,7 +2,13 @@
 
 p_source="git git@bitbucket.org:art-system/sigma-mrua.git"
 p_source_dir="$pkg_src_dir/sigma-mrua"
-p_source_branch="sigma-2.6"
+
+if in_flags "new_kernel"; then
+    p_source_branch="master"
+else
+    p_source_branch="sigma-2.6"
+fi
+
 p_jobs=1
 
 use_env tools
