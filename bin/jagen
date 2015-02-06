@@ -102,7 +102,7 @@ case $1 in
         use_env tools
         message "Refreshing build rules"
         in_path chibi-scheme || rebuild_chibi
-        $pkg_bin generate "$build_file" "$pkg_lib_dir/rules.scm" ||
+        $pkg_bin generate "$build_file" "$pkg_lib_dir/rules.${pkg_sdk}.scm" ||
             die "Failed to generate build rules"
         include "$pkg_root/lib/toolchain"
         generate_toolchain_wrappers

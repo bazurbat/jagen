@@ -258,29 +258,27 @@
     (create-directory* (path-directory path))
     (with-output-to-file path create-script)))
 
+(define (stage->build name stage)
+  (let ((sn (stage-name stage))
+        (sc (stage-config stage)))
+    (make-build
+      "script"
+      (list (make-target name sn sc))
+      (stage-depends stage)
+      (list (make-variable "script"
+                           (let ((args (if sc (list name sn sc) (list name sn))))
+                             (show #f "jagen-pkg "
+                                   (joined (lambda (x) x) args " "))))))))
+
+(define (create-package name rest)
+  (apply run-with-state (make-package name #f '() '()) rest))
+
+(define *packages* '())
+
 (define (define-package name . rest)
-  (define (create-package name)
-    (apply run-with-state (make-package name #f '() '()) rest))
-
-  (define (stage->build stage)
-    (let ((sn (stage-name stage))
-          (sc (stage-config stage)))
-      (make-build
-        "script"
-        (list (make-target name sn sc))
-        (stage-depends stage)
-        (list (make-variable "script"
-                             (let ((args (if sc (list name sn sc) (list name sn))))
-                               (show #f "jagen-pkg "
-                                     (joined (lambda (x) x) args " "))))))))
-
-  (let* ((state (make-state 0))
-         (pkg (create-package name))
-         (builds (map (cut stage->build <>) (reverse (package-stages pkg)))))
-    (pkg:generate pkg)
-    (show #t (joined (lambda (x) x)
-                     (map (cut <> state) (map %ninja:build builds)))
-          nl)))
+  (let ((pkg (create-package name rest)))
+    (set! *packages* (cons pkg *packages*))
+    pkg))
 
 (define (%include file)
   (show #t "include " file nl nl))
@@ -297,13 +295,6 @@
   (for-each variable (rule-variables r))
   (show #t nl))
 
-(define main
-  (match-lambda
-    ((_) (show #t "pbuild" nl))
-    ((_ "generate" out in)
-     (generate-build out in)))
-  0)
-
 (define (import-shell-variable p)
   (let* ((k (car p))
          (v (cdr p))
@@ -315,15 +306,52 @@
         (cons (cons (string->symbol name) v) *env*))
       '())))
 
-(define *env*
-  (apply append (map import-shell-variable (get-environment-variables))))
-
 (define (env k)
   (and-let* ((p (assq k *env*))
              (value (cdr p))
              ((not (zero? (string-length value)))))
     value))
 
-(define (generate-build out-file in-file)
-  (if (file-exists? out-file) (delete-file out-file))
-  (with-output-to-file out-file (cut load in-file)))
+(define *env*
+  (apply append (map import-shell-variable (get-environment-variables))))
+
+(define *flags* (or (env 'flags) ""))
+
+(define (%ninja:package pkg)
+  (let* ((state (make-state 0))
+         (name (package-name pkg))
+         (builds (map (cut stage->build name <>) (reverse (package-stages pkg)))))
+    (show #t (joined (lambda (x) x)
+                     (map (cut <> state) (map %ninja:build builds)))
+          nl)))
+
+(define (%ninja:output packages)
+  (%variable "builddir" (env 'build-dir))
+  (show #t nl)
+  (%rule (make-rule
+           "command"
+           (list (cons "command" "$command"))))
+  (%rule (make-rule
+           "script"
+           (list (cons "command"
+                       (string-append (env 'bin-dir)
+                                      "/$script && touch $out")))))
+  (for-each %ninja:package packages))
+
+(define (cmd:generate out-file in-file)
+  (let ((packages (load-packages in-file)))
+    (if (file-exists? out-file) (delete-file out-file))
+    (with-output-to-file out-file (cut %ninja:output packages))
+    (for-each pkg:generate packages)))
+
+(define (load-packages pathname)
+  (load pathname)
+  (set! *packages* (reverse *packages*))
+  *packages*)
+
+(define main
+  (match-lambda
+    ((_) (show #t "pbuild" nl))
+    ((_ "generate" out in)
+     (cmd:generate out in)))
+  0)
