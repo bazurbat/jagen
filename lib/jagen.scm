@@ -12,6 +12,7 @@
         (chibi regexp)
         (chibi show))
 
+(define *packages* '())
 (define *width* 4)
 
 (define (compose f g)
@@ -29,6 +30,28 @@
           state
           (loop (cdr procs) ((car procs) state))))))
   ((bind args) state))
+
+(define (import-shell-variable p)
+  (let* ((k (car p))
+         (v (cdr p))
+         (rx '(: "pkg_" (-> name (+ any))))
+         (m (regexp-matches rx k)))
+    (if m
+      (let* ((submatch (regexp-match-submatch m 'name))
+             (name (regexp-replace-all "_" submatch "-")))
+        (cons (cons (string->symbol name) v) *env*))
+      '())))
+
+(define (env k)
+  (and-let* ((p (assq k *env*))
+             (value (cdr p))
+             ((not (zero? (string-length value)))))
+    value))
+
+(define *env*
+  (apply append (map import-shell-variable (get-environment-variables))))
+
+(define *flags* (or (env 'flags) ""))
 
 (define-record-type <state>
   (make-state depth) state?
@@ -240,7 +263,52 @@
     (show #f (space-to 4)
           "p_patch " strip " \"" name "\"")))
 
-(define (pkg:generate pkg)
+(define (%variable name value . level)
+  (let ((level (or (and (pair? level) (car level)) 0)))
+    (show #t (space-to (* level *width*)) name " = " value nl)))
+
+(define (%ninja:rule r)
+  (define (variable p)
+    (%variable (car p) (cdr p) 1))
+
+  (show #t "rule " (rule-name r) nl)
+  (for-each variable (rule-variables r))
+  (show #t nl))
+
+(define (stage->build name stage)
+  (let ((sn (stage-name stage))
+        (sc (stage-config stage)))
+    (make-build
+      "script"
+      (list (make-target name sn sc))
+      (stage-depends stage)
+      (list (make-variable "script"
+                           (let ((args (if sc (list name sn sc) (list name sn))))
+                             (show #f "jagen-pkg "
+                                   (joined (lambda (x) x) args " "))))))))
+
+(define (%ninja:package pkg)
+  (let* ((state (make-state 0))
+         (name (package-name pkg))
+         (builds (map (cut stage->build name <>) (reverse (package-stages pkg)))))
+    (show #t (joined (lambda (x) x)
+                     (map (cut <> state) (map %ninja:build builds)))
+          nl)))
+
+(define (%ninja:output packages)
+  (%variable "builddir" (env 'build-dir))
+  (show #t nl)
+  (%ninja:rule (make-rule
+                 "command"
+                 (list (cons "command" "$command"))))
+  (%ninja:rule (make-rule
+                 "script"
+                 (list (cons "command"
+                             (string-append (env 'bin-dir)
+                                            "/$script && touch $out")))))
+  (for-each %ninja:package packages))
+
+(define (generate-include-script pkg)
   (define (create-script)
     (let ((source (package-source pkg))
           (patches (package-patches pkg)))
@@ -258,96 +326,22 @@
     (create-directory* (path-directory path))
     (with-output-to-file path create-script)))
 
-(define (stage->build name stage)
-  (let ((sn (stage-name stage))
-        (sc (stage-config stage)))
-    (make-build
-      "script"
-      (list (make-target name sn sc))
-      (stage-depends stage)
-      (list (make-variable "script"
-                           (let ((args (if sc (list name sn sc) (list name sn))))
-                             (show #f "jagen-pkg "
-                                   (joined (lambda (x) x) args " "))))))))
-
-(define (create-package name rest)
-  (apply run-with-state (make-package name #f '() '()) rest))
-
-(define *packages* '())
-
 (define (define-package name . rest)
-  (let ((pkg (create-package name rest)))
+  (let* ((state (make-package name #f '() '()))
+         (pkg (apply run-with-state state rest)))
     (set! *packages* (cons pkg *packages*))
     pkg))
-
-(define (%include file)
-  (show #t "include " file nl nl))
-
-(define (%variable name value . level)
-  (let ((level (or (and (pair? level) (car level)) 0)))
-    (show #t (space-to (* level *width*)) name " = " value nl)))
-
-(define (%rule r)
-  (define (variable p)
-    (%variable (car p) (cdr p) 1))
-
-  (show #t "rule " (rule-name r) nl)
-  (for-each variable (rule-variables r))
-  (show #t nl))
-
-(define (import-shell-variable p)
-  (let* ((k (car p))
-         (v (cdr p))
-         (rx '(: "pkg_" (-> name (+ any))))
-         (m (regexp-matches rx k)))
-    (if m
-      (let* ((submatch (regexp-match-submatch m 'name))
-             (name (regexp-replace-all "_" submatch "-")))
-        (cons (cons (string->symbol name) v) *env*))
-      '())))
-
-(define (env k)
-  (and-let* ((p (assq k *env*))
-             (value (cdr p))
-             ((not (zero? (string-length value)))))
-    value))
-
-(define *env*
-  (apply append (map import-shell-variable (get-environment-variables))))
-
-(define *flags* (or (env 'flags) ""))
-
-(define (%ninja:package pkg)
-  (let* ((state (make-state 0))
-         (name (package-name pkg))
-         (builds (map (cut stage->build name <>) (reverse (package-stages pkg)))))
-    (show #t (joined (lambda (x) x)
-                     (map (cut <> state) (map %ninja:build builds)))
-          nl)))
-
-(define (%ninja:output packages)
-  (%variable "builddir" (env 'build-dir))
-  (show #t nl)
-  (%rule (make-rule
-           "command"
-           (list (cons "command" "$command"))))
-  (%rule (make-rule
-           "script"
-           (list (cons "command"
-                       (string-append (env 'bin-dir)
-                                      "/$script && touch $out")))))
-  (for-each %ninja:package packages))
-
-(define (cmd:generate out-file in-file)
-  (let ((packages (load-packages in-file)))
-    (if (file-exists? out-file) (delete-file out-file))
-    (with-output-to-file out-file (cut %ninja:output packages))
-    (for-each pkg:generate packages)))
 
 (define (load-packages pathname)
   (load pathname)
   (set! *packages* (reverse *packages*))
   *packages*)
+
+(define (cmd:generate out-file in-file)
+  (let ((packages (load-packages in-file)))
+    (if (file-exists? out-file) (delete-file out-file))
+    (with-output-to-file out-file (cut %ninja:output packages))
+    (for-each generate-include-script packages)))
 
 (define main
   (match-lambda
