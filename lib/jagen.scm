@@ -10,6 +10,7 @@
         (chibi filesystem)
         (chibi match)
         (chibi pathname)
+        (chibi process)
         (chibi regexp)
         (chibi show))
 
@@ -360,15 +361,28 @@
   (set! *packages* (reverse *packages*))
   *packages*)
 
+(define (system:run cmd . args)
+  (when (string=? "yes" (env 'debug))
+    (show #t "\x1B[1;36m:::\x1B[0m " cmd " " (joined each args " ") nl))
+  (apply system cmd args))
+
 (define (cmd:generate out-file in-file)
   (let ((packages (load-packages in-file)))
     (if (file-exists? out-file) (delete-file out-file))
     (with-output-to-file out-file (cut %ninja:output packages))
     (for-each generate-include-script packages)))
 
+(define (cmd:build build-file targets)
+  (let ((build-dir (env 'build-dir)))
+    (apply system:run "ninja" "-f" build-file
+           (map (cut make-path build-dir <>) targets))))
+
 (define main
   (match-lambda
     ((_) (show #t "pbuild" nl))
     ((_ "generate" out in)
-     (cmd:generate out in)))
+     (cmd:generate out in))
+    ((_ "build" build-file targets ...)
+     ; TODO: figure out return status
+     (cmd:build build-file targets)))
   0)

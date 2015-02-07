@@ -16,22 +16,6 @@ fi
 
 build_file="$pkg_build_dir/build.ninja"
 
-build() {
-    local IFS tab
-    local target target_path targets
-
-    IFS="$(printf '\n\t')"; tab="$(printf '\t')"
-
-    for target in "$@"; do
-        target_path="$pkg_build_dir/$target"
-        targets="${targets}${tab}${target_path}"
-    done
-
-    ninja -f "$build_file" $targets
-
-    return $?
-}
-
 rebuild() {
     local IFS tab
     local targets_only show_all
@@ -108,8 +92,9 @@ case $1 in
         generate_toolchain_wrappers
         ;;
     build)
+        use_env tools
         shift
-        build "$@" || die "Build failed"
+        $pkg_bin build "$build_file" "$@" || die "Build failed"
         ;;
     rebuild)
         shift
