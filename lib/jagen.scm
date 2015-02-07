@@ -350,6 +350,19 @@
 
 ;}}}
 
+(define (print:message . args)
+  (show #t "\x1B[1;34m:::\x1B[0m " (joined each args " ") nl))
+(define (print:warning . args)
+  (show #t "\x1B[1;33m:::\x1B[0m " (joined each args " ") nl))
+(define (print:error . args)
+  (show #t "\x1B[1;31m:::\x1B[0m " (joined each args " ") nl))
+(define (print:debug . args)
+  (when (string=? "yes" (env 'debug))
+    (show #t "\x1B[1;36m:::\x1B[0m " (joined each args " ") nl)))
+(define (die . args)
+  (apply print:error args)
+  (exit 1))
+
 (define (define-package name . rest)
   (let* ((state (make-package name #f '() '()))
          (pkg (apply run-with-state state rest)))
@@ -362,9 +375,8 @@
   *packages*)
 
 (define (system:run cmd . args)
-  (when (string=? "yes" (env 'debug))
-    (show #t "\x1B[1;36m:::\x1B[0m " cmd " " (joined each args " ") nl))
-  (apply system cmd args))
+  (apply print:debug cmd args)
+  (remainder (cadr (apply system cmd args)) 255))
 
 (define (cmd:generate out-file in-file)
   (let ((packages (load-packages in-file)))
@@ -379,10 +391,8 @@
 
 (define main
   (match-lambda
-    ((_) (show #t "pbuild" nl))
     ((_ "generate" out in)
      (cmd:generate out in))
     ((_ "build" build-file targets ...)
-     ; TODO: figure out return status
-     (cmd:build build-file targets)))
-  0)
+     (exit (cmd:build build-file targets)))
+    ((_) (die "unknown command"))))
