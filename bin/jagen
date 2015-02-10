@@ -83,7 +83,6 @@ case $1 in
         exec jagen refresh
         ;;
     refresh)
-        use_env tools
         message "Refreshing build rules"
         in_path chibi-scheme || rebuild_chibi
         $pkg_bin generate "$build_file" "$pkg_lib_dir/rules.${pkg_sdk}.scm" ||
@@ -92,8 +91,8 @@ case $1 in
         generate_toolchain_wrappers
         ;;
     build)
-        use_env tools
         shift
+        in_path chibi-scheme || rebuild_chibi
         $pkg_bin build "$build_file" "$@" || die "Build failed"
         ;;
     rebuild)
