@@ -110,6 +110,10 @@ pkg_install() {
         "$p_work_dir"/lib/libgio* \
         "$p_work_dir"/lib/libgmodule* \
         "$p_work_dir"/lib/libgobject*
+    p_run rm -f \
+        "$p_work_dir"/lib/libnl-idiag* \
+        "$p_work_dir"/lib/libnl-nf* \
+        "$p_work_dir"/lib/libnl-route*
 
     p_run cp -vaf "$pkg_private_dir"/firmware/* "$sdk_firmware_dir"
 }

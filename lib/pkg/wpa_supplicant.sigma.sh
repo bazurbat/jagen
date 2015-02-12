@@ -30,7 +30,14 @@ pkg_build() {
 
     echo "CONFIG_CTRL_IFACE_DBUS_NEW=y"      >> .config
 
-    echo "CONFIG_DRIVER_WEXT=y"              >> .config
+    if in_flags new_kernel; then
+        echo "CFLAGS += $(pkg-config --cflags libnl-3.0)" >> .config
+        echo "LIBS   += $(pkg-config --libs libnl-3.0)"   >> .config
+        echo "CONFIG_DRIVER_NL80211=y"       >> .config
+        echo "CONFIG_LIBNL32=y"              >> .config
+    else
+        echo "CONFIG_DRIVER_WEXT=y"          >> .config
+    fi
 
     echo "CONFIG_DELAYED_MIC_ERROR_REPORT=y" >> .config
 

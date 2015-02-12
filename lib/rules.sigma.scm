@@ -199,10 +199,18 @@
   (source 'dist "sqlite-autoconf-3080403.tar.gz")
   (patch "sqlite-3.8.1-autoconf-dlopen_check" 0))
 
+(firmware-package 'libnl
+  (source 'dist "libnl-3.2.25.tar.gz")
+  (patch "libnl-3.2.20-rtnl_tc_get_ops" 1)
+  (patch "libnl-3.2.20-cache-api" 1)
+  (stage 'build)
+  (stage 'install))
+
 (firmware-package 'wpa_supplicant
   (source 'dist "wpa_supplicant-2.2.tar.gz")
   (patch "wpa_supplicant-2.2-do-not-call-dbus-functions-with-NULL-path" 1)
-  (stage 'build (depends (target 'dbus 'install))))
+  (stage 'build (depends (target 'dbus 'install)
+                         (target 'libnl 'install))))
 
 (firmware-package 'zlib
   (source 'dist "zlib-1.2.8.tar.gz"))
