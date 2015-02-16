@@ -21,18 +21,12 @@ Commands:
   The target list is optional for the build command, if supplied only those
   targets will be built.
 
-  The rebuild command have an optional arguments (in this order only):
+  The rebuild command have an optional arguments:
 
-    jagen rebuild [--targets-only] [--show-all] <TARGETS>...
+    jagen rebuild [-t|--targets-only] <TARGETS>...
 
-  With the '--targets-only' option only the specified targets will be built
-  (similar to the 'build' command).
-
-  With the '--show-all' option all logs from the build directory will be shown
-  instead of from the supplied targets only.
-
-  The logs will not be shown if the targets were not previously built or the
-  build directory was clean.
+  With the '-t' or '--targets-only' option only the specified targets will be
+  built (similar to the 'build' command).
 
 CONFIGURATION:
 

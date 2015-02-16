@@ -374,9 +374,17 @@
   (set! *packages* (reverse *packages*))
   *packages*)
 
+(define (wait-result->status wait-result)
+  (remainder (cadr wait-result) 255))
+
 (define (system:run cmd . args)
   (apply print:debug cmd args)
-  (remainder (cadr (apply system cmd args)) 255))
+  (wait-result->status (apply system cmd args)))
+
+(define (system:execute cmd . args)
+  (apply print:debug cmd args)
+  (execute cmd (cons cmd args))
+  (exit 1))
 
 (define (cmd:generate out-file in-file)
   (let ((packages (load-packages in-file)))
@@ -389,10 +397,73 @@
     (apply system:run "ninja" "-f" build-file
            (map (cut make-path build-dir <>) targets))))
 
+(define (option? arg)
+  (eqv? #\- (string-ref arg 0)))
+
+(define (target-name->path name)
+  (let ((build-dir (env 'build-dir)))
+    (make-path build-dir name)))
+
+(define (target-name->log-path name)
+  (string-append (target-name->path name) ".log"))
+
+(define (truncate-file pathname)
+  (close-file-descriptor (open pathname (+ open/create open/truncate)))
+  pathname)
+
+(define (cmd:rebuild build-file args)
+  (define (log-files targets)
+    (map (cut target-name->log-path <>)
+         (append targets (list "rebuild"))))
+
+  (define (execute-tail targets show-all)
+    ; ignore irrelevant messages about inaccessible files
+    (close-file-descriptor 2)
+    (apply system:execute "tail" "-qFn0" (log-files targets)))
+
+  (define (execute-ninja targets targets-only)
+    (define (ninja targets)
+      (apply system:execute "ninja" "-f" build-file
+             (map (cut target-name->path <>) targets)))
+    (let ((fd (open (target-name->log-path "rebuild")
+                    (+ open/write open/create open/truncate))))
+      (duplicate-file-descriptor-to fd 1)
+      (duplicate-file-descriptor-to fd 2)
+      (if targets-only (ninja targets) (ninja '()))))
+
+  (define (parse-args args targets targets-only show-all)
+    (cond ((pair? args)
+           (cond ((option? (car args))
+                  (cond ((member (car args) '("-t" "--targets-only"))
+                         (parse-args (cdr args) targets #t show-all))
+                        ((member (car args) '("-a" "--show-all"))
+                         (error "option not implemented: --show-all"))
+                        (else (error "unknown option: " (car args)))))
+                 (else (parse-args (cdr args)
+                                   (append targets (list (car args)))
+                                   targets-only show-all))))
+          (else (list targets targets-only show-all))))
+
+  (define (rebuild targets targets-only show-all)
+    (let ((tail-pid (fork)))
+      (cond ((zero? tail-pid)
+             (execute-tail targets show-all))
+            (else (let ((ninja-pid (fork)))
+                    (cond ((zero? ninja-pid)
+                           (execute-ninja targets targets-only))
+                          (else (let ((status (wait-result->status
+                                                (waitpid ninja-pid 0))))
+                                  (kill tail-pid signal/term)
+                                  status))))))))
+
+  (apply rebuild (parse-args args '() #f #f)))
+
 (define main
   (match-lambda
     ((_ "generate" out in)
      (cmd:generate out in))
     ((_ "build" build-file targets ...)
      (exit (cmd:build build-file targets)))
+    ((_ "rebuild" build-file args ...)
+     (exit (cmd:rebuild build-file args)))
     ((_) (die "unknown command"))))

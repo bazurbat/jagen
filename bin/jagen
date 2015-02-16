@@ -16,49 +16,6 @@ fi
 
 build_file="$pkg_build_dir/build.ninja"
 
-rebuild() {
-    local IFS tab
-    local targets_only show_all
-    local target target_path targets logs status
-    local rebuild_log
-
-    IFS="$(printf '\n\t')"; tab="$(printf '\t')"
-
-    [ "$1" = "--targets-only" ] && { shift; targets_only=1; }
-    [ "$1" = "--show-all" ] && { shift; show_all=1; }
-
-    rebuild_log="$pkg_build_dir/rebuild.log"
-    : > "$rebuild_log"
-
-    for target in "$@"; do
-        target_path="$pkg_build_dir/$target"
-        targets="${targets}${tab}${target_path}"
-        logs="${logs}${tab}${target_path}.log"
-        if [ -f "$target_path" ]; then
-            rm -f "$target_path"
-        else
-            warning "Target $target is not exists"
-        fi
-    done
-
-    [ "$targets" ] || die "No targets specified, nothing to rebuild"
-
-    if [ "$show_all" ]; then
-        tail -qFn0 "$pkg_build_dir"/*.log 2>/dev/null &
-    else
-        tail -qFn0 $logs "$rebuild_log" 2>/dev/null &
-    fi
-
-    if [ "$targets_only" ]; then
-        ninja -f "$build_file" $targets >"$rebuild_log"; status=$?
-    else
-        ninja -f "$build_file" >"$rebuild_log"; status=$?
-    fi
-
-    kill $!
-    return $status
-}
-
 rebuild_chibi() {
     for s in clean unpack build install; do
         "$pkg_bin_dir/jagen-pkg" chibi-scheme $s tools \
@@ -97,7 +54,8 @@ case $1 in
         ;;
     rebuild)
         shift
-        rebuild "$@" || die "Rebuild failed"
+        in_path chibi-scheme || rebuild_chibi
+        $pkg_bin rebuild "$build_file" "$@" || die "Rebuild failed"
         ;;
     *)
         die "Unknown command: $1"
