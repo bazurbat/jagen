@@ -17,7 +17,7 @@ pkg_build() {
     local options
     local encoders decoders muxers protocols bsfs
 
-    for i in pcm_s16le; do
+    for i in aac pcm_s16le; do
         encoders="$encoders --enable-encoder=$i"
     done
 
@@ -25,9 +25,9 @@ pkg_build() {
         decoders="$decoders --enable-decoder=$i"
     done
 
-    for i in pcm_s16le wav; do
-        muxers="$muxers --enable-muxer=$i"
-    done
+	for i in adts pcm_s16le wav; do
+		muxers="$muxers --enable-muxer=$i"
+	done
 
     for i in file pipe; do
         protocols="$protocols --enable-protocol=$i"
