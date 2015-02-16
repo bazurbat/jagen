@@ -110,7 +110,8 @@
                            (target 'utils      'install 'target))))
 
 (rootfs-package 'busybox
-  (source 'dist "busybox-1.22.1.tar.bz2"))
+  (source 'dist "busybox-1.22.1.tar.bz2")
+  (stage 'patch (depends (target 'ast-files 'unpack))))
 
 (rootfs-package 'ntpclient
   (source 'dist "ntpclient-2010.tar.gz"))
@@ -152,7 +153,7 @@
     (patch "DPO_RT5572_LinuxSTA_2.6.1.3_20121022-encrypt" 1)))
 
 (kernel-package 'loop-aes
-  (source 'dist "loop-AES-v3.7a.tar.bz2"))
+  (source 'dist "loop-AES-v3.7b.tar.bz2"))
 
 (package 'mrua
   (source 'git "git@bitbucket.org:art-system/sigma-mrua.git")
