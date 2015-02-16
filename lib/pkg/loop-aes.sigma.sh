@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/loop-AES-v3.7b.tar.bz2"
-
 use_toolchain target
 
 export ARCH=mips
