@@ -37,7 +37,7 @@ p_hg_fetch() { p_run hg pull; }
 
 p_hg_pull() { p_run hg pull -u; }
 
-p_hg_checkout() { :; }
+p_hg_checkout() { p_run hg update -c; }
 
 p_hg_discard() { p_run hg update -C; }
 
