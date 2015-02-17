@@ -445,6 +445,8 @@
           (else (list targets targets-only show-all))))
 
   (define (rebuild targets targets-only show-all)
+    (for-each (lambda (f) (if (file-exists? f) (delete-file f)))
+              (map (cut target-name->path <>) targets))
     (let ((tail-pid (fork)))
       (cond ((zero? tail-pid)
              (execute-tail targets show-all))
