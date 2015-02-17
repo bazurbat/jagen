@@ -57,6 +57,12 @@ case $1 in
         in_path chibi-scheme || rebuild_chibi
         $pkg_bin rebuild "$build_file" "$@" || die "Rebuild failed"
         ;;
+    each)
+        shift
+        in_path chibi-scheme || rebuild_chibi
+        $pkg_bin each "$build_file" "$pkg_lib_dir/rules.${pkg_sdk}.scm" "$@" ||
+            die "Failed to run command"
+        ;;
     *)
         die "Unknown command: $1"
         ;;
