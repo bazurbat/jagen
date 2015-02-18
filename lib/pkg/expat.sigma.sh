@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/expat-2.1.0.tar.gz"
-
 use_toolchain target
 
 p_prefix="$target_prefix"

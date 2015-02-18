@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/gpgme-1.5.1.tar.bz2"
-
 use_toolchain target
 
 p_prefix=""

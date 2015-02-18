@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/libusb-1.0.19.tar.bz2"
-
 use_toolchain target
 
 p_prefix=""

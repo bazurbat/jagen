@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/e2fsprogs-1.42.9.tar.gz"
-
 use_toolchain target
 
 pkg_patch() {

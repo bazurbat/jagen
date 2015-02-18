@@ -1,6 +1,5 @@
 #!/bin/sh
 
-p_source="git https://github.com/bazurbat/chicken-eggs.git"
 p_source_dir="$pkg_src_dir/chicken-eggs"
 p_source_branch="master"
 p_build_dir="$p_work_dir/build${p_config:+-$p_config}"

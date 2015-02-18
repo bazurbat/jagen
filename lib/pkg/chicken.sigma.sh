@@ -1,6 +1,5 @@
 #!/bin/sh
 
-p_source="git https://github.com/bazurbat/chicken-scheme.git"
 p_source_dir="$pkg_src_dir/chicken-scheme"
 p_source_branch="cmake"
 p_build_dir="$p_work_dir/build${p_config:+-$p_config}"

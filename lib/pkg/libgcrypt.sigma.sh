@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/libgcrypt-1.5.3.tar.bz2"
-
 use_toolchain target
 
 pkg_patch() {

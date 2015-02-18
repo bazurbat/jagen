@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/libgpg-error-1.17.tar.bz2"
-
 use_toolchain target
 
 p_prefix=""

@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/ntpclient-2010.tar.gz"
-
 use_toolchain target
 
 pkg_build() {

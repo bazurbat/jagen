@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/libassuan-2.1.2.tar.bz2"
-
 use_toolchain target
 
 p_prefix=""

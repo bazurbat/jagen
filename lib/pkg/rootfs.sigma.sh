@@ -1,6 +1,5 @@
 #!/bin/sh
 
-p_source="git git@bitbucket.org:art-system/sigma-rootfs.git"
 p_source_dir="$pkg_src_dir/sigma-rootfs"
 p_jobs=1
 

@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/gdb-7.6.2.tar.bz2"
-
 use_env tools
 
 pkg_build_host() {

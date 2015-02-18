@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/mruafw_SMP8654F_prod_3_9_2.tgz"
-
 pkg_install() {
     local dst="$sdk_firmware_dir/xload"
 

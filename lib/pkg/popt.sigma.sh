@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/popt-1.16.tar.gz"
-
 use_toolchain target
 
 pkg_build() {

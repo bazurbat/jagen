@@ -1,6 +1,5 @@
 #!/bin/sh
 
-p_source="hg ssh://hg@bitbucket.org/art-system/karaoke-player"
 p_source_dir="$pkg_src_dir/karaoke-player"
 p_build_dir="$p_work_dir/build${p_config:+-$p_config}"
 

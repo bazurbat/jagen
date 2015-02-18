@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/LVM2.2.02.95.tgz"
-
 use_toolchain target
 
 pkg_build() {

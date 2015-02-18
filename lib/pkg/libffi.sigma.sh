@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/libffi-3.1.tar.gz"
-
 use_env host
 use_toolchain target
 

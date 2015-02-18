@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/cryptsetup-1.6.2.tar.bz2"
-
 use_toolchain target
 
 pkg_patch() {

@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/smp86xx_yamon_R2.13-31.tar.bz2"
-
 use_env tools
 use_toolchain target
 

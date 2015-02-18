@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/jemalloc-3.6.0.tar.bz2"
-
 use_toolchain target
 
 pkg_build() {

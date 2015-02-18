@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/zlib-1.2.8.tar.gz"
-
 use_toolchain target
 
 p_prefix="$target_prefix"

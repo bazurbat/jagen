@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/util-linux-2.23.2.tar.xz"
-
 use_toolchain target
 
 p_prefix=""

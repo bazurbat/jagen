@@ -1,6 +1,5 @@
 #!/bin/sh
 
-p_source="git git@bitbucket.org:art-system/sigma-kernel.git"
 p_source_dir="$pkg_src_dir/sigma-kernel"
 
 if in_flags "new_kernel"; then

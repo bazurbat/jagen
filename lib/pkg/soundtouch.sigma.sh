@@ -1,6 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/soundtouch-1.8.0.tar.gz"
 p_source_dir="$p_work_dir/soundtouch"
 
 use_toolchain target

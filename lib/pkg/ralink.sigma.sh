@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/DPO_RT5572_LinuxSTA_2.6.1.3_20121022.tar.bz2"
-
 use_toolchain target
 
 pkg_build() {

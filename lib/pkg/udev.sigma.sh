@@ -1,7 +1,5 @@
 #!/bin/sh
 
-p_source="$pkg_dist_dir/udev-182.tar.xz"
-
 use_toolchain target
 
 p_dest_dir="$sdk_rootfs_prefix"
