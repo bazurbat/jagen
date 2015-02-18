@@ -24,14 +24,14 @@
   (cond ((null? xs) id)
         (else (g (f (car xs)) (mapreduce f g id (cdr xs))))))
 
-(define (run-with-state state . args)
+(define (call-with-state state . procs)
   (define (bind procs)
     (lambda (state)
       (let loop ((procs procs) (state state))
         (if (null? procs)
           state
           (loop (cdr procs) ((car procs) state))))))
-  ((bind args) state))
+  ((bind procs) state))
 
 (define (import-shell-variable p)
   (let* ((k (car p))
@@ -149,9 +149,9 @@
   (define (create-stage args)
     (match args
       (((? symbol? config) (? symbol? name) deps ...)
-       (apply run-with-state (make-stage name config '()) deps))
+       (apply call-with-state (make-stage name config '()) deps))
       (((? symbol? name) deps ...)
-       (apply run-with-state (make-stage name #f '()) deps))
+       (apply call-with-state (make-stage name #f '()) deps))
       (((? symbol? name))
        (make-stage name #f '()))))
 
@@ -358,14 +358,15 @@
   (show #t "\x1B[1;31m:::\x1B[0m " (joined each args " ") nl))
 (define (print:debug . args)
   (when (string=? "yes" (env 'debug))
-    (show #t "\x1B[1;36m:::\x1B[0m " (joined each args " ") nl)))
+    (show #t "\x1B[1;36m:::\x1B[0m " (joined each args " ") nl)
+    (flush-output-port)))
 (define (die . args)
   (apply print:error args)
   (exit 1))
 
 (define (define-package name . rest)
   (let* ((state (make-package name #f '() '()))
-         (pkg (apply run-with-state state rest)))
+         (pkg (apply call-with-state state rest)))
     (set! *packages* (cons pkg *packages*))
     pkg))
 
@@ -385,6 +386,33 @@
   (apply print:debug cmd args)
   (execute cmd (cons cmd args))
   (exit 1))
+
+(define (wait-process pid)
+  (wait-result->status (waitpid pid 0)))
+
+(define (in-subprocess thunk)
+  (let ((pid (fork)))
+    (cond ((zero? pid)
+           (thunk)
+           (exit 1))
+          ((negative? pid)
+           (error "fork failed"))
+          (else pid))))
+
+(define (call-in-subprocess thunk . procs)
+  (in-subprocess (cut ((apply call-with-state thunk procs)))))
+
+(define (with-output-file file)
+  (lambda (thunk)
+    (let ((fd (open file (+ open/write open/create open/truncate))))
+      (duplicate-file-descriptor-to fd 1)
+      (duplicate-file-descriptor-to fd 2)
+      thunk)))
+
+(define (with-closed-stderr)
+  (lambda (thunk)
+    (close-file-descriptor 2)
+    thunk))
 
 (define (cmd:generate out-file in-file)
   (let ((packages (load-packages in-file)))
@@ -416,20 +444,18 @@
     (map (cut target-name->log-path <>)
          (append targets (list "rebuild"))))
 
-  (define (execute-tail targets show-all)
-    ; ignore irrelevant messages about inaccessible files
-    (close-file-descriptor 2)
-    (apply system:execute "tail" "-qFn0" (log-files targets)))
+  (define (execute-tail targets)
+    (define (cmd)
+      (apply system:execute "tail" "-Fn+1" (log-files targets)))
+    (call-in-subprocess (cut cmd)
+                        (with-closed-stderr)))
 
-  (define (execute-ninja targets targets-only)
-    (define (ninja targets)
+  (define (execute-ninja targets)
+    (define (cmd)
       (apply system:execute "ninja" "-f" build-file
              (map (cut target-name->path <>) targets)))
-    (let ((fd (open (target-name->log-path "rebuild")
-                    (+ open/write open/create open/truncate))))
-      (duplicate-file-descriptor-to fd 1)
-      (duplicate-file-descriptor-to fd 2)
-      (if targets-only (ninja targets) (ninja '()))))
+    (call-in-subprocess (cut cmd)
+                        (with-output-file (target-name->log-path "rebuild"))))
 
   (define (parse-args args targets targets-only show-all)
     (cond ((pair? args)
@@ -446,17 +472,15 @@
 
   (define (rebuild targets targets-only show-all)
     (for-each (lambda (f) (if (file-exists? f) (delete-file f)))
-              (map (cut target-name->path <>) targets))
-    (let ((tail-pid (fork)))
-      (cond ((zero? tail-pid)
-             (execute-tail targets show-all))
-            (else (let ((ninja-pid (fork)))
-                    (cond ((zero? ninja-pid)
-                           (execute-ninja targets targets-only))
-                          (else (let ((status (wait-result->status
-                                                (waitpid ninja-pid 0))))
-                                  (kill tail-pid signal/term)
-                                  status))))))))
+              (append (map (cut target-name->path <>) targets)
+                      (map (cut target-name->log-path <>) targets)))
+    (let* ((tail-pid (execute-tail targets))
+           (ninja-pid (if targets-only
+                        (execute-ninja targets)
+                        (execute-ninja '())))
+           (status (wait-process ninja-pid)))
+      (kill tail-pid signal/term)
+      status))
 
   (apply rebuild (parse-args args '() #f #f)))
 
