@@ -349,6 +349,52 @@
     (with-output-to-file path create-script)))
 
 ;}}}
+;{{{ source handling
+
+(define (src:kind path)
+  (define (thunk)
+    (cond ((file-exists? ".git") 'git)
+          ((file-exists? ".hg") 'hg)
+          (else 'unknown)))
+  (with-directory path thunk))
+
+(define (src:dirty? path)
+  ; git status --porcelain
+  ; hg status
+  (show #t "dirty? " path nl))
+
+(define (src:clone src dst)
+  ; git clone --progress --depth 1 --no-single-branch --no-checkout src dst
+  ; hg clone -r tip src dst
+  (show #t "clone " src " " dst nl))
+
+(define (src:fetch path)
+  ; git fetch --progress -np
+  ; hg pull
+  (show #t "fetch " path nl))
+
+(define (src:pull path)
+  ; git pull --progress --ff-only
+  ; hg pull -u
+  (show #t "pull " path nl))
+
+(define (src:checkout path)
+  ; exists: git checkout $branch
+  ; git checkout -b $branch -t origin/$branch
+  ; hg update -c
+  (show #t "checkout " path nl))
+
+(define (src:discard path)
+  ; git checkout .
+  ; hg update -C
+  (show #t "discard " path))
+
+(define (src:clean path)
+  ; git clean -fxd
+  ; hg purge --all
+  (show #t "clean " path nl))
+
+;}}}
 
 (define (print:message . args)
   (show #t "\x1B[1;34m:::\x1B[0m " (joined each args " ") nl))
