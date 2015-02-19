@@ -17,11 +17,20 @@ fi
 build_file="$pkg_build_dir/build.ninja"
 
 rebuild_chibi() {
-    for s in clean unpack build install; do
-        "$pkg_bin_dir/jagen-pkg" chibi-scheme $s tools \
-            || die "Failed to $s chibi-scheme"
-    done
+    local name="chibi-scheme-0.7"
+    local source="$pkg_dist_dir/${name}.tgz"
+    local build_dir="$chibi_dir/build"
+    local log="$build_dir/build.log"
+
+    rm -rf "$build_dir" || die
+    mkdir -p "$build_dir" || die
+    tar -C "$build_dir" -xpf "$source" || die
+    cd "$build_dir/$name" || die
+    make PREFIX="$chibi_dir" >"$log" 2>&1 || die
+    make PREFIX="$chibi_dir" install >>"$log" 2>&1 || die
 }
+
+in_path chibi-scheme || rebuild_chibi
 
 case $1 in
     help)
@@ -41,7 +50,6 @@ case $1 in
         ;;
     refresh)
         message "Refreshing build rules"
-        in_path chibi-scheme || rebuild_chibi
         $pkg_bin generate "$build_file" "$pkg_lib_dir/rules.${pkg_sdk}.scm" ||
             die "Failed to generate build rules"
         include "$pkg_root/lib/toolchain"
@@ -49,22 +57,18 @@ case $1 in
         ;;
     build)
         shift
-        in_path chibi-scheme || rebuild_chibi
         $pkg_bin build "$build_file" "$@" || die "Build failed"
         ;;
     rebuild)
         shift
-        in_path chibi-scheme || rebuild_chibi
         $pkg_bin rebuild "$build_file" "$@" || die "Rebuild failed"
         ;;
     each)
         shift
-        in_path chibi-scheme || rebuild_chibi
         $pkg_bin each "$build_file" "$pkg_lib_dir/rules.${pkg_sdk}.scm" "$@" ||
             die "Failed to run command"
         ;;
     *)
-        in_path chibi-scheme || rebuild_chibi
         _jagen "$@"
         ;;
 esac
