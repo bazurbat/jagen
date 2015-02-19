@@ -352,62 +352,91 @@
 ;}}}
 ;{{{ source handling
 
+(define (ensure-file-exists path)
+  (unless (file-exists? path)
+    (die "The file is not exists:" path)))
+
+(define (src:command path command)
+  (ensure-file-exists path)
+  (with-directory path (cut wait-process (call-in-subprocess command))))
+
 (define (src:kind path)
   (define (thunk)
     (cond ((file-exists? ".git") 'git)
           ((file-exists? ".hg") 'hg)
-          (else 'unknown)))
-  (if (file-exists? path)
-    (with-directory path thunk)
-    #f))
+          (else 'dist)))
+  (ensure-file-exists path)
+  (with-directory path thunk))
 
 (define (src:head path)
   (define (thunk)
     (case (src:kind path)
-      ((git) (string-trim-right
-               (process->string "git rev-parse HEAD")
-               #\newline))
-      ((hg) (string-trim-right
-              (process->string "hg id -i")
-              #\newline))
-      (else #f)))
+      ((git)
+       (string-trim-right (process->string "git rev-parse HEAD") #\newline))
+      ((hg)
+       (string-trim-right (process->string "hg id -i") #\newline))))
   (with-directory path thunk))
 
 (define (src:dirty? path)
-  ; git status --porcelain
-  ; hg status
-  (show #t "dirty? " path nl))
+  (define (thunk)
+    (case (src:kind path)
+      ((git)
+       (not (string-null? (process->string "git status --porcelain"))))
+      ((hg)
+       (not (string-null? (process->string "hg status"))))))
+  (with-directory path thunk))
 
-(define (src:clone src dst)
-  ; git clone --progress --depth 1 --no-single-branch --no-checkout src dst
-  ; hg clone -r tip src dst
-  (show #t "clone " src " " dst nl))
+(define (src:clone kind src dst)
+  (define (clone)
+    (case kind
+      ((git) `("git" "clone" "--progress" "--depth" "1" "--no-single-branch"
+               "--no-checkout" ,src ,dst))
+      ((hg) `("hg" "clone" "-r" "tip" ,src ,dst))))
+  (wait-process (call-in-subprocess (clone))))
 
 (define (src:fetch path)
-  ; git fetch --progress -np
-  ; hg pull
-  (show #t "fetch " path nl))
+  (define (fetch)
+    (case (src:kind path)
+      ((git) "git fetch --progress -np")
+      ((hg) "hg pull")))
+  (src:command path (fetch)))
 
 (define (src:pull path)
-  ; git pull --progress --ff-only
-  ; hg pull -u
-  (show #t "pull " path nl))
+  (define (pull)
+    (case (src:kind path)
+      ((git) "git pull --progress --ff-only")
+      ((hg) "hg pull -u")))
+  (src:command path (pull)))
 
-(define (src:checkout path)
-  ; exists: git checkout $branch
-  ; git checkout -b $branch -t origin/$branch
-  ; hg update -c
-  (show #t "checkout " path nl))
+(define (src:checkout path branch)
+  (define (git:branch-exists?)
+    (not (string-null? (process->string `("git" "branch" "--list" ,branch)))))
+  (define (thunk)
+    (case (src:kind path)
+      ((git)
+       (if (git:branch-exists?)
+         (wait-process (call-in-subprocess `("git" "checkout" ,branch)))
+         (wait-process (call-in-subprocess `("git" "checkout" "-b" ,branch
+                                             "-t" (string-append "origin/" ,branch))))))
+      ((hg)
+       (wait-process (call-in-subprocess "hg update -c")))
+      (else #f)))
+  (ensure-file-exists path)
+  (with-directory path thunk))
 
 (define (src:discard path)
-  ; git checkout .
-  ; hg update -C
-  (show #t "discard " path))
+  (define (discard)
+    (case (src:kind path)
+      ((git) "git checkout .")
+      ((hg) "hg update -C")))
+  (src:command path (discard)))
 
 (define (src:clean path)
-  ; git clean -fxd
-  ; hg purge --all
-  (show #t "clean " path nl))
+  (define (clean)
+    (case (src:kind path)
+      ((git) "git clean -fxd")
+      ((hg) "hg purge --all")))
+  (src:command path (clean)))
 
 ;}}}
 
@@ -466,8 +495,13 @@
            (error "fork failed"))
           (else pid))))
 
-(define (call-in-subprocess thunk . procs)
-  (in-subprocess (cut ((apply call-with-state thunk procs)))))
+(define (call-in-subprocess cmd . procs)
+  (define (cmd->thunk)
+    (cond ((string? cmd) (cut apply system:execute (string-split cmd)))
+          ((list? cmd) (cut apply system:execute cmd))
+          ((procedure? cmd) cmd)
+          (else (error "invalid command value" cmd))))
+  (in-subprocess (cut ((apply call-with-state (cmd->thunk) procs)))))
 
 (define (with-output-file file)
   (lambda (thunk)
@@ -596,6 +630,9 @@
                                    (p (find-package n packages))
                                    ((scm-source? p))) p))
                       pkg)))
+    (("dirty")
+     (let ((s (package-source-directory (find-package 'linux packages))))
+       (show #t (src:clone 'git "git@bitbucket.org:art-system/files.git" "fff") nl)))
     (other (die "unsupported subcommand:" other)))
   0)
 
