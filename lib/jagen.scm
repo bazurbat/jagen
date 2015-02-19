@@ -558,10 +558,9 @@
 ;{{{ commands
 
 (define (cmd:generate out-file in-file)
-  (let ((packages (load-packages)))
-    (if (file-exists? out-file) (delete-file out-file))
-    (with-output-to-file out-file (cut %ninja:output packages))
-    (for-each generate-include-script packages)))
+  (if (file-exists? out-file) (delete-file out-file))
+  (with-output-to-file out-file (cut %ninja:output *packages*))
+  (for-each generate-include-script *packages*))
 
 (define (cmd:build build-file targets)
   (let ((build-dir (env 'build-dir)))
@@ -633,7 +632,6 @@
 ;}}}
 
 (define (cmd:src args)
-  (define packages (load-packages))
   (define (scm-source? pkg)
     (and-let* ((s (package-source pkg)))
       (case (source-type s)
@@ -645,12 +643,12 @@
       (show #t n ": " (src:head s) nl)))
   (match args
     (("head" "all")
-     (for-each head (filter scm-source? packages)))
+     (for-each head (filter scm-source? *packages*)))
     (("head" pkg ...)
      (for-each head (filter-map
                       (lambda (name)
                         (and-let* ((n (string->symbol name))
-                                   (p (find-package n packages))
+                                   (p (find-package n *packages*))
                                    ((scm-source? p))) p))
                       pkg)))
     (other (die "unsupported subcommand:" other)))
@@ -658,8 +656,9 @@
 
 ;{{{ main
 
-(define main
-  (match-lambda
+(define (main arguments)
+  (load-packages)
+  (match arguments
     ((_ "generate" out in)
      (cmd:generate out in))
     ((_ "build" build-file targets ...)
