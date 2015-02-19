@@ -12,7 +12,8 @@
         (chibi pathname)
         (chibi process)
         (chibi regexp)
-        (chibi show))
+        (chibi show)
+        (chibi string))
 
 ;}}}
 ;{{{ helper functions
@@ -358,6 +359,13 @@
           (else 'unknown)))
   (with-directory path thunk))
 
+(define (src:head path)
+  (define (thunk)
+    (case (src:kind path)
+      ((git) (process->string "git rev-parse HEAD"))
+      ((hg)  (process->string "hg id -i"))))
+  (with-directory path thunk))
+
 (define (src:dirty? path)
   ; git status --porcelain
   ; hg status
@@ -423,6 +431,9 @@
   (load (rules-file))
   (set! *packages* (reverse *packages*))
   *packages*)
+
+(define (find-package name packages)
+  (find (lambda (n) (eq? name (package-name n))) packages))
 
 (define (wait-result->status wait-result)
   (remainder (cadr wait-result) 255))
@@ -542,9 +553,43 @@
          (targets (map (cut package->target <> stage) packages)))
     (cmd:rebuild build-file (append targets '("--targets-only")))))
 
+(define (package-directory package)
+  (and-let* ((source (package-source package))
+             (location (source-location source))
+             (name (last (string-split location #\/)))
+             (r (rx (or (: (-> name (+ any)) ".git")
+                        (: (-> name (+ any)) ".tar" (? "." (+ any)))
+                        (: (-> name (+ any)) ".t" (+ any))
+                        (-> name (+ any)))))
+             (m (regexp-matches r name)))
+    (regexp-match-submatch m 'name)))
+
+(define (package-source-directory package)
+  (and-let* ((directory (package-directory package)))
+    (make-path (env 'src-dir) directory)))
+
 (define (cmd:src args)
   (define packages (load-packages))
-  (show #t args nl)
+  (define (scm-source? pkg)
+    (and-let* ((s (package-source pkg)))
+      (case (source-type s)
+        ((git hg) #t)
+        (else #f))))
+  (define (head pkg)
+    (and-let* ((n (package-name pkg))
+               (s (package-source-directory pkg)))
+      (show #t n ": " (src:head s))))
+  (match args
+    (("head" "all")
+     (for-each head (filter scm-source? packages)))
+    (("head" pkg ...)
+     (for-each head (filter-map
+                      (lambda (name)
+                        (and-let* ((n (string->symbol name))
+                                   (p (find-package n packages))
+                                   ((scm-source? p))) p))
+                      pkg)))
+    (other (die "unsupported subcommand:" other)))
   0)
 
 (define main
