@@ -104,9 +104,10 @@
   (target dependency-target))
 
 (define-record-type <source>
-  (make-source type location) source?
-  (type     source-type)
-  (location source-location))
+  (make-source type location directory) source?
+  (type      source-type)
+  (location  source-location)
+  (directory source-directory))
 
 (define-record-type <patch>
   (make-patch name strip) patch?
@@ -130,11 +131,11 @@
     ((name stage)
      (make-target name stage #f))))
 
-(define (source type location)
+(define (source type location . directory)
   (lambda (pkg)
     (make-package
       (package-name pkg)
-      (make-source type location)
+      (make-source type location (and (pair? directory) (car directory)))
       (package-patches pkg)
       (package-stages pkg))))
 
@@ -439,20 +440,7 @@
   (src:command path (clean)))
 
 ;}}}
-
-(define (print:message . args)
-  (show #t "\x1B[1;34m:::\x1B[0m " (joined each args " ") nl))
-(define (print:warning . args)
-  (show #t "\x1B[1;33m:::\x1B[0m " (joined each args " ") nl))
-(define (print:error . args)
-  (show #t "\x1B[1;31m:::\x1B[0m " (joined each args " ") nl))
-(define (print:debug . args)
-  (when (string=? "yes" (env 'debug))
-    (show #t "\x1B[1;36m:::\x1B[0m " (joined each args " ") nl)
-    (flush-output-port)))
-(define (die . args)
-  (apply print:error args)
-  (exit 1))
+;{{{ packages
 
 (define (define-package name . rest)
   (let* ((state (make-package name #f '() '()))
@@ -470,6 +458,57 @@
 
 (define (find-package name packages)
   (find (lambda (n) (eq? name (package-name n))) packages))
+
+(define (pkg:build-root)
+  (make-path (env 'build-dir) "pkg"))
+
+(define (pkg:work-directory pkg)
+  (make-path (pkg:build-root) (symbol->string (package-name pkg))))
+
+(define (pkg:source-name pkg)
+  (or (and-let* ((source (package-source pkg))
+                 (location (source-location source))
+                 (name (last (string-split location #\/)))
+                 (r (rx (or (: (-> name (+ any)) ".git")
+                            (: (-> name (+ any)) ".tar" (? "." (+ any)))
+                            (: (-> name (+ any)) ".t" (+ any))
+                            (-> name (+ any)))))
+                 (m (regexp-matches r name)))
+        (regexp-match-submatch m 'name))
+      (symbol->string (package-name pkg))))
+
+(define (pkg:source-directory pkg)
+  (let* ((source (package-source pkg))
+         (directory (or (and source (source-directory source))
+                        (pkg:source-name pkg))))
+    (or (and source
+             (case (source-type source)
+               ((git hg) (make-path (env 'src-dir) directory))
+               (else #f)))
+        (make-path (pkg:work-directory pkg) directory))))
+
+(define (pkg:build-dir pkg)
+  (pkg:source-directory pkg))
+
+;}}}
+;{{{ messages
+
+(define (print:message . args)
+  (show #t "\x1B[1;34m:::\x1B[0m " (joined each args " ") nl))
+(define (print:warning . args)
+  (show #t "\x1B[1;33m:::\x1B[0m " (joined each args " ") nl))
+(define (print:error . args)
+  (show #t "\x1B[1;31m:::\x1B[0m " (joined each args " ") nl))
+(define (print:debug . args)
+  (when (string=? "yes" (env 'debug))
+    (show #t "\x1B[1;36m:::\x1B[0m " (joined each args " ") nl)
+    (flush-output-port)))
+(define (die . args)
+  (apply print:error args)
+  (exit 1))
+
+;}}}
+;{{{ processes
 
 (define (wait-result->status wait-result)
   (remainder (cadr wait-result) 255))
@@ -515,6 +554,9 @@
     (close-file-descriptor 2)
     thunk))
 
+;}}}
+;{{{ commands
+
 (define (cmd:generate out-file in-file)
   (let ((packages (load-packages)))
     (if (file-exists? out-file) (delete-file out-file))
@@ -525,6 +567,9 @@
   (let ((build-dir (env 'build-dir)))
     (apply system:run "ninja" "-f" build-file
            (map (cut make-path build-dir <>) targets))))
+
+;}}}
+;{{{ command: rebuild
 
 (define (option? arg)
   (eqv? #\- (string-ref arg 0)))
@@ -585,6 +630,9 @@
 
   (apply rebuild (parse-args args '() #f #f)))
 
+;}}}
+;{{{ command: each
+
 (define (cmd:each build-file rules-file args)
   (define (package->target package stage)
     (string-append (symbol->string (package-name package)) "-" stage))
@@ -594,20 +642,7 @@
          (targets (map (cut package->target <> stage) packages)))
     (cmd:rebuild build-file (append targets '("--targets-only")))))
 
-(define (package-directory package)
-  (and-let* ((source (package-source package))
-             (location (source-location source))
-             (name (last (string-split location #\/)))
-             (r (rx (or (: (-> name (+ any)) ".git")
-                        (: (-> name (+ any)) ".tar" (? "." (+ any)))
-                        (: (-> name (+ any)) ".t" (+ any))
-                        (-> name (+ any)))))
-             (m (regexp-matches r name)))
-    (regexp-match-submatch m 'name)))
-
-(define (package-source-directory package)
-  (and-let* ((directory (package-directory package)))
-    (make-path (env 'src-dir) directory)))
+;}}}
 
 (define (cmd:src args)
   (define packages (load-packages))
@@ -618,7 +653,7 @@
         (else #f))))
   (define (head pkg)
     (and-let* ((n (package-name pkg))
-               (s (package-source-directory pkg)))
+               (s (pkg:source-directory pkg)))
       (show #t n ": " (src:head s) nl)))
   (match args
     (("head" "all")
@@ -630,11 +665,10 @@
                                    (p (find-package n packages))
                                    ((scm-source? p))) p))
                       pkg)))
-    (("dirty")
-     (let ((s (package-source-directory (find-package 'linux packages))))
-       (show #t (src:clone 'git "git@bitbucket.org:art-system/files.git" "fff") nl)))
     (other (die "unsupported subcommand:" other)))
   0)
+
+;{{{ main
 
 (define main
   (match-lambda
@@ -650,3 +684,5 @@
      (exit (cmd:src args)))
     ((_ cmd args ...)
      (die "unknown command:" cmd))))
+
+;}}}

@@ -236,7 +236,8 @@
   (stage 'install (depends (target 'firmware 'unpack))))
 
 (package 'astindex
-  (source 'hg "ssh://hg@bitbucket.org/art-system/astindex")
+  (source 'hg "ssh://hg@bitbucket.org/art-system/astindex"
+          "karaoke-player/source/astindex")
   (stage 'unpack (depends (target 'karaoke-player 'unpack))))
 
 (package 'karaoke-player
