@@ -141,4 +141,6 @@ pkg_strip() {
 
         p_strip "$p_work_dir"
     fi
+
+    _jagen src head all > "$p_work_dir/heads" || die
 }
