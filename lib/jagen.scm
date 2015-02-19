@@ -631,18 +631,6 @@
   (apply rebuild (parse-args args '() #f #f)))
 
 ;}}}
-;{{{ command: each
-
-(define (cmd:each build-file rules-file args)
-  (define (package->target package stage)
-    (string-append (symbol->string (package-name package)) "-" stage))
-
-  (let* ((packages (load-packages))
-         (stage (car args))
-         (targets (map (cut package->target <> stage) packages)))
-    (cmd:rebuild build-file (append targets '("--targets-only")))))
-
-;}}}
 
 (define (cmd:src args)
   (define packages (load-packages))
@@ -678,8 +666,6 @@
      (exit (cmd:build build-file targets)))
     ((_ "rebuild" build-file args ...)
      (exit (cmd:rebuild build-file args)))
-    ((_ "each" build-file rules args ...)
-     (exit (cmd:each build-file rules args)))
     ((_ "src" args ...)
      (exit (cmd:src args)))
     ((_ cmd args ...)

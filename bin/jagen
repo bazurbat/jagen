@@ -63,11 +63,6 @@ case $1 in
         shift
         $pkg_bin rebuild "$build_file" "$@" || die "Rebuild failed"
         ;;
-    each)
-        shift
-        $pkg_bin each "$build_file" "$pkg_lib_dir/rules.${pkg_sdk}.scm" "$@" ||
-            die "Failed to run command"
-        ;;
     *)
         _jagen "$@"
         ;;
