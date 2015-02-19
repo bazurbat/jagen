@@ -299,7 +299,7 @@
   (stage 'install (depends (target 'firmware 'unpack))))
 
 (package 'connman
-  (source 'dist "connman-1.26.tar.xz")
+  (source 'dist "connman-1.28.tar.xz")
   (stage 'build   (depends (target 'libtool        'install)
                            (target 'dbus           'install)
                            (target 'glib           'install)
