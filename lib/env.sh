@@ -19,6 +19,8 @@ export pkg_source_exclude=""
 . "$pkg_lib_dir/list.sh"
 . "$pkg_lib_dir/common.sh"
 
+_jagen() { chibi-scheme -r "$pkg_lib_dir/jagen.scm" "$@"; }
+
 include "${HOME}/.config/jagen/env"
 include "$pkg_root/local"
 

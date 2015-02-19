@@ -64,6 +64,7 @@ case $1 in
             die "Failed to run command"
         ;;
     *)
-        die "Unknown command: $1"
+        in_path chibi-scheme || rebuild_chibi
+        _jagen "$@"
         ;;
 esac

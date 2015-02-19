@@ -416,8 +416,11 @@
     (set! *packages* (cons pkg *packages*))
     pkg))
 
-(define (load-packages pathname)
-  (load pathname)
+(define (load-packages)
+  (define (rules-file)
+    (make-path (env 'lib-dir)
+               (show #f (joined each (list "rules" (env 'sdk) "scm") "."))))
+  (load (rules-file))
   (set! *packages* (reverse *packages*))
   *packages*)
 
@@ -461,7 +464,7 @@
     thunk))
 
 (define (cmd:generate out-file in-file)
-  (let ((packages (load-packages in-file)))
+  (let ((packages (load-packages)))
     (if (file-exists? out-file) (delete-file out-file))
     (with-output-to-file out-file (cut %ninja:output packages))
     (for-each generate-include-script packages)))
@@ -534,10 +537,15 @@
   (define (package->target package stage)
     (string-append (symbol->string (package-name package)) "-" stage))
 
-  (let* ((packages (load-packages rules-file))
+  (let* ((packages (load-packages))
          (stage (car args))
          (targets (map (cut package->target <> stage) packages)))
     (cmd:rebuild build-file (append targets '("--targets-only")))))
+
+(define (cmd:src args)
+  (define packages (load-packages))
+  (show #t args nl)
+  0)
 
 (define main
   (match-lambda
@@ -549,4 +557,7 @@
      (exit (cmd:rebuild build-file args)))
     ((_ "each" build-file rules args ...)
      (exit (cmd:each build-file rules args)))
-    ((_) (die "unknown command"))))
+    ((_ "src" args ...)
+     (exit (cmd:src args)))
+    ((_ cmd args ...)
+     (die "unknown command:" cmd))))
