@@ -43,6 +43,10 @@ export RMCFLAGS="\
 -DXBOOT2_SMP8670=1 \
 "
 
+if in_flags monitoring; then
+    RMCFLAGS="$RMCFLAGS -DWITH_PROC=1 -DWITH_MONITORING=1"
+fi
+
 if [ "$pkg_build_type" = "Debug" ]; then
     COMPILKIND="debug glibc codesourcery hardfloat"
 else
