@@ -357,13 +357,20 @@
     (cond ((file-exists? ".git") 'git)
           ((file-exists? ".hg") 'hg)
           (else 'unknown)))
-  (with-directory path thunk))
+  (if (file-exists? path)
+    (with-directory path thunk)
+    #f))
 
 (define (src:head path)
   (define (thunk)
     (case (src:kind path)
-      ((git) (process->string "git rev-parse HEAD"))
-      ((hg)  (process->string "hg id -i"))))
+      ((git) (string-trim-right
+               (process->string "git rev-parse HEAD")
+               #\newline))
+      ((hg) (string-trim-right
+              (process->string "hg id -i")
+              #\newline))
+      (else #f)))
   (with-directory path thunk))
 
 (define (src:dirty? path)
@@ -578,7 +585,7 @@
   (define (head pkg)
     (and-let* ((n (package-name pkg))
                (s (package-source-directory pkg)))
-      (show #t n ": " (src:head s))))
+      (show #t n ": " (src:head s) nl)))
   (match args
     (("head" "all")
      (for-each head (filter scm-source? packages)))
