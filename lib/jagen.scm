@@ -493,6 +493,18 @@
       ((git hg) #t)
       (else #f))))
 
+(define (pkg:update pkg)
+  (let ((source-directory (pkg:source-directory pkg)))
+    (cond ((file-exists? source-directory)
+           ;(src:fetch source-directory)
+           ;(src:checkout source-directory 
+           ;(src:pull source-directory))
+           )
+          (else
+            ;(src:clone)
+            ;(src:checkout)
+            ))))
+
 ;}}}
 ;{{{ messages
 
@@ -652,6 +664,8 @@
   (match args
     (("status" names ...)
      (for-each print-status (scm-packages names)))
+    (("update" names ...)
+     (for-each pkg:update (scm-packages names)))
     (other (die "unsupported subcommand:" other)))
   0)
 
