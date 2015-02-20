@@ -456,9 +456,6 @@
   (set! *packages* (reverse *packages*))
   *packages*)
 
-(define (find-package name packages)
-  (find (lambda (n) (eq? name (package-name n))) packages))
-
 (define (pkg:build-root)
   (make-path (env 'build-dir) "pkg"))
 
@@ -489,6 +486,12 @@
 
 (define (pkg:build-dir pkg)
   (pkg:source-directory pkg))
+
+(define (pkg:scm-source? pkg)
+  (and-let* ((source (package-source pkg)))
+    (case (source-type source)
+      ((git hg) #t)
+      (else #f))))
 
 ;}}}
 ;{{{ messages
@@ -630,30 +633,29 @@
   (apply rebuild (parse-args args '() #f #f)))
 
 ;}}}
+;{{{ command: src
 
 (define (cmd:src args)
-  (define (scm-source? pkg)
-    (and-let* ((s (package-source pkg)))
-      (case (source-type s)
-        ((git hg) #t)
-        (else #f))))
-  (define (head pkg)
+  (define (scm-packages names)
+    (let ((ids (map string->symbol names))
+          (scms (filter pkg:scm-source? *packages*)))
+      (if (pair? names)
+        (filter (lambda (pkg)
+                  (let ((name (package-name pkg)))
+                    (any (cut eq? name <>) ids)))
+                scms)
+        scms)))
+  (define (print-head pkg)
     (and-let* ((n (package-name pkg))
                (s (pkg:source-directory pkg)))
       (show #t n ": " (src:head s) nl)))
   (match args
-    (("head" "all")
-     (for-each head (filter scm-source? *packages*)))
-    (("head" pkg ...)
-     (for-each head (filter-map
-                      (lambda (name)
-                        (and-let* ((n (string->symbol name))
-                                   (p (find-package n *packages*))
-                                   ((scm-source? p))) p))
-                      pkg)))
+    (("heads" names ...)
+     (for-each print-head (scm-packages names)))
     (other (die "unsupported subcommand:" other)))
   0)
 
+;}}}
 ;{{{ main
 
 (define (main arguments)
