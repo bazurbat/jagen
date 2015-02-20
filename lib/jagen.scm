@@ -645,13 +645,13 @@
                     (any (cut eq? name <>) ids)))
                 scms)
         scms)))
-  (define (print-head pkg)
+  (define (print-status pkg)
     (and-let* ((n (package-name pkg))
                (s (pkg:source-directory pkg)))
-      (show #t n ": " (src:head s) nl)))
+      (show #t n ": " (src:head s) (if (src:dirty? s) " dirty" "") nl)))
   (match args
-    (("heads" names ...)
-     (for-each print-head (scm-packages names)))
+    (("status" names ...)
+     (for-each print-status (scm-packages names)))
     (other (die "unsupported subcommand:" other)))
   0)
 
