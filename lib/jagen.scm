@@ -471,7 +471,7 @@
 ;{{{ packages
 
 (define (define-package name . rest)
-  (let* ((state (make-package name #f '() '()))
+  (let* ((state (make-package name (make-source #f #f #f #f) '() '()))
          (pkg (apply call-with-state state rest)))
     (set! *packages* (cons pkg *packages*))
     pkg))
