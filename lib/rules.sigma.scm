@@ -30,7 +30,10 @@
   (source 'git "git@bitbucket.org:art-system/files.git"))
 
 (package 'linux
-  (source 'git "git@bitbucket.org:art-system/linux.git"))
+  (source 'git "git@bitbucket.org:art-system/linux.git"
+          (if (pkg:flag? "new_kernel")
+            (branch "sigma-3.4")
+            (branch "ast50"))))
 
 (package 'xsdk
   (source 'dist "${cpukeys}.tar.gz"))
@@ -68,7 +71,8 @@
 ; boot
 
 (rootfs-package 'ezboot
-  (source 'git "git@bitbucket.org:art-system/sigma-ezboot.git"))
+  (source 'git "git@bitbucket.org:art-system/sigma-ezboot.git"
+          (branch "sdk4")))
 
 ; fails to build with new toolchain
 ;(rootfs-package "yamon")
@@ -139,7 +143,10 @@
 ; kernel
 
 (package 'kernel
-  (source 'git "git@bitbucket.org:art-system/sigma-kernel.git")
+  (source 'git "git@bitbucket.org:art-system/sigma-kernel.git"
+          (if (pkg:flag? "new_kernel")
+            (branch "master")
+            (branch "sigma-2.6")))
   (stage 'build (depends (target 'linux  'unpack)
                          (target 'ezboot 'build)
                          (target 'rootfs 'build)))
@@ -156,20 +163,29 @@
   (source 'dist "loop-AES-v3.7b.tar.bz2"))
 
 (package 'mrua
-  (source 'git "git@bitbucket.org:art-system/sigma-mrua.git")
+  (source 'git "git@bitbucket.org:art-system/sigma-mrua.git"
+          (if (pkg:flag? "new_kernel")
+            (branch "master")
+            (branch "sigma-2.6")))
   (stage 'build   (depends (target 'kernel 'build)))
   (stage 'modules)
   (stage 'install (depends (target 'firmware 'unpack))))
 
 (package 'chicken
-  (source 'git "https://github.com/bazurbat/chicken-scheme.git")
+  (source 'git "https://github.com/bazurbat/chicken-scheme.git"
+          (if (pkg:flag? "chicken_next")
+            (branch "next")
+            (branch "cmake")))
   (stage 'host   'build)
   (stage 'host   'install)
   (stage 'target 'build   (depends (target 'chicken  'install 'host)))
   (stage 'target 'install (depends (target 'firmware 'unpack))))
 
 (package 'chicken-eggs
-  (source 'git "https://github.com/bazurbat/chicken-eggs.git")
+  (source 'git "https://github.com/bazurbat/chicken-eggs.git"
+          (if (pkg:flag? "chicken_next")
+            (branch "next")
+            (branch "master")))
   (stage 'host   'install (depends (target 'chicken 'install 'host)))
   (stage 'target 'install
          (depends (target 'chicken      'install 'target))
@@ -237,7 +253,7 @@
 
 (package 'astindex
   (source 'hg "ssh://hg@bitbucket.org/art-system/astindex"
-          "karaoke-player/source/astindex")
+          (directory "karaoke-player/source/astindex"))
   (stage 'unpack (depends (target 'karaoke-player 'unpack))))
 
 (package 'karaoke-player

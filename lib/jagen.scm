@@ -13,7 +13,8 @@
         (chibi process)
         (chibi regexp)
         (chibi show)
-        (chibi string))
+        (chibi string)
+        (chibi))
 
 ;}}}
 ;{{{ helper functions
@@ -104,10 +105,11 @@
   (target dependency-target))
 
 (define-record-type <source>
-  (make-source type location directory) source?
+  (make-source type location directory branch) source?
   (type      source-type)
   (location  source-location)
-  (directory source-directory))
+  (directory source-directory)
+  (branch    source-branch))
 
 (define-record-type <patch>
   (make-patch name strip) patch?
@@ -131,13 +133,39 @@
     ((name stage)
      (make-target name stage #f))))
 
-(define (source type location . directory)
+(define-syntax source
+  (er-macro-transformer
+    (lambda (expr rename compare)
+      (let ((type     (list-ref  expr 1))
+            (location (list-ref  expr 2))
+            (rest     (list-tail expr 3)))
+        `(,(rename 'let) ((directory ,(rename 'source:directory))
+                          (branch    ,(rename 'source:branch)))
+           (,(rename 'source:) ,type ,location ,@rest))))))
+
+(define (source: type location . rest)
   (lambda (pkg)
     (make-package
       (package-name pkg)
-      (make-source type location (and (pair? directory) (car directory)))
+      (apply call-with-state (make-source type location #f #f) rest)
       (package-patches pkg)
       (package-stages pkg))))
+
+(define (source:directory pathname)
+  (lambda (s)
+    (make-source
+      (source-type s)
+      (source-location s)
+      pathname
+      (source-branch s))))
+
+(define (source:branch name)
+  (lambda (s)
+    (make-source
+      (source-type s)
+      (source-location s)
+      (source-directory s)
+      name)))
 
 (define (patch name strip)
   (lambda (pkg)
@@ -410,19 +438,19 @@
   (src:command path (pull)))
 
 (define (src:checkout path branch)
-  (define (git:branch-exists?)
-    (not (string-null? (process->string `("git" "branch" "--list" ,branch)))))
+  (define (git:branch-exists? name)
+    (not (string-null? (process->string `("git" "branch" "--list" ,name)))))
   (define (thunk)
     (case (src:kind path)
       ((git)
-       (if (git:branch-exists?)
-         (wait-process (call-in-subprocess `("git" "checkout" ,branch)))
-         (wait-process (call-in-subprocess `("git" "checkout" "-b" ,branch
-                                             "-t" (string-append "origin/" ,branch))))))
+       (let* ((branch (or branch "master"))
+              (cmd (if (git:branch-exists? branch)
+                     `("git" "checkout" ,branch)
+                     `("git" "checkout" "-b" ,branch
+                       "-t" (string-append "origin/" ,branch)))))
+         (wait-process (call-in-subprocess cmd))))
       ((hg)
-       (wait-process (call-in-subprocess "hg update -c")))
-      (else #f)))
-  (ensure-file-exists path)
+       (wait-process (call-in-subprocess "hg update -c")))))
   (with-directory path thunk))
 
 (define (src:discard path)
@@ -455,6 +483,9 @@
   (load (rules-file))
   (set! *packages* (reverse *packages*))
   *packages*)
+
+(define (pkg:flag? name)
+  (regexp-search (rx bow ,name eow) *flags*))
 
 (define (pkg:build-root)
   (make-path (env 'build-dir) "pkg"))
@@ -494,16 +525,17 @@
       (else #f))))
 
 (define (pkg:update pkg)
-  (let ((source-directory (pkg:source-directory pkg)))
-    (cond ((file-exists? source-directory)
-           ;(src:fetch source-directory)
-           ;(src:checkout source-directory 
-           ;(src:pull source-directory))
-           )
+  (let* ((directory (pkg:source-directory pkg))
+         (source (package-source pkg))
+         (type   (source-type source))
+         (branch (source-branch source)))
+    (cond ((file-exists? directory)
+           (src:fetch directory)
+           (src:checkout directory branch)
+           (src:pull directory))
           (else
-            ;(src:clone)
-            ;(src:checkout)
-            ))))
+            (src:clone type (source-location pkg) directory)
+            (src:checkout directory branch)))))
 
 ;}}}
 ;{{{ messages
