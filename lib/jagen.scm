@@ -341,18 +341,19 @@
 ;}}}
 ;{{{ shell generators
 
-(define (%sh:variable name value)
-  (show #f name "=\"" value "\"" nl))
+(define (shell:variable name value)
+  (if value (show #f name "=\"" value "\"" nl) ""))
 
-(define (%sh:source source)
-  (let ((type     (source-type source))
-        (location (source-location source)))
-    (case type
-      ((dist)
-       (show #f "$pkg_dist_dir/" location))
-      ((git hg)
-       (show #f (symbol->string type) " " location))
-      (else location))))
+(define (shell:package-source pkg)
+  (let* ((source   (package-source  pkg))
+         (type     (source-type     source))
+         (location (source-location source)))
+    (define source
+      (case type
+        ((git hg) (show #f (symbol->string type) location))
+        ((dist)   (show #f "$pkg_dist_dir/"      location))
+        (else location)))
+    (show #f (shell:variable "p_source" source))))
 
 (define (%sh:patch patch)
   (let ((name  (patch-name patch))
@@ -365,8 +366,7 @@
     (let ((source (package-source pkg))
           (patches (package-patches pkg)))
       (show #t "#!/bin/sh" nl)
-      (when source
-        (show #t (%sh:variable "p_source" (%sh:source source))))
+      (show #t (shell:package-source pkg))
       (unless (null? patches)
         (show #t nl "pkg_patch_pre() {" nl
               (joined/suffix %sh:patch patches nl)
