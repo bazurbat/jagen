@@ -712,6 +712,34 @@
   0)
 
 ;}}}
+;{{{ command: exec
+
+(define (name->target name)
+  (define (name->list name)
+    (map (lambda (x) (and (not (string-null? x)) x))
+         (string-split name #\:)))
+  (define (stage s)
+    (or s "build"))
+  (let ((ls (name->list name)))
+    (when (or (null? ls) (not (car ls)))
+      (die "Invalid target name:" name))
+    (match ls
+      ((n s c) (make-target n (stage s) c))
+      ((n s)   (make-target n (stage s) #f))
+      ((n)     (make-target n (stage #f) #f)))))
+
+(define (find-package target)
+  (let ((id (string->symbol (target-name target))))
+    (find (compose (cut eq? <> id) package-name) *packages*)))
+
+(define (exec:stage target)
+  (let ((pkg (find-package target)))
+    (show #t pkg)))
+
+(define (cmd:exec args)
+  (for-each exec:stage (map name->target args)))
+
+;}}}
 ;{{{ main
 
 (define (main arguments)
@@ -725,6 +753,8 @@
      (exit (cmd:rebuild build-file args)))
     ((_ "src" args ...)
      (exit (cmd:src args)))
+    ((_ "exec" args ...)
+     (exit (cmd:exec args)))
     ((_ cmd args ...)
      (die "unknown command:" cmd))))
 
