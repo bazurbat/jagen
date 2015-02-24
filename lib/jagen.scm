@@ -350,8 +350,8 @@
          (location (source-location source)))
     (define source
       (case type
-        ((git hg) (show #f (symbol->string type) location))
-        ((dist)   (show #f "$pkg_dist_dir/"      location))
+        ((git hg) (show #f (symbol->string type) " " location))
+        ((dist)   (show #f "$pkg_dist_dir/"          location))
         (else location)))
     (show #f (shell:variable "p_source" source))))
 
