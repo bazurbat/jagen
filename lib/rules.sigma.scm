@@ -107,6 +107,7 @@
                            (target 'loop-aes   'install)
                            (target 'mrua       'modules)
                            (target 'ntpclient  'install)
+                           (target 'alsa-utils 'install)
                            (if (regexp-search "new_kernel" *flags*)
                              #f
                              (target 'ralink 'install))
@@ -240,11 +241,15 @@
   (stage 'build (depends (target 'xtables 'install))))
 
 (when (pkg:flag? "with_alsa")
-  (firmware-package 'alsa-lib
+  (rootfs-package 'alsa-lib
 	(source 'dist "alsa-lib-1.0.28.tar.bz2"))
 
-  (firmware-package 'alsa-utils
+  (rootfs-package 'alsa-utils
 	(source 'dist "alsa-utils-1.0.28.tar.bz2")
+	(patch "alsa-utils-1.0.28-aplay-return" 1)
+	(patch "alsa-utils-1.0.28-mixer-proto" 1)
+	(patch "alsa-utils-1.0.28-monitor-proto" 1)
+	(patch "alsa-utils-1.0.28-va-end" 1)
 	(stage 'build (depends (target 'alsa-lib 'install)))))
 
 (package 'ffmpeg

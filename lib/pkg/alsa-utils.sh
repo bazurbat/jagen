@@ -6,6 +6,7 @@ pkg_build() {
     p_run ./configure \
         --host="$target_system" \
         --prefix="" \
+        --disable-maintainer-mode \
         --enable-alsatest \
         --disable-alsamixer \
         --disable-alsaconf \

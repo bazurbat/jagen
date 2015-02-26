@@ -30,6 +30,14 @@ pkg_build() {
 }
 
 install_alsa() {
+    p_run mkdir -p "$sdk_rootfs_root/var/lib/alsa"
+    p_run mkdir -p "$sdk_rootfs_root/share/alsa/ucm"
+
+    p_run mkdir -p "$sdk_rootfs_root/etc/modprobe.d"
+    p_run cp -f \
+        "$pkg_private_dir/cfg/alsa.conf" \
+        "$sdk_rootfs_root/etc/modprobe.d"
+
     p_run cp -a \
         "$sdk_rootfs_prefix/bin/alsa"* \
         "$sdk_rootfs_prefix/bin/amixer" \
@@ -45,7 +53,7 @@ install_alsa() {
         "$sdk_rootfs_root/lib"
     p_run cp -a \
         "$sdk_rootfs_prefix/share/alsa" \
-        "$sdk_rootfs_root/share/alsa"
+        "$sdk_rootfs_root/share"
 }
 
 install_timezone() {

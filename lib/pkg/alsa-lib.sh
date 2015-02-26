@@ -7,6 +7,10 @@ pkg_build() {
     p_run ./configure \
         --host="$target_system" \
         --prefix="" \
+        --disable-maintainer-mode \
+        --enable-shared \
+        --disable-debug \
+        --disable-resmgr \
         --disable-aload \
         --enable-mixer \
         --enable-pcm \
@@ -17,7 +21,9 @@ pkg_build() {
         --disable-alisp \
         --disable-old-symbols \
         --disable-python \
-        --with-pcm-plugins=hw
+        --with-pcm-plugins=hw \
+        --without-versioned \
+        --with-debug
 
     p_run make
 }
