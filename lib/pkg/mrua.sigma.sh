@@ -23,8 +23,17 @@ pkg_build() {
 }
 
 pkg_modules() {
-    p_run cd "$p_source_dir/modules/$kernel_release"
+    local src_dir="$p_source_dir/modules/$kernel_release"
+
+    p_run cd "$src_dir"
     p_install_modules em8xxx llad
+
+    if in_flags with_alsa; then
+        p_run cp -f \
+            "$p_source_dir/MRUA_src/rua/emhwlib_kernel/kernel_src/em8xxxalsa.ko" \
+            "$src_dir"
+        p_install_modules em8xxxalsa
+    fi
 }
 
 pkg_install() {

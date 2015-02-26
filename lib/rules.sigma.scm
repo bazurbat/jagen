@@ -239,6 +239,14 @@
   (source 'dist "xtables-addons-1.47.1.tar.xz")
   (stage 'build (depends (target 'xtables 'install))))
 
+(when (pkg:flag? "with_alsa")
+  (firmware-package 'alsa-lib
+	(source 'dist "alsa-lib-1.0.28.tar.bz2"))
+
+  (firmware-package 'alsa-utils
+	(source 'dist "alsa-utils-1.0.28.tar.bz2")
+	(stage 'build (depends (target 'alsa-lib 'install)))))
+
 (package 'ffmpeg
   (source 'dist "ffmpeg-2.2.1.tar.bz2")
   (stage 'host   'build   (depends (target 'ast-files 'unpack)))

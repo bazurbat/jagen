@@ -29,6 +29,25 @@ pkg_build() {
     p_run ln -fs setxenv2_mipsel unsetxenv2
 }
 
+install_alsa() {
+    p_run cp -a \
+        "$sdk_rootfs_prefix/bin/alsa"* \
+        "$sdk_rootfs_prefix/bin/amixer" \
+        "$sdk_rootfs_prefix/bin/aplay" \
+        "$sdk_rootfs_prefix/bin/arecord" \
+        "$sdk_rootfs_root/bin"
+    p_run cp -a \
+        "$sdk_rootfs_prefix/sbin/alsactl" \
+        "$sdk_rootfs_root/sbin"
+    p_run cp -a \
+        "$sdk_rootfs_prefix/lib/alsa-lib" \
+        "$sdk_rootfs_prefix/lib/libasound"* \
+        "$sdk_rootfs_root/lib"
+    p_run cp -a \
+        "$sdk_rootfs_prefix/share/alsa" \
+        "$sdk_rootfs_root/share/alsa"
+}
+
 install_timezone() {
     p_run rm -f "$sdk_rootfs_root/etc/TZ"
     p_run install -m644 \
@@ -92,6 +111,9 @@ pkg_install() {
     p_run rm -f libnss_compat* libnss_hesiod* libnss_nis*
     find "$sdk_rootfs_root/lib" \( -name "*.a" -o -name "*.la" \) -delete
 
+    if in_flags with_alsa; then
+        install_alsa
+    fi
     install_timezone
     install_keys
     install_gpg
