@@ -107,8 +107,10 @@
                            (target 'loop-aes   'install)
                            (target 'mrua       'modules)
                            (target 'ntpclient  'install)
-                           (target 'alsa-utils 'install)
-                           (if (regexp-search "new_kernel" *flags*)
+                           (if (pkg:flag? "with_alsa")
+                             (target 'alsa-utils 'install)
+                             #f)
+                           (if (pkg:flag? "new_kernel")
                              #f
                              (target 'ralink 'install))
                            (target 'util-linux 'install)
