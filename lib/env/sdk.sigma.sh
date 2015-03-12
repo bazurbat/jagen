@@ -28,31 +28,21 @@ fi
 
 export TOOLCHAIN_RUNTIME_PATH="${SMP86XX_TOOLCHAIN_PATH}/mips-linux-gnu/libc/el"
 
-export RMCFLAGS="\
--DEM86XX_CHIP=EM86XX_CHIPID_TANGO3 \
+export RMCFLAGS="-DEM86XX_CHIP=EM86XX_CHIPID_TANGO3 \
 -DEM86XX_MODE=EM86XX_MODEID_STANDALONE \
 -DEM86XX_REVISION=3 \
--DRMCHIP_ID=RMCHIP_ID_SMP8652 \
--DRMCHIP_REVISION=3 \
 -DWITHOUT_NERO_SPU=1 \
 -DWITHOUT_RMOUTPUT=1 \
--DWITH_PROD=1 \
 -DWITH_REALVIDEO=1 \
 -DWITH_XLOADED_UCODE=1 \
--DXBOOT2_SMP865X=1 \
--DXBOOT2_SMP8670=1 \
-"
-
-if in_flags monitoring; then
-    RMCFLAGS="$RMCFLAGS -DWITH_PROC=1 -DWITH_MONITORING=1"
-fi
+-DXBOOT2_SMP865X=1"
+export COMPILKIND="codesourcery glibc hardfloat"
 
 if [ "$pkg_build_type" = "Debug" ]; then
-    COMPILKIND="debug glibc codesourcery hardfloat"
+    COMPILKIND="$COMPILKIND debug"
 else
-    COMPILKIND="release glibc codesourcery hardfloat"
+    COMPILKIND="$COMPILKIND release"
 fi
-export COMPILKIND
 
 if in_flags "new_kernel"; then
     # kernel_release="2.6.32.15-21-sigma"
