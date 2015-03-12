@@ -39,7 +39,9 @@
   (source 'dist "${cpukeys}.tar.gz"))
 
 (package 'ucode
-  (source 'dist "mruafw_SMP8654F_prod_3_9_2.tgz")
+  (if (pkg:flag? "new_mrua")
+    (source 'dist "mruafw_SMP8654F_3_11_3_prod.tgz")
+    (source 'dist "mruafw_SMP8654F_prod_3_9_2.tgz"))
   (stage 'install (depends (target 'firmware 'unpack))))
 
 ; tools
