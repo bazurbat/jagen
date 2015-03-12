@@ -24,6 +24,9 @@
          (stage 'install (depends (target 'firmware 'unpack)))
          args))
 
+(when (pkg:flag? "debug")
+  (package 'debug))
+
 ; base
 
 (package 'ast-files
