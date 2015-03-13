@@ -28,6 +28,8 @@ fi
 
 export TOOLCHAIN_RUNTIME_PATH="${SMP86XX_TOOLCHAIN_PATH}/mips-linux-gnu/libc/el"
 
+export pkg_sdk_version=311
+
 # MRUA
 RMCFLAGS="-DEM86XX_CHIP=EM86XX_CHIPID_TANGO3 \
 -DEM86XX_REVISION=3 \

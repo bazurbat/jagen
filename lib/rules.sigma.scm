@@ -39,9 +39,11 @@
   (source 'dist "${cpukeys}.tar.gz"))
 
 (package 'ucode
-  (if (pkg:flag? "new_mrua")
-    (source 'dist "mruafw_SMP8654F_3_11_3_prod.tgz")
-    (source 'dist "mruafw_SMP8654F_prod_3_9_2.tgz"))
+  (case (string->number (env 'sdk-version))
+    ((308) (source 'dist "mruafw_SMP8654F_prod_3_8_3.tgz"))
+    ((309) (source 'dist "mruafw_SMP8654F_prod_3_9_2.tgz"))
+    ((311) (source 'dist "mruafw_SMP8654F_3_11_3_prod.tgz"))
+    (else (error "Unsupported sdk version")))
   (stage 'install (depends (target 'firmware 'unpack))))
 
 ; tools

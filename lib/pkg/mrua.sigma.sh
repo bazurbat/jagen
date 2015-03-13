@@ -2,11 +2,12 @@
 
 p_source_dir="$pkg_src_dir/sigma-mrua"
 
-if in_flags "new_kernel"; then
-    p_source_branch="master"
-else
-    p_source_branch="sigma-2.6"
-fi
+case $pkg_sdk_version in
+    308) p_source_branch="3.8.3"  ;;
+    309) p_source_branch="3.9.2"  ;;
+    311) p_source_branch="3.11.3" ;;
+    400) p_source_branch="4.0.0"  ;;
+esac
 
 p_jobs=1
 
@@ -65,10 +66,22 @@ pkg_install() {
         librmhdmi.so \
         librmhsi.so \
         librmi2c.so \
-        librmoutput.so \
         librmsha1.so \
         librmvideoout.so \
         librua.so \
-        libruaoutput.so \
         "$sdk_firmware_dir/lib"
+
+    case $pkg_sdk_version in
+        308)
+            p_run cp -a \
+                librmdisplay.so \
+                "$sdk_firmware_dir/lib"
+            ;;
+        *)
+            p_run cp -a \
+                librmoutput.so \
+                libruaoutput.so \
+                "$sdk_firmware_dir/lib"
+            ;;
+    esac
 }

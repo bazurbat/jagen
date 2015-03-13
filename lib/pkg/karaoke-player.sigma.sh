@@ -34,6 +34,7 @@ pkg_build_target() {
         -DCMAKE_INSTALL_PREFIX="${target_dir}${target_prefix}" \
         -DCMAKE_FIND_ROOT_PATH="${target_dir}${target_prefix}" \
         -DSIGMA_ROOT_DIR="$pkg_src_dir" \
+        -DSIGMA_SDK_VERSION="$pkg_sdk_version" \
         -DCHICKEN_COMPILER="$host_dir/bin/chicken" \
         -DCHICKEN_INTERPRETER="$host_dir/bin/csi" \
         -DCHICKEN_DEPENDS="$host_dir/bin/chicken-depends" \
