@@ -28,7 +28,7 @@ run_stage() {
 
     if is_function "$name"; then
         debug "$pkg: $name"
-        eval "$name" || die "Failed to run '$name' stage of package $pkg"
+        eval "$name" >"$p_log" 2>&1 || die "Failed to run '$name' stage of package $pkg"
     fi
 }
 

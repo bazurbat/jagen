@@ -22,11 +22,7 @@ p_run() {
             ;;
     esac
 
-    if [ "$p_log" ]; then
-        $cmd "$@" >>"$p_log" 2>&1 || $p_run_on_error
-    else
-        $cmd "$@" || $p_run_on_error
-    fi
+    $cmd "$@" || $p_run_on_error
 }
 
 p_clean_dir() {
