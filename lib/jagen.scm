@@ -682,6 +682,7 @@
                         (execute-ninja '())))
            (status (wait-child ninja-pid)))
       (kill tail-pid signal/term)
+      (wait-child tail-pid)
       status))
 
   (apply rebuild (parse-args args '() #f #f)))
