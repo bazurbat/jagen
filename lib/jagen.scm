@@ -327,7 +327,7 @@
 (define (%ninja:package pkg)
   (let* ((state (make-state 0))
          (name (package-name pkg))
-         (builds (map (cut stage->build name <>) (reverse (package-stages pkg)))))
+         (builds (map (cut stage->build name <>) (package-stages pkg))))
     (show #t (joined (lambda (x) x)
                      (map (cut <> state) (map %ninja:build builds)))
           nl)))
@@ -477,9 +477,14 @@
 ;{{{ packages
 
 (define (define-package name . rest)
+  (define (finalize pkg)
+    (make-package (package-name    pkg)
+                  (package-source  pkg)
+                  (package-patches pkg)
+                  (reverse (package-stages pkg))))
   (let* ((state (make-package name (make-source #f #f #f #f) '() '()))
          (pkg (apply call-with-state state rest)))
-    (set! *packages* (cons pkg *packages*))
+    (set! *packages* (cons (finalize pkg) *packages*))
     pkg))
 
 (define (load-packages)
