@@ -6,6 +6,11 @@ p_source_branch="sdk4"
 use_env tools
 use_toolchain target
 
+export RMCFLAGS="$RMCFLAGS \
+-DRMCHIP_ID=RMCHIP_ID_SMP8652 \
+-DRMCHIP_REVISION=3 \
+-DWITH_PROD=1"
+
 pkg_build() {
     p_run cd "xos/xboot2/xmasboot/nand_st2"
     p_run ./build_phyblock0.bash
