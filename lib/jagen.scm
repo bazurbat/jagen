@@ -278,10 +278,10 @@
 
 (define (%ninja:build b)
   (define (%targets state ts)
-    (mapreduce %target (lambda (p r) (show #f "$builddir/" (p state))) "" ts))
+    (mapreduce %target (lambda (p r) (show #f (p state))) "" ts))
   (define (%dependency state d)
     (let ((t (dependency-target d)))
-      (show #f (space-to 16) "$builddir/" ((%target t) state))))
+      (show #f (space-to 16) ((%target t) state))))
   (define (filter-type type ds)
     (filter (lambda (d) (eq? type (dependency-type d))) ds))
 
@@ -633,8 +633,7 @@
 
 (define (cmd:build build-file targets)
   (let ((build-dir (env 'build-dir)))
-    (apply system:run "ninja" "-f" build-file
-           (map (cut make-path build-dir <>) targets))))
+    (apply system:run "ninja" "-C" build-dir "-f" build-file targets)))
 
 ;}}}
 ;{{{ command: rebuild
@@ -680,10 +679,10 @@
 
   (define (execute-ninja targets)
     (define (cmd)
-      (apply system:execute "ninja" "-f" build-file
-             (map (cut target-name->path <>) targets)))
+      (apply system:execute "ninja" "-f" build-file targets))
     (run-process (cut cmd)
-                 (with-output-file (target-name->log-path "rebuild"))))
+                 (with-output-file (target-name->log-path "rebuild"))
+                 (in-directory (env 'build-dir))))
 
   (define (parse-args args state)
     (if (pair? args)
