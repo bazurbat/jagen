@@ -595,7 +595,7 @@
           ((list? cmd) (cut apply system:execute cmd))
           ((procedure? cmd) cmd)
           (else (error "invalid command value" cmd))))
-  (with-child-process (cut ((apply call-with-state (cmd->thunk) procs)))))
+  (with-child-process (cut (apply call-with-state (cmd->thunk) procs))))
 
 (define (with-output-file file)
   (lambda (thunk)
