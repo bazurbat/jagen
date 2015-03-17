@@ -255,14 +255,13 @@
 ;}}}
 ;{{{ common generators
 
-(define (%target t)
-  (lambda (state)
-    (let ((n (target-name   t))
-          (s (target-stage  t))
-          (c (target-config t)))
-      (if c
-        (show #f n "-" s "-" c)
-        (show #f n "-" s)))))
+(define (target->string target)
+  (let ((n (target-name   target))
+        (s (target-stage  target))
+        (c (target-config target)))
+    (if (and c (not s))
+      (error "target stage is not set" n c)
+      (show #f (joined each (remove not (list n s c)) "-")))))
 
 (define (%variable name value . level)
   (let ((level (or (and (pair? level) (car level)) 0)))
@@ -271,17 +270,17 @@
 ;}}}
 ;{{{ ninja generators
 
+(define %ninja:newline
+  (show #f " $" nl))
+
 (define (%ninja:variable v)
   (lambda (state)
     (show #f nl (space-to (* (state-depth state) *width*))
           (variable-name v) " = " (variable-value v))))
 
 (define (%ninja:build b)
-  (define (%targets state ts)
-    (mapreduce %target (lambda (p r) (show #f (p state))) "" ts))
-  (define (%dependency state d)
-    (let ((t (dependency-target d)))
-      (show #f (space-to 16) ((%target t) state))))
+  (define (%dependency d)
+    (show #f (space-to 16) (target->string (dependency-target d))))
   (define (filter-type type ds)
     (filter (lambda (d) (eq? type (dependency-type d))) ds))
 
@@ -292,13 +291,11 @@
          (order-only (filter-type 'order-only depends))
          (vars       (build-variables b)))
     (lambda (state)
-      (show #f "build " (%targets state out) ": " rule
-            (joined/prefix (cut %dependency state <>) explicit
-                           (show #f " $" nl))
+      (show #f "build " (joined target->string out " ") ": " rule
+            (joined/prefix %dependency explicit %ninja:newline)
             (if (pair? order-only)
               (show #f " $" nl (space-to 13) "|| $" nl
-                    (joined (cut %dependency state <>) order-only
-                            (show #f " $" nl)))
+                    (joined %dependency order-only %ninja:newline))
               "")
             (mapreduce %ninja:variable
                        (lambda (p r) (show #f (p (make-state 1)))) ""
@@ -641,14 +638,6 @@
 (define (option? arg)
   (eqv? #\- (string-ref arg 0)))
 
-(define (target->path target)
-  (let ((n (target-name   target))
-        (s (target-stage  target))
-        (c (target-config target)))
-    (if (and c (not s))
-      (error "Target stage is not set" n c)
-      (show #f (joined each (remove not (list n s c)) "-")))))
-
 (define (target-name->path name)
   (let ((build-dir (env 'build-dir)))
     (make-path build-dir name)))
@@ -729,7 +718,7 @@
     (let* ((rts (rebuild-targets      profile))
            (targets-only (rebuild-targets-only profile))
            (rsa (rebuild-show-all     profile))
-           (targets (map target->path (concatenate (map real-targets rts)))))
+           (targets (map target->string (concatenate (map real-targets rts)))))
       (for-each (lambda (f) (if (file-exists? f) (delete-file f)))
                 (append (map (cut target-name->path <>) targets)
                         (map (cut target-name->log-path <>) targets)))
