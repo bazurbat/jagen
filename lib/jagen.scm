@@ -534,16 +534,24 @@
 
 (define (pkg:update pkg)
   (let* ((directory (pkg:source-directory pkg))
-         (source (package-source pkg))
-         (type   (source-type source))
-         (branch (source-branch source)))
-    (cond ((file-exists? directory)
-           (src:fetch directory)
-           (src:checkout directory branch)
-           (src:pull directory))
-          (else
-            (src:clone type (source-location pkg) directory)
-            (src:checkout directory branch)))))
+         (source    (package-source       pkg))
+         (type      (source-type          source))
+         (branch    (source-branch        source)))
+    (case type
+      ((git hg)
+       (cond ((file-exists? directory)
+              (src:fetch directory)
+              (src:checkout directory branch)
+              (src:pull directory))
+             (else
+               (src:clone type (source-location pkg) directory)
+               (src:checkout directory branch))))
+      ((dist)
+       (let* ((filename (source-location source))
+              (pathname (make-path (env 'dist-dir) filename)))
+         (system:command `("tar" "-xf" ,pathname)
+                         (in-directory (pkg:work-directory pkg)))))
+      (else (error "unsupported source type" type)))))
 
 ;}}}
 ;{{{ messages
@@ -754,7 +762,7 @@
     (("status" names ...)
      (for-each print-status (scm-packages names)))
     (("update" names ...)
-     (for-each pkg:update (scm-packages names)))
+     (for-each pkg:update (map find-package names)))
     (other (die "unsupported subcommand:" other)))
   0)
 
