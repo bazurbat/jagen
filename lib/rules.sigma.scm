@@ -88,15 +88,12 @@
 
 (when (string=? "Debug" (env 'build-type))
   (package 'gdb
-    (source 'dist "gdb-7.6.2.tar.bz2")
-    (patch "05_all_readline-headers" 1)
-    (patch "10_all_gdb-7.6-cpuid" 1)
-    (patch "15_all_gdb-7.6-btrace" 1)
+    (source 'dist "gdb-7.9.tar.xz")
     (stage 'host 'build)
     (stage 'host 'install))
 
   (rootfs-package 'gdbserver
-    (source 'dist "gdb-7.6.2.tar.bz2"))
+    (source 'dist "gdb-7.9.tar.xz"))
 
   (rootfs-package 'strace
     (source 'dist "strace-4.8.tar.xz")))

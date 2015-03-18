@@ -8,7 +8,9 @@ pkg_build() {
     p_run cd "$workdir"
     p_run ./configure \
         --host="$target_system" \
-        --prefix=""
+        --prefix="" \
+        --program-transform-name='' \
+        --disable-werror
 
     p_run make
 }
