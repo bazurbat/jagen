@@ -19,12 +19,6 @@ pkg_build_host() {
     p_run cmake --build . -- $cmake_build_options
 }
 
-pkg_prepare_target() {
-    p_run cd "$pkg_src_dir"
-    p_run ln -sfT sigma-rootfs rootfs
-    p_run ln -sfT sigma-mrua mrua
-}
-
 pkg_build_target() {
     use_env host
 
@@ -33,8 +27,9 @@ pkg_build_target() {
         -DCMAKE_SYSTEM_NAME="Linux" \
         -DCMAKE_INSTALL_PREFIX="${target_dir}${target_prefix}" \
         -DCMAKE_FIND_ROOT_PATH="${target_dir}${target_prefix}" \
-        -DSIGMA_ROOT_DIR="$pkg_src_dir" \
+        -DSIGMA_SDK_DIR="$pkg_src_dir/sigma-mrua" \
         -DSIGMA_SDK_VERSION="$pkg_sdk_version" \
+        -DSIGMA_ROOTFS_DIR="$pkg_src_dir/sigma-rootfs" \
         -DCHICKEN_COMPILER="$host_dir/bin/chicken" \
         -DCHICKEN_INTERPRETER="$host_dir/bin/csi" \
         -DCHICKEN_DEPENDS="$host_dir/bin/chicken-depends" \

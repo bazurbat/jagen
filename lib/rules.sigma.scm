@@ -281,7 +281,6 @@
                                  (target 'ffmpeg       'build   'host)
                                  (target 'chicken-eggs 'install 'host)))
   (stage 'host   'install)
-  (stage 'target 'prepare)
   (stage 'target 'build (depends (target 'astindex     'unpack)
                                  (target 'chicken      'install 'target)
                                  (target 'chicken-eggs 'install 'host)
