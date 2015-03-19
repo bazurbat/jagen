@@ -13,14 +13,14 @@ pkg_build() {
     p_run ./configure \
         --host="$target_system" \
         --prefix="$p_prefix" \
-        --disable-shared \
+        --enable-shared \
         --disable-static \
         --disable-nls \
         --disable-rpath \
         --disable-most-builds \
         --disable-libuuid \
-        --disable-libblkid \
-        --disable-libmount \
+        --enable-libblkid \
+        --enable-libmount \
         --disable-mount \
         --enable-losetup \
         --disable-cytune \
@@ -75,8 +75,7 @@ pkg_build() {
         --without-udev \
         --without-ncurses \
         --without-slang \
-        --without-utempter \
-        --without-python
+        --without-utempter
 
     p_run make
 }

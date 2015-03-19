@@ -75,8 +75,8 @@ install_gpg() {
         "$sdk_rootfs_prefix/bin/gpg" \
         "$sdk_rootfs_root/bin"
     p_run cp -a \
-        "$sdk_rootfs_prefix"/lib/libgpg* \
-        "$sdk_rootfs_prefix"/lib/libassuan* \
+        "$sdk_rootfs_prefix"/lib/libgpg*.so* \
+        "$sdk_rootfs_prefix"/lib/libassuan.so* \
         "$sdk_rootfs_root/lib"
 }
 
@@ -89,6 +89,18 @@ install_losetup() {
 install_ldconfig() {
     p_run cp -a \
         "$TOOLCHAIN_RUNTIME_PATH/usr/lib/bin/ldconfig" \
+        "$sdk_rootfs_root/sbin"
+}
+
+install_utils() {
+    p_run cp -a \
+        "$sdk_rootfs_prefix"/lib/libblkid.so* \
+        "$sdk_rootfs_prefix"/lib/libmount.so* \
+        "$sdk_rootfs_root/lib"
+    p_run cp -a \
+        "$sdk_rootfs_prefix/sbin/mkswap" \
+        "$sdk_rootfs_prefix/sbin/swapoff" \
+        "$sdk_rootfs_prefix/sbin/swapon" \
         "$sdk_rootfs_root/sbin"
 }
 
@@ -130,6 +142,7 @@ pkg_install() {
     install_gpg
     install_losetup
     install_ldconfig
+    install_utils
     install_files
 
     p_strip "$sdk_rootfs_root"
