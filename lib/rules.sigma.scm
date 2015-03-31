@@ -130,7 +130,7 @@
 (rootfs-package 'util-linux
   (source 'dist "util-linux-2.23.2.tar.xz")
   (patch "util-linux-2.23.2" 1)
-  (stage 'build (depends (target 'libtool 'install))))
+  (stage 'patch (depends (target 'libtool 'install))))
 
 ; gpgme
 
