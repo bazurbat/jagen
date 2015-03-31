@@ -1,5 +1,6 @@
 #!/bin/sh
 
+use_env host
 use_toolchain target
 
 p_prefix=""
