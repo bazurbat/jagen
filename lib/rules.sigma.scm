@@ -47,6 +47,7 @@
     ((309) (source 'dist "mruafw_SMP8654F_prod_3_9_2.tgz"))
     ((311) (source 'dist "mruafw_SMP8654F_3_11_3_prod.tgz"))
     (else (error "Unsupported sdk version")))
+  (stage 'unpack  (depends (target 'mrua     'build)))
   (stage 'install (depends (target 'firmware 'unpack))))
 
 ; tools
