@@ -2,11 +2,19 @@
 
 p_source_dir="$pkg_src_dir/sigma-mrua"
 
-with_rmdisplay="yes"
+with_rmdisplay="no"
+with_rmoutput="yes"
 
 case $pkg_sdk_version in
-    308) p_source_branch="3.8.3"  ;;
-    309) p_source_branch="3.9.2"  ;;
+    308)
+        p_source_branch="3.8.3"
+        with_rmdisplay="yes"
+        with_rmoutput="no"
+        ;;
+    309)
+        p_source_branch="3.9.2"
+        with_rmdisplay="yes"
+        ;;
     311) p_source_branch="3.11.3" ;;
     400) p_source_branch="4.0.0"  ;;
 esac
@@ -80,7 +88,9 @@ pkg_install() {
             ruahdmi \
             ruahsi \
             ruai2c"
-    else
+    fi
+
+    if [ "$with_rmoutput" = "yes" ]; then
         libs="$libs \
             rmoutput \
             ruaoutput"
