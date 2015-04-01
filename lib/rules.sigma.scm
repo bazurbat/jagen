@@ -279,7 +279,7 @@
 (package 'karaoke-player
   (source 'hg "ssh://hg@bitbucket.org/art-system/karaoke-player")
   (stage 'host   'build (depends (target 'astindex     'unpack)
-                                 (target 'ffmpeg       'build   'host)
+                                 (target 'ffmpeg       'install 'host)
                                  (target 'chicken-eggs 'install 'host)))
   (stage 'host   'install)
   (stage 'target 'build (depends (target 'astindex     'unpack)
