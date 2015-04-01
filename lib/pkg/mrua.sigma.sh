@@ -2,6 +2,8 @@
 
 p_source_dir="$pkg_src_dir/sigma-mrua"
 
+with_rmdisplay="yes"
+
 case $pkg_sdk_version in
     308) p_source_branch="3.8.3"  ;;
     309) p_source_branch="3.9.2"  ;;
@@ -38,50 +40,56 @@ pkg_modules() {
 }
 
 pkg_install() {
-    p_run cd bin
-    p_run cp -a ikc xkc "$sdk_firmware_dir/bin"
+    local libs
 
-    p_run cd "$p_source_dir/MRUA_src/llad_smallapps"
-    p_run cp -a gbus_read_bin_to_file gbus_read_uint32 "$sdk_firmware_dir/bin"
+    for bin in ikc xkc; do
+        p_run install -vm 755 \
+            "$p_source_dir/bin/$bin" \
+            "$sdk_firmware_dir/bin"
+    done
 
-    p_run cd "$p_source_dir/MRUA_src/llad_xtest"
-    p_run cp -a rmfree rmmalloc "$sdk_firmware_dir/bin"
+    for bin in gbus_read_bin_to_file gbus_read_uint32; do
+        p_run install -vm 755 \
+            "$p_source_dir/MRUA_src/llad_smallapps/$bin" \
+            "$sdk_firmware_dir/bin"
+    done
 
-    p_run cd "$p_source_dir/lib"
-    p_run cp -a \
-        libgbus.so \
-        libllad.so \
-        librmchannel.so \
-        librmcore.so \
-        librmcw.so \
-        librmmm.so \
-        librmmm_g.so \
-        librmmm_t.so \
-        "$sdk_firmware_dir/lib"
+    for bin in rmfree rmmalloc; do
+        p_run install -vm 755 \
+            "$p_source_dir/MRUA_src/llad_xtest/$bin" \
+            "$sdk_firmware_dir/bin"
+    done
 
-    p_run cd "$p_source_dir/lib"
-    p_run cp -a \
-        librmcec.so \
-        librmedid.so \
-        librmhdmi.so \
-        librmhsi.so \
-        librmi2c.so \
-        librmsha1.so \
-        librmvideoout.so \
-        librua.so \
-        "$sdk_firmware_dir/lib"
+    libs="gbus llad rmchannel rmcore rmcw rmmm rmmm_g rmmm_t"
 
-    case $pkg_sdk_version in
-        308)
-            p_run cp -a \
-                librmdisplay.so \
-                "$sdk_firmware_dir/lib"
-            ;;
-        *)
-            p_run cp -a \
-                librmoutput.so \
-                libruaoutput.so \
-                "$sdk_firmware_dir/lib"
-            ;;
-    esac
+    libs="$libs \
+        rmcec \
+        rmedid \
+        rmhdmi \
+        rmhsi \
+        rmi2c \
+        rmsha1 \
+        rmvideoout \
+        rua"
+
+    if [ "$with_rmdisplay" = "yes" ]; then
+        libs="$libs \
+            audiooutports \
+            displayoutports \
+            rmdisplay \
+            ruahdmi \
+            ruahsi \
+            ruai2c"
+    else
+        libs="$libs \
+            rmoutput \
+            ruaoutput"
+    fi
+
+    for lib in $libs; do
+        p_run install -vm 755 \
+            "$p_source_dir/lib/lib${lib}.so" \
+            "$sdk_firmware_dir/lib"
+    done
+
 }
