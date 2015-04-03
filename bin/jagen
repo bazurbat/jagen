@@ -30,8 +30,6 @@ rebuild_chibi() {
     make PREFIX="$chibi_dir" install >>"$log" 2>&1 || die
 }
 
-in_path chibi-scheme || rebuild_chibi
-
 case $1 in
     help)
         print_help
@@ -49,6 +47,7 @@ case $1 in
         exec jagen refresh
         ;;
     refresh)
+        in_path chibi-scheme || rebuild_chibi
         message "Refreshing build rules"
         $pkg_bin generate "$build_file" "$pkg_lib_dir/rules.${pkg_sdk}.scm" ||
             die "Failed to generate build rules"
@@ -57,13 +56,16 @@ case $1 in
         ;;
     build)
         shift
+        in_path chibi-scheme || rebuild_chibi
         $pkg_bin build "$build_file" "$@" || die "Build failed"
         ;;
     rebuild)
         shift
+        in_path chibi-scheme || rebuild_chibi
         $pkg_bin rebuild "$build_file" "$@" || die "Rebuild failed"
         ;;
     *)
+        in_path chibi-scheme || rebuild_chibi
         _jagen "$@"
         ;;
 esac
