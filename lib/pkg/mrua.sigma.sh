@@ -11,10 +11,7 @@ case $pkg_sdk_version in
         with_rmdisplay="yes"
         with_rmoutput="no"
         ;;
-    309)
-        p_source_branch="3.9.2"
-        with_rmdisplay="yes"
-        ;;
+    309) p_source_branch="3.9.2"  ;;
     311) p_source_branch="3.11.3" ;;
     400) p_source_branch="4.0.0"  ;;
 esac
