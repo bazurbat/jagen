@@ -40,6 +40,10 @@ export RMCFLAGS="-DEM86XX_CHIP=EM86XX_CHIPID_TANGO3 \
 -DWITH_XLOADED_UCODE=1 \
 -DXBOOT2_SMP865X=1"
 
+if in_flags "sigma_with_monitoring"; then
+    RMCFLAGS="$RMCFLAGS -DWITH_PROC=1 -DWITH_MONITORING=1"
+fi
+
 export COMPILKIND="codesourcery glibc hardfloat"
 if [ "$pkg_build_type" = "Debug" ]; then
     COMPILKIND="$COMPILKIND debug"
