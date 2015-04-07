@@ -492,6 +492,10 @@
   (set! *packages* (reverse *packages*))
   *packages*)
 
+(define (pkg:in-list? name var)
+  (and-let* ((var) (n (show #f name)))
+    (regexp-search (rx bow ,n eow) var)))
+
 (define (pkg:flag? name)
   (regexp-search (rx bow ,name eow) *flags*))
 
@@ -532,10 +536,19 @@
       ((git hg) #t)
       (else #f))))
 
+(define (pkg:unpack pkg)
+  (define (excluded? name)
+    (and (pkg:in-list? name (env 'source-exclude)) #t))
+  (let ((name (package-name pkg)))
+    (if (excluded? name)
+      (print:message "Package excluded from update:" name)
+      (pkg:update pkg))))
+
 (define (pkg:update pkg)
   (let* ((directory (pkg:source-directory pkg))
          (source    (package-source       pkg))
          (type      (source-type          source))
+         (location  (source-location      source))
          (branch    (source-branch        source)))
     (case type
       ((git hg)
@@ -790,7 +803,12 @@
     (find (compose (cut eq? <> id) package-name) *packages*)))
 
 (define (exec:stage target)
-  (show #t target " -> " nl))
+  (let ((n (target-name  target))
+        (s (target-stage target)))
+    (case s
+      ((unpack)
+       (pkg:unpack (find-package n)))
+      (else (show #t target nl)))))
 
 (define (cmd:exec args)
   (for-each exec:stage (map name->target args)))
