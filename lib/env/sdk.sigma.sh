@@ -29,6 +29,9 @@ fi
 export TOOLCHAIN_RUNTIME_PATH="${SMP86XX_TOOLCHAIN_PATH}/mips-linux-gnu/libc/el"
 
 export pkg_sdk_version=${pkg_sdk_version:-309}
+if [ "$pkg_sdk_version" = 311 ]; then
+    pkg_flags="$pkg_flags sigma_with_monitoring"
+fi
 
 # MRUA
 export RMCFLAGS="-DEM86XX_CHIP=EM86XX_CHIPID_TANGO3 \
