@@ -241,6 +241,10 @@
 (firmware-package 'zlib
   (source 'dist "zlib-1.2.8.tar.gz"))
 
+(firmware-package 'libpng
+  (source 'dist "libpng-1.6.17.tar.xz")
+  (stage 'build (depends (target 'zlib 'install))))
+
 (firmware-package 'xtables
   (source 'dist "iptables-1.4.21.tar.bz2"))
 
@@ -309,6 +313,7 @@
                             (target 'sqlite         'install)
                             (target 'wpa_supplicant 'install)
                             (target 'zlib           'install)
+                            (target 'libpng         'install)
                             (target 'libffi         'install)
                             (target 'glib           'install)
                             (target 'connman        'install)))
