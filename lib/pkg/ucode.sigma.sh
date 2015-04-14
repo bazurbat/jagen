@@ -7,7 +7,6 @@ pkg_install() {
     p_run install -vd "$dst"
 
     case $pkg_sdk_version in
-        308) dts="_nodts" ;;
         *)   dts="_0x10_nodts"; real="_noreal" ;;
     esac
 

@@ -2,15 +2,7 @@
 
 p_source_dir="$pkg_src_dir/sigma-mrua"
 
-with_rmdisplay="no"
-with_rmoutput="yes"
-
 case $pkg_sdk_version in
-    308)
-        p_source_branch="3.8.3"
-        with_rmdisplay="yes"
-        with_rmoutput="no"
-        ;;
     309) p_source_branch="3.9.2"  ;;
     311) p_source_branch="3.11.3" ;;
     400) p_source_branch="4.0.0"  ;;
@@ -77,21 +69,9 @@ pkg_install() {
         rmvideoout \
         rua"
 
-    if [ "$with_rmdisplay" = "yes" ]; then
-        libs="$libs \
-            audiooutports \
-            displayoutports \
-            rmdisplay \
-            ruahdmi \
-            ruahsi \
-            ruai2c"
-    fi
-
-    if [ "$with_rmoutput" = "yes" ]; then
-        libs="$libs \
-            rmoutput \
-            ruaoutput"
-    fi
+    libs="$libs \
+        rmoutput \
+        ruaoutput"
 
     for lib in $libs; do
         p_run install -vm 755 \
