@@ -293,6 +293,7 @@
                                  (target 'ffmpeg       'install 'target)
                                  (target 'freetype     'install)
                                  (target 'libuv        'install)
+                                 (target 'libpng       'install)
                                  (target 'mrua         'build)
                                  (target 'soundtouch   'install)
                                  (target 'connman      'install)))
