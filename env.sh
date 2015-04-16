@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export jagen_root=$(realpath .)
+export jagen_root="$PWD"
 
 . "$jagen_root/lib/env.sh" ||
     { echo "Failed to load environment"; exit 1; }
