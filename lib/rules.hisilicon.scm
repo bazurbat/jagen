@@ -7,6 +7,6 @@
          args))
 
 (package 'make
-  (source 'dist "make-3.82.tar.bz2")
+  (source 'dist "make-3.81.tar.bz2")
   (stage 'host 'build)
   (stage 'host 'install))
