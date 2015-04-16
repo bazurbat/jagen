@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. "$pkg_root/lib/env.sh" ||
+. "$jagen_root/lib/env.sh" ||
     { echo "Failed to load environment"; exit 1; }
 
 : ${p_jobs:=1}

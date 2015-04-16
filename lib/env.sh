@@ -1,8 +1,8 @@
 #!/bin/sh
 
-export pkg_bin_dir="$pkg_root/bin"
-export pkg_lib_dir="$pkg_root/lib"
-export pkg_src_dir="$pkg_root/src"
+export pkg_bin_dir="$jagen_root/bin"
+export pkg_lib_dir="$jagen_root/lib"
+export pkg_src_dir="$jagen_root/src"
 
 export pkg_bin="chibi-scheme -r $pkg_lib_dir/jagen.scm"
 export pkg_debug="no"
@@ -22,12 +22,12 @@ export pkg_source_exclude=""
 _jagen() { chibi-scheme -r "$pkg_lib_dir/jagen.scm" "$@"; }
 
 include "${HOME}/.config/jagen/env"
-include "$pkg_root/local"
+include "$jagen_root/local"
 
 : ${pkg_private_dir:="$pkg_src_dir/files"}
-: ${pkg_dist_dir:="$pkg_root/dist/$pkg_sdk"}
+: ${pkg_dist_dir:="$jagen_root/dist/$pkg_sdk"}
 : ${pkg_patch_dir:="$pkg_dist_dir/patches"}
-: ${pkg_build_dir:="$pkg_root/build"}
+: ${pkg_build_dir:="$jagen_root/build"}
 : ${pkg_build_include_dir:="$pkg_build_dir/include"}
 
 export pkg_private_dir pkg_dist_dir pkg_patch_dir

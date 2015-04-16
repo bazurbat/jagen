@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. "$pkg_root/lib/pkg.sh" || die "Failed to load pkg env"
+. "$jagen_root/lib/pkg.sh" || die "Failed to load pkg env"
 
 p_build_root="$pkg_build_dir/pkg"
 
