@@ -17,6 +17,8 @@ export pkg_build_verbose="no"
 
 export pkg_private_dir="$pkg_src_dir/files"
 
+export jagen_ccache_bin_dir="/usr/lib/ccache/bin"
+
 _jagen() { chibi-scheme -r "$pkg_lib_dir/jagen.scm" "$@"; }
 
 jagen_try_include() { [ -f "$1" ] && . "$1"; }
