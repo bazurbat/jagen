@@ -17,8 +17,6 @@ export pkg_build_verbose="no"
 
 export pkg_private_dir="$pkg_src_dir/files"
 
-export jagen_ccache_bin_dir="/usr/lib/ccache/bin"
-
 _jagen() { chibi-scheme -r "$pkg_lib_dir/jagen.scm" "$@"; }
 
 jagen_try_include() { [ -f "$1" ] && . "$1"; }
@@ -43,6 +41,7 @@ export pkg_build_include_dir="$pkg_build_dir/include"
 [ "$pkg_dist_dir" ] ||
     die "pkg_dist_dir is not set"
 
+in_flags ccache && use_env ccache
 include "$pkg_lib_dir/env/cmake"
 include "$pkg_lib_dir/env/sdk"
 
