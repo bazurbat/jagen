@@ -15,8 +15,6 @@ export pkg_build_dir="$jagen_root/build"
 export pkg_build_type="Release"
 export pkg_build_verbose="no"
 
-export pkg_private_dir="$pkg_src_dir/files"
-
 _jagen() { chibi-scheme -r "$pkg_lib_dir/jagen.scm" "$@"; }
 
 jagen_try_include() { [ -f "$1" ] && . "$1"; }
@@ -35,6 +33,7 @@ jagen_try_include "$jagen_root/local.sh"
 
 export pkg_patch_dir="$pkg_dist_dir/patches"
 export pkg_build_include_dir="$pkg_build_dir/include"
+export pkg_private_dir="$pkg_src_dir/files"
 
 [ "$pkg_sdk" ] ||
     warning "pkg_sdk is not set"
