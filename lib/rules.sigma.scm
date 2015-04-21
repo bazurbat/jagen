@@ -201,6 +201,13 @@
          (after   (target 'chicken-eggs 'install 'host)
                   (target 'dbus         'install))))
 
+(package 'libuv
+  (source 'dist "libuv-1.4.2.tar.gz")
+  (stage 'host   'build)
+  (stage 'host   'install)
+  (stage 'target 'build)
+  (stage 'target 'install (depends (target 'firmware 'unpack))))
+
 (firmware-package 'dbus
   (source 'dist "dbus-1.6.18.tar.gz")
   (stage 'build (depends (target 'expat 'install))))
@@ -213,9 +220,6 @@
   (patch "freetype-2.3.2-enable-valid" 1)
   (patch "freetype-2.4.11-sizeof-types" 1)
   (patch "freetype-2.4.12-clean-include" 1))
-
-(firmware-package 'libuv
-  (source 'dist "libuv-v0.10.25.tar.gz"))
 
 (firmware-package 'rsync
   (source 'dist "rsync-3.1.1.tar.gz"))
@@ -284,7 +288,8 @@
   (source 'hg "ssh://hg@bitbucket.org/art-system/karaoke-player")
   (stage 'host   'build (depends (target 'astindex     'unpack)
                                  (target 'ffmpeg       'install 'host)
-                                 (target 'chicken-eggs 'install 'host)))
+                                 (target 'chicken-eggs 'install 'host)
+                                 (target 'libuv        'install 'host)))
   (stage 'host   'install)
   (stage 'target 'build (depends (target 'astindex     'unpack)
                                  (target 'chicken      'install 'target)
@@ -292,7 +297,7 @@
                                  (target 'dbus         'install)
                                  (target 'ffmpeg       'install 'target)
                                  (target 'freetype     'install)
-                                 (target 'libuv        'install)
+                                 (target 'libuv        'install 'target)
                                  (target 'libpng       'install)
                                  (target 'mrua         'build)
                                  (target 'soundtouch   'install)
@@ -308,7 +313,6 @@
                             (target 'dbus           'install)
                             (target 'expat          'install)
                             (target 'freetype       'install)
-                            (target 'libuv          'install)
                             (target 'rsync          'install)
                             (target 'sqlite         'install)
                             (target 'wpa_supplicant 'install)

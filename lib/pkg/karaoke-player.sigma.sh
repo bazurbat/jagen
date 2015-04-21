@@ -12,10 +12,6 @@ pkg_build_host() {
         -DCMAKE_FIND_ROOT_PATH="$host_dir" \
         "$p_source_dir"
 
-    if in_flags libuv_next; then
-        p_run cmake -DLIBUV_NEW=1 .
-    fi
-
     p_run cmake --build . -- $cmake_build_options
 }
 
