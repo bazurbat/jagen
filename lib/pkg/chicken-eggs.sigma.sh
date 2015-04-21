@@ -14,7 +14,13 @@ case $cmake_build_type in
     *) cmake_build_type=Release ;;
 esac
 
+delete_install_targets() {
+    p_run find "$p_build_dir" -name "*-install" -delete
+}
+
 pkg_install_host() {
+    delete_install_targets
+
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$cmake_build_type" \
         -DCMAKE_INSTALL_PREFIX="$host_dir" \
@@ -25,6 +31,8 @@ pkg_install_host() {
 
 pkg_install_target() {
     use_env host
+
+    delete_install_targets
 
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$cmake_build_type" \
