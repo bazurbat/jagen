@@ -7,6 +7,8 @@ export target_system="arm-hisiv200-linux"
 
 export target_bin_dir="$target_dir/bin"
 
+export sdk_firmware_dir="$pkg_build_dir/firmware"
+
 export JAVA_HOME="/usr/lib/jvm/sun-jdk-1.6"
 export JAVAC="$JAVA_HOME/bin/javac"
 # export _JAVA_OPTIONS="-Xms1024m -Xmx2048m -XX:MaxPermSize=256m"
