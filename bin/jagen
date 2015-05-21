@@ -16,20 +16,6 @@ fi
 
 build_file="$pkg_build_dir/build.ninja"
 
-rebuild_chibi() {
-    local name="chibi-scheme-0.7"
-    local source="$pkg_dist_dir/${name}.tgz"
-    local build_dir="$chibi_dir/build"
-    local log="$build_dir/build.log"
-
-    rm -rf "$build_dir" || die
-    mkdir -p "$build_dir" || die
-    tar -C "$build_dir" -xpf "$source" || die
-    cd "$build_dir/$name" || die
-    make PREFIX="$chibi_dir" >"$log" 2>&1 || die
-    make PREFIX="$chibi_dir" install >>"$log" 2>&1 || die
-}
-
 case $1 in
     help)
         print_help
@@ -47,25 +33,21 @@ case $1 in
         exec jagen refresh
         ;;
     refresh)
-        in_path chibi-scheme || rebuild_chibi
         message "Refreshing build rules"
-        $pkg_bin generate "$build_file" "$pkg_lib_dir/rules.${pkg_sdk}.scm" ||
+        $pkg_bin generate "$build_file" "$pkg_lib_dir/rules.${pkg_sdk}.lua" ||
             die "Failed to generate build rules"
         include "$pkg_root/lib/toolchain"
         generate_toolchain_wrappers
         ;;
     build)
         shift
-        in_path chibi-scheme || rebuild_chibi
         $pkg_bin build "$build_file" "$@" || die "Build failed"
         ;;
     rebuild)
         shift
-        in_path chibi-scheme || rebuild_chibi
         $pkg_bin rebuild "$build_file" "$@" || die "Rebuild failed"
         ;;
     *)
-        in_path chibi-scheme || rebuild_chibi
         _jagen "$@"
         ;;
 esac

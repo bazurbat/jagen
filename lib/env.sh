@@ -4,7 +4,7 @@ export pkg_bin_dir="$pkg_root/bin"
 export pkg_lib_dir="$pkg_root/lib"
 export pkg_src_dir="$pkg_root/src"
 
-export pkg_bin="chibi-scheme -r $pkg_lib_dir/jagen.scm"
+export pkg_bin="lua $pkg_lib_dir/jagen.lua"
 export pkg_debug="no"
 
 export pkg_sdk="sigma"
