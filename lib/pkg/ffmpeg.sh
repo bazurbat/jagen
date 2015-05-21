@@ -10,7 +10,15 @@ pkg_build() {
     else
         prefix="$target_prefix"
         cross_options="--enable-cross-compile --cross-prefix=$target_system- \
-            --target-os=linux --arch=mipsel --cpu=24kf"
+            --target-os=linux"
+        case $sdk_target_board in
+            ast50|ast100)
+                cross_options="$cross_options --arch=mipsel --cpu=24kf"
+                ;;
+            *)
+                cross_options="$cross_options --arch=$target_arch"
+                ;;
+        esac
     fi
 
     local options
