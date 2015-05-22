@@ -53,6 +53,7 @@
   (stage 'install (depends (target 'ffmpeg 'install 'target)
                            (target 'freetype        'install)
                            (target 'karaoke-player  'install 'target)))
-  (stage 'strip))
+  (stage 'strip)
+  (stage 'deploy))
 
 ; vim: lw+=package,rootfs-package,kernel-package,firmware-package

@@ -10,20 +10,27 @@ pkg_clean() {
     p_clean_dir "$p_source_dir"
 }
 
-pkg_unpack() {
-    p_run cd "$p_work_dir"
+pkg_install() {
+    # [ -d "$p_work_dir/bin" ] || mkdir -p "$p_work_dir/bin"
+    # for bin in smmplayer; do
+    #     p_run install -vm 755 "$p_source_dir/bin/$bin" \
+    #         "$p_work_dir/bin"
+    # done
 
-    p_run install -d -m 755 bin dev etc home lib libexec mnt proc run sbin share sys usr var
-    p_run install -d -m 700 root
-    p_run install -d -m 1777 tmp
+    [ -d "$p_work_dir/lib" ] || mkdir -p "$p_work_dir/lib"
+    p_run cp -va "$p_source_dir/lib/"*.so* "$p_work_dir/lib"
 }
 
 pkg_strip() {
     p_run cd "$p_work_dir"
 
     p_run find lib -type f \
-        "(" -name "*.a" -o -name "*.la" ")" \
+        "(" -name "*.la" ")" \
         -print -delete
+}
 
-    _jagen src status > "$p_work_dir/heads" || die
+pkg_deploy() {
+    [ -d "$sdk_rootfs_dir" ] || die "SDK rootfs dir is not exists"
+
+    p_run cd "$p_work_dir"
 }
