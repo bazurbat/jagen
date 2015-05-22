@@ -39,6 +39,7 @@ pkg_build_target() {
                 -DCMAKE_SYSTEM_NAME="Linux" \
                 -DCMAKE_INSTALL_PREFIX="${target_dir}${target_prefix}" \
                 -DCMAKE_FIND_ROOT_PATH="${target_dir}${target_prefix}" \
+                -DSDK_PRODUCT_DIR="$sdk_product_dir" \
                 "$p_source_dir"
             ;;
     esac
