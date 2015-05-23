@@ -1,38 +1,43 @@
 local packages = {}
 
-local function package(pkg, stages)
-    table.insert(packages, Jagen.package(pkg, stages))
+local function package(rule, stages)
+    local pkg = load_package(rule)
+    local default_stages = {
+        { 'update' }, { 'clean' }, { 'unpack' }, { 'patch' }
+    }
+    pkg.stages = append(default_stages, stages or {}, pkg.stages or {})
+    table.insert(packages, pkg)
 end
 
-local function rootfs_package(pkg)
+local function rootfs_package(rule)
     local stages = {
         { 'build', { 'rootfs', 'build' } },
         { 'install' }
     }
-    package(pkg, stages)
+    package(rule, stages)
 end
 
-local function kernel_package(pkg)
+local function kernel_package(rule)
     local stages = {
         { 'build', { 'kernel', 'build' } },
         { 'install' }
     }
-    package(pkg, stages)
+    package(rule, stages)
 end
 
-local function firmware_package(pkg)
+local function firmware_package(rule)
     local stages = {
         { 'build' },
         { 'install', { 'firmware', 'unpack' } }
     }
-    package(pkg, stages)
+    package(rule, stages)
 end
 
 -- base
-
+--[[
 package {
     name = 'ast-files',
-    source = 'git git@bitbucket.org:art-system/files.git'
+    source = 'git git@bitbucket.org:art-system/files.git',
 }
 
 package {
@@ -46,6 +51,8 @@ package {
     source = 'dist ${cpukeys}.tar.gz'
 }
 
+--]]
+
 package {
     name = 'ucode',
     source = {
@@ -57,6 +64,8 @@ package {
     { 'install', { 'firmware', 'unpack' } }
 }
 
+--[[
+
 -- tools
 
 package {
@@ -67,8 +76,6 @@ package {
 }
 
 -- host
-
----[[
 
 package {
     name = 'libtool',
@@ -390,8 +397,8 @@ package {
         { 'ffmpeg',       'install', 'host'   },
         { 'chicken-eggs', 'install', 'host'   }
     },
-    { 'install', 'host' },
-    { 'build', 'target',
+    { 'install', 'host'                       },
+    { 'build',   'target',
         { 'astindex',     'unpack'            },
         { 'chicken',      'install', 'target' },
         { 'chicken-eggs', 'install', 'host'   },
