@@ -32,7 +32,7 @@ function append(...)
     return list
 end
 
-function for_each(f, t)
+function for_each(t, f)
     for _, v in ipairs(t or {}) do
         f(v)
     end
@@ -75,28 +75,23 @@ end
 
 Target = { meta = {} }
 
-function Target.new(p, n, c)
-    local t = { package = p, name = n, config = c }
+function Target.new(n, s, c)
+    local t = { name = n, stage = s, config = c }
     setmetatable(t, Target.meta)
     return t
 end
 
 Target.meta.__eq = function(a, b)
-    return a.package == b.package and
-    a.name == b.name and
+    return a.name == b.name and
+    a.stage == b.stage and
     a.config == b.config
 end
 
 Target.meta.__tostring = function(t)
-    local pkg_name = t.package.name
-    if t.config then
-        return string.format("%s-%s-%s", pkg_name, t.name, t.config)
-    else
-        return string.format("%s-%s", pkg_name, t.name)
-    end
+    return table.concat({ t.name, t.stage, t.config }, '-')
 end
 
-function load_package(rule)
+function read_package(rule)
     local stages = {}
     for i, s in ipairs(rule) do
         table.insert(stages, s)
@@ -109,7 +104,7 @@ end
 function load_rules(pathname)
     local rules = dofile(pathname)
 
-    local function process_package(rule)
+    local function load_package(pkg_rule)
         local package = {}
         local tmp = {}
         local collected = {}
@@ -122,149 +117,112 @@ function load_rules(pathname)
             end
         end
 
-        local function process_stage(rule)
-            local name, config
+        local function input_to_target(d)
+            return Target.new(d[1], d[2], d[3])
+        end
 
-            if type(rule[1]) == 'string' then
-                name = rule[1]
-                table.remove(rule, 1)
+        local function load_stage(stage_rule)
+            local stage, config
+
+            if type(stage_rule[1]) == 'string' then
+                stage = stage_rule[1]
+                table.remove(stage_rule, 1)
             end
-            if type(rule[1]) == 'string' then
-                config = rule[1]
-                table.remove(rule, 1)
+            if type(stage_rule[1]) == 'string' then
+                config = stage_rule[1]
+                table.remove(stage_rule, 1)
             end
 
-            local key = getkey(name, config)
+            local key = getkey(stage, config)
+            local inputs = map(input_to_target, list(stage_rule))
             
             if tmp[key] then
-                tmp[key].deps = append(tmp[key].deps or {}, list(rule))
+                tmp[key].inputs = append(tmp[key].inputs or {}, inputs)
             else
-                local target = Target.new(package, name, config)
-                target.deps = list(rule)
+                local target = Target.new(pkg_rule.name, stage, config)
+                target.inputs = inputs
                 tmp[key] = target
                 table.insert(collected, target)
             end
         end
 
-        for_each(process_stage, rule.stages)
+        function add_previous(stages)
+            local prev, common
 
-        package.name = rule.name
-        package.source = rule.source
+            for _, s in ipairs(stages) do
+                if prev then
+                    if common and s.config ~= prev.config then
+                        table.insert(s.inputs, 1, common)
+                    else
+                        table.insert(s.inputs, 1, prev)
+                    end
+                end
+
+                prev = s
+                if not s.config then
+                    common = s
+                end
+            end
+        end
+
+        for_each(pkg_rule.stages, load_stage)
+        add_previous(collected)
+
+        package.name = pkg_rule.name
+        package.source = pkg_rule.source
         package.stages = collected
 
-        print("===", package.name)
-        pretty.dump(package)
+        -- print("===", package.name)
+        -- pretty.dump(package)
 
         return package
     end
 
-    local packages = map(process_package, rules)
+    local packages = map(load_package, rules)
 
     return packages
 end
 
-function Jagen.merge_stages(p, a, b)
+function Ninja:format_inputs(inputs)
+    local sep = string.format(' $\n%s', Jagen.format_indent(16))
     local t = {}
-    local stages = {}
-
-    local function getkey(s)
-        if s.config then
-            return s.name .. ':' .. s.config
-        else
-            return s.name
-        end
-    end
-
-    -- print("== " .. p.name  .. " ==")
-
-    local function collect(list)
-        for _, s in ipairs(list or {}) do
-            local key = getkey(s)
-            if t[key] then
-                for _, d in ipairs(s) do
-                    table.insert(t[key], d)
-                end
-            else
-                t[key] = s
-                table.insert(stages, s)
-            end
-        end
-    end
-
-    collect(a)
-    collect(b)
-
-    local last, last_common
-
-    local function common_stage(t)
-        return t.name and not t.config
-    end
-
-    -- for _, s in ipairs(stages or {}) do
-    --     local key = getkey(s)
-    --     if last then
-    --         local dep = Target.new(p.name, last.name, last.config)
-    --         local function equals(t)
-    --             return t == dep
-    --         end
-    --         if not find(equals, t[key]) then
-    --             table.insert(t[key], 1, dep)
-    --         end
-    --         if s.config ~= last.config then
-    --             last_common = find_last(common_stage, stages)
-    --             last = last_common
-    --
-    --         else
-    --             last = s
-    --         end
-    --     else
-    --         last = s
-    --     end
-    -- end
-
-    return stages
-end
-
-function Ninja:format_dependencies(pkg, stage)
-    local t = {}
-    for _, d in ipairs(stage) do
+    for _, d in ipairs(inputs) do
         table.insert(t, tostring(d))
     end
-    return t
+    return table.concat(t, sep)
 end
 
 function Ninja:generate(out_file, in_file)
     local packages = load_rules(in_file)
     local out = io.open(out_file, 'w')
 
-    -- out:write(string.format('builddir = %s\n\n', 'build'))
-    -- out:write(string.format('rule command\n'))
-    -- out:write(string.format('    command = $command\n\n'))
-    -- out:write(string.format('rule script\n'))
-    -- out:write(string.format('    command = $script\n\n'))
-    --
-    -- local sep = string.format(' $\n%s', Jagen.format_indent(16))
-    --
-    -- for i, pkg in ipairs(packages) do
-    --     local pn = pkg.name
-    --     for j, stage in ipairs(pkg.stages or {}) do
-    --         local sn = stage.name
-    --         local sc = stage.config
-    --         out:write(string.format('build %s: script',
-    --             tostring(Target.new(pkg, sn, sc))))
-    --         if #stage > 0 then
-    --             out:write(' $\n' .. Jagen.format_indent(16))
-    --             out:write(table.concat(Ninja:format_dependencies(pkg, stage), sep))
-    --         end
-    --         out:write('\n')
-    --         out:write(string.format('    script = jagen-pkg %s %s', pn, sn))
-    --         if sc then
-    --             out:write(' ', sc)
-    --         end
-    --         out:write('\n')
-    --     end
-    --     out:write("\n")
-    -- end
+    out:write(string.format('builddir = %s\n\n', 'build'))
+    out:write(string.format('rule command\n'))
+    out:write(string.format('    command = $command\n\n'))
+    out:write(string.format('rule script\n'))
+    out:write(string.format('    command = $script\n\n'))
+
+    local sep = string.format(' $\n%s', Jagen.format_indent(16))
+
+    for i, pkg in ipairs(packages) do
+        local pn = pkg.name
+        for j, stage in ipairs(pkg.stages or {}) do
+            local sn = stage.stage
+            local sc = stage.config
+            out:write(string.format('build %s: script', tostring(stage)))
+            if #stage.inputs > 0 then
+                out:write(' $\n' .. Jagen.format_indent(16))
+                out:write(Ninja:format_inputs(stage.inputs))
+            end
+            out:write('\n')
+            out:write(string.format('    script = jagen-pkg %s %s', pn, sn))
+            if sc then
+                out:write(' ', sc)
+            end
+            out:write('\n')
+        end
+        out:write("\n")
+    end
 
     out:close()
 end

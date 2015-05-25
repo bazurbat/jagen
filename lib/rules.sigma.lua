@@ -1,7 +1,7 @@
 local packages = {}
 
 local function package(rule, stages)
-    local pkg = load_package(rule)
+    local pkg = read_package(rule)
     local default_stages = {
         { 'update' }, { 'clean' }, { 'unpack' }, { 'patch' }
     }
@@ -34,7 +34,7 @@ local function firmware_package(rule)
 end
 
 -- base
---[[
+
 package {
     name = 'ast-files',
     source = 'git git@bitbucket.org:art-system/files.git',
@@ -51,8 +51,6 @@ package {
     source = 'dist ${cpukeys}.tar.gz'
 }
 
---]]
-
 package {
     name = 'ucode',
     source = {
@@ -63,8 +61,6 @@ package {
     { 'unpack',  { 'mrua',     'build'  } },
     { 'install', { 'firmware', 'unpack' } }
 }
-
---[[
 
 -- tools
 
@@ -115,7 +111,7 @@ rootfs_package {
 
 -- debugging
 
--- (when (string=? "Debug" (env 'build-type))
+--[[
 package {
     name = 'gdb',
     source = 'dist gdb-7.9.tar.xz',
@@ -132,6 +128,7 @@ rootfs_package {
     name = 'strace',
     source = 'dist strace-4.8.tar.xz'
 }
+--]]
 
 -- rootfs
 
@@ -482,7 +479,5 @@ package {
         { 'firmware',       'unpack'  }
     }
 }
-
---]]
 
 return packages
