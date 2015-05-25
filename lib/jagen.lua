@@ -23,13 +23,13 @@ function list(t)
 end
 
 function append(...)
-    local list = {}
+    local r = {}
     for _, arg in ipairs({...}) do
         for _, i in ipairs(arg) do
-            table.insert(list, i)
+            table.insert(r, i)
         end
     end
-    return list
+    return r
 end
 
 function for_each(t, f)
@@ -51,17 +51,6 @@ function find(f, t)
         if f(v) then
             return v
         end
-    end
-    return nil
-end
-
-function find_last(f, l)
-    local prev
-    for _, v in ipairs(l or {}) do
-        if not f(v) then
-            return prev
-        end
-        prev = v
     end
     return nil
 end
@@ -196,11 +185,11 @@ function Ninja:generate(out_file, in_file)
     local packages = load_rules(in_file)
     local out = io.open(out_file, 'w')
 
-    out:write(string.format('builddir = %s\n\n', 'build'))
+    out:write(string.format('builddir = %s\n\n', env('pkg_build_dir')))
     out:write(string.format('rule command\n'))
     out:write(string.format('    command = $command\n\n'))
     out:write(string.format('rule script\n'))
-    out:write(string.format('    command = $script\n\n'))
+    out:write(string.format('    command = ' .. env('pkg_bin_dir') .. '/$script && touch $out\n\n'))
 
     local sep = string.format(' $\n%s', Jagen.format_indent(16))
 
@@ -231,8 +220,8 @@ function pkg_flag(f)
     return true
 end
 
-function env(v)
-    return v
+function env(name)
+    return os.getenv(name)
 end
 
 function Jagen.format_indent(n)
