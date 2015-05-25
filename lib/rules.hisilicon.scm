@@ -20,6 +20,9 @@
   (stage 'host 'build)
   (stage 'host 'install))
 
+(package 'android-cmake
+  (source 'git "https://github.com/taka-no-me/android-cmake.git"))
+
 (package 'ffmpeg
   (source 'dist "ffmpeg-2.2.1.tar.bz2")
   (stage 'target 'build   (depends (target 'ast-files 'unpack)))
@@ -43,10 +46,11 @@
 
 (package 'karaoke-player
   (source 'hg "ssh://hg@bitbucket.org/art-system/karaoke-player")
-  (stage 'target 'build (depends (target 'astindex     'unpack)
-                                 (target 'ffmpeg       'install 'target)
-                                 (target 'freetype     'install)
-                                 (target 'libuv        'install 'target)))
+  (stage 'target 'build (depends (target 'astindex      'unpack)
+                                 (target 'android-cmake 'unpack)
+                                 (target 'ffmpeg        'install 'target)
+                                 (target 'freetype      'install)
+                                 (target 'libuv         'install 'target)))
   (stage 'target 'install))
 
 (package 'firmware

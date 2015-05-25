@@ -31,15 +31,24 @@ pkg_build_target() {
                 -DCHICKEN_COMPILER="$host_dir/bin/chicken" \
                 -DCHICKEN_INTERPRETER="$host_dir/bin/csi" \
                 -DCHICKEN_DEPENDS="$host_dir/bin/chicken-depends" \
+                -DAST_BOARD="AST100" \
                 "$p_source_dir"
             ;;
         *)
             p_run cmake -G"$cmake_generator" \
+                -DCMAKE_TOOLCHAIN_FILE="$pkg_src_dir/android-cmake/android.toolchain.cmake" \
+                -DANDROID_NDK="$android_ndk_dir" \
+                -DANDROID_ABI="armeabi-v7a with NEON" \
+                -DANDROID_NATIVE_API_LEVEL="android-17" \
+                -DANDROID_TOOLCHAIN_NAME="arm-linux-androideabi-4.6" \
+                -DANDROID_GOLD_LINKER=NO \
+                -DANDROID_EXPLICIT_CRT_LINK=YES \
                 -DCMAKE_BUILD_TYPE="$cmake_build_type" \
                 -DCMAKE_SYSTEM_NAME="Linux" \
                 -DCMAKE_INSTALL_PREFIX="${target_dir}${target_prefix}" \
                 -DCMAKE_FIND_ROOT_PATH="${target_dir}${target_prefix}" \
                 -DSDK_PRODUCT_DIR="$sdk_product_dir" \
+                -DAST_BOARD="AST200" \
                 "$p_source_dir"
             ;;
     esac
@@ -52,5 +61,9 @@ pkg_install_host() {
 }
 
 pkg_install_target() {
-    p_run cmake --build . --target install
+    case $sdk_target_board in
+        ast50|ast100)
+            p_run cmake --build . --target install
+            ;;
+    esac
 }
