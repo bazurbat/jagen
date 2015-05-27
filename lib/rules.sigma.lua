@@ -276,6 +276,17 @@ package {
     }
 }
 
+package {
+    name = 'libuv',
+    source = 'dist libuv-1.4.2.tar.gz',
+    { 'build',   'host' },
+    { 'install', 'host' },
+    { 'build',   'target' },
+    { 'install', 'target',
+        { 'firmware', 'unpack' }
+    }
+}
+
 firmware_package {
     name = 'dbus',
     source = 'dist dbus-1.6.18.tar.gz',
@@ -295,11 +306,6 @@ firmware_package {
         { 'freetype-2.4.11-sizeof-types',  1 },
         { 'freetype-2.4.12-clean-include', 1 }
     }
-}
-
-firmware_package {
-    name = 'libuv',
-    source = 'dist libuv-v0.10.25.tar.gz'
 }
 
 firmware_package {
@@ -341,6 +347,14 @@ firmware_package {
 firmware_package {
     name = 'zlib',
     source = 'dist zlib-1.2.8.tar.gz'
+}
+
+firmware_package {
+    name = 'libpng',
+    source = 'dist libpng-1.6.17.tar.xz',
+    { 'build',
+        { 'zlib', 'install' }
+    }
 }
 
 firmware_package {
@@ -392,7 +406,8 @@ package {
     { 'build', 'host',
         { 'astindex',     'unpack'            },
         { 'ffmpeg',       'install', 'host'   },
-        { 'chicken-eggs', 'install', 'host'   }
+        { 'chicken-eggs', 'install', 'host'   },
+        { 'libuv',        'install', 'host'   }
     },
     { 'install', 'host'                       },
     { 'build',   'target',
@@ -402,7 +417,8 @@ package {
         { 'dbus',         'install'           },
         { 'ffmpeg',       'install', 'target' },
         { 'freetype',     'install'           },
-        { 'libuv',        'install'           },
+        { 'libuv',        'install', 'target' },
+        { 'libpng',       'install'           },
         { 'mrua',         'build'             },
         { 'soundtouch',   'install'           },
         { 'connman',      'install'           }
@@ -425,11 +441,11 @@ package {
         { 'dbus',           'install'           },
         { 'expat',          'install'           },
         { 'freetype',       'install'           },
-        { 'libuv',          'install'           },
         { 'rsync',          'install'           },
         { 'sqlite',         'install'           },
         { 'wpa_supplicant', 'install'           },
         { 'zlib',           'install'           },
+        { 'libpng',         'install'           },
         { 'libffi',         'install'           },
         { 'glib',           'install'           },
         { 'connman',        'install'           }
