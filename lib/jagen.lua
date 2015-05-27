@@ -98,6 +98,14 @@ function load_rules(pathname)
         local tmp = {}
         local collected = {}
 
+        local function load_source(source)
+            if type(source) == 'string' then
+                return { type = 'dist', location = source }
+            else
+                return source
+            end
+        end
+
         local function getkey(name, config)
             if config then
                 return name .. ':' .. config
@@ -158,7 +166,8 @@ function load_rules(pathname)
         add_previous(collected)
 
         package.name = pkg_rule.name
-        package.source = pkg_rule.source
+        package.source = load_source(pkg_rule.source)
+        package.patches = pkg_rule.patches
         package.stages = collected
 
         -- print("===", package.name)
@@ -181,8 +190,7 @@ function Ninja:format_inputs(inputs)
     return table.concat(t, sep)
 end
 
-function Ninja:generate(out_file, in_file)
-    local packages = load_rules(in_file)
+function Ninja:generate(packages, out_file, in_file)
     local out = io.open(out_file, 'w')
 
     out:write(string.format('builddir = %s\n\n', env('pkg_build_dir')))
@@ -216,12 +224,17 @@ function Ninja:generate(out_file, in_file)
     out:close()
 end
 
-function pkg_flag(f)
-    return true
+function Jagen.flag(f)
+    return false
 end
 
 function env(name)
     return os.getenv(name)
+end
+
+local function exec(command)
+    local status = os.execute(command)
+    return status
 end
 
 function Jagen.format_indent(n)
@@ -232,6 +245,63 @@ function Jagen.format_indent(n)
     return table.concat(t)
 end
 
+function Jagen.mkdir(pathname)
+    exec('mkdir -p "' .. pathname .. '"')
+end
+
+function Jagen.mkpath(...)
+    local sep = '/'
+    local path = {}
+    for _, c in ipairs({...}) do
+        table.insert(path, c)
+    end
+    return table.concat(path, sep)
+end
+
+function Jagen.generate_include_script(pkg)
+    local name = pkg.name
+    local dir = env('pkg_build_include_dir')
+    local filename = Jagen.mkpath(dir, name .. '.sh')
+
+    local function source(pkg)
+        local o = {}
+        local s = pkg.source
+        if s then
+            if s.type == 'git' or s.type == 'hg' then
+                table.insert(o, s.type)
+                table.insert(o, s.location)
+            elseif s.type == 'dist' then
+                table.insert(o, Jagen.mkpath('$pkg_dist_dir', s.location))
+            end
+        end
+        return string.format('p_source="%s"\n', table.concat(o, ' '))
+    end
+
+    local function patches(pkg)
+        local o = {}
+        table.insert(o, 'pkg_patch_pre() {')
+        for _, patch in ipairs(pkg.patches or {}) do
+            local name = patch[1]
+            local strip = patch[2]
+            table.insert(o, string.format('  p_patch %d "%s"', strip, name))
+        end
+        table.insert(o, '}')
+        return table.concat(o, '\n')
+    end
+
+    Jagen.mkdir(dir)
+
+    local f = assert(io.open(filename, 'w+'))
+    f:write('#!/bin/sh\n')
+    f:write(source(pkg))
+    if pkg.patches then
+        f:write(patches(pkg))
+    end
+    f:close()
+end
+
 if arg[1] == 'generate' then
-    Ninja:generate(arg[2], arg[3])
+    local packages = load_rules(arg[3])
+    Ninja:generate(packages, arg[2], arg[3])
+    for_each(packages, Jagen.generate_include_script)
 end
