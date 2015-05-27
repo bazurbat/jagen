@@ -11,11 +11,11 @@ pkg_clean() {
 }
 
 pkg_install() {
-    # [ -d "$p_work_dir/bin" ] || mkdir -p "$p_work_dir/bin"
-    # for bin in smmplayer; do
-    #     p_run install -vm 755 "$p_source_dir/bin/$bin" \
-    #         "$p_work_dir/bin"
-    # done
+    [ -d "$p_work_dir/bin" ] || mkdir -p "$p_work_dir/bin"
+    for bin in smmplayer; do
+        p_run install -vm 755 "$p_source_dir/bin/$bin" \
+            "$p_work_dir/bin"
+    done
 
     [ -d "$p_work_dir/lib" ] || mkdir -p "$p_work_dir/lib"
     p_run cp -va "$p_source_dir/lib/"*.so* "$p_work_dir/lib"
@@ -30,7 +30,10 @@ pkg_strip() {
 }
 
 pkg_deploy() {
-    [ -d "$sdk_rootfs_dir" ] || die "SDK rootfs dir is not exists"
+    if [ ! -d "$sdk_rootfs_dir" ]; then
+        message "sdk_rootfs_dir is not exists, skipping deploy"
+        return 0
+    fi
 
-    p_run cd "$p_work_dir"
+    p_run cp -av "$p_work_dir"/* "$sdk_rootfs_dir"
 }
