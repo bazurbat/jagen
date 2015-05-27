@@ -23,6 +23,8 @@ pkg_unpack() {
     local kind="$1"
     local src="${2:-$1}"
 
+    [ "$p_source" ] || return 0
+
     case $kind in
         git|hg)
             if in_flags "offline"; then
