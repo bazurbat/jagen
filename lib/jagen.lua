@@ -3,6 +3,21 @@
 Jagen = {}
 Ninja = {}
 
+function Jagen.message(...)
+    print(string.format('\027[1;34m:::\027[0m %s', table.concat({...}, ' ')))
+end
+function Jagen.warning(...)
+    print(string.format('\027[1;33m:::\027[0m %s', table.concat({...}, ' ')))
+end
+function Jagen.error(...)
+    print(string.format('\027[1;31m:::\027[0m %s', table.concat({...}, ' ')))
+end
+function Jagen.debug(...)
+    if env('pkg_debug') == 'yes' then
+        print(string.format('\027[1;36m:::\027[0m %s', table.concat({...}, ' ')))
+    end
+end
+
 function copy(t)
     local c = {}
     for k, v in pairs(t) do
@@ -249,6 +264,16 @@ function Jagen.mkdir(pathname)
     exec('mkdir -p "' .. pathname .. '"')
 end
 
+function Jagen.file_newer(file1, file2)
+    local cmd = string.format('[ "%s" -nt "%s" ]', file1, file2)
+    return os.execute(cmd) == 0
+end
+
+function Jagen.file_older(file1, file2)
+    local cmd = string.format('[ "%s" -ot "%s" ]', file1, file2)
+    return os.execute(cmd) == 0
+end
+
 function Jagen.mkpath(...)
     local sep = '/'
     local path = {}
@@ -301,7 +326,13 @@ function Jagen.generate_include_script(pkg)
 end
 
 if arg[1] == 'generate' then
-    local packages = load_rules(arg[3])
-    Ninja:generate(packages, arg[2], arg[3])
-    for_each(packages, Jagen.generate_include_script)
+    local build_file = arg[2]
+    local rules_file = arg[3]
+
+    if Jagen.file_older(build_file, rules_file) then
+        Jagen.message("Generating build rules")
+        local packages = load_rules(arg[3])
+        Ninja:generate(packages, arg[2], arg[3])
+        for_each(packages, Jagen.generate_include_script)
+    end
 end
