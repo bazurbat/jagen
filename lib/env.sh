@@ -4,7 +4,6 @@ export pkg_bin_dir="$jagen_root/bin"
 export pkg_lib_dir="$jagen_root/lib"
 export pkg_src_dir="$jagen_root/src"
 
-export pkg_bin="chibi-scheme -r $pkg_lib_dir/jagen.scm"
 export pkg_debug="no"
 
 export pkg_flags
@@ -15,14 +14,20 @@ export pkg_build_dir="$jagen_root/build"
 export pkg_build_type="Release"
 export pkg_build_verbose="no"
 
-_jagen() { chibi-scheme -r "$pkg_lib_dir/jagen.scm" "$@"; }
-
 jagen_try_include() { [ -f "$1" ] && . "$1"; }
 
 . "$pkg_lib_dir/list.sh" ||
     { echo "Failed to load list library"; exit 1; }
 . "$pkg_lib_dir/common.sh" ||
     { echo "Failed to load common library"; exit 1; }
+
+_jagen() {
+    if in_flags jagen_lua; then
+        lua "$pkg_lib_dir/jagen.lua" "$@"
+    else
+        chibi-scheme -r "$pkg_lib_dir/jagen.scm" "$@"
+    fi
+}
 
 if [ "$XDG_CONFIG_HOME" ]; then
     jagen_try_include "$XDG_CONFIG_HOME/jagen/env"
