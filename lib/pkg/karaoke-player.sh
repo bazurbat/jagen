@@ -44,8 +44,7 @@ pkg_build_target() {
                 -DCMAKE_INSTALL_PREFIX="${target_dir}${target_prefix}" \
                 -DCMAKE_FIND_ROOT_PATH="${target_dir}${target_prefix}" \
                 -DHISILICON_ROOT_DIR="$sdk_dir" \
-                -DFREETYPE_LIBRARIES="${sdk_dir}/out/target/product/Hi3719CV100/symbols/system/lib/libfreetype.so" \
-                -DFREETYPE_INCLUDE_DIR="${sdk_dir}/device/hisilicon/bigfish/sdk/pub/include" \
+                -DHISILICON_OUT_DIR="$sdk_out_dir" \
                 -DAST_BOARD="AST200" \
                 "$p_source_dir"
             ;;

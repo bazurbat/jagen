@@ -22,3 +22,8 @@ if in_flags ccache; then
 fi
 
 p_path_prepend "$JAVA_HOME/bin"
+
+[ "$sdk_dir" ] ||
+    die "sdk_dir is not set"
+[ "$sdk_out_dir" ] ||
+    die "sdk_out_dir is not set"
