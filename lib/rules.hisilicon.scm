@@ -23,17 +23,6 @@
 (package 'android-cmake
   (source 'git "https://github.com/taka-no-me/android-cmake.git"))
 
-(package 'ffmpeg
-  (source 'dist "ffmpeg-2.2.1.tar.bz2")
-  (stage 'target 'build   (depends (target 'ast-files 'unpack)))
-  (stage 'target 'install (depends (target 'firmware  'unpack))))
-
-(firmware-package 'freetype
-  (source 'dist "freetype-2.5.0.1.tar.bz2")
-  (patch "freetype-2.3.2-enable-valid" 1)
-  (patch "freetype-2.4.11-sizeof-types" 1)
-  (patch "freetype-2.4.12-clean-include" 1))
-
 (package 'libuv
   (source 'dist "libuv-1.4.2.tar.gz")
   (stage 'target 'build)
@@ -46,17 +35,13 @@
 
 (package 'karaoke-player
   (source 'hg "ssh://hg@bitbucket.org/art-system/karaoke-player")
-  (stage 'target 'build (depends (target 'astindex      'unpack)
-                                 (target 'android-cmake 'unpack)
-                                 (target 'ffmpeg        'install 'target)
-                                 (target 'freetype      'install)
-                                 (target 'libuv         'install 'target)))
+  (stage 'target 'build (depends (target 'android-cmake 'unpack)
+                                 (target 'libuv         'install 'target)
+                                 (target 'astindex      'unpack)))
   (stage 'target 'install))
 
 (package 'firmware
-  (stage 'install (depends (target 'ffmpeg 'install 'target)
-                           (target 'freetype        'install)
-                           (target 'karaoke-player  'install 'target)))
+  (stage 'install (depends (target 'karaoke-player  'install 'target)))
   (stage 'strip)
   (stage 'deploy))
 
