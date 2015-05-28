@@ -29,5 +29,5 @@ pkg_build_target() {
 
 pkg_install_target() {
     p_run make DESTDIR="$target_dir" install
-    p_fix_la "${target_dir}${target_prefix}/libuv.la" "$target_dir"
+    p_fix_la "${target_dir}${target_prefix}/lib/libuv.la" "$target_dir"
 }
