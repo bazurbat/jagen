@@ -85,6 +85,23 @@ function Target.new(n, s, c)
     return t
 end
 
+function Target.new_from_arg(arg)
+    local name, stage, config
+    local c = string.split(arg, ':')
+
+    if c[1] and #c[1] > 0 then
+        name = c[1]
+    end
+    if c[2] and #c[2] > 0 then
+        stage = c[2]
+    end
+    if c[3] and #c[3] > 0 then
+        config = c[3]
+    end
+
+    return Target.new(name, stage, config)
+end
+
 Target.meta.__eq = function(a, b)
     return a.name == b.name and
     a.stage == b.stage and
@@ -247,8 +264,12 @@ function env(name)
     return os.getenv(name)
 end
 
-local function exec(command)
-    local status = os.execute(command)
+local function exec(command, ...)
+    local cmd = { command }
+    for _, arg in ipairs({...}) do
+        table.insert(cmd, string.format('%q', arg))
+    end
+    local status = os.execute(table.concat(cmd, ' '))
     return status
 end
 
@@ -325,7 +346,38 @@ function Jagen.generate_include_script(pkg)
     f:close()
 end
 
-if arg[1] == 'generate' then
+function string.split(s, sep)
+    local o, b, e = {}
+    local init = 1
+
+    repeat
+        b, e = string.find(s, sep, init, true)
+        if not b then b = 0 end
+        table.insert(o, string.sub(s, init, b-1))
+        if e then init = e + 1 end
+    until b == 0
+
+    return o
+end
+
+command = arg[1]
+
+function Jagen.build(build_file, args)
+    local targets = map(tostring, map(Target.new_from_arg, args))
+    local build_command = Jagen.mkpath(env('pkg_lib_dir'), 'build.sh')
+
+    return exec(build_command, unpack(targets))
+end
+
+function table.rest(t, start)
+    local o = {}
+    for i = start, #t do
+        table.insert(o, t[i])
+    end
+    return o
+end
+
+if command == 'generate' then
     local build_file = arg[2]
     local rules_file = arg[3]
 
@@ -335,4 +387,9 @@ if arg[1] == 'generate' then
         Ninja:generate(packages, arg[2], arg[3])
         for_each(packages, Jagen.generate_include_script)
     end
+elseif command == 'build' then
+    local build_file = arg[2]
+    local args = table.rest(arg, 3)
+
+    return Jagen.build(build_file, args)
 end
