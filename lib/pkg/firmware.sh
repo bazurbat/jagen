@@ -30,10 +30,11 @@ pkg_strip() {
 }
 
 pkg_deploy() {
-    if [ ! -d "$sdk_rootfs_dir" ]; then
-        message "sdk_rootfs_dir is not exists, skipping deploy"
+    local out_dir="$sdk_out_dir/system"
+    if [ ! -d "$out_dir" ]; then
+        message "out_dir '$out_dir' is not exists, skipping deploy"
         return 0
     fi
 
-    p_run cp -av "$p_work_dir"/* "$sdk_rootfs_dir"
+    p_run cp -av "$p_work_dir"/* "$out_dir"
 }
