@@ -4,9 +4,11 @@ p_build_dir="$p_work_dir/build${p_config:+-$p_config}"
 
 pkg_patch() {
     if [ "$pkg_sdk" = "hisilicon" ]; then
-        sed -ri "s/^(SLIB_INSTALL_LINKS)='.*'$/\\1=''/g" \
+        sed -ri "s/^(SLIBNAME_WITH_MAJOR)='.*'$/\\1='\$(SLIBNAME)'/g" \
             "$p_source_dir/configure"
         sed -ri "s/^(SLIB_INSTALL_NAME)='.*'$/\\1='\$(SLIBNAME)'/g" \
+            "$p_source_dir/configure"
+        sed -ri "s/^(SLIB_INSTALL_LINKS)='.*'$/\\1=''/g" \
             "$p_source_dir/configure"
     fi
 }
