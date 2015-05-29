@@ -28,6 +28,11 @@
   (stage 'target 'build)
   (stage 'target 'install (depends (target 'firmware 'unpack))))
 
+(package 'ffmpeg
+  (source 'dist "ffmpeg-2.2.1.tar.bz2")
+  (stage 'target 'build   (depends (target 'ast-files 'unpack)))
+  (stage 'target 'install (depends (target 'firmware  'unpack))))
+
 (package 'astindex
   (source 'hg "ssh://hg@bitbucket.org/art-system/astindex"
           (directory "karaoke-player/source/astindex"))
@@ -36,8 +41,9 @@
 (package 'karaoke-player
   (source 'hg "ssh://hg@bitbucket.org/art-system/karaoke-player")
   (stage 'target 'build (depends (target 'android-cmake 'unpack)
-                                 (target 'libuv         'install 'target)
-                                 (target 'astindex      'unpack)))
+                                 (target 'astindex      'unpack)
+                                 (target 'ffmpeg        'install 'target)
+                                 (target 'libuv         'install 'target)))
   (stage 'target 'install))
 
 (package 'firmware
