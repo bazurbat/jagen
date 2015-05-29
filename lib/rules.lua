@@ -34,7 +34,7 @@ function load_rules(pathname)
         end
 
         local function input_to_target(d)
-            return Target.new(d[1], d[2], d[3])
+            return target.new(d[1], d[2], d[3])
         end
 
         local function load_stage(stage_rule)
@@ -55,7 +55,7 @@ function load_rules(pathname)
             if tmp[key] then
                 tmp[key].inputs = append(tmp[key].inputs or {}, inputs)
             else
-                local target = Target.new(pkg_rule.name, stage, config)
+                local target = target.new(pkg_rule.name, stage, config)
                 target.inputs = inputs
                 tmp[key] = target
                 table.insert(collected, target)

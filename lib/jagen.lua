@@ -4,28 +4,28 @@ require 'rules'
 local system = require 'system'
 require 'target'
 
-Jagen = {}
+jagen = {}
 
-function Jagen.message(...)
+function jagen.message(...)
     print(string.format('\027[1;34m:::\027[0m %s', table.concat({...}, ' ')))
 end
-function Jagen.warning(...)
+function jagen.warning(...)
     print(string.format('\027[1;33m:::\027[0m %s', table.concat({...}, ' ')))
 end
-function Jagen.error(...)
+function jagen.error(...)
     print(string.format('\027[1;31m:::\027[0m %s', table.concat({...}, ' ')))
 end
-function Jagen.debug(...)
+function jagen.debug(...)
     if os.getenv('pkg_debug') == 'yes' then
         print(string.format('\027[1;36m:::\027[0m %s', table.concat({...}, ' ')))
     end
 end
 
-function Jagen.flag(f)
+function jagen.flag(f)
     return false
 end
 
-function Jagen.format_indent(n)
+function jagen.format_indent(n)
     local t = {}
     for i = 1, n do
         table.insert(t, " ")
@@ -33,7 +33,7 @@ function Jagen.format_indent(n)
     return table.concat(t)
 end
 
-function Jagen.generate_include_script(pkg)
+function jagen.generate_include_script(pkg)
     local name = pkg.name
     local dir = os.getenv('pkg_build_include_dir')
     local filename = system.mkpath(dir, name .. '.sh')
@@ -77,8 +77,8 @@ end
 
 command = arg[1]
 
-function Jagen.build(build_file, args)
-    local targets = map(tostring, map(Target.new_from_arg, args))
+function jagen.build(build_file, args)
+    local targets = map(tostring, map(target.new_from_arg, args))
     local build_command = system.mkpath(os.getenv('pkg_lib_dir'), 'build.sh')
 
     return system.exec(build_command, unpack(targets))
@@ -89,14 +89,14 @@ if command == 'generate' then
     local rules_file = arg[3]
 
     if system.file_older(build_file, rules_file) then
-        Jagen.message("Generating build rules")
+        jagen.message("Generating build rules")
         local packages = load_rules(arg[3])
         Ninja:generate(packages, arg[2], arg[3])
-        for_each(packages, Jagen.generate_include_script)
+        for_each(packages, jagen.generate_include_script)
     end
 elseif command == 'build' then
     local build_file = arg[2]
     local args = table.rest(arg, 3)
 
-    return Jagen.build(build_file, args)
+    return jagen.build(build_file, args)
 end

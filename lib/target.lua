@@ -1,13 +1,13 @@
 
-Target = { meta = {} }
+target = { meta = {} }
 
-function Target.new(n, s, c)
+function target.new(n, s, c)
     local t = { name = n, stage = s, config = c }
-    setmetatable(t, Target.meta)
+    setmetatable(t, target.meta)
     return t
 end
 
-function Target.new_from_arg(arg)
+function target.new_from_arg(arg)
     local name, stage, config
     local c = string.split(arg, ':')
 
@@ -21,16 +21,16 @@ function Target.new_from_arg(arg)
         config = c[3]
     end
 
-    return Target.new(name, stage, config)
+    return target.new(name, stage, config)
 end
 
-Target.meta.__eq = function(a, b)
+target.meta.__eq = function(a, b)
     return a.name == b.name and
     a.stage == b.stage and
     a.config == b.config
 end
 
-Target.meta.__tostring = function(t)
+target.meta.__tostring = function(t)
     return table.concat({ t.name, t.stage, t.config }, '-')
 end
 
