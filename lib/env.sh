@@ -23,6 +23,7 @@ jagen_try_include() { [ -f "$1" ] && . "$1"; }
 
 _jagen() {
     if in_flags jagen_lua; then
+        export LUA_PATH="${pkg_lib_dir}/?.lua;;;"
         lua "$pkg_lib_dir/jagen.lua" "$@"
     else
         chibi-scheme -r "$pkg_lib_dir/jagen.scm" "$@"
