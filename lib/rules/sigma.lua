@@ -116,7 +116,7 @@ rootfs_package {
 
 -- debugging
 
-if Jagen.flag('debug') then
+if jagen.flag('debug') then
     package {
         name = 'gdb',
         source = 'gdb-7.9.tar.xz',

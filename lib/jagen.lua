@@ -77,11 +77,44 @@ end
 
 command = arg[1]
 
+function jagen.load_rules()
+    local sdk = os.getenv('pkg_sdk')
+    local rules
+    if sdk then
+        rules = require('rules.'..sdk)
+    else
+        rules = require('rules')
+    end
+    for _, rule in ipairs(rules) do
+        rules[rule.name] = rule
+    end
+    return rules
+end
+
 function jagen.build(build_file, args)
-    local targets = map(tostring, map(target.new_from_arg, args))
     local build_command = system.mkpath(os.getenv('pkg_lib_dir'), 'build.sh')
 
-    return system.exec(build_command, unpack(targets))
+    local rules = jagen.load_rules()
+
+    local targets = map(target.new_from_arg, args)
+    for k, t in pairs(targets) do
+        if not t.stage then
+            t.stage = 'build'
+        end
+        if not rules[t.name] then
+            targets[k] = nil
+        else
+            for k, v in pairs(rules[t.name].stages) do
+                print(k, v)
+            end
+        end
+    end
+
+    for _, t in pairs(targets) do
+        print(t)
+    end
+
+    return 0 -- system.exec(build_command, unpack(targets))
 end
 
 if command == 'generate' then
