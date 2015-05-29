@@ -51,6 +51,22 @@ function find(f, t)
     return nil
 end
 
+function filter(pred, list)
+    local o = {}
+    for _, v in ipairs(list or {}) do
+        if pred(v) then
+            table.insert(o, v)
+        end
+    end
+    return o
+end
+
+function compose(f, g)
+    return function (...)
+        f(unpack(g(...)))
+    end
+end
+
 local function find_by_name(name, list)
     local function by_name(x)
         return x.name == name
