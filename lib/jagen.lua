@@ -1,7 +1,7 @@
 require 'common'
 require 'ninja'
 require 'rules'
-require 'system'
+local system = require 'system'
 require 'target'
 
 Jagen = {}
@@ -16,7 +16,7 @@ function Jagen.error(...)
     print(string.format('\027[1;31m:::\027[0m %s', table.concat({...}, ' ')))
 end
 function Jagen.debug(...)
-    if env('pkg_debug') == 'yes' then
+    if os.getenv('pkg_debug') == 'yes' then
         print(string.format('\027[1;36m:::\027[0m %s', table.concat({...}, ' ')))
     end
 end
@@ -35,8 +35,8 @@ end
 
 function Jagen.generate_include_script(pkg)
     local name = pkg.name
-    local dir = env('pkg_build_include_dir')
-    local filename = mkpath(dir, name .. '.sh')
+    local dir = os.getenv('pkg_build_include_dir')
+    local filename = system.mkpath(dir, name .. '.sh')
 
     local function source(pkg)
         local o = {}
@@ -46,7 +46,7 @@ function Jagen.generate_include_script(pkg)
                 table.insert(o, s.type)
                 table.insert(o, s.location)
             elseif s.type == 'dist' then
-                table.insert(o, mkpath('$pkg_dist_dir', s.location))
+                table.insert(o, system.mkpath('$pkg_dist_dir', s.location))
             end
         end
         return string.format('p_source="%s"\n', table.concat(o, ' '))
@@ -64,7 +64,7 @@ function Jagen.generate_include_script(pkg)
         return table.concat(o, '\n')
     end
 
-    Jagen.mkdir(dir)
+    system.mkdir(dir)
 
     local f = assert(io.open(filename, 'w+'))
     f:write('#!/bin/sh\n')
@@ -79,16 +79,16 @@ command = arg[1]
 
 function Jagen.build(build_file, args)
     local targets = map(tostring, map(Target.new_from_arg, args))
-    local build_command = mkpath(env('pkg_lib_dir'), 'build.sh')
+    local build_command = system.mkpath(os.getenv('pkg_lib_dir'), 'build.sh')
 
-    return exec(build_command, unpack(targets))
+    return system.exec(build_command, unpack(targets))
 end
 
 if command == 'generate' then
     local build_file = arg[2]
     local rules_file = arg[3]
 
-    if file_older(build_file, rules_file) then
+    if system.file_older(build_file, rules_file) then
         Jagen.message("Generating build rules")
         local packages = load_rules(arg[3])
         Ninja:generate(packages, arg[2], arg[3])

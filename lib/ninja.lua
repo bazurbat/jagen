@@ -13,11 +13,11 @@ end
 function Ninja:generate(packages, out_file, in_file)
     local out = io.open(out_file, 'w')
 
-    out:write(string.format('builddir = %s\n\n', env('pkg_build_dir')))
+    out:write(string.format('builddir = %s\n\n', os.getenv('pkg_build_dir')))
     out:write(string.format('rule command\n'))
     out:write(string.format('    command = $command\n\n'))
     out:write(string.format('rule script\n'))
-    out:write(string.format('    command = ' .. env('pkg_bin_dir') .. '/$script && touch $out\n\n'))
+    out:write(string.format('    command = ' .. os.getenv('pkg_bin_dir') .. '/$script && touch $out\n\n'))
 
     local sep = string.format(' $\n%s', Jagen.format_indent(16))
 
