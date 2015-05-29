@@ -9,13 +9,18 @@ pkg_build() {
         prefix="$host_dir"
     else
         prefix="$target_prefix"
-        cross_options="--enable-cross-compile --cross-prefix=$target_system- \
-            --target-os=linux"
+
+        cross_options="--target-os=linux --enable-cross-compile"
         case $sdk_target_board in
             ast50|ast100)
+                cross_options="$cross_options --cross-prefix=${target_system}-"
                 cross_options="$cross_options --arch=mipsel --cpu=24kf"
                 ;;
             *)
+                cross_options="$cross_options \
+                    --cross-prefix=${android_toolchain_dir}/bin/${target_system}-"
+                cross_options="$cross_options \
+                    --sysroot=$android_toolchain_dir/sysroot"
                 cross_options="$cross_options --arch=$target_arch"
                 ;;
         esac
