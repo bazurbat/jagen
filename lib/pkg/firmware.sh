@@ -12,7 +12,7 @@ pkg_clean() {
 
 pkg_install() {
     [ -d "$p_work_dir/bin" ] || mkdir -p "$p_work_dir/bin"
-    for bin in smmplayer; do
+    for bin in smplayer smmplayer; do
         p_run install -vm 755 "$p_source_dir/bin/$bin" \
             "$p_work_dir/bin"
     done
