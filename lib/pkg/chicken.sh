@@ -25,14 +25,28 @@ pkg_build_host() {
 }
 
 pkg_build_target() {
-    use_env host
-
-    p_run cmake -G"$cmake_generator" \
-        -DCMAKE_BUILD_TYPE="$cmake_build_type" \
-        -DCMAKE_SYSTEM_NAME="Linux" \
-        -DCMAKE_SYSTEM_PROCESSOR="mips32" \
-        -DCMAKE_INSTALL_PREFIX="$target_prefix" \
-        "$p_source_dir"
+    case $sdk_target_board in
+        ast50|ast100)
+            use_env host
+            p_run cmake -G"$cmake_generator" \
+                -DCMAKE_BUILD_TYPE="$cmake_build_type" \
+                -DCMAKE_SYSTEM_NAME="Linux" \
+                -DCMAKE_SYSTEM_PROCESSOR="mips32" \
+                -DCMAKE_INSTALL_PREFIX="$target_prefix" \
+                "$p_source_dir"
+            ;;
+        *)
+            p_run cmake -G"$cmake_generator" \
+                -DCMAKE_TOOLCHAIN_FILE="$pkg_src_dir/android-cmake/android.toolchain.cmake" \
+                -DANDROID_STANDALONE_TOOLCHAIN="$android_toolchain_dir" \
+                -DANDROID_GOLD_LINKER=NO \
+                -DCMAKE_BUILD_TYPE="$cmake_build_type" \
+                -DCMAKE_SYSTEM_NAME="Linux" \
+                -DCMAKE_SYSTEM_PROCESSOR="mips32" \
+                -DCMAKE_INSTALL_PREFIX="$target_prefix" \
+                "$p_source_dir"
+            ;;
+    esac
 
     p_run cmake --build . -- $cmake_build_options
 }

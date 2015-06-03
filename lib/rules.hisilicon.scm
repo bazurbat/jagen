@@ -33,6 +33,14 @@
   (stage 'target 'build   (depends (target 'ast-files 'unpack)))
   (stage 'target 'install (depends (target 'firmware  'unpack))))
 
+(package 'chicken
+  (source 'git "https://github.com/bazurbat/chicken-scheme.git"
+          (branch "cmake"))
+  (stage 'host 'build)
+  (stage 'host 'install)
+  (stage 'target 'build (depends (target 'chicken 'install 'host)))
+  (stage 'target 'install (depends (target 'firmware 'unpack))))
+
 (package 'astindex
   (source 'hg "ssh://hg@bitbucket.org/art-system/astindex"
           (directory "karaoke-player/source/astindex"))
@@ -47,7 +55,8 @@
   (stage 'target 'install))
 
 (package 'firmware
-  (stage 'install (depends (target 'karaoke-player  'install 'target)))
+  (stage 'install (depends (target 'chicken 'install 'target)
+                           (target 'karaoke-player  'install 'target)))
   (stage 'strip)
   (stage 'deploy))
 
