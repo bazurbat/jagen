@@ -6,6 +6,10 @@ require 'target'
 
 jagen = {}
 
+function jagen.is_debug()
+    return os.getenv('pkg_debug') == 'yes'
+end
+
 function jagen.message(...)
     print(string.format('\027[1;34m:::\027[0m %s', table.concat({...}, ' ')))
 end
@@ -16,7 +20,7 @@ function jagen.error(...)
     print(string.format('\027[1;31m:::\027[0m %s', table.concat({...}, ' ')))
 end
 function jagen.debug(...)
-    if os.getenv('pkg_debug') == 'yes' then
+    if jagen.is_debug() then
         print(string.format('\027[1;36m:::\027[0m %s', table.concat({...}, ' ')))
     end
 end
@@ -120,11 +124,12 @@ end
 if command == 'generate' then
     local build_file = arg[2]
     local rules_file = arg[3]
+    local debug = os.getenv('')
 
-    if system.file_older(build_file, rules_file) then
+    if system.file_older(build_file, rules_file) or jagen.is_debug() then
         jagen.message("Generating build rules")
         local packages = load_rules(arg[3])
-        Ninja:generate(packages, arg[2], arg[3])
+        ninja:generate(packages, arg[2], arg[3])
         for_each(packages, jagen.generate_include_script)
     end
 elseif command == 'build' then
