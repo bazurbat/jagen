@@ -1,8 +1,8 @@
 
-Ninja = {}
+ninja = {}
 
-function Ninja:format_inputs(inputs)
-    local sep = string.format(' $\n%s', Jagen.format_indent(16))
+function ninja:format_inputs(inputs)
+    local sep = string.format(' $\n%s', jagen.format_indent(16))
     local t = {}
     for _, d in ipairs(inputs) do
         table.insert(t, tostring(d))
@@ -10,7 +10,7 @@ function Ninja:format_inputs(inputs)
     return table.concat(t, sep)
 end
 
-function Ninja:generate(packages, out_file, in_file)
+function ninja:generate(packages, out_file, in_file)
     local out = io.open(out_file, 'w')
 
     out:write(string.format('builddir = %s\n\n', os.getenv('pkg_build_dir')))
@@ -19,7 +19,7 @@ function Ninja:generate(packages, out_file, in_file)
     out:write(string.format('rule script\n'))
     out:write(string.format('    command = ' .. os.getenv('pkg_bin_dir') .. '/$script && touch $out\n\n'))
 
-    local sep = string.format(' $\n%s', Jagen.format_indent(16))
+    local sep = string.format(' $\n%s', jagen.format_indent(16))
 
     for i, pkg in ipairs(packages) do
         local pn = pkg.name
@@ -28,8 +28,8 @@ function Ninja:generate(packages, out_file, in_file)
             local sc = stage.config
             out:write(string.format('build %s: script', tostring(stage)))
             if #stage.inputs > 0 then
-                out:write(' $\n' .. Jagen.format_indent(16))
-                out:write(Ninja:format_inputs(stage.inputs))
+                out:write(' $\n' .. jagen.format_indent(16))
+                out:write(ninja:format_inputs(stage.inputs))
             end
             out:write('\n')
             out:write(string.format('    script = jagen-pkg %s %s', pn, sn))
