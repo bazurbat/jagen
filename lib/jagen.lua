@@ -7,7 +7,7 @@ require 'target'
 jagen = {}
 
 function jagen.is_debug()
-    return os.getenv('pkg_debug') == 'yes'
+    return os.getenv('pkg_debug')
 end
 
 function jagen.message(...)
@@ -21,6 +21,16 @@ function jagen.error(...)
 end
 function jagen.debug(...)
     if jagen.is_debug() then
+        print(string.format('\027[1;36m:::\027[0m %s', table.concat({...}, ' ')))
+    end
+end
+function jagen.debug1(...)
+    if os.getenv('pkg_debug') == '1' then
+        print(string.format('\027[1;36m:::\027[0m %s', table.concat({...}, ' ')))
+    end
+end
+function jagen.debug2(...)
+    if os.getenv('pkg_debug') == '2' then
         print(string.format('\027[1;36m:::\027[0m %s', table.concat({...}, ' ')))
     end
 end
@@ -81,20 +91,6 @@ end
 
 command = arg[1]
 
-function jagen.load_rules()
-    local sdk = os.getenv('pkg_sdk')
-    local rules
-    if sdk then
-        rules = require('rules.'..sdk)
-    else
-        rules = require('rules')
-    end
-    for _, rule in ipairs(rules) do
-        rules[rule.name] = rule
-    end
-    return rules
-end
-
 function jagen.build(build_file, args)
     local build_command = system.mkpath(os.getenv('pkg_lib_dir'), 'build.sh')
 
@@ -128,7 +124,7 @@ if command == 'generate' then
 
     if system.file_older(build_file, rules_file) or jagen.is_debug() then
         jagen.message("Generating build rules")
-        local packages = load_rules(arg[3])
+        local packages = load_rules()
         ninja:generate(packages, arg[2], arg[3])
         for_each(packages, jagen.generate_include_script)
     end

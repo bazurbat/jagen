@@ -1,5 +1,7 @@
+local system = require 'system'
 
 function read_package(rule)
+    jagen.debug2('read_package: '..rule.name)
     local stages = {}
     for i, s in ipairs(rule) do
         table.insert(stages, s)
@@ -9,8 +11,21 @@ function read_package(rule)
     return rule
 end
 
-function load_rules(pathname)
-    local rules = dofile(pathname)
+function load_rules()
+    local rules = {}
+    local sdk = os.getenv('pkg_sdk')
+
+    if sdk then
+        local lib_dir = os.getenv('pkg_lib_dir')
+        local filename = system.mkpath(lib_dir, 'rules.'..sdk..'.lua')
+        rules = dofile(filename)
+    else
+        return rules
+    end
+
+    for _, rule in ipairs(rules) do
+        rules[rule.name] = rule
+    end
 
     local function load_package(pkg_rule)
         local package = {}
