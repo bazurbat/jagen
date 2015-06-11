@@ -98,54 +98,6 @@ function table.rest(t, start)
 end
 
 --}}}
---{{{ ninja
-
-ninja = {}
-
-function ninja:format_inputs(inputs)
-    local sep = string.format(' $\n%s', jagen.format_indent(16))
-    local t = {}
-    for _, d in ipairs(inputs) do
-        table.insert(t, tostring(d))
-    end
-    return table.concat(t, sep)
-end
-
-function ninja:generate(packages, out_file, in_file)
-    local out = io.open(out_file, 'w')
-
-    out:write(string.format('builddir = %s\n\n', os.getenv('pkg_build_dir')))
-    out:write(string.format('rule command\n'))
-    out:write(string.format('    command = $command\n\n'))
-    out:write(string.format('rule script\n'))
-    out:write(string.format('    command = ' .. os.getenv('pkg_bin_dir') .. '/$script && touch $out\n\n'))
-
-    local sep = string.format(' $\n%s', jagen.format_indent(16))
-
-    for i, pkg in ipairs(packages) do
-        local pn = pkg.name
-        for j, stage in ipairs(pkg.stages or {}) do
-            local sn = stage.stage
-            local sc = stage.config
-            out:write(string.format('build %s: script', tostring(stage)))
-            if #stage.inputs > 0 then
-                out:write(' $\n' .. jagen.format_indent(16))
-                out:write(ninja:format_inputs(stage.inputs))
-            end
-            out:write('\n')
-            out:write(string.format('    script = jagen-pkg %s %s', pn, sn))
-            if sc then
-                out:write(' ', sc)
-            end
-            out:write('\n')
-        end
-        out:write("\n")
-    end
-
-    out:close()
-end
-
---}}}
 --{{{ system
 
 local system = {}
@@ -180,6 +132,67 @@ function system.exec(command, ...)
     end
     local status = os.execute(table.concat(cmd, ' '))
     return status
+end
+
+--}}}
+--{{{ format
+
+local format = {}
+
+function format.indent(n)
+    local t = {}
+    for i = 1, n do
+        table.insert(t, " ")
+    end
+    return table.concat(t)
+end
+
+--}}}
+--{{{ ninja
+
+ninja = {}
+
+function ninja:format_inputs(inputs)
+    local sep = string.format(' $\n%s', format.indent(16))
+    local t = {}
+    for _, d in ipairs(inputs) do
+        table.insert(t, tostring(d))
+    end
+    return table.concat(t, sep)
+end
+
+function ninja:generate(packages, out_file, in_file)
+    local out = io.open(out_file, 'w')
+
+    out:write(string.format('builddir = %s\n\n', os.getenv('pkg_build_dir')))
+    out:write(string.format('rule command\n'))
+    out:write(string.format('    command = $command\n\n'))
+    out:write(string.format('rule script\n'))
+    out:write(string.format('    command = ' .. os.getenv('pkg_bin_dir') .. '/$script && touch $out\n\n'))
+
+    local sep = string.format(' $\n%s', format.indent(16))
+
+    for i, pkg in ipairs(packages) do
+        local pn = pkg.name
+        for j, stage in ipairs(pkg.stages or {}) do
+            local sn = stage.stage
+            local sc = stage.config
+            out:write(string.format('build %s: script', tostring(stage)))
+            if #stage.inputs > 0 then
+                out:write(' $\n' .. format.indent(16))
+                out:write(ninja:format_inputs(stage.inputs))
+            end
+            out:write('\n')
+            out:write(string.format('    script = jagen-pkg %s %s', pn, sn))
+            if sc then
+                out:write(' ', sc)
+            end
+            out:write('\n')
+        end
+        out:write("\n")
+    end
+
+    out:close()
 end
 
 --}}}
@@ -223,11 +236,17 @@ end
 --}}}
 --{{{ jagen
 
-jagen = {}
+jagen =
+{
+    debug = os.getenv('pkg_debug'),
+    flags = os.getenv('pkg_flags'),
+    sdk   = os.getenv('pkg_sdk'),
 
-function jagen.is_debug()
-    return os.getenv('pkg_debug')
-end
+    bin_dir   = os.getenv('pkg_bin_dir'),
+    lib_dir   = os.getenv('pkg_lib_dir'),
+    src_dir   = os.getenv('pkg_src_dir'),
+    build_dir = os.getenv('pkg_build_dir'),
+}
 
 function jagen.message(...)
     print(string.format('\027[1;34m:::\027[0m %s', table.concat({...}, ' ')))
@@ -239,7 +258,7 @@ function jagen.error(...)
     print(string.format('\027[1;31m:::\027[0m %s', table.concat({...}, ' ')))
 end
 function jagen.debug(...)
-    if jagen.is_debug() then
+    if jagen.debug then
         print(string.format('\027[1;36m:::\027[0m %s', table.concat({...}, ' ')))
     end
 end
@@ -258,16 +277,8 @@ function jagen.flag(f)
     return false
 end
 
-function jagen.format_indent(n)
-    local t = {}
-    for i = 1, n do
-        table.insert(t, " ")
-    end
-    return table.concat(t)
-end
-
-function read_package(rule)
-    jagen.debug2('read_package: '..rule.name)
+function jagen.load_package(rule)
+    jagen.debug2('load package: '..rule.name)
     local stages = {}
     for i, s in ipairs(rule) do
         table.insert(stages, s)
@@ -424,8 +435,7 @@ function jagen.generate_include_script(pkg)
 end
 
 --}}}
-
-command = arg[1]
+--{{{ build
 
 function jagen.build(build_file, args)
     local build_command = system.mkpath(os.getenv('pkg_lib_dir'), 'build.sh')
@@ -453,12 +463,16 @@ function jagen.build(build_file, args)
     return 0 -- system.exec(build_command, unpack(targets))
 end
 
+---}}}
+
+command = arg[1]
+
 if command == 'generate' then
     local build_file = arg[2]
     local rules_file = arg[3]
     local debug = os.getenv('')
 
-    if system.file_older(build_file, rules_file) or jagen.is_debug() then
+    if system.file_older(build_file, rules_file) or jagen.debug then
         jagen.message("Generating build rules")
         local packages = jagen.load_rules()
         ninja:generate(packages, arg[2], arg[3])

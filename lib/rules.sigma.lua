@@ -1,7 +1,7 @@
 local packages = {}
 
 local function package(rule, stages)
-    local pkg = read_package(rule)
+    local pkg = jagen.load_package(rule)
     local default_stages = {
         { 'update' }, { 'clean' }, { 'unpack' }, { 'patch' }
     }
