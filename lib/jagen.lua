@@ -128,7 +128,7 @@ end
 function system.exec(command, ...)
     local cmd = { command }
     for _, arg in ipairs({...}) do
-        table.insert(cmd, string.format('%q', arg))
+        table.insert(cmd, string.format('%q', tostring(arg)))
     end
     local status = os.execute(table.concat(cmd, ' '))
     return status
@@ -223,6 +223,20 @@ function target.new_from_arg(arg)
     return target.new(name, stage, config)
 end
 
+function target.match(a, b)
+    if a.name == b.name then
+        if a.stage and a.config then
+            return a.stage == b.stage and a.config == b.config
+        elseif a.stage then
+            return a.stage == b.stage
+        elseif a.config then
+            return a.config == b.config or not b.config
+        end
+        return true
+    end
+    return false
+end
+
 target.meta.__eq = function(a, b)
     return a.name == b.name and
     a.stage == b.stage and
@@ -248,28 +262,32 @@ jagen =
     build_dir = os.getenv('pkg_build_dir'),
 }
 
+function jagen.tostring(...)
+    return table.concat(map(tostring, {...}), ' ')
+end
+
 function jagen.message(...)
-    print(string.format('\027[1;34m:::\027[0m %s', table.concat({...}, ' ')))
+    print(string.format('\027[1;34m:::\027[0m %s', jagen.tostring(...)))
 end
 function jagen.warning(...)
-    print(string.format('\027[1;33m:::\027[0m %s', table.concat({...}, ' ')))
+    print(string.format('\027[1;33m:::\027[0m %s', jagen.tostring(...)))
 end
 function jagen.error(...)
-    print(string.format('\027[1;31m:::\027[0m %s', table.concat({...}, ' ')))
+    print(string.format('\027[1;31m:::\027[0m %s', jagen.tostring(...)))
 end
 function jagen.debug(...)
     if jagen.debug then
-        print(string.format('\027[1;36m:::\027[0m %s', table.concat({...}, ' ')))
+        print(string.format('\027[1;36m:::\027[0m %s', jagen.tostring(...)))
     end
 end
 function jagen.debug1(...)
-    if os.getenv('pkg_debug') == '1' then
-        print(string.format('\027[1;36m:::\027[0m %s', table.concat({...}, ' ')))
+    if os.getenv('pkg_debug') >= '1' then
+        print(string.format('\027[1;36m:::\027[0m %s', jagen.tostring(...)))
     end
 end
 function jagen.debug2(...)
-    if os.getenv('pkg_debug') == '2' then
-        print(string.format('\027[1;36m:::\027[0m %s', table.concat({...}, ' ')))
+    if os.getenv('pkg_debug') >= '2' then
+        print(string.format('\027[1;36m:::\027[0m %s', jagen.tostring(...)))
     end
 end
 
@@ -289,20 +307,10 @@ function jagen.load_package(rule)
 end
 
 function jagen.load_rules()
-    local rules = {}
-    local sdk = os.getenv('pkg_sdk')
+    assert(jagen.sdk)
 
-    if sdk then
-        local lib_dir = os.getenv('pkg_lib_dir')
-        local filename = system.mkpath(lib_dir, 'rules.'..sdk..'.lua')
-        rules = dofile(filename)
-    else
-        return rules
-    end
-
-    for _, rule in ipairs(rules) do
-        rules[rule.name] = rule
-    end
+    local filename = system.mkpath(jagen.lib_dir, 'rules.'..jagen.sdk..'.lua')
+    local rules = dofile(filename)
 
     local function load_package(pkg_rule)
         local package = {}
@@ -381,13 +389,14 @@ function jagen.load_rules()
         package.patches = pkg_rule.patches
         package.stages = collected
 
-        -- print("===", package.name)
-        -- pretty.dump(package)
-
         return package
     end
 
     local packages = map(load_package, rules)
+
+    for _, pkg in ipairs(packages) do
+        packages[pkg.name] = pkg
+    end
 
     return packages
 end
@@ -438,29 +447,33 @@ end
 --{{{ build
 
 function jagen.build(build_file, args)
-    local build_command = system.mkpath(os.getenv('pkg_lib_dir'), 'build.sh')
-
-    local rules = jagen.load_rules()
-
+    local packages = jagen.load_rules()
     local targets = map(target.new_from_arg, args)
-    for k, t in pairs(targets) do
+    local o = {}
+
+    local function maybe_add_build_stage(t)
         if not t.stage then
             t.stage = 'build'
         end
-        if not rules[t.name] then
-            targets[k] = nil
-        else
-            for k, v in pairs(rules[t.name].stages) do
-                print(k, v)
+        return t
+    end
+
+    targets = map(maybe_add_build_stage, targets)
+
+    for _, t in ipairs(targets) do
+        local pkg = packages[t.name]
+        if pkg then
+            for k, s in pairs(pkg.stages) do
+                if target.match(t, s) then
+                    table.insert(o, s)
+                end
             end
         end
     end
 
-    for _, t in pairs(targets) do
-        print(t)
-    end
+    local wrapper = system.mkpath(jagen.lib_dir, 'build.sh')
 
-    return 0 -- system.exec(build_command, unpack(targets))
+    return system.exec(wrapper, 'build', unpack(targets))
 end
 
 ---}}}
@@ -470,7 +483,6 @@ command = arg[1]
 if command == 'generate' then
     local build_file = arg[2]
     local rules_file = arg[3]
-    local debug = os.getenv('')
 
     if system.file_older(build_file, rules_file) or jagen.debug then
         jagen.message("Generating build rules")
