@@ -16,9 +16,17 @@ use_toolchain target
 export ARCH=mips
 export KCFLAGS="-mhard-float -Wa,-mhard-float"
 
+build_libs="rmcore rmcec rmedid rmhdmi rmhsi rmi2c rmsha1 rmvideoout rmoutput"
+
 pkg_build() {
     p_run make
-    p_run make
+
+    for lib in $build_libs; do
+        p_run make -C "MRUA_src/$lib/src"
+    done
+
+    p_run make -C MRUA_src/gbuslib/src
+    p_run make -C MRUA_src/rmoutput/rua/src
     p_run make -C MRUA_src/splashscreen/utils
 }
 
@@ -37,46 +45,31 @@ pkg_modules() {
 }
 
 pkg_install() {
-    local libs
+    local bin_dst="$sdk_firmware_dir/bin"
+    local lib_dst="$sdk_firmware_dir/lib"
 
     for bin in ikc xkc; do
-        p_run install -vm 755 \
-            "$p_source_dir/bin/$bin" \
-            "$sdk_firmware_dir/bin"
+        p_run cp -va "$p_source_dir/bin/$bin" "$bin_dst"
     done
 
     for bin in gbus_read_bin_to_file gbus_read_uint32; do
-        p_run install -vm 755 \
-            "$p_source_dir/MRUA_src/llad_smallapps/$bin" \
-            "$sdk_firmware_dir/bin"
+        p_run cp -va "$p_source_dir/MRUA_src/llad_smallapps/$bin" "$bin_dst"
     done
 
     for bin in rmfree rmmalloc; do
-        p_run install -vm 755 \
-            "$p_source_dir/MRUA_src/llad_xtest/$bin" \
-            "$sdk_firmware_dir/bin"
+        p_run cp -va "$p_source_dir/MRUA_src/llad_xtest/$bin" "$bin_dst"
     done
 
-    libs="gbus llad rmchannel rmcore rmcw rmmm rmmm_g rmmm_t"
+    for lib in $build_libs; do
+        p_run cp -va "$p_source_dir/MRUA_src/$lib/src/lib${lib}.so" "$lib_dst"
+    done
 
-    libs="$libs \
-        rmcec \
-        rmedid \
-        rmhdmi \
-        rmhsi \
-        rmi2c \
-        rmsha1 \
-        rmvideoout \
-        rua"
+    p_run cp -va "$p_source_dir/MRUA_src/gbuslib/src/libgbus.so" "$lib_dst"
+    p_run cp -va "$p_source_dir/MRUA_src/rmoutput/rua/src/libruaoutput.so" "$lib_dst"
 
-    libs="$libs \
-        rmoutput \
-        ruaoutput"
+    local libs="llad rmchannel rmcw rmmm rmmm_g rmmm_t rua"
 
     for lib in $libs; do
-        p_run install -vm 755 \
-            "$p_source_dir/lib/lib${lib}.so" \
-            "$sdk_firmware_dir/lib"
+        p_run cp -va "$p_source_dir/lib/lib${lib}.so" "$lib_dst"
     done
-
 }
