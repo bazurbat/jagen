@@ -12,21 +12,21 @@ function copy(t)
 end
 
 function list(t)
-    local r = {}
+    local o = {}
     for _, v in ipairs(t or {}) do
-        table.insert(r, v)
+        table.insert(o, v)
     end
-    return r
+    return o
 end
 
 function append(...)
-    local r = {}
+    local o = {}
     for _, arg in ipairs({...}) do
         for _, i in ipairs(arg) do
-            table.insert(r, i)
+            table.insert(o, i)
         end
     end
-    return r
+    return o
 end
 
 function for_each(t, f)
@@ -223,18 +223,11 @@ function target.new_from_arg(arg)
     return target.new(name, stage, config)
 end
 
-function target.match(a, b)
-    if a.name == b.name then
-        if a.stage and a.config then
-            return a.stage == b.stage and a.config == b.config
-        elseif a.stage then
-            return a.stage == b.stage
-        elseif a.config then
-            return a.config == b.config or not b.config
-        end
-        return true
+function target.maybe_add_stage(t, stage)
+    if not t.stage then
+        t.stage = stage
     end
-    return false
+    return t
 end
 
 target.meta.__eq = function(a, b)
@@ -444,36 +437,60 @@ function jagen.generate_include_script(pkg)
 end
 
 --}}}
+--{{{ pkg
+
+local pkg = {}
+
+function pkg.filter(pkg, target)
+    local function match_config(a, b)
+        return not a.config or a.config == b.config
+    end
+    local function match_stage(a, b)
+        return not a.stage or a.stage == b.stage
+    end
+    local function match_target(stage)
+        return match_stage(target, stage) and match_config(target, stage)
+    end
+    return pkg and filter(match_target, pkg.stages) or {}
+end
+
+--}}}
 --{{{ build
 
-function jagen.build(build_file, args)
+local build = {}
+
+build.wrapper = system.mkpath(jagen.lib_dir, 'build.sh')
+
+function build.find_targets(packages, arg)
+    local t = target.new_from_arg(arg)
+    local targets = pkg.filter(packages[t.name], t)
+    if #targets == 0 then
+        jagen.warning('No matching targets found for:', arg)
+        return {}
+    end
+    return targets
+end
+
+function jagen.build(args)
     local packages = jagen.load_rules()
-    local targets = map(target.new_from_arg, args)
-    local o = {}
+    local targets = {}
 
-    local function maybe_add_build_stage(t)
-        if not t.stage then
-            t.stage = 'build'
-        end
-        return t
+    for _, arg in ipairs(args) do
+        targets = append(targets, build.find_targets(packages, arg))
     end
 
-    targets = map(maybe_add_build_stage, targets)
+    return system.exec(build.wrapper, 'build', unpack(targets))
+end
 
-    for _, t in ipairs(targets) do
-        local pkg = packages[t.name]
-        if pkg then
-            for k, s in pairs(pkg.stages) do
-                if target.match(t, s) then
-                    table.insert(o, s)
-                end
-            end
-        end
+function jagen.rebuild(args)
+    local packages = jagen.load_rules()
+    local targets = {}
+
+    for _, arg in ipairs(args) do
+        targets = append(targets, build.find_targets(packages, arg))
     end
 
-    local wrapper = system.mkpath(jagen.lib_dir, 'build.sh')
-
-    return system.exec(wrapper, 'build', unpack(targets))
+    return system.exec(build.wrapper, 'rebuild', unpack(targets))
 end
 
 ---}}}
@@ -494,5 +511,10 @@ elseif command == 'build' then
     local build_file = arg[2]
     local args = table.rest(arg, 3)
 
-    return jagen.build(build_file, args)
+    return jagen.build(args)
+elseif command == 'rebuild' then
+    local build_file = arg[2]
+    local args = table.rest(arg, 3)
+
+    return jagen.rebuild(args)
 end
