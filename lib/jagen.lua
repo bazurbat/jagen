@@ -494,6 +494,26 @@ function jagen.rebuild(args)
 end
 
 ---}}}
+--{{ src
+
+local src = {}
+
+function src.is_scm(pkg)
+    local source = pkg.source
+    return source and (source.type == 'git' or source.type == 'hg')
+end
+
+function src.status(args)
+    local packages = jagen.load_rules()
+
+    local source_packages = filter(src.is_scm, packages);
+
+    for _, p in pairs(source_packages) do
+        print(p.name)
+    end
+end
+
+--}}
 
 command = arg[1]
 
@@ -517,6 +537,15 @@ elseif command == 'rebuild' then
     local args = table.rest(arg, 3)
 
     return jagen.rebuild(args)
+elseif command == 'src' then
+    local subcommand = arg[2]
+    local args = table.rest(arg, 3)
+
+    if subcommand == 'status' then
+        return src.status(args)
+    else
+        jagen.error('Unknown src subcommand:', subcommand);
+    end
 else
     jagen.error('Unknown command:', command)
 end
