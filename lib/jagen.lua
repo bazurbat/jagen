@@ -517,4 +517,6 @@ elseif command == 'rebuild' then
     local args = table.rest(arg, 3)
 
     return jagen.rebuild(args)
+else
+    jagen.error('Unknown command:', command)
 end
