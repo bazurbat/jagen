@@ -2,6 +2,8 @@
 
 p_git_is_dirty() { test "$(git status --porcelain)"; }
 
+p_git_head() { p_run git rev-parse HEAD; }
+
 p_git_clone() {
     p_run git clone \
         --progress \
@@ -30,6 +32,8 @@ p_git_discard() { p_run git checkout .; }
 p_git_clean() { p_run git clean -fxd; }
 
 p_hg_is_dirty() { test "$(hg status)"; }
+
+p_hg_head() { p_run hg id -i; }
 
 p_hg_clone() { p_run hg clone -r tip "$1" "$2"; }
 
@@ -71,6 +75,13 @@ p_src_is_dirty() {
     local kind=$(p_src_kind "$dir")
 
     ( cd "$dir" && p_${kind}_is_dirty )
+}
+
+p_src_head() {
+    local dir="$1"
+    local kind=$(p_src_kind "$dir")
+
+    (cd "$dir" && p_${kind}_head ) || exit
 }
 
 p_src_clone() {

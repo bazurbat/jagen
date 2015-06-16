@@ -130,7 +130,9 @@ function system.exec(command, ...)
     for _, arg in ipairs({...}) do
         table.insert(cmd, string.format('%q', tostring(arg)))
     end
-    local status = os.execute(table.concat(cmd, ' '))
+    local line = table.concat(cmd, ' ')
+    jagen.debug2(line)
+    local status = os.execute(line)
     return status
 end
 
@@ -256,6 +258,10 @@ jagen =
 }
 
 jagen.cmd = system.mkpath(jagen.lib_dir, 'cmd.sh')
+
+function jagen.exec(...)
+    return system.exec(jagen.cmd, ...)
+end
 
 function jagen.tostring(...)
     return table.concat(map(tostring, {...}), ' ')
@@ -456,6 +462,19 @@ function pkg.filter(pkg, target)
     return pkg and filter(match_target, pkg.stages) or {}
 end
 
+function pkg.is_source(p)
+    local source = p.source
+    return source and (source.type == 'git' or source.type == 'hg')
+end
+
+function pkg.directory(p)
+    if pkg.is_source(p) then
+        return system.mkpath(jagen.src_dir, p.source.directory or p.name)
+    else
+        return system.mkpath(jagen.build_dir, 'pkg', p.name)
+    end
+end
+
 --}}}
 --{{{ build
 
@@ -494,26 +513,24 @@ function jagen.rebuild(args)
 end
 
 ---}}}
---{{ src
+--{{{ src
 
 local src = {}
-
-function src.is_scm(pkg)
-    local source = pkg.source
-    return source and (source.type == 'git' or source.type == 'hg')
-end
 
 function src.status(args)
     local packages = jagen.load_rules()
 
-    local source_packages = filter(src.is_scm, packages);
+    local source_packages = filter(pkg.is_source, packages);
 
-    for _, p in pairs(source_packages) do
-        print(p.name)
+    for _, p in ipairs(source_packages) do
+        local name = p.name
+        local location = p.source.location
+        local directory = p.source.directory
+        jagen.exec('status', name, location, directory)
     end
 end
 
---}}
+--}}}
 
 command = arg[1]
 
