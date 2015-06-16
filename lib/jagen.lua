@@ -255,6 +255,8 @@ jagen =
     build_dir = os.getenv('pkg_build_dir'),
 }
 
+jagen.cmd = system.mkpath(jagen.lib_dir, 'cmd.sh')
+
 function jagen.tostring(...)
     return table.concat(map(tostring, {...}), ' ')
 end
@@ -459,8 +461,6 @@ end
 
 local build = {}
 
-build.wrapper = system.mkpath(jagen.lib_dir, 'build.sh')
-
 function build.find_targets(packages, arg)
     local t = target.new_from_arg(arg)
     local targets = pkg.filter(packages[t.name], t)
@@ -479,7 +479,7 @@ function jagen.build(args)
         targets = append(targets, build.find_targets(packages, arg))
     end
 
-    return system.exec(build.wrapper, 'build', unpack(targets))
+    return system.exec(jagen.cmd, 'build', unpack(targets))
 end
 
 function jagen.rebuild(args)
@@ -490,7 +490,7 @@ function jagen.rebuild(args)
         targets = append(targets, build.find_targets(packages, arg))
     end
 
-    return system.exec(build.wrapper, 'rebuild', unpack(targets))
+    return system.exec(jagen.cmd, 'rebuild', unpack(targets))
 end
 
 ---}}}
