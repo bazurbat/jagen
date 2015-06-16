@@ -59,7 +59,7 @@ package {
 
 package {
     name = 'ucode',
-    source = 'mruafw_SMP8654F_3_11_3_prod',
+    source = 'mruafw_SMP8654F_3_11_3_prod.tgz',
     { 'unpack',  { 'mrua',     'build'  } },
     { 'install', { 'firmware', 'unpack' } }
 }
