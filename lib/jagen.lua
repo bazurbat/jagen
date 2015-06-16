@@ -567,19 +567,6 @@ end
 
 function src.status(args)
     local packages = jagen.load_rules()
-
-    local source_packages = filter(pkg.is_source, packages);
-
-    for _, p in ipairs(source_packages) do
-        local name = p.name
-        local location = p.source.location
-        local directory = p.source.directory
-        jagen.exec('status', name, location, directory)
-    end
-end
-
-function src.directory(args)
-    local packages = jagen.load_rules()
     local source_packages = filter(pkg.is_source, packages)
 
     for _, p in ipairs(source_packages) do
@@ -618,8 +605,6 @@ elseif command == 'src' then
 
     if subcommand == 'status' then
         return src.status(args)
-    elseif subcommand == 'directory' then
-        return src.directory(args)
     else
         jagen.error('Unknown src subcommand:', subcommand);
     end
