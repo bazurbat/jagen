@@ -1,8 +1,7 @@
 #!/bin/sh
 
 build() {
-    echo build
-    echo ninja -C "$pkg_build_dir" "$@"
+    ninja -C "$pkg_build_dir" "$@"
 }
 
 rebuild() {
