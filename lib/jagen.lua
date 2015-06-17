@@ -293,6 +293,11 @@ function jagen.debug2(...)
 end
 
 function jagen.flag(f)
+    for w in string.gmatch(jagen.flags, "[_%w]+") do
+        if w == f then
+            return true
+        end
+    end
     return false
 end
 
