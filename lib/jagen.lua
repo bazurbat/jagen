@@ -595,6 +595,7 @@ end
 --}}}
 
 command = arg[1]
+status = 0
 
 if command == 'generate' then
     local build_file = arg[2]
@@ -611,12 +612,12 @@ elseif command == 'build' then
     local build_file = arg[2]
     local args = table.rest(arg, 3)
 
-    return jagen.build(args)
+    status = jagen.build(args)
 elseif command == 'rebuild' then
     local build_file = arg[2]
     local args = table.rest(arg, 3)
 
-    return jagen.rebuild(args)
+    status = jagen.rebuild(args)
 elseif command == 'src' then
     local subcommand = arg[2]
     local args = table.rest(arg, 3)
@@ -629,3 +630,5 @@ elseif command == 'src' then
 else
     jagen.error('Unknown command:', command)
 end
+
+os.exit(status % 0xFF)
