@@ -6,6 +6,11 @@ objdump ranlib readelf size sprite strings strip"
 inc_opt="-isystem \"$sdk_rootfs_prefix/include\""
 lib_opt="-L\"$sdk_rootfs_prefix/lib\""
 
+gcc_name="mips-linux-gnu-gcc"
+gcc_path=$(command -v ${gcc_name})
+[ "$gcc_path" ] || die "${gcc_name} not found in path"
+gcc_dir=$(dirname "${gcc_path}")
+
 generate_toolchain_wrappers() {
     mkdir -p "$target_bin_dir"
 
@@ -33,6 +38,6 @@ generate_tool() {
     local name="$1" pre_opt="$2" post_opt="$3"
     cat <<EOF >"${target_bin_dir}/${target_system}-${name}"
 #!/bin/sh
-exec $ccache mips-linux-gnu-${name} $pre_opt "\$@" $post_opt
+exec $ccache $gcc_dir/mips-linux-gnu-${name} $pre_opt "\$@" $post_opt
 EOF
 }
