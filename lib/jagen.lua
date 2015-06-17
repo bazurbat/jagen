@@ -131,7 +131,7 @@ function system.exec(command, ...)
         table.insert(cmd, string.format('%q', tostring(arg)))
     end
     local line = table.concat(cmd, ' ')
-    jagen.debug2(line)
+    jagen.debug1(line)
     local status = os.execute(line)
     return status
 end
@@ -491,13 +491,24 @@ end
 local build = {}
 
 function build.find_targets(packages, arg)
-    local t = target.new_from_arg(arg)
-    local targets = pkg.filter(packages[t.name], t)
-    if #targets == 0 then
-        jagen.warning('No matching targets found for:', arg)
-        return {}
+    local targets = {}
+    local args = {}
+
+    local function is_param(arg)
+        return string.sub(arg, 1, 1) == '-'
     end
-    return targets
+
+    if is_param(arg) then
+        table.insert(args, arg)
+    else
+        local target = target.new_from_arg(arg)
+        targets = pkg.filter(packages[target.name], target)
+        if #targets == 0 then
+            jagen.warning('No targets found for:', arg)
+        end
+    end
+
+    return targets, args
 end
 
 function jagen.build(args)
