@@ -255,6 +255,10 @@ jagen =
     lib_dir   = os.getenv('pkg_lib_dir'),
     src_dir   = os.getenv('pkg_src_dir'),
     build_dir = os.getenv('pkg_build_dir'),
+
+    patch_dir         = os.getenv('pkg_patch_dir'),
+    build_include_dir = os.getenv('pkg_build_include_dir'),
+    private_dir       = os.getenv('pkg_private_dir'),
 }
 
 jagen.cmd = system.mkpath(jagen.lib_dir, 'cmd.sh')
@@ -409,8 +413,7 @@ end
 
 function jagen.generate_include_script(pkg)
     local name = pkg.name
-    local dir = os.getenv('pkg_build_include_dir')
-    local filename = system.mkpath(dir, name .. '.sh')
+    local filename = system.mkpath(jagen.build_include_dir, name .. '.sh')
 
     local function source(pkg)
         local o = {}
@@ -437,8 +440,6 @@ function jagen.generate_include_script(pkg)
         table.insert(o, '}')
         return table.concat(o, '\n')
     end
-
-    system.mkdir(dir)
 
     local f = assert(io.open(filename, 'w+'))
     f:write('#!/bin/sh\n')
@@ -603,6 +604,7 @@ if command == 'generate' then
         jagen.message("Generating build rules")
         local packages = jagen.load_rules()
         ninja:generate(packages, arg[2], arg[3])
+        system.mkdir(jagen.build_include_dir)
         for_each(packages, jagen.generate_include_script)
     end
 elseif command == 'build' then
