@@ -629,7 +629,7 @@ elseif command == 'src' then
     local args = table.rest(arg, 3)
 
     if subcommand == 'status' then
-        return src.status(args)
+        src.status(args)
     else
         jagen.die('Unknown src subcommand:', subcommand);
     end
