@@ -280,6 +280,7 @@ end
 function jagen.error(...)
     print(string.format('\027[1;31m:::\027[0m %s', jagen.tostring(...)))
 end
+
 function jagen.debug(...)
     if jagen.debug then
         print(string.format('\027[1;36m:::\027[0m %s', jagen.tostring(...)))
@@ -294,6 +295,11 @@ function jagen.debug2(...)
     if os.getenv('pkg_debug') >= '2' then
         print(string.format('\027[1;36m:::\027[0m %s', jagen.tostring(...)))
     end
+end
+
+function jagen.die(...)
+    jagen.error(...)
+    os.exit(1)
 end
 
 function jagen.flag(f)
@@ -625,10 +631,10 @@ elseif command == 'src' then
     if subcommand == 'status' then
         return src.status(args)
     else
-        jagen.error('Unknown src subcommand:', subcommand);
+        jagen.die('Unknown src subcommand:', subcommand);
     end
 else
-    jagen.error('Unknown command:', command)
+    jagen.die('Unknown command:', command)
 end
 
 os.exit(status % 0xFF)
