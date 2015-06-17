@@ -456,6 +456,13 @@ function jagen.generate_include_script(pkg)
     f:close()
 end
 
+function jagen.generate(build_file, rules_file)
+    local packages = jagen.load_rules()
+    ninja:generate(packages, build_file, rules_file)
+    system.mkdir(jagen.build_include_dir)
+    for_each(packages, jagen.generate_include_script)
+end
+
 --}}}
 --{{{ pkg
 
@@ -607,13 +614,7 @@ if command == 'generate' then
     local build_file = arg[2]
     local rules_file = arg[3]
 
-    if system.file_older(build_file, rules_file) or jagen.debug then
-        jagen.message("Generating build rules")
-        local packages = jagen.load_rules()
-        ninja:generate(packages, arg[2], arg[3])
-        system.mkdir(jagen.build_include_dir)
-        for_each(packages, jagen.generate_include_script)
-    end
+    jagen.generate(build_file, rules_file)
 elseif command == 'build' then
     local build_file = arg[2]
     local args = table.rest(arg, 3)
