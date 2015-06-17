@@ -44,7 +44,7 @@ pkg_build() {
         encoders="$encoders --enable-encoder=$i"
     done
 
-    for i in $(cat "$pkg_private_dir/cfg/ffmpeg_audio_codecs.txt") cdgraphics hevc; do
+    for i in $(cat "$pkg_private_dir/cfg/ffmpeg_codecs.txt") cdgraphics hevc; do
         decoders="$decoders --enable-decoder=$i"
     done
 
