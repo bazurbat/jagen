@@ -13,48 +13,53 @@ Commands:
   build		Build the specified targets
   rebuild	Rebuild the specified targets showing the logs to stdout
 
-  The build command accepts target file names without directory. To see the
-  full list use the command:
+  The 'help' command show this help message.
 
-    ninja -f \"$pkg_build_dir/build.ninja\" -t targets all
+  The 'clean' command removes build directory.
 
-  The target list is optional command, if supplied only those targets will be
-  built.
+  The 'update' command tries to update jagen from the source repository and
+  does refresh afterwards.
 
-  The rebuild command have the form:
+  The 'refresh' command generates build system from rules according to the
+  configuration.
 
-    jagen rebuild [-t|--targets-only] <TARGETS>...
+  The 'build' command have the form:
 
-  With the '-t' or '--targets-only' option only the specified targets will be
-  built (similar to the 'build' command). In the default mode the rebuild will
-  start from the specified targets and continue through their dependencies.
+    jagen build [TARGETS...]
+
+  see below for TARGETS syntax.
+
+  The 'rebuild' command have the form:
+
+    jagen rebuild [-t] [-a] [TARGETS...]
+
+  With the '-t' option only the specified targets will be rebuilt. In the
+  default mode the rebuild will start from the specified targets and continue
+  through their dependencies. The '-a' options shows all build logs, even from
+  not specified targets (build dependencies for example).
   
-  The targets are specified as: <name>[:<stage>][:<config>] ...
+  The targets are specified as: <name>[:<stage>][:<config>]. The available
+  package stages are filtered with the given expression. Omitted components
+  means 'all'. For example:
 
-  Components in square brackets are optional. If <stage> is empty - 'build' is
-  assumed. If <config> is empty - all defined configs for the specified stage
-  will be built. E.g.:
-  
-  utils
-  utils:build
-  utils:build:host utils:build:target
-
-  are the same if the host and target configs are defined for the utils
-  package. More examples:
-
+  utils              - run all stages of the utils package
   utils:install      - run all utils install stages
-  utils:install:host - run only host utils install stage
-  utils::host        - run only host utils build stage
+  utils::host        - run all host utils stages
+  utils:build:host   - run only host utils build stage
 
 CONFIGURATION:
 
-  User can supply additional configuration in \"~/.config/jagen/env.sh\" and
-  \"<jagen>/local.sh\" files. These are sourced during the build process and
-  should be the shell variable declarations, for example:
+  User can supply additional configuration in \"\$XDG_CONFIG_HOME/jagen/env\"
+  or \"\$HOME/.config/jagen/env\" and \"<jagen_root>/local.sh\" files. These
+  are sourced during the build process and should have the form of shell
+  variable declarations, for example:
 
   pkg_sdk=\"sigma\"
   pkg_build_dir=\"/tmp/build\"
   pkg_source_exclude=\"chicken karaoke-player\"
+
+  In fact, any shell code is possible, but it is advised to stick to POSIX
+  shell syntax for portability.
 
 NOTES:
 
