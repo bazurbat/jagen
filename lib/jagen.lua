@@ -623,7 +623,9 @@ elseif command == 'src' then
     local subcommand = arg[2]
     local args = table.rest(arg, 3)
 
-    if subcommand == 'status' then
+    if not subcommand then
+        jagen.message('Available src subcommands: status')
+    elseif subcommand == 'status' then
         src.status(args)
     else
         jagen.die('Unknown src subcommand:', subcommand);
