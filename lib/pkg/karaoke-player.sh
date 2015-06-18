@@ -16,8 +16,6 @@ pkg_build_host() {
 }
 
 pkg_build_target() {
-    use_env host
-
     case $sdk_target_board in
         ast50|ast100)
             p_run cmake -G"$cmake_generator" \

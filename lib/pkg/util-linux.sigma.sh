@@ -1,13 +1,12 @@
 #!/bin/sh
 
-use_env host
 use_toolchain target
 
 p_prefix=""
 p_dest_dir="$sdk_rootfs_prefix"
 
 pkg_patch() {
-    p_run autoreconf -if
+    p_autoreconf
 }
 
 pkg_build() {

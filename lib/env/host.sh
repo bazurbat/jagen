@@ -3,9 +3,8 @@
 export host_dir="$pkg_build_dir/host"
 export host_prefix=""
 
-export PATH="$host_dir/bin:$PATH"
-export LD_LIBRARY_PATH="$host_dir/lib:$LD_LIBRARY_PATH"
+p_path_prepend "$host_dir/bin"
+p_ld_library_path_prepend "$host_dir/lib"
 
-if in_flags ccache; then
-    p_path_prepend "$jagen_ccache_bin_dir"
-fi
+export PATH
+export LD_LIBRARY_PATH

@@ -6,9 +6,9 @@ pkg_patch() {
     export LIBTOOLIZE=echo
 
     p_run cd libltdl
-    p_run autoreconf -if
+    p_autoreconf
     p_run cd -
-    p_run autoreconf -if
+    p_autoreconf
 }
 
 pkg_build() {

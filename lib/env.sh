@@ -46,5 +46,6 @@ export pkg_private_dir="$pkg_src_dir/files"
 in_flags ccache && use_env ccache
 include "$pkg_lib_dir/env/cmake"
 include "$pkg_lib_dir/env/sdk"
+use_env host
 
 export CROSS_MAKE="make ARCH=${target_arch} CROSS_COMPILE=${target_system}-"

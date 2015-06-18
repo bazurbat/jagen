@@ -1,6 +1,5 @@
 #!/bin/sh
 
-use_env host
 use_toolchain target
 
 p_prefix="$target_prefix"
@@ -10,7 +9,7 @@ pkg_patch() {
     # leave python shebang alone
     p_run sed -ie '/${PYTHON}/d' \
         glib/Makefile.am glib/Makefile.in
-    p_run autoreconf -if
+    p_autoreconf
 }
 
 pkg_build() {

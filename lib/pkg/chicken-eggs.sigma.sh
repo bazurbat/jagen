@@ -30,8 +30,6 @@ pkg_install_host() {
 }
 
 pkg_install_target() {
-    use_env host
-
     delete_install_targets
 
     p_run cmake -G"$cmake_generator" \

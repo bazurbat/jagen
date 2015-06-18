@@ -83,5 +83,9 @@ p_fix_la() {
     p_run sed -ri -e "s|^(libdir=)'(.*)'$|\1'${prefix}\2'|" "$filename"
 }
 
+p_autoreconf() {
+    p_run autoreconf -if -I "$host_dir/share/aclocal"
+}
+
 . "$pkg_lib_dir/src.sh" || exit
 . "$pkg_lib_dir/stages.sh" || exit
