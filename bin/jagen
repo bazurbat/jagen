@@ -15,34 +15,7 @@ if [ $# = 0 ]; then
 fi
 
 build_file="$pkg_build_dir/build.ninja"
-
-if in_flags jagen_lua; then
-    rules_file="$pkg_lib_dir/rules.${pkg_sdk}.lua"
-else
-    rules_file="$pkg_lib_dir/rules.${pkg_sdk}.scm"
-fi
-
-rebuild_chibi() {
-    local name="chibi-scheme-0.7"
-    local source="$pkg_dist_dir/${name}.tgz"
-    local build_dir="$chibi_dir/build"
-    local log="$build_dir/build.log"
-
-    rm -rf "$build_dir" || die
-    mkdir -p "$build_dir" || die
-    tar -C "$build_dir" -xpf "$source" || die
-    cd "$build_dir/$name" || die
-    make PREFIX="$chibi_dir" >"$log" 2>&1 || die
-    make PREFIX="$chibi_dir" install >>"$log" 2>&1 || die
-}
-
-prepare_build() {
-    mkdir -p "$pkg_build_dir"
-
-    if ! in_flags jagen_lua; then
-        in_path chibi-scheme || rebuild_chibi
-    fi
-}
+rules_file="$pkg_lib_dir/rules.${pkg_sdk}.lua"
 
 case $1 in
     help)
@@ -61,7 +34,6 @@ case $1 in
         exec jagen refresh
         ;;
     refresh)
-        prepare_build
         message "Refreshing build rules"
         _jagen generate "$build_file" "$rules_file" ||
             die "Failed to generate build rules"
@@ -70,16 +42,13 @@ case $1 in
         ;;
     build)
         shift
-        prepare_build
         _jagen build "$build_file" "$@" || die "Build failed"
         ;;
     rebuild)
         shift
-        prepare_build
         _jagen rebuild "$build_file" "$@" || die "Rebuild failed"
         ;;
     *)
-        prepare_build
         _jagen "$@"
         ;;
 esac

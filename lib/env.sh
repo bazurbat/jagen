@@ -21,13 +21,10 @@ jagen_try_include() { [ -f "$1" ] && . "$1"; }
 . "$pkg_lib_dir/common.sh" ||
     { echo "Failed to load common library"; exit 1; }
 
+export LUA_PATH="${pkg_lib_dir}/?.lua;;;"
+
 _jagen() {
-    if in_flags jagen_lua; then
-        export LUA_PATH="${pkg_lib_dir}/?.lua;;;"
-        lua "$pkg_lib_dir/jagen.lua" "$@"
-    else
-        chibi-scheme -r "$pkg_lib_dir/jagen.scm" "$@"
-    fi
+    lua "$pkg_lib_dir/jagen.lua" "$@"
 }
 
 if [ "$XDG_CONFIG_HOME" ]; then
