@@ -263,7 +263,7 @@ jagen =
 
 jagen.cmd = system.mkpath(jagen.lib_dir, 'cmd.sh')
 jagen.rules_file = system.mkpath(jagen.lib_dir, 'rules.'..jagen.sdk..'.lua')
-jagen.build_file = system.mkpath(jagen.build_dir, 'ninja.rules')
+jagen.build_file = system.mkpath(jagen.build_dir, 'build.ninja')
 
 function jagen.exec(...)
     return system.exec(jagen.cmd, ...)
