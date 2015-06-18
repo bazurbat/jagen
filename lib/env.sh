@@ -4,11 +4,11 @@ export pkg_bin_dir="$jagen_root/bin"
 export pkg_lib_dir="$jagen_root/lib"
 export pkg_src_dir="$jagen_root/src"
 
-export pkg_debug="no"
+export pkg_debug=""
 
-export pkg_flags
-export pkg_sdk
-export pkg_source_exclude
+export pkg_flags=""
+export pkg_sdk=""
+export pkg_source_exclude=""
 
 export pkg_build_dir="$jagen_root/build"
 export pkg_build_type="Release"
