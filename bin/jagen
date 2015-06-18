@@ -14,9 +14,6 @@ if [ $# = 0 ]; then
     exit
 fi
 
-build_file="$pkg_build_dir/build.ninja"
-rules_file="$pkg_lib_dir/rules.${pkg_sdk}.lua"
-
 case $1 in
     help)
         print_help
@@ -34,19 +31,11 @@ case $1 in
         exec jagen refresh
         ;;
     refresh)
-        message "Refreshing build rules"
-        _jagen generate "$build_file" "$rules_file" ||
-            die "Failed to generate build rules"
+        mkdir -p "$pkg_build_dir"
+        mkdir -p "$pkg_build_include_dir"
+        _jagen refresh || die "Refresh failed"
         include "$jagen_root/lib/toolchain"
         generate_toolchain_wrappers
-        ;;
-    build)
-        shift
-        _jagen build "$build_file" "$@" || die "Build failed"
-        ;;
-    rebuild)
-        shift
-        _jagen rebuild "$build_file" "$@" || die "Rebuild failed"
         ;;
     *)
         _jagen "$@"

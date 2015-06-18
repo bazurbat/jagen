@@ -163,7 +163,7 @@ function ninja:format_inputs(inputs)
     return table.concat(t, sep)
 end
 
-function ninja:generate(packages, out_file, in_file)
+function ninja:generate(packages, out_file)
     local out = io.open(out_file, 'w')
 
     out:write(string.format('builddir = %s\n\n', os.getenv('pkg_build_dir')))
@@ -262,6 +262,8 @@ jagen =
 }
 
 jagen.cmd = system.mkpath(jagen.lib_dir, 'cmd.sh')
+jagen.rules_file = system.mkpath(jagen.lib_dir, 'rules.'..jagen.sdk..'.lua')
+jagen.build_file = system.mkpath(jagen.build_dir, 'ninja.rules')
 
 function jagen.exec(...)
     return system.exec(jagen.cmd, ...)
@@ -324,9 +326,7 @@ end
 
 function jagen.load_rules()
     assert(jagen.sdk)
-
-    local filename = system.mkpath(jagen.lib_dir, 'rules.'..jagen.sdk..'.lua')
-    local rules = dofile(filename)
+    local rules = dofile(jagen.rules_file)
 
     local function load_package(pkg_rule)
         local package = {}
@@ -456,10 +456,9 @@ function jagen.generate_include_script(pkg)
     f:close()
 end
 
-function jagen.generate(build_file, rules_file)
+function jagen.generate()
     local packages = jagen.load_rules()
-    ninja:generate(packages, build_file, rules_file)
-    system.mkdir(jagen.build_include_dir)
+    ninja:generate(packages, jagen.build_file)
     for_each(packages, jagen.generate_include_script)
 end
 
@@ -610,19 +609,14 @@ end
 command = arg[1]
 status = 0
 
-if command == 'generate' then
-    local build_file = arg[2]
-    local rules_file = arg[3]
-
-    jagen.generate(build_file, rules_file)
+if command == 'refresh' then
+    jagen.generate()
 elseif command == 'build' then
-    local build_file = arg[2]
-    local args = table.rest(arg, 3)
+    local args = table.rest(arg, 2)
 
     status = jagen.build(args)
 elseif command == 'rebuild' then
-    local build_file = arg[2]
-    local args = table.rest(arg, 3)
+    local args = table.rest(arg, 2)
 
     status = jagen.rebuild(args)
 elseif command == 'src' then
