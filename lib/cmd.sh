@@ -6,8 +6,8 @@ build() {
 }
 
 rebuild() {
-    local IFS=$(printf '\n\t')
-    local tab=$(printf '\t')
+    local IFS="$(printf '\n\t')"
+    local tab="$(printf '\t')"
     local targets_only show_all
     local target targets logs status
     local rebuild_log="rebuild.log"
