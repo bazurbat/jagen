@@ -29,7 +29,6 @@ pkg_build_target() {
                 -DCHICKEN_COMPILER="$host_dir/bin/chicken" \
                 -DCHICKEN_INTERPRETER="$host_dir/bin/csi" \
                 -DCHICKEN_DEPENDS="$host_dir/bin/chicken-depends" \
-                -DAST_BOARD="AST100" \
                 "$p_source_dir"
             ;;
         *)
@@ -43,7 +42,6 @@ pkg_build_target() {
                 -DCMAKE_FIND_ROOT_PATH="${target_dir}${target_prefix}" \
                 -DHISILICON_ROOT_DIR="$sdk_dir" \
                 -DHISILICON_OUT_DIR="$sdk_out_dir" \
-                -DAST_BOARD="AST200" \
                 "$p_source_dir"
             ;;
     esac
