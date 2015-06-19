@@ -431,6 +431,7 @@ package {
         { 'freetype',     'install'           },
         { 'libuv',        'install', 'target' },
         { 'libpng',       'install'           },
+        { 'libass',       'install'           },
         { 'mrua',         'build'             },
         { 'soundtouch',   'install'           },
         { 'connman',      'install'           }
@@ -505,6 +506,36 @@ package {
     },
     { 'install',
         { 'firmware',       'unpack'  }
+    }
+}
+
+package {
+    name = 'fribidi',
+    source = 'fribidi-0.19.6.tar.bz2',
+    { 'build' },
+    { 'install',
+        { 'firmware', 'unpack' }
+    }
+}
+
+package {
+    name = 'fontconfig',
+    source = 'fontconfig-2.11.1.tar.bz2',
+    { 'build' },
+    { 'install',
+        { 'firmware', 'unpack' }
+    }
+}
+
+package {
+    name = 'libass',
+    source = 'libass-0.10.2.tar.xz',
+    { 'build',
+        { 'fribidi', 'install' },
+        { 'fontconfig', 'install' }
+    },
+    { 'install',
+        { 'firmware', 'unpack' }
     }
 }
 
