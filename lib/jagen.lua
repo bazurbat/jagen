@@ -195,22 +195,37 @@ function Rule.read(rule, stages)
     return pkg_rule
 end
 
+function Rule:add_previous(stages)
+    local prev, common
+
+    for _, s in ipairs(stages) do
+        if prev then
+            if common and s.config ~= prev.config then
+                table.insert(s.inputs, 1, common)
+            else
+                table.insert(s.inputs, 1, prev)
+            end
+        end
+
+        prev = s
+        if not s.config then
+            common = s
+        end
+    end
+end
+
+function Rule:getkey(name, config)
+    return config and name..':'..config or name
+end
+
+function Rule.input_to_target(d)
+    return target.new(d[1], d[2], d[3])
+end
+
 function Rule.load_package(pkg_rule)
     local package = {}
     local tmp = {}
     local collected = {}
-
-    local function getkey(name, config)
-        if config then
-            return name .. ':' .. config
-        else
-            return name
-        end
-    end
-
-    local function input_to_target(d)
-        return target.new(d[1], d[2], d[3])
-    end
 
     local function load_stage(stage_rule)
         local stage, config
@@ -224,8 +239,8 @@ function Rule.load_package(pkg_rule)
             table.remove(stage_rule, 1)
         end
 
-        local key = getkey(stage, config)
-        local inputs = map(input_to_target, list(stage_rule))
+        local key = Rule:getkey(stage, config)
+        local inputs = map(Rule.input_to_target, list(stage_rule))
 
         if tmp[key] then
             tmp[key].inputs = append(tmp[key].inputs or {}, inputs)
@@ -237,27 +252,8 @@ function Rule.load_package(pkg_rule)
         end
     end
 
-    function add_previous(stages)
-        local prev, common
-
-        for _, s in ipairs(stages) do
-            if prev then
-                if common and s.config ~= prev.config then
-                    table.insert(s.inputs, 1, common)
-                else
-                    table.insert(s.inputs, 1, prev)
-                end
-            end
-
-            prev = s
-            if not s.config then
-                common = s
-            end
-        end
-    end
-
     for_each(pkg_rule.stages, load_stage)
-    add_previous(collected)
+    Rule:add_previous(collected)
 
     Rule.convert_source(pkg_rule)
 
