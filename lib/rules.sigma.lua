@@ -398,7 +398,11 @@ firmware_package {
 }
 
 firmware_package {
-    name = 'fontconfig'
+    name = 'fontconfig',
+    { 'build',
+        { 'freetype', 'install' },
+        { 'expat',    'install' }
+    }
 }
 
 firmware_package {
