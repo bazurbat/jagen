@@ -1,12 +1,7 @@
 local packages = {}
 
 local function package(rule, stages)
-    local pkg = jagen.load_package(rule)
-    local default_stages = {
-        { 'update' }, { 'clean' }, { 'unpack' }, { 'patch' }
-    }
-    pkg.stages = append(default_stages, stages or {}, pkg.stages or {})
-    table.insert(packages, pkg)
+    table.insert(packages, jagen.read(rule, stages))
 end
 
 local function rootfs_package(rule)

@@ -261,6 +261,8 @@ jagen =
     private_dir       = os.getenv('pkg_private_dir'),
 }
 
+jagen.pkg_dir = system.mkpath(jagen.lib_dir, 'pkg')
+
 jagen.cmd = system.mkpath(jagen.lib_dir, 'cmd.sh')
 jagen.rules_file = system.mkpath(jagen.lib_dir, 'rules.'..jagen.sdk..'.lua')
 jagen.build_file = system.mkpath(jagen.build_dir, 'build.ninja')
@@ -313,8 +315,7 @@ function jagen.flag(f)
     return false
 end
 
-function jagen.load_package(rule)
-    jagen.debug2('load package: '..rule.name)
+function jagen.convert_stages(rule)
     local stages = {}
     for i, s in ipairs(rule) do
         table.insert(stages, s)
@@ -322,6 +323,53 @@ function jagen.load_package(rule)
     end
     rule.stages = stages
     return rule
+end
+
+function jagen.merge(a, b)
+    for k, v in pairs(b) do
+        if type(k) ~= 'number' then
+            if type(v) == 'table' then
+                a[k] = jagen.merge(a[k] or {}, v)
+            else
+                a[k] = v
+            end
+        end
+    end
+    for _, v in ipairs(b) do
+        table.insert(a, v)
+    end
+    return a
+end
+
+function jagen.read_pkg(name)
+    local path = system.mkpath(jagen.pkg_dir, name..'.lua')
+    local env = {}
+    local o = {}
+
+    function env.package(rule)
+        o = rule
+    end
+
+    local def = loadfile(path)
+    if def then
+        setfenv(def, env)
+        def()
+    end
+
+    return o
+end
+
+function jagen.read(rule, stages)
+    local default_stages = {
+        { 'update' }, { 'clean' }, { 'unpack' }, { 'patch' }
+    }
+
+    local pkg_rule = jagen.read_pkg(rule.name)
+
+    pkg_rule = jagen.convert_stages(jagen.merge(pkg_rule, rule))
+    pkg_rule.stages = append(default_stages, stages or {}, pkg_rule.stages)
+
+    return pkg_rule
 end
 
 function jagen.load_rules()
