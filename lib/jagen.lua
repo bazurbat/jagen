@@ -470,22 +470,27 @@ function jagen.generate_include_script(pkg)
     local filename = system.mkpath(jagen.build_include_dir, name .. '.sh')
 
     local function source(pkg)
-        local o = {}
-        local s = pkg.source
-        if s then
-            if s.type == 'git' or s.type == 'hg' then
-                table.insert(o, s.type)
-                table.insert(o, s.location)
-            elseif s.type == 'dist' then
-                table.insert(o, system.mkpath('$pkg_dist_dir', s.location))
-            end
+        local source = pkg.source
+        local o, s = {}, {}
+        if source.type == 'git' or source.type == 'hg' then
+            table.insert(s, source.type)
+            table.insert(s, source.location)
+        elseif source.type == 'dist' then
+            table.insert(s, system.mkpath('$pkg_dist_dir', source.location))
         end
-        return string.format('p_source="%s"\n', table.concat(o, ' '))
+        table.insert(o, string.format('p_source="%s"', table.concat(s, ' ')))
+        if source.branch then
+            table.insert(o, string.format('p_source_branch="%s"', source.branch))
+        end
+        if source.directory then
+            table.insert(o, string.format('p_source_dir="%s"', source.directory))
+        end
+        return table.concat(o, '\n')
     end
 
     local function patches(pkg)
         local o = {}
-        table.insert(o, 'pkg_patch_pre() {')
+        table.insert(o, '\npkg_patch_pre() {')
         for _, patch in ipairs(pkg.patches or {}) do
             local name = patch[1]
             local strip = patch[2]
@@ -497,7 +502,9 @@ function jagen.generate_include_script(pkg)
 
     local f = assert(io.open(filename, 'w+'))
     f:write('#!/bin/sh\n')
-    f:write(source(pkg))
+    if pkg.source then
+        f:write(source(pkg))
+    end
     if pkg.patches then
         f:write(patches(pkg))
     end
