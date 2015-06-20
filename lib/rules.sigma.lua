@@ -75,8 +75,8 @@ package {
     { 'build',   'host' },
     { 'install', 'host' },
     { 'build',   'target',
+        { 'dbus',  'install' },
         { 'gpgme', 'install' },
-        { 'dbus',  'install' }
     },
     { 'install', 'target' }
 }
@@ -114,19 +114,19 @@ package {
     name = 'rootfs',
     { 'build',
         { 'ast-files',  'unpack'            },
+        { 'make',       'install', 'host'   },
         { 'xsdk',       'unpack'            },
-        { 'make',       'install', 'host'   }
     },
     { 'install',
-        { 'kernel',     'install'           },
         { 'busybox',    'install'           },
         { 'gnupg',      'install'           },
+        { 'kernel',     'install'           },
         { 'loop-aes',   'install'           },
         { 'mrua',       'modules'           },
         { 'ntpclient',  'install'           },
         { 'ralink',     'install'           },
         { 'util-linux', 'install'           },
-        { 'utils',      'install', 'target' }
+        { 'utils',      'install', 'target' },
     }
 }
 
@@ -172,9 +172,9 @@ package {
         branch = 'sigma-2.6'
     },
     { 'build',
-        { 'linux',  'unpack' },
         { 'ezboot', 'build'  },
-        { 'rootfs', 'build'  }
+        { 'linux',  'unpack' },
+        { 'rootfs', 'build'  },
     },
     { 'install' },
     { 'image', { 'rootfs', 'install' } }
@@ -223,9 +223,9 @@ package {
     },
     { 'install', 'target',
         { 'chicken',      'install', 'target' },
-        { 'sqlite',       'install'           },
         { 'chicken-eggs', 'install', 'host'   },
-        { 'dbus',         'install'           }
+        { 'dbus',         'install'           },
+        { 'sqlite',       'install'           },
     }
 }
 
@@ -262,16 +262,14 @@ firmware_package {
 }
 
 firmware_package {
-    name = 'libnl',
-    { 'build'   },
-    { 'install' }
+    name = 'libnl'
 }
 
 firmware_package {
     name = 'wpa_supplicant',
     { 'build',
         { 'dbus',  'install' },
-        { 'libnl', 'install' }
+        { 'libnl', 'install' },
     }
 }
 
@@ -281,9 +279,7 @@ firmware_package {
 
 firmware_package {
     name = 'libpng',
-    { 'build',
-        { 'zlib', 'install' }
-    }
+    { 'build', { 'zlib', 'install' } }
 }
 
 firmware_package {
@@ -309,10 +305,8 @@ package {
     }
 }
 
-package {
-    name = 'soundtouch',
-    { 'build' },
-    { 'install', { 'firmware', 'unpack' } }
+firmware_package {
+    name = 'soundtouch'
 }
 
 package {
@@ -324,24 +318,24 @@ package {
     name = 'karaoke-player',
     { 'build', 'host',
         { 'astindex',     'unpack'            },
-        { 'ffmpeg',       'install', 'host'   },
         { 'chicken-eggs', 'install', 'host'   },
-        { 'libuv',        'install', 'host'   }
+        { 'ffmpeg',       'install', 'host'   },
+        { 'libuv',        'install', 'host'   },
     },
     { 'install', 'host'                       },
     { 'build',   'target',
         { 'astindex',     'unpack'            },
         { 'chicken',      'install', 'target' },
         { 'chicken-eggs', 'install', 'host'   },
+        { 'connman',      'install'           },
         { 'dbus',         'install'           },
         { 'ffmpeg',       'install', 'target' },
         { 'freetype',     'install'           },
-        { 'libuv',        'install', 'target' },
-        { 'libpng',       'install'           },
         { 'libass',       'install'           },
+        { 'libpng',       'install'           },
+        { 'libuv',        'install', 'target' },
         { 'mrua',         'build'             },
         { 'soundtouch',   'install'           },
-        { 'connman',      'install'           }
     },
     { 'install', 'target',
         { 'chicken-eggs', 'install', 'target' }
@@ -354,82 +348,64 @@ package {
         { 'mrua',           'build'             }
     },
     { 'install',
-        { 'ezboot',         'install'           },
-        { 'mrua',           'install'           },
-        { 'kernel',         'image'             },
-        { 'karaoke-player', 'install', 'target' },
+        { 'connman',        'install'           },
         { 'dbus',           'install'           },
         { 'expat',          'install'           },
+        { 'ezboot',         'install'           },
         { 'freetype',       'install'           },
+        { 'glib',           'install'           },
+        { 'karaoke-player', 'install', 'target' },
+        { 'kernel',         'image'             },
+        { 'libffi',         'install'           },
+        { 'libpng',         'install'           },
+        { 'mrua',           'install'           },
         { 'rsync',          'install'           },
         { 'sqlite',         'install'           },
         { 'wpa_supplicant', 'install'           },
         { 'zlib',           'install'           },
-        { 'libpng',         'install'           },
-        { 'libffi',         'install'           },
-        { 'glib',           'install'           },
-        { 'connman',        'install'           }
     },
     { 'strip' }
 }
 
-package {
+firmware_package {
     name = 'libffi',
-    { 'build',   { 'libtool',  'install' } },
-    { 'install', { 'firmware', 'unpack'  } }
+    { 'build', { 'libtool',  'install' } }
 }
 
-package {
+firmware_package {
     name = 'glib',
     { 'patch',
         { 'libtool',  'install' }
     },
     { 'build',
         { 'zlib',     'install' },
-        { 'libffi',   'install' }
-    },
-    { 'install',
-        { 'firmware', 'unpack'  }
+        { 'libffi',   'install' },
     }
 }
 
-package {
+firmware_package {
     name = 'connman',
     { 'build',
-        { 'libtool',        'install' },
         { 'dbus',           'install' },
         { 'glib',           'install' },
-        { 'xtables-addons', 'install' }
-    },
-    { 'install',
-        { 'firmware',       'unpack'  }
+        { 'libtool',        'install' },
+        { 'xtables-addons', 'install' },
     }
 }
 
-package {
-    name = 'fribidi',
-    { 'build' },
-    { 'install',
-        { 'firmware', 'unpack' }
-    }
+firmware_package {
+    name = 'fribidi'
 }
 
-package {
-    name = 'fontconfig',
-    { 'build' },
-    { 'install',
-        { 'firmware', 'unpack' }
-    }
+firmware_package {
+    name = 'fontconfig'
 }
 
-package {
+firmware_package {
     name = 'libass',
     { 'build',
-        { 'fribidi', 'install' },
-        { 'fontconfig', 'install' }
-    },
-    { 'install',
-        { 'firmware', 'unpack' }
+        { 'fontconfig', 'install' },
+        { 'fribidi',    'install' },
     }
 }
 
