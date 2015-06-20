@@ -406,7 +406,8 @@ firmware_package {
 }
 
 firmware_package {
-    name = 'libass',
+    name   = 'libass',
+    config = 'target',
     { 'build',
         { 'fontconfig', 'install' },
         { 'fribidi',    'install' },

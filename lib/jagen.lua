@@ -451,6 +451,7 @@ function jagen.load_rules()
         package.name = pkg_rule.name
         package.source = load_source(pkg_rule.source)
         package.patches = pkg_rule.patches
+        package.config = pkg_rule.config
         package.stages = collected
 
         return package
@@ -500,6 +501,16 @@ function jagen.generate_include_script(pkg)
         return table.concat(o, '\n')
     end
 
+    local function config(pkg)
+        local o = {}
+        local config = pkg.config
+        table.insert(o, '\nuse_toolchain '..config)
+        table.insert(o, 'p_system="$target_system"')
+        table.insert(o, 'p_prefix="$target_prefix"')
+        table.insert(o, 'p_dest_dir="$target_dir"')
+        return table.concat(o, '\n')
+    end
+
     local f = assert(io.open(filename, 'w+'))
     f:write('#!/bin/sh\n')
     if pkg.source then
@@ -507,6 +518,9 @@ function jagen.generate_include_script(pkg)
     end
     if pkg.patches then
         f:write(patches(pkg))
+    end
+    if pkg.config then
+        f:write(config(pkg))
     end
     f:close()
 end
