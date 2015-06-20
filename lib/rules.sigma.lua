@@ -394,11 +394,13 @@ firmware_package {
 }
 
 firmware_package {
-    name = 'fribidi'
+    name   = 'fribidi',
+    config = 'target'
 }
 
 firmware_package {
-    name = 'fontconfig',
+    name   = 'fontconfig',
+    config = 'target',
     { 'build',
         { 'freetype', 'install' },
         { 'expat',    'install' }
