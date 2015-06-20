@@ -68,13 +68,6 @@ function compose(f, g)
     end
 end
 
-local function find_by_name(name, list)
-    local function by_name(x)
-        return x.name == name
-    end
-    return find(by_name, list)
-end
-
 function string.split(s, sep)
     local o, b, e = {}
     local init = 1
@@ -109,20 +102,6 @@ function system.mkpath(...)
         table.insert(path, c)
     end
     return table.concat(path, sep)
-end
-
-function system.mkdir(pathname)
-    system.exec('mkdir -p "' .. pathname .. '"')
-end
-
-function system.file_newer(file1, file2)
-    local cmd = string.format('[ "%s" -nt "%s" ]', file1, file2)
-    return os.execute(cmd) == 0
-end
-
-function system.file_older(file1, file2)
-    local cmd = string.format('[ "%s" -ot "%s" ]', file1, file2)
-    return os.execute(cmd) == 0
 end
 
 function system.exec(command, ...)
