@@ -116,6 +116,36 @@ function system.exec(command, ...)
 end
 
 --}}}
+--{{{ package
+
+-- King Kong patching
+package = {
+    name   = 'package',
+    source = {},
+    stages = {}
+}
+
+function package:new(o)
+    o = o or {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+function package:filter_stages(target)
+    local function match_config(a, b)
+        return not a.config or a.config == b.config
+    end
+    local function match_stage(a, b)
+        return not a.stage or a.stage == b.stage
+    end
+    local function match_target(stage)
+        return match_stage(target, stage) and match_config(target, stage)
+    end
+    return filter(match_target, self.stages)
+end
+
+--}}}
 --{{{ format
 
 local format = {}
@@ -528,19 +558,6 @@ end
 
 local pkg = {}
 
-function pkg.filter(pkg, target)
-    local function match_config(a, b)
-        return not a.config or a.config == b.config
-    end
-    local function match_stage(a, b)
-        return not a.stage or a.stage == b.stage
-    end
-    local function match_target(stage)
-        return match_stage(target, stage) and match_config(target, stage)
-    end
-    return pkg and filter(match_target, pkg.stages) or {}
-end
-
 function pkg.type(p)
     local source = p.source
     return source and source.type
@@ -600,7 +617,7 @@ function build.find_targets(packages, arg)
         table.insert(args, arg)
     else
         local target = target.new_from_arg(arg)
-        targets = pkg.filter(packages[target.name], target)
+        targets = package.filter_stages(packages[target.name] or {}, target)
         if #targets == 0 then
             jagen.warning('No targets found for:', arg)
         end
