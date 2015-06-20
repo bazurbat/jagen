@@ -1,7 +1,7 @@
 local packages = {}
 
 local function package(rule, stages)
-    table.insert(packages, jagen.read(rule, stages))
+    table.insert(packages, Rule.read(Rule:new(rule), stages))
 end
 
 local function rootfs_package(rule)

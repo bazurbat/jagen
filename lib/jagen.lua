@@ -116,6 +116,159 @@ function system.exec(command, ...)
 end
 
 --}}}
+--{{{ rule
+
+Rule = {
+    name = 'Rule'
+}
+
+function Rule:new(o)
+    o = o or {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+function Rule:convert_stages()
+    local stages = {}
+    for i, s in ipairs(self) do
+        table.insert(stages, s)
+        self[i] = nil
+    end
+    self.stages = stages
+    return self
+end
+
+function Rule:merge(rule)
+    for k, v in pairs(rule) do
+        if type(k) ~= 'number' then
+            if type(v) == 'table' then
+                self[k] = Rule.merge(self[k] or {}, v)
+            else
+                self[k] = v
+            end
+        end
+    end
+    for _, v in ipairs(rule) do
+        table.insert(self, v)
+    end
+    return self
+end
+
+function Rule.read_pkg(name)
+    local path = system.mkpath(jagen.pkg_dir, name..'.lua')
+    local env = {}
+    local o = {}
+
+    function env.package(rule)
+        o = Rule:new(rule)
+    end
+
+    local def = loadfile(path)
+    if def then
+        setfenv(def, env)
+        def()
+    end
+
+    return o
+end
+
+function Rule.read(rule, stages)
+    local default_stages = {
+        { 'clean' }, { 'unpack' }, { 'patch' }
+    }
+
+    local pkg_rule = Rule.read_pkg(rule.name)
+
+    pkg_rule = Rule.convert_stages(Rule.merge(pkg_rule, rule))
+    pkg_rule.stages = append(default_stages, stages or {}, pkg_rule.stages)
+
+    return pkg_rule
+end
+
+function Rule.load_package(pkg_rule)
+    local package = {}
+    local tmp = {}
+    local collected = {}
+
+    local function load_source(source)
+        if type(source) == 'string' then
+            return { type = 'dist', location = source }
+        else
+            return source
+        end
+    end
+
+    local function getkey(name, config)
+        if config then
+            return name .. ':' .. config
+        else
+            return name
+        end
+    end
+
+    local function input_to_target(d)
+        return target.new(d[1], d[2], d[3])
+    end
+
+    local function load_stage(stage_rule)
+        local stage, config
+
+        if type(stage_rule[1]) == 'string' then
+            stage = stage_rule[1]
+            table.remove(stage_rule, 1)
+        end
+        if type(stage_rule[1]) == 'string' then
+            config = stage_rule[1]
+            table.remove(stage_rule, 1)
+        end
+
+        local key = getkey(stage, config)
+        local inputs = map(input_to_target, list(stage_rule))
+
+        if tmp[key] then
+            tmp[key].inputs = append(tmp[key].inputs or {}, inputs)
+        else
+            local target = target.new(pkg_rule.name, stage, config)
+            target.inputs = inputs
+            tmp[key] = target
+            table.insert(collected, target)
+        end
+    end
+
+    function add_previous(stages)
+        local prev, common
+
+        for _, s in ipairs(stages) do
+            if prev then
+                if common and s.config ~= prev.config then
+                    table.insert(s.inputs, 1, common)
+                else
+                    table.insert(s.inputs, 1, prev)
+                end
+            end
+
+            prev = s
+            if not s.config then
+                common = s
+            end
+        end
+    end
+
+    for_each(pkg_rule.stages, load_stage)
+    add_previous(collected)
+
+    package.name = pkg_rule.name
+    package.source = load_source(pkg_rule.source)
+    package.patches = pkg_rule.patches
+    package.build = pkg_rule.build
+    package.config = pkg_rule.config
+    package.stages = collected
+
+    return package
+end
+
+--}}}
 --{{{ package
 
 -- King Kong patching
@@ -347,150 +500,11 @@ function jagen.flag(f)
     return false
 end
 
-function jagen.convert_stages(rule)
-    local stages = {}
-    for i, s in ipairs(rule) do
-        table.insert(stages, s)
-        rule[i] = nil
-    end
-    rule.stages = stages
-    return rule
-end
-
-function jagen.merge(a, b)
-    for k, v in pairs(b) do
-        if type(k) ~= 'number' then
-            if type(v) == 'table' then
-                a[k] = jagen.merge(a[k] or {}, v)
-            else
-                a[k] = v
-            end
-        end
-    end
-    for _, v in ipairs(b) do
-        table.insert(a, v)
-    end
-    return a
-end
-
-function jagen.read_pkg(name)
-    local path = system.mkpath(jagen.pkg_dir, name..'.lua')
-    local env = {}
-    local o = {}
-
-    function env.package(rule)
-        o = rule
-    end
-
-    local def = loadfile(path)
-    if def then
-        setfenv(def, env)
-        def()
-    end
-
-    return o
-end
-
-function jagen.read(rule, stages)
-    local default_stages = {
-        { 'clean' }, { 'unpack' }, { 'patch' }
-    }
-
-    local pkg_rule = jagen.read_pkg(rule.name)
-
-    pkg_rule = jagen.convert_stages(jagen.merge(pkg_rule, rule))
-    pkg_rule.stages = append(default_stages, stages or {}, pkg_rule.stages)
-
-    return pkg_rule
-end
-
 function jagen.load_rules()
     assert(jagen.sdk)
     local rules = dofile(jagen.rules_file)
 
-    local function load_package(pkg_rule)
-        local package = {}
-        local tmp = {}
-        local collected = {}
-
-        local function load_source(source)
-            if type(source) == 'string' then
-                return { type = 'dist', location = source }
-            else
-                return source
-            end
-        end
-
-        local function getkey(name, config)
-            if config then
-                return name .. ':' .. config
-            else
-                return name
-            end
-        end
-
-        local function input_to_target(d)
-            return target.new(d[1], d[2], d[3])
-        end
-
-        local function load_stage(stage_rule)
-            local stage, config
-
-            if type(stage_rule[1]) == 'string' then
-                stage = stage_rule[1]
-                table.remove(stage_rule, 1)
-            end
-            if type(stage_rule[1]) == 'string' then
-                config = stage_rule[1]
-                table.remove(stage_rule, 1)
-            end
-
-            local key = getkey(stage, config)
-            local inputs = map(input_to_target, list(stage_rule))
-
-            if tmp[key] then
-                tmp[key].inputs = append(tmp[key].inputs or {}, inputs)
-            else
-                local target = target.new(pkg_rule.name, stage, config)
-                target.inputs = inputs
-                tmp[key] = target
-                table.insert(collected, target)
-            end
-        end
-
-        function add_previous(stages)
-            local prev, common
-
-            for _, s in ipairs(stages) do
-                if prev then
-                    if common and s.config ~= prev.config then
-                        table.insert(s.inputs, 1, common)
-                    else
-                        table.insert(s.inputs, 1, prev)
-                    end
-                end
-
-                prev = s
-                if not s.config then
-                    common = s
-                end
-            end
-        end
-
-        for_each(pkg_rule.stages, load_stage)
-        add_previous(collected)
-
-        package.name = pkg_rule.name
-        package.source = load_source(pkg_rule.source)
-        package.patches = pkg_rule.patches
-        package.build = pkg_rule.build
-        package.config = pkg_rule.config
-        package.stages = collected
-
-        return package
-    end
-
-    local packages = map(load_package, rules)
+    local packages = map(Rule.load_package, rules)
 
     for _, pkg in ipairs(packages) do
         packages[pkg.name] = pkg
