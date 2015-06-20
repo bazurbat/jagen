@@ -119,7 +119,8 @@ end
 --{{{ rule
 
 Rule = {
-    name = 'Rule'
+    name   = 'Rule',
+    source = {}
 }
 
 function Rule:new(o)
@@ -127,6 +128,14 @@ function Rule:new(o)
     setmetatable(o, self)
     self.__index = self
     return o
+end
+
+function Rule:convert_source()
+    local source = self.source
+    if type(source) == 'string' then
+        self.source = { type = 'dist', location = source }
+    end
+    return self
 end
 
 function Rule:convert_stages()
@@ -191,14 +200,6 @@ function Rule.load_package(pkg_rule)
     local tmp = {}
     local collected = {}
 
-    local function load_source(source)
-        if type(source) == 'string' then
-            return { type = 'dist', location = source }
-        else
-            return source
-        end
-    end
-
     local function getkey(name, config)
         if config then
             return name .. ':' .. config
@@ -258,8 +259,10 @@ function Rule.load_package(pkg_rule)
     for_each(pkg_rule.stages, load_stage)
     add_previous(collected)
 
+    Rule.convert_source(pkg_rule)
+
     package.name = pkg_rule.name
-    package.source = load_source(pkg_rule.source)
+    package.source = pkg_rule.source
     package.patches = pkg_rule.patches
     package.build = pkg_rule.build
     package.config = pkg_rule.config
