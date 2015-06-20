@@ -1,4 +1,4 @@
 package {
     name   = 'libass',
-    source = 'libass-0.10.2.tar.xz'
+    source = 'libass-0.12.2.tar.xz'
 }
