@@ -451,6 +451,7 @@ function jagen.load_rules()
         package.name = pkg_rule.name
         package.source = load_source(pkg_rule.source)
         package.patches = pkg_rule.patches
+        package.build = pkg_rule.build
         package.config = pkg_rule.config
         package.stages = collected
 
@@ -511,6 +512,21 @@ function jagen.generate_include_script(pkg)
         return table.concat(o, '\n')
     end
 
+    local function build(pkg)
+        local o = {}
+        local build = pkg.build
+        local function gnu_build()
+            table.insert(o, '  p_run make DESTDIR="$p_dest_dir" install')
+            table.insert(o, '  p_fix_la "$p_dest_dir$p_prefix/lib/lib'..pkg.name..'.la" "$p_dest_dir"')
+        end
+        table.insert(o, '\n\npkg_install() {')
+        if build == 'GNU' then
+            gnu_build()
+        end
+        table.insert(o, '}')
+        return table.concat(o, '\n')
+    end
+
     local f = assert(io.open(filename, 'w+'))
     f:write('#!/bin/sh\n')
     if pkg.source then
@@ -521,6 +537,9 @@ function jagen.generate_include_script(pkg)
     end
     if pkg.config then
         f:write(config(pkg))
+    end
+    if pkg.build then
+        f:write(build(pkg))
     end
     f:close()
 end
