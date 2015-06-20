@@ -21,8 +21,6 @@ jagen_try_include() { [ -f "$1" ] && . "$1"; }
 . "$pkg_lib_dir/common.sh" ||
     { echo "Failed to load common library"; exit 1; }
 
-export LUA_PATH="${pkg_lib_dir}/?.lua;;;"
-
 _jagen() {
     lua "$pkg_lib_dir/jagen.lua" "$@"
 }
