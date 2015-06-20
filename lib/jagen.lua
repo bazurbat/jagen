@@ -415,7 +415,7 @@ function jagen.load_rules()
 
             local key = getkey(stage, config)
             local inputs = map(input_to_target, list(stage_rule))
-            
+
             if tmp[key] then
                 tmp[key].inputs = append(tmp[key].inputs or {}, inputs)
             else
