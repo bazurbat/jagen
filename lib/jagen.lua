@@ -515,14 +515,8 @@ function jagen.generate_include_script(pkg)
     local function build(pkg)
         local o = {}
         local build = pkg.build
-        local function gnu_build()
-            table.insert(o, '  p_run make DESTDIR="$p_dest_dir" install')
-            table.insert(o, '  p_fix_la "$p_dest_dir$p_prefix/lib/lib'..pkg.name..'.la" "$p_dest_dir"')
-        end
         table.insert(o, '\n\npkg_install() {')
-        if build == 'GNU' then
-            gnu_build()
-        end
+        o = append(o, script.commands(pkg, 'install'))
         table.insert(o, '}')
         return table.concat(o, '\n')
     end
@@ -589,6 +583,25 @@ function pkg.directory(p)
     else
         return system.mkpath(jagen.build_dir, 'pkg', p.name)
     end
+end
+
+--}}}
+--{{{ script
+
+script = {}
+
+function script.commands(pkg, stage)
+    local o = {}
+    local function a(...)
+    end
+    if pkg.build == 'GNU' then
+        if stage == 'build' then
+        elseif stage == 'install' then
+            table.insert(o, '  p_run make DESTDIR="$p_dest_dir" install')
+            table.insert(o, '  p_fix_la "$p_dest_dir$p_prefix/lib/lib'..pkg.name..'.la" "$p_dest_dir"')
+        end
+    end
+    return o
 end
 
 --}}}
