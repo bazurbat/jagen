@@ -361,7 +361,7 @@ end
 
 function jagen.read(rule, stages)
     local default_stages = {
-        { 'update' }, { 'clean' }, { 'unpack' }, { 'patch' }
+        { 'clean' }, { 'unpack' }, { 'patch' }
     }
 
     local pkg_rule = jagen.read_pkg(rule.name)
