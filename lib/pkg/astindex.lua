@@ -3,6 +3,6 @@ package {
     source = {
         type      = 'hg',
         location  = 'ssh://hg@bitbucket.org/art-system/astindex',
-        directory = 'karaoke-player/source/astindex'
+        directory = '$pkg_src_dir/karaoke-player/source/astindex'
     }
 }
