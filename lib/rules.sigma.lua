@@ -395,7 +395,6 @@ firmware_package {
 
 firmware_package {
     name   = 'fribidi',
-    build  = 'GNU',
     config = 'target'
 }
 
