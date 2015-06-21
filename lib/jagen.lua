@@ -388,7 +388,7 @@ function Stage.read(rule)
     end
 
     local stage = Stage:new(name, config)
-    stage.inputs = map(target.read, list(rule))
+    stage.inputs = map(Target.read, list(rule))
 
     return stage
 end
@@ -402,7 +402,7 @@ function Stage:__tostring()
 end
 
 function Stage:totarget(name)
-    return target.new(name, self.name, self.config)
+    return Target.new(name, self.name, self.config)
 end
 
 function Stage:merge(stage)
@@ -410,15 +410,15 @@ function Stage:merge(stage)
     return self
 end
 
-target = { meta = {} }
+Target = { meta = {} }
 
-function target.new(n, s, c)
+function Target.new(n, s, c)
     local t = { name = n, stage = s, config = c }
-    setmetatable(t, target.meta)
+    setmetatable(t, Target.meta)
     return t
 end
 
-function target.new_from_arg(arg)
+function Target.new_from_arg(arg)
     local name, stage, config
     local c = string.split(arg, ':')
 
@@ -432,27 +432,27 @@ function target.new_from_arg(arg)
         config = c[3]
     end
 
-    return target.new(name, stage, config)
+    return Target.new(name, stage, config)
 end
 
-function target.read(rule)
-    return target.new(rule[1], rule[2], rule[3])
+function Target.read(rule)
+    return Target.new(rule[1], rule[2], rule[3])
 end
 
-function target.maybe_add_stage(t, stage)
+function Target.maybe_add_stage(t, stage)
     if not t.stage then
         t.stage = stage
     end
     return t
 end
 
-target.meta.__eq = function(a, b)
+Target.meta.__eq = function(a, b)
     return a.name == b.name and
     a.stage == b.stage and
     a.config == b.config
 end
 
-target.meta.__tostring = function(t)
+Target.meta.__tostring = function(t)
     return table.concat({ t.name, t.stage, t.config }, '-')
 end
 
@@ -654,7 +654,7 @@ function build.find_targets(packages, arg)
     if is_param(arg) then
         table.insert(args, arg)
     else
-        local target = target.new_from_arg(arg)
+        local target = Target.new_from_arg(arg)
         targets = package.filter_stages(packages[target.name] or {}, target)
         if #targets == 0 then
             jagen.warning('No targets found for:', arg)
