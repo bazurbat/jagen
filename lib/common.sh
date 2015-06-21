@@ -15,7 +15,7 @@ die() {
 }
 
 debug() {
-    if [ "$pkg_debug" = "yes" ]; then
+    if [ "$pkg_debug" ]; then
         printf "\033[1;36m:::\033[0m %s\n" "$*"
     fi
     return 0
