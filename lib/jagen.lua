@@ -250,23 +250,22 @@ function Rule.load_package(pkg_rule)
 end
 
 --}}}
---{{{ package
+--{{{ Package
 
--- King Kong patching
-package = {
+Package = {
     name   = 'package',
     source = {},
     stages = {}
 }
 
-function package:new(o)
+function Package:new(o)
     o = o or {}
     setmetatable(o, self)
     self.__index = self
     return o
 end
 
-function package:filter_stages(target)
+function Package:filter_stages(target)
     local function match_config(a, b)
         return not a.config or a.config == b.config
     end
@@ -279,21 +278,21 @@ function package:filter_stages(target)
     return filter(match_target, self.stages)
 end
 
-function package:type()
+function Package:type()
     local source = self.source
     return source and source.type
 end
 
-function package:is_source()
-    local source_type = package.type(self)
+function Package:is_source()
+    local source_type = Package.type(self)
     return source_type == 'git' or source_type == 'hg'
 end
 
-function package:directory()
+function Package:directory()
     local function basename(location)
         return location and io.popen('basename '..location..' .git'):read()
     end
-    if package.is_source(self) then
+    if Package.is_source(self) then
         local location = self.source.location
         local name = self.source.directory or basename(location)
         return system.mkpath(jagen.src_dir, name or self.name)
@@ -628,7 +627,7 @@ function build.find_targets(packages, arg)
         table.insert(args, arg)
     else
         local target = Target.new_from_arg(arg)
-        targets = package.filter_stages(packages[target.name] or {}, target)
+        targets = Package.filter_stages(packages[target.name] or {}, target)
         if #targets == 0 then
             jagen.warning('No targets found for:', arg)
         end
@@ -665,27 +664,27 @@ end
 local src = {}
 
 function src.exec_git(p, ...)
-    local dir = package.directory(p)
+    local dir = Package.directory(p)
     return system.exec('git', '-C', dir, ...)
 end
 
 function src.popen_git(p, ...)
-    local dir = package.directory(p)
+    local dir = Package.directory(p)
     return io.popen('git -C '..dir..' '..jagen.tostring(...)):read() or ''
 end
 
 function src.exec_hg(p, ...)
-    local dir = package.directory(p)
+    local dir = Package.directory(p)
     return system.exec('hg', '-R', dir, ...)
 end
 
 function src.popen_hg(p, ...)
-    local dir = package.directory(p)
+    local dir = Package.directory(p)
     return io.popen('hg -R '..dir..' '..jagen.tostring(...)):read() or ''
 end
 
 function src.head(p)
-    local kind = package.type(p)
+    local kind = Package.type(p)
     if kind == 'git' then
         return src.popen_git(p, 'rev-parse', 'HEAD')
     elseif kind == 'hg' then
@@ -694,7 +693,7 @@ function src.head(p)
 end
 
 function src.dirty(p)
-    local kind = package.type(p)
+    local kind = Package.type(p)
     if kind == 'git' then
         return string.len(src.popen_git(p, 'status', '--porcelain')) > 0
     elseif kind == 'hg' then
@@ -704,7 +703,7 @@ end
 
 function src.status(args)
     local packages = jagen.load_rules()
-    local source_packages = filter(package.is_source, packages)
+    local source_packages = filter(Package.is_source, packages)
 
     for _, p in ipairs(source_packages) do
         local dirty = src.dirty(p) and 'dirty' or ''
