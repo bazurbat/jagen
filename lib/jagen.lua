@@ -214,40 +214,22 @@ function Rule:add_previous(stages)
     end
 end
 
-function Rule:getkey(name, config)
-    return config and name..':'..config or name
-end
-
-function Rule.input_to_target(d)
-    return target.new(d[1], d[2], d[3])
-end
-
 function Rule.load_package(pkg_rule)
     local package = {}
     local tmp = {}
     local collected = {}
 
     local function load_stage(stage_rule)
-        local stage, config
+        local s = Stage.read(stage_rule)
 
-        if type(stage_rule[1]) == 'string' then
-            stage = stage_rule[1]
-            table.remove(stage_rule, 1)
-        end
-        if type(stage_rule[1]) == 'string' then
-            config = stage_rule[1]
-            table.remove(stage_rule, 1)
-        end
-
-        local key = Rule:getkey(stage, config)
-        local inputs = map(Rule.input_to_target, list(stage_rule))
+        local key = tostring(s)
 
         if tmp[key] then
-            tmp[key].inputs = append(tmp[key].inputs or {}, inputs)
+            tmp[key].inputs = append(tmp[key].inputs or {}, s.inputs)
         else
-            local target = target.new(pkg_rule.name, stage, config)
-            target.inputs = inputs
-            tmp[key] = target
+            local target = s:totarget(pkg_rule.name)
+            target.inputs = s.inputs
+            tmp[key] = target 
             table.insert(collected, target)
         end
     end
@@ -382,7 +364,51 @@ function ninja:generate(packages, out_file)
 end
 
 --}}}
---{{{ target
+--{{{ types
+
+Stage = {}
+
+function Stage:new(name, config)
+    local stage = { name = name, config = config }
+    setmetatable(stage, self)
+    self.__index = self
+    return stage
+end
+
+function Stage.read(rule)
+    local name, config
+
+    if type(rule[1]) == 'string' then
+        name = rule[1]
+        table.remove(rule, 1)
+    end
+    if type(rule[1]) == 'string' then
+        config = rule[1]
+        table.remove(rule, 1)
+    end
+
+    local stage = Stage:new(name, config)
+    stage.inputs = map(target.read, list(rule))
+
+    return stage
+end
+
+function Stage:__eq(stage)
+    return self.name == stage.name and self.config == stage.config
+end
+
+function Stage:__tostring()
+    return table.concat({ self.name, self.config }, '-')
+end
+
+function Stage:totarget(name)
+    return target.new(name, self.name, self.config)
+end
+
+function Stage:merge(stage)
+    self.inputs = append(self.inputs, stage.inputs)
+    return self
+end
 
 target = { meta = {} }
 
@@ -407,6 +433,10 @@ function target.new_from_arg(arg)
     end
 
     return target.new(name, stage, config)
+end
+
+function target.read(rule)
+    return target.new(rule[1], rule[2], rule[3])
 end
 
 function target.maybe_add_stage(t, stage)
