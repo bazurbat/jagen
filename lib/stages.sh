@@ -55,7 +55,17 @@ pkg_build_pre() {
     p_run cd "$p_build_dir"
 }
 
+pkg_build() {
+    p_run ./configure --host="$p_system" --prefix="$p_prefix" $p_options
+    p_run make
+}
+
 pkg_install_pre() {
     # for packages that do not have build stage
     pkg_build_pre
+}
+
+pkg_install() {
+    p_run make DESTDIR="$p_dest_dir" install
+    p_fix_la "$p_dest_dir$p_prefix/lib/lib${p_name}.la" "$p_dest_dir"
 }

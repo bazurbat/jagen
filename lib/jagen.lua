@@ -470,71 +470,10 @@ end
 function jagen.generate_include_script(pkg)
     local name = pkg.name
     local filename = system.mkpath(jagen.build_include_dir, name .. '.sh')
-
-    local function source(pkg)
-        local source = pkg.source
-        local o, s = {}, {}
-        if source.type == 'git' or source.type == 'hg' then
-            table.insert(s, source.type)
-            table.insert(s, source.location)
-        elseif source.type == 'dist' then
-            table.insert(s, system.mkpath('$pkg_dist_dir', source.location))
-        end
-        table.insert(o, string.format('p_source="%s"', table.concat(s, ' ')))
-        if source.branch then
-            table.insert(o, string.format('p_source_branch="%s"', source.branch))
-        end
-        if source.directory then
-            table.insert(o, string.format('p_source_dir="%s"', source.directory))
-        end
-        return table.concat(o, '\n')
-    end
-
-    local function patches(pkg)
-        local o = {}
-        table.insert(o, '\npkg_patch_pre() {')
-        for _, patch in ipairs(pkg.patches or {}) do
-            local name = patch[1]
-            local strip = patch[2]
-            table.insert(o, string.format('  p_patch %d "%s"', strip, name))
-        end
-        table.insert(o, '}')
-        return table.concat(o, '\n')
-    end
-
-    local function config(pkg)
-        local o = {}
-        local config = pkg.config
-        table.insert(o, '\nuse_toolchain '..config)
-        table.insert(o, 'p_system="$target_system"')
-        table.insert(o, 'p_prefix="$target_prefix"')
-        table.insert(o, 'p_dest_dir="$target_dir"')
-        return table.concat(o, '\n')
-    end
-
-    local function build(pkg)
-        local o = {}
-        local build = pkg.build
-        table.insert(o, '\n\npkg_install() {')
-        o = append(o, script.commands(pkg, 'install'))
-        table.insert(o, '}')
-        return table.concat(o, '\n')
-    end
+    local script = Script:new(pkg)
 
     local f = assert(io.open(filename, 'w+'))
-    f:write('#!/bin/sh\n')
-    if pkg.source then
-        f:write(source(pkg))
-    end
-    if pkg.patches then
-        f:write(patches(pkg))
-    end
-    if pkg.config then
-        f:write(config(pkg))
-    end
-    if pkg.build then
-        f:write(build(pkg))
-    end
+    f:write(tostring(script))
     f:close()
 end
 
@@ -547,20 +486,90 @@ end
 --}}}
 --{{{ script
 
-script = {}
+Script = {}
 
-function script.commands(pkg, stage)
-    local o = {}
-    local function a(...)
+function Script:new(pkg)
+    local script = { pkg = pkg }
+    setmetatable(script, self)
+    self.__index = self
+    return script
+end
+
+function Script:__tostring()
+    local script = {
+        self:header()
+    }
+    if self.pkg.config then
+        table.insert(script, self:config())
     end
-    if pkg.build == 'GNU' then
-        if stage == 'build' then
-        elseif stage == 'install' then
-            table.insert(o, '  p_run make DESTDIR="$p_dest_dir" install')
-            table.insert(o, '  p_fix_la "$p_dest_dir$p_prefix/lib/lib'..pkg.name..'.la" "$p_dest_dir"')
+    if self.pkg.build then
+        table.insert(script, self:build())
+    end
+    if self.pkg.source then
+        table.insert(script, self:source())
+    end
+    if self.pkg.patches then
+        table.insert(script, self:patch())
+    end
+
+    return table.concat(script, '\n\n')
+end
+
+function Script:header()
+    return '#!/bin/sh'
+end
+
+function Script:config()
+    local config = self.pkg.config
+    local o = {
+        'use_toolchain '..config,
+        'p_system="$target_system"',
+        'p_prefix="$target_prefix"',
+        'p_dest_dir="$target_dir"',
+    }
+    return table.concat(o, '\n')
+end
+
+function Script:build()
+    local build = self.pkg.build
+    local o = {}
+    if build.type == 'GNU' then
+        if build.options then
+            table.insert(o, string.format('p_options=\'%s\'', build.options))
         end
     end
-    return o
+    return table.concat(o, '\n')
+end
+
+function Script:source()
+    local source = self.pkg.source
+    local o, s = {}, {}
+    if source.type == 'git' or source.type == 'hg' then
+        table.insert(s, source.type)
+        table.insert(s, source.location)
+    elseif source.type == 'dist' then
+        table.insert(s, system.mkpath('$pkg_dist_dir', source.location))
+    end
+    table.insert(o, string.format('p_source="%s"', table.concat(s, ' ')))
+    if source.branch then
+        table.insert(o, string.format('p_source_branch="%s"', source.branch))
+    end
+    if source.directory then
+        table.insert(o, string.format('p_source_dir="%s"', source.directory))
+    end
+    return table.concat(o, '\n')
+end
+
+function Script:patch()
+    local o = {}
+    table.insert(o, 'pkg_patch_pre() {')
+    for _, patch in ipairs(self.pkg.patches or {}) do
+        local name = patch[1]
+        local strip = patch[2]
+        table.insert(o, string.format('  p_patch %d "%s"', strip, name))
+    end
+    table.insert(o, '}')
+    return table.concat(o, '\n')
 end
 
 --}}}
