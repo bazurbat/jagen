@@ -116,21 +116,22 @@ function system.exec(command, ...)
 end
 
 --}}}
---{{{ rule
+--{{{ Package
 
-Rule = {
-    name   = 'Rule',
-    source = {}
+Package = {
+    name   = 'package',
+    source = {},
+    stages = {}
 }
 
-function Rule:new(o)
+function Package:new(o)
     o = o or {}
     setmetatable(o, self)
     self.__index = self
     return o
 end
 
-function Rule:convert_source()
+function Package:convert_source()
     local source = self.source
     if type(source) == 'string' then
         self.source = { type = 'dist', location = source }
@@ -138,7 +139,7 @@ function Rule:convert_source()
     return self
 end
 
-function Rule:convert_stages()
+function Package:convert_stages()
     local stages = {}
     for i, s in ipairs(self) do
         table.insert(stages, s)
@@ -148,11 +149,11 @@ function Rule:convert_stages()
     return self
 end
 
-function Rule:merge(rule)
+function Package:merge(rule)
     for k, v in pairs(rule) do
         if type(k) ~= 'number' then
             if type(v) == 'table' then
-                self[k] = Rule.merge(self[k] or {}, v)
+                self[k] = Package.merge(self[k] or {}, v)
             else
                 self[k] = v
             end
@@ -164,13 +165,13 @@ function Rule:merge(rule)
     return self
 end
 
-function Rule.read_pkg(name)
+function Package.read_pkg(name)
     local path = system.mkpath(jagen.pkg_dir, name..'.lua')
     local env = {}
     local o = {}
 
     function env.package(rule)
-        o = Rule:new(rule)
+        o = Package:new(rule)
     end
 
     local def = loadfile(path)
@@ -182,20 +183,20 @@ function Rule.read_pkg(name)
     return o
 end
 
-function Rule.read(rule, stages)
+function Package.read(rule, stages)
     local default_stages = {
         { 'clean' }, { 'unpack' }, { 'patch' }
     }
 
-    local pkg_rule = Rule.read_pkg(rule.name)
+    local pkg_rule = Package.read_pkg(rule.name)
 
-    pkg_rule = Rule.convert_stages(Rule.merge(pkg_rule, rule))
+    pkg_rule = Package.convert_stages(Package.merge(pkg_rule, rule))
     pkg_rule.stages = append(default_stages, stages or {}, pkg_rule.stages)
 
     return pkg_rule
 end
 
-function Rule:add_previous(stages)
+function Package:add_previous(stages)
     local prev, common
 
     for _, s in ipairs(stages) do
@@ -214,7 +215,7 @@ function Rule:add_previous(stages)
     end
 end
 
-function Rule:load_stages(name, stages)
+function Package:load_stages(name, stages)
     local collected = {}
 
     for _, stage in ipairs(stages) do
@@ -232,12 +233,12 @@ function Rule:load_stages(name, stages)
     return collected
 end
 
-function Rule.load_package(pkg_rule)
+function Package.load_package(pkg_rule)
     local package = {}
-    local collected = Rule:load_stages(pkg_rule.name, pkg_rule.stages)
+    local collected = Package:load_stages(pkg_rule.name, pkg_rule.stages)
 
-    Rule:add_previous(collected)
-    Rule.convert_source(pkg_rule)
+    Package:add_previous(collected)
+    Package.convert_source(pkg_rule)
 
     package.name = pkg_rule.name
     package.source = pkg_rule.source
@@ -247,22 +248,6 @@ function Rule.load_package(pkg_rule)
     package.stages = collected
 
     return package
-end
-
---}}}
---{{{ Package
-
-Package = {
-    name   = 'package',
-    source = {},
-    stages = {}
-}
-
-function Package:new(o)
-    o = o or {}
-    setmetatable(o, self)
-    self.__index = self
-    return o
 end
 
 function Package:filter_stages(target)
@@ -505,7 +490,7 @@ function jagen.load_rules()
     assert(jagen.sdk)
     local rules = dofile(jagen.rules_file)
 
-    local packages = map(Rule.load_package, rules)
+    local packages = map(Package.load_package, rules)
 
     for _, pkg in ipairs(packages) do
         packages[pkg.name] = pkg

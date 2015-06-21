@@ -1,7 +1,7 @@
 local packages = {}
 
 local function package(rule, stages)
-    table.insert(packages, Rule.read(Rule:new(rule), stages))
+    table.insert(packages, Package.read(Package:new(rule), stages))
 end
 
 local function rootfs_package(rule)
