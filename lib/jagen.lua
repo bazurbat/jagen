@@ -220,17 +220,14 @@ function Rule.load_package(pkg_rule)
     local collected = {}
 
     local function load_stage(stage_rule)
-        local s = Stage.read(stage_rule)
-
-        local key = tostring(s)
+        local t = Target.from_stage(pkg_rule.name, stage_rule)
+        local key = tostring(t)
 
         if tmp[key] then
-            tmp[key].inputs = append(tmp[key].inputs or {}, s.inputs)
+            tmp[key].inputs = append(tmp[key].inputs or {}, t.inputs)
         else
-            local target = s:totarget(pkg_rule.name)
-            target.inputs = s.inputs
-            tmp[key] = target 
-            table.insert(collected, target)
+            tmp[key] = t 
+            table.insert(collected, t)
         end
     end
 
@@ -366,20 +363,23 @@ end
 --}}}
 --{{{ types
 
-Stage = {}
+Target = {}
 
-function Stage:new(name, config)
-    local stage = { name = name, config = config }
-    setmetatable(stage, self)
-    self.__index = self
-    return stage
+function Target.new(name, stage, config)
+    local target = { name = name, stage = stage, config = config }
+    setmetatable(target, Target)
+    return target
 end
 
-function Stage.read(rule)
-    local name, config
+function Target.from_list(list)
+    return Target.new(list[1], list[2], list[3])
+end
+
+function Target.from_stage(name, rule)
+    local stage, config
 
     if type(rule[1]) == 'string' then
-        name = rule[1]
+        stage = rule[1]
         table.remove(rule, 1)
     end
     if type(rule[1]) == 'string' then
@@ -387,35 +387,10 @@ function Stage.read(rule)
         table.remove(rule, 1)
     end
 
-    local stage = Stage:new(name, config)
-    stage.inputs = map(Target.read, list(rule))
+    local target = Target.new(name, stage, config)
+    target.inputs = map(Target.from_list, list(rule))
 
-    return stage
-end
-
-function Stage:__eq(stage)
-    return self.name == stage.name and self.config == stage.config
-end
-
-function Stage:__tostring()
-    return table.concat({ self.name, self.config }, '-')
-end
-
-function Stage:totarget(name)
-    return Target.new(name, self.name, self.config)
-end
-
-function Stage:merge(stage)
-    self.inputs = append(self.inputs, stage.inputs)
-    return self
-end
-
-Target = { meta = {} }
-
-function Target.new(n, s, c)
-    local t = { name = n, stage = s, config = c }
-    setmetatable(t, Target.meta)
-    return t
+    return target
 end
 
 function Target.new_from_arg(arg)
@@ -435,10 +410,6 @@ function Target.new_from_arg(arg)
     return Target.new(name, stage, config)
 end
 
-function Target.read(rule)
-    return Target.new(rule[1], rule[2], rule[3])
-end
-
 function Target.maybe_add_stage(t, stage)
     if not t.stage then
         t.stage = stage
@@ -446,13 +417,13 @@ function Target.maybe_add_stage(t, stage)
     return t
 end
 
-Target.meta.__eq = function(a, b)
+Target.__eq = function(a, b)
     return a.name == b.name and
     a.stage == b.stage and
     a.config == b.config
 end
 
-Target.meta.__tostring = function(t)
+Target.__tostring = function(t)
     return table.concat({ t.name, t.stage, t.config }, '-')
 end
 
