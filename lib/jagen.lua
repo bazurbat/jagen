@@ -131,22 +131,38 @@ function Package:new(o)
     return o
 end
 
-function Package:convert_source()
-    local source = self.source
-    if type(source) == 'string' then
-        self.source = { type = 'dist', location = source }
-    end
-    return self
+function Package.from_rule(rule, stages)
+    local default_stages = {
+        { 'clean' }, { 'unpack' }, { 'patch' }
+    }
+
+    local pkg = Package.load(rule.name)
+    pkg:merge(rule)
+    pkg:parse_source()
+
+    pkg.stages = append(default_stages, stages or {}, pkg)
+    pkg:merge_stages()
+    pkg:add_ordering_dependencies()
+
+    return pkg
 end
 
-function Package:convert_stages()
-    local stages = {}
-    for i, s in ipairs(self) do
-        table.insert(stages, s)
-        self[i] = nil
+function Package.load(name)
+    local path = system.mkpath(jagen.pkg_dir, name..'.lua')
+    local env = {}
+    local o
+
+    function env.package(rule)
+        o = rule
     end
-    self.stages = stages
-    return self
+
+    local def = loadfile(path)
+    if def then
+        setfenv(def, env)
+        def()
+    end
+
+    return Package:new(o)
 end
 
 function Package:merge(rule)
@@ -165,41 +181,33 @@ function Package:merge(rule)
     return self
 end
 
-function Package.read_pkg(name)
-    local path = system.mkpath(jagen.pkg_dir, name..'.lua')
-    local env = {}
-    local o = {}
-
-    function env.package(rule)
-        o = Package:new(rule)
+function Package:parse_source()
+    local source = self.source
+    if type(source) == 'string' then
+        self.source = { type = 'dist', location = source }
     end
-
-    local def = loadfile(path)
-    if def then
-        setfenv(def, env)
-        def()
-    end
-
-    return o
+    return self
 end
 
-function Package.read(rule, stages)
-    local default_stages = {
-        { 'clean' }, { 'unpack' }, { 'patch' }
-    }
-
-    local pkg_rule = Package.read_pkg(rule.name)
-
-    pkg_rule = Package.convert_stages(Package.merge(pkg_rule, rule))
-    pkg_rule.stages = append(default_stages, stages or {}, pkg_rule.stages)
-
-    return pkg_rule
+function Package:merge_stages()
+    local collected = {}
+    for _, stage in ipairs(self.stages) do
+        local target = Target.from_stage(self.name, stage)
+        local key = tostring(target)
+        if self.stages[key] then
+            self.stages[key]:append(target)
+        else
+            self.stages[key] = target
+            table.insert(collected, target)
+        end
+    end
+    self.stages = collected
 end
 
-function Package:add_previous(stages)
+function Package:add_ordering_dependencies()
     local prev, common
 
-    for _, s in ipairs(stages) do
+    for _, s in ipairs(self.stages) do
         if prev then
             if common and s.config ~= prev.config then
                 table.insert(s.inputs, 1, common)
@@ -213,41 +221,6 @@ function Package:add_previous(stages)
             common = s
         end
     end
-end
-
-function Package:load_stages(name, stages)
-    local collected = {}
-
-    for _, stage in ipairs(stages) do
-        local t = Target.from_stage(name, stage)
-        local key = tostring(t)
-
-        if stages[key] then
-            stages[key]:append(t)
-        else
-            stages[key] = t
-            table.insert(collected, t)
-        end
-    end
-
-    return collected
-end
-
-function Package.load_package(pkg_rule)
-    local package = {}
-    local collected = Package:load_stages(pkg_rule.name, pkg_rule.stages)
-
-    Package:add_previous(collected)
-    Package.convert_source(pkg_rule)
-
-    package.name = pkg_rule.name
-    package.source = pkg_rule.source
-    package.patches = pkg_rule.patches
-    package.build = pkg_rule.build
-    package.config = pkg_rule.config
-    package.stages = collected
-
-    return package
 end
 
 function Package:filter_stages(target)
@@ -487,15 +460,10 @@ function jagen.flag(f)
 end
 
 function jagen.load_rules()
-    assert(jagen.sdk)
-    local rules = dofile(jagen.rules_file)
-
-    local packages = map(Package.load_package, rules)
-
+    local packages = dofile(jagen.rules_file)
     for _, pkg in ipairs(packages) do
         packages[pkg.name] = pkg
     end
-
     return packages
 end
 
