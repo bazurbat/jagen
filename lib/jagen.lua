@@ -214,26 +214,29 @@ function Rule:add_previous(stages)
     end
 end
 
-function Rule.load_package(pkg_rule)
-    local package = {}
-    local tmp = {}
+function Rule:load_stages(name, stages)
     local collected = {}
 
-    local function load_stage(stage_rule)
-        local t = Target.from_stage(pkg_rule.name, stage_rule)
+    for _, stage in ipairs(stages) do
+        local t = Target.from_stage(name, stage)
         local key = tostring(t)
 
-        if tmp[key] then
-            tmp[key].inputs = append(tmp[key].inputs or {}, t.inputs)
+        if stages[key] then
+            stages[key]:append(t)
         else
-            tmp[key] = t 
+            stages[key] = t
             table.insert(collected, t)
         end
     end
 
-    for_each(pkg_rule.stages, load_stage)
-    Rule:add_previous(collected)
+    return collected
+end
 
+function Rule.load_package(pkg_rule)
+    local package = {}
+    local collected = Rule:load_stages(pkg_rule.name, pkg_rule.stages)
+
+    Rule:add_previous(collected)
     Rule.convert_source(pkg_rule)
 
     package.name = pkg_rule.name
@@ -368,6 +371,7 @@ Target = {}
 function Target.new(name, stage, config)
     local target = { name = name, stage = stage, config = config }
     setmetatable(target, Target)
+    Target.__index = Target
     return target
 end
 
@@ -388,7 +392,7 @@ function Target.from_stage(name, rule)
     end
 
     local target = Target.new(name, stage, config)
-    target.inputs = map(Target.from_list, list(rule))
+    target.inputs = map(Target.from_list, rule)
 
     return target
 end
@@ -410,13 +414,6 @@ function Target.new_from_arg(arg)
     return Target.new(name, stage, config)
 end
 
-function Target.maybe_add_stage(t, stage)
-    if not t.stage then
-        t.stage = stage
-    end
-    return t
-end
-
 Target.__eq = function(a, b)
     return a.name == b.name and
     a.stage == b.stage and
@@ -425,6 +422,11 @@ end
 
 Target.__tostring = function(t)
     return table.concat({ t.name, t.stage, t.config }, '-')
+end
+
+function Target:append(target)
+    self.inputs = append(self.inputs, target.inputs)
+    return self
 end
 
 --}}}
