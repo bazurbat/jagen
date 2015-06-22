@@ -67,5 +67,8 @@ pkg_install_pre() {
 
 pkg_install() {
     p_run make DESTDIR="$p_dest_dir" install
-    p_fix_la "$p_dest_dir$p_prefix/lib/lib${p_name}.la" "$p_dest_dir"
+
+    for name in $p_libs; do
+        p_fix_la "$p_dest_dir$p_prefix/lib/lib${name}.la" "$p_dest_dir"
+    done
 }

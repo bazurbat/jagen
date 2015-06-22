@@ -511,6 +511,10 @@ function Script:build()
         if build.options then
             table.insert(o, string.format('p_options=\'%s\'', build.options))
         end
+        if build.libs then
+            table.insert(o, string.format("p_libs='%s'",
+                table.concat(build.libs, ' ')))
+        end
     end
     return table.concat(o, '\n')
 end
