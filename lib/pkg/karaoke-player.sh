@@ -1,8 +1,5 @@
 #!/bin/sh
 
-p_source_dir="$pkg_src_dir/karaoke-player"
-p_build_dir="$p_work_dir/build${p_config:+-$p_config}"
-
 pkg_build_host() {
     in_flags chicken_next && use_env tools
 
