@@ -3,7 +3,7 @@ package {
     build  = {
         type    = 'GNU',
         options = '--disable-static --disable-enca '..
-                  '--enable-fontconfig --disable-harfbuzz',
+                  '--disable-fontconfig --disable-harfbuzz',
         libs    = { 'ass' }
     },
     source = 'libass-0.12.2.tar.xz'

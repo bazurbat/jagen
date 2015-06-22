@@ -395,7 +395,13 @@ firmware_package {
 
 firmware_package {
     name   = 'fribidi',
-    config = 'target'
+    config = 'target',
+    { 'patch',
+        { 'libtool', 'install' }
+    },
+    { 'build',
+        { 'glib', 'install' }
+    }
 }
 
 firmware_package {
@@ -411,8 +417,7 @@ firmware_package {
     name   = 'libass',
     config = 'target',
     { 'build',
-        { 'fontconfig', 'install' },
-        { 'fribidi',    'install' },
+        { 'fribidi', 'install' },
     }
 }
 
