@@ -405,15 +405,6 @@ firmware_package {
 }
 
 firmware_package {
-    name   = 'fontconfig',
-    config = 'target',
-    { 'build',
-        { 'freetype', 'install' },
-        { 'expat',    'install' }
-    }
-}
-
-firmware_package {
     name   = 'libass',
     config = 'target',
     { 'build',
