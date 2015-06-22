@@ -250,7 +250,8 @@ firmware_package {
 }
 
 firmware_package {
-    name = 'freetype'
+    name   = 'freetype',
+    config = 'target'
 }
 
 firmware_package {

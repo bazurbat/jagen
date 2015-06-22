@@ -1,5 +1,18 @@
 package {
     name    = 'freetype',
+    build   = {
+        type    = 'GNU',
+        options = '--disable-static '..
+                  '--without-bzip2 '..
+                  '--without-png '..
+                  '--without-old-mac-fonts '..
+                  '--without-fsspec '..
+                  '--without-fsref '..
+                  '--without-quickdraw-toolbox '..
+                  '--without-quickdraw-carbon '..
+                  '--without-ats',
+        libs    = { 'freetype' }
+    },
     source  = 'freetype-2.5.0.1.tar.bz2',
     patches = {
         { 'freetype-2.3.2-enable-valid',   1 },
