@@ -255,7 +255,8 @@ firmware_package {
 }
 
 firmware_package {
-    name = 'rsync'
+    name   = 'rsync',
+    config = 'target'
 }
 
 firmware_package {
