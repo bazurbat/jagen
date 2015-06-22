@@ -245,7 +245,8 @@ firmware_package {
 }
 
 firmware_package {
-    name = 'expat'
+    name   = 'expat',
+    config = 'target'
 }
 
 firmware_package {
