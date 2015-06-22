@@ -55,7 +55,7 @@ pkg_build_pre() {
     p_run cd "$p_build_dir"
 }
 
-pkg_build() {
+default_build() {
     p_run ./configure --host="$p_system" --prefix="$p_prefix" $p_options
     p_run make
 }
@@ -65,10 +65,14 @@ pkg_install_pre() {
     pkg_build_pre
 }
 
-pkg_install() {
+default_install() {
     p_run make DESTDIR="$p_dest_dir" install
 
     for name in $p_libs; do
         p_fix_la "$p_dest_dir$p_prefix/lib/lib${name}.la" "$p_dest_dir"
     done
 }
+
+pkg_build() { default_build; }
+
+pkg_install() { default_install; }
