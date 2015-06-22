@@ -408,7 +408,8 @@ firmware_package {
     name   = 'libass',
     config = 'target',
     { 'build',
-        { 'fribidi', 'install' },
+        { 'freetype', 'install' },
+        { 'fribidi',  'install' },
     }
 }
 
