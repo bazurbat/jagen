@@ -370,8 +370,9 @@ package {
 }
 
 firmware_package {
-    name = 'libffi',
-    { 'build', { 'libtool',  'install' } }
+    name   = 'libffi',
+    config = 'target',
+    { 'patch', { 'libtool',  'install' } }
 }
 
 firmware_package {
