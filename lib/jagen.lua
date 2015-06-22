@@ -516,11 +516,16 @@ function Script:build()
                 table.concat(build.libs, ' ')))
         end
     end
+    if build.dir then
+        table.insert(o, 'p_build_dir="'..build.dir..'"')
+    end
+
     return table.concat(o, '\n')
 end
 
 function Script:source()
-    local source = self.pkg.source
+    local pkg = self.pkg
+    local source = pkg.source
     local o, s = {}, {}
     if source.type == 'git' or source.type == 'hg' then
         table.insert(s, source.type)
@@ -532,8 +537,8 @@ function Script:source()
     if source.branch then
         table.insert(o, string.format('p_source_branch="%s"', source.branch))
     end
-    if source.directory then
-        table.insert(o, string.format('p_source_dir="%s"', source.directory))
+    if pkg:is_source() then
+        table.insert(o, string.format('p_source_dir="%s"', self.pkg:directory()))
     end
     return table.concat(o, '\n')
 end
