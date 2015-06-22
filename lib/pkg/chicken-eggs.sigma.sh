@@ -1,13 +1,5 @@
 #!/bin/sh
 
-p_source_dir="$pkg_src_dir/chicken-eggs"
-p_source_branch="master"
-p_build_dir="$p_work_dir/build${p_config:+-$p_config}"
-
-if in_flags chicken_next; then
-    p_source_branch="next"
-fi
-
 # FIXME: add proper support for other build types to chicken
 case $cmake_build_type in
     Debug|Release) ;;
