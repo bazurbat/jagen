@@ -264,7 +264,8 @@ firmware_package {
 }
 
 firmware_package {
-    name = 'libnl'
+    name   = 'libnl',
+    config = 'target'
 }
 
 firmware_package {
