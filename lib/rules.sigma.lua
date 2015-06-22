@@ -283,11 +283,13 @@ firmware_package {
 }
 
 firmware_package {
-    name = 'xtables'
+    name   = 'xtables',
+    config = 'target'
 }
 
 firmware_package {
-    name = 'xtables-addons',
+    name   = 'xtables-addons',
+    config = 'target',
     { 'build', { 'xtables', 'install' } }
 }
 
