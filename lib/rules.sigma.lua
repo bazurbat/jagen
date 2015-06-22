@@ -260,7 +260,8 @@ firmware_package {
 }
 
 firmware_package {
-    name = 'sqlite',
+    name   = 'sqlite',
+    config = 'target',
     { 'patch', { 'libtool', 'install' } }
 }
 
