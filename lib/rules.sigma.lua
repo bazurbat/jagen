@@ -281,7 +281,8 @@ firmware_package {
 }
 
 firmware_package {
-    name = 'libpng',
+    name   = 'libpng',
+    config = 'target',
     { 'build', { 'zlib', 'install' } }
 }
 
