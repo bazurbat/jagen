@@ -11,14 +11,6 @@ function copy(t)
     return c
 end
 
-function list(t)
-    local o = {}
-    for _, v in ipairs(t or {}) do
-        table.insert(o, v)
-    end
-    return o
-end
-
 function append(...)
     local o = {}
     for _, arg in ipairs({...}) do
@@ -29,27 +21,12 @@ function append(...)
     return o
 end
 
-function for_each(t, f)
-    for _, v in ipairs(t or {}) do
-        f(v)
-    end
-end
-
 function map(f, t)
     local r = {}
     for i, v in ipairs(t or {}) do
         table.insert(r, f(v))
     end
     return r
-end
-
-function find(f, t)
-    for _, v in ipairs(t or {}) do
-        if f(v) then
-            return v
-        end
-    end
-    return nil
 end
 
 function filter(pred, list)
@@ -60,12 +37,6 @@ function filter(pred, list)
         end
     end
     return o
-end
-
-function compose(f, g)
-    return function (...)
-        f(unpack(g(...)))
-    end
 end
 
 function string.split(s, sep)
@@ -480,7 +451,10 @@ end
 function jagen.generate()
     local packages = jagen.load_rules()
     ninja:generate(packages, jagen.build_file)
-    for_each(packages, jagen.generate_include_script)
+
+    for _, package in ipairs(packages) do
+        jagen.generate_include_script(package)
+    end
 end
 
 --}}}
