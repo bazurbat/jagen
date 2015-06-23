@@ -194,19 +194,6 @@ function Package:add_ordering_dependencies()
     end
 end
 
-function Package:filter_stages(target)
-    local function match_config(a, b)
-        return not a.config or a.config == b.config
-    end
-    local function match_stage(a, b)
-        return not a.stage or a.stage == b.stage
-    end
-    local function match_target(stage)
-        return match_stage(target, stage) and match_config(target, stage)
-    end
-    return filter(match_target, self.stages)
-end
-
 function Package:type()
     local source = self.source
     return source and source.type
@@ -571,12 +558,28 @@ function build.find_targets(packages, arg)
     local function is_param(arg)
         return string.sub(arg, 1, 1) == '-'
     end
+    local function match_config(a, b)
+        return not a.config or a.config == b.config
+    end
+    local function match_stage(a, b)
+        return not a.stage or a.stage == b.stage
+    end
+    local function match_target(target, stage)
+        return match_stage(target, stage) and match_config(target, stage)
+    end
 
     if is_param(arg) then
         table.insert(args, arg)
     else
         local target = Target.new_from_arg(arg)
-        targets = Package.filter_stages(packages[target.name] or {}, target)
+        local packages = target.name and { packages[target.name] } or packages
+        for _, pkg in ipairs(packages) do
+            for _, stage in ipairs(pkg.stages) do
+                if match_target(target, stage) then
+                    table.insert(targets, stage)
+                end
+            end
+        end
         if #targets == 0 then
             jagen.warning('No targets found for:', arg)
         end
