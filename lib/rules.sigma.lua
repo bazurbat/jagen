@@ -6,7 +6,10 @@ end
 
 local function rootfs_package(rule)
     local stages = {
-        { 'build', { 'rootfs', 'build' } },
+        { 'build',
+            { 'toolchain' },
+            { 'rootfs', 'build' }
+        },
         { 'install' }
     }
     package(rule, stages)
@@ -14,7 +17,10 @@ end
 
 local function kernel_package(rule)
     local stages = {
-        { 'build', { 'kernel', 'build' } },
+        { 'build',
+            { 'toolchain' },
+            { 'kernel', 'build' }
+        },
         { 'install' }
     }
     package(rule, stages)
@@ -22,8 +28,12 @@ end
 
 local function firmware_package(rule)
     local stages = {
-        { 'build' },
-        { 'install', { 'firmware', 'unpack' } }
+        { 'build',
+            { 'toolchain' }
+        },
+        { 'install',
+            { 'firmware', 'unpack' }
+        }
     }
     package(rule, stages)
 end
@@ -75,6 +85,7 @@ package {
     { 'build',   'host' },
     { 'install', 'host' },
     { 'build',   'target',
+        { 'toolchain'        },
         { 'dbus',  'install' },
         { 'gpgme', 'install' },
     },
@@ -103,7 +114,7 @@ if jagen.flag('debug') then
         name   = 'valgrind',
         config = 'target',
         { 'patch',  { 'libtool', 'install' } },
-        { 'build'   },
+        { 'build',  { 'toolchain' } },
         { 'install' }
     }
 
@@ -121,6 +132,7 @@ end
 package {
     name = 'rootfs',
     { 'build',
+        { 'toolchain'                       },
         { 'ast-files',  'unpack'            },
         { 'make',       'install', 'host'   },
         { 'xsdk',       'unpack'            },
@@ -180,6 +192,7 @@ package {
         branch = 'sigma-2.6'
     },
     { 'build',
+        { 'toolchain'        },
         { 'ezboot', 'build'  },
         { 'linux',  'unpack' },
         { 'rootfs', 'build'  },
@@ -201,7 +214,10 @@ package {
     source = {
         branch = 'sigma-2.6'
     },
-    { 'build',   { 'kernel',   'build'  } },
+    { 'build',
+        { 'toolchain'          },
+        { 'kernel',   'build'  }
+    },
     { 'modules'  },
     { 'install', { 'firmware', 'unpack' } }
 }
@@ -214,6 +230,7 @@ package {
     { 'build',   'host' },
     { 'install', 'host' },
     { 'build',   'target',
+        { 'toolchain'                   },
         { 'chicken',  'install', 'host' }
     },
     { 'install', 'target',
@@ -230,6 +247,7 @@ package {
         { 'chicken', 'install', 'host'        }
     },
     { 'install', 'target',
+        { 'toolchain'                         },
         { 'chicken',      'install', 'target' },
         { 'chicken-eggs', 'install', 'host'   },
         { 'dbus',         'install'           },
@@ -241,7 +259,7 @@ package {
     name = 'libuv',
     { 'build',   'host' },
     { 'install', 'host' },
-    { 'build',   'target' },
+    { 'build',   'target', { 'toolchain' } },
     { 'install', 'target',
         { 'firmware', 'unpack' }
     }
@@ -314,6 +332,7 @@ package {
     },
     { 'install', 'host' },
     { 'build',   'target',
+        { 'toolchain'           },
         { 'ast-files', 'unpack' }
     },
     { 'install', 'target',
@@ -340,6 +359,7 @@ package {
     },
     { 'install', 'host'                       },
     { 'build',   'target',
+        { 'toolchain'                         },
         { 'astindex',     'unpack'            },
         { 'chicken',      'install', 'target' },
         { 'chicken-eggs', 'install', 'host'   },
