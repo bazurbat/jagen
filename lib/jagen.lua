@@ -349,7 +349,11 @@ Target.__eq = function(a, b)
 end
 
 Target.__tostring = function(t)
-    return table.concat({ t.name, t.stage, t.config }, '-')
+    local o = {}
+    if t.name then table.insert(o, t.name) end
+    if t.stage then table.insert(o, t.stage) end
+    if t.config then table.insert(o, t.config) end
+    return table.concat(o, '-')
 end
 
 function Target:append(target)
