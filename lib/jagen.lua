@@ -224,7 +224,9 @@ end
 --}}}
 --{{{ Ninja
 
-Ninja = {}
+Ninja = {
+    space = 4
+}
 
 function Ninja:new()
     local o = {}
@@ -233,77 +235,100 @@ function Ninja:new()
     return o
 end
 
-function Ninja:indent(n)
+function Ninja:indent(level)
+    level = level or 0
     local t = {}
-    for i = 1, n or 4 do
+    for i = 1, level * self.space do
         table.insert(t, ' ')
     end
     return table.concat(t)
 end
 
-function Ninja:header()
+function Ninja:variable(k, v, level)
+    return string.format('%s%s = %s\n', self:indent(level), k, v)
+end
+
+function Ninja:rule(rule)
     local o = {
-        string.format('builddir = %s\n', jagen.build_dir),
-        string.format('rule command'),
-        string.format('    command = $command\n'),
-        string.format('rule script'),
-        string.format('    command = %s/$script && touch $out\n\n', jagen.bin_dir)
+        string.format('rule %s', rule.name),
+        self:variable('command', rule.command, 1)
     }
+    if rule.variables then
+        for k, v in pairs(rule.variables) do
+            table.insert(o, self:variable(k, v, 1))
+        end
+    end
     return table.concat(o, '\n')
 end
 
 function Ninja:build(build)
-    local o = {
-        string.format('build %s: %s %s',
-            concat(unpack(build.outputs)), build.rule,
-            concat(unpack(build.inputs))),
-        string.format('%scommand = %s', self:indent(), build.command),
-        '\n'
+    local header = {
+        string.format('build %s: %s',
+            concat(unpack(build.outputs)), build.rule),
+        unpack(map(tostring, build.inputs))
     }
+    local o = {
+        table.concat(header, ' $\n'..self:indent(4))
+    }
+    if build.variables then
+        for k, v in pairs(build.variables) do
+            table.insert(o, self:variable(k, v, 1))
+        end
+    end
     return table.concat(o, '\n')
 end
 
-function Ninja:format_inputs(inputs)
-    local sep = string.format(' $\n%s', self:indent(16))
-    local t = {}
-    for _, d in ipairs(inputs) do
-        table.insert(t, tostring(d))
+function Ninja:header()
+    local o = {
+        self:variable('builddir', jagen.build_dir),
+        self:rule({
+                name    = 'command',
+                command = '$command'
+            }),
+        self:rule({
+                name    = 'script',
+                command = string.format('%s/$script && touch $out', jagen.bin_dir)
+            }),
+    }
+    return table.concat(o)
+end
+
+function Ninja:build_toolchain()
+    return self:build({
+            rule      = 'command',
+            outputs   = { 'toolchain' },
+            inputs    = { system.mkpath(jagen.lib_dir, 'toolchain.sh') },
+            variables = { command = jagen.cmd..' toolchain' }
+        })
+end
+
+function Ninja:build_stage(target)
+    return self:build({
+            rule      = 'script',
+            outputs   = { tostring(target) },
+            inputs    = target.inputs,
+            variables = { script = 'jagen-pkg '..target:__tostring(' ') }
+        })
+end
+
+function Ninja:build_package(pkg)
+    local o = {}
+    for _, stage in ipairs(pkg.stages) do
+        table.insert(o, self:build_stage(stage))
     end
-    return table.concat(t, sep)
+    return table.concat(o)
 end
 
 function Ninja:generate(out_file, packages)
     local out = io.open(out_file, 'w')
 
     out:write(self:header())
-
-    out:write(self:build({
-                rule    = 'command',
-                outputs = { 'toolchain' },
-                inputs  = { system.mkpath(jagen.lib_dir, 'toolchain.sh') },
-                command = jagen.cmd..' toolchain',
-        }))
-
-    local sep = string.format(' $\n%s', self:indent(16))
-
-    for i, pkg in ipairs(packages) do
-        local pn = pkg.name
-        for j, stage in ipairs(pkg.stages or {}) do
-            local sn = stage.stage
-            local sc = stage.config
-            out:write(string.format('build %s: script', tostring(stage)))
-            if #stage.inputs > 0 then
-                out:write(' $\n' .. self:indent(16))
-                out:write(Ninja:format_inputs(stage.inputs))
-            end
-            out:write('\n')
-            out:write(string.format('    script = jagen-pkg %s %s', pn, sn))
-            if sc then
-                out:write(' ', sc)
-            end
-            out:write('\n')
-        end
-        out:write("\n")
+    out:write('\n')
+    out:write(self:build_toolchain())
+    out:write('\n')
+    for _, pkg in ipairs(packages) do
+        out:write(self:build_package(pkg))
+        out:write('\n')
     end
 
     out:close()
@@ -360,18 +385,19 @@ function Target.new_from_arg(arg)
     return Target.new(name, stage, config)
 end
 
-Target.__eq = function(a, b)
+function Target.__eq(a, b)
     return a.name == b.name and
     a.stage == b.stage and
     a.config == b.config
 end
 
-Target.__tostring = function(t)
+function Target.__tostring(t, sep)
     local o = {}
+    sep = sep or '-'
     if t.name then table.insert(o, t.name) end
     if t.stage then table.insert(o, t.stage) end
     if t.config then table.insert(o, t.config) end
-    return table.concat(o, '-')
+    return table.concat(o, sep)
 end
 
 function Target:append(target)
