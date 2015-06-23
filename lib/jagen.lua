@@ -231,11 +231,11 @@ function format.indent(n)
 end
 
 --}}}
---{{{ ninja
+--{{{ Ninja
 
-ninja = {}
+Ninja = {}
 
-function ninja:format_inputs(inputs)
+function Ninja:format_inputs(inputs)
     local sep = string.format(' $\n%s', format.indent(16))
     local t = {}
     for _, d in ipairs(inputs) do
@@ -244,7 +244,7 @@ function ninja:format_inputs(inputs)
     return table.concat(t, sep)
 end
 
-function ninja:generate(packages, out_file)
+function Ninja:generate(packages, out_file)
     local out = io.open(out_file, 'w')
 
     out:write(string.format('builddir = %s\n\n', os.getenv('pkg_build_dir')))
@@ -263,7 +263,7 @@ function ninja:generate(packages, out_file)
             out:write(string.format('build %s: script', tostring(stage)))
             if #stage.inputs > 0 then
                 out:write(' $\n' .. format.indent(16))
-                out:write(ninja:format_inputs(stage.inputs))
+                out:write(Ninja:format_inputs(stage.inputs))
             end
             out:write('\n')
             out:write(string.format('    script = jagen-pkg %s %s', pn, sn))
@@ -441,7 +441,7 @@ end
 
 function jagen.generate()
     local packages = jagen.load_rules()
-    ninja:generate(packages, jagen.build_file)
+    Ninja:generate(packages, jagen.build_file)
 
     for _, package in ipairs(packages) do
         jagen.generate_include_script(package)
