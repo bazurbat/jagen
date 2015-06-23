@@ -6,10 +6,6 @@ p_jobs=1
 [ -d "$SMP86XX_TOOLCHAIN_PATH" ] ||
     die "SMP86XX_TOOLCHAIN_PATH ($SMP86XX_TOOLCHAIN_PATH) is not found"
 
-pkg_patch() {
-    [ -d dl ] || p_src_copy "$pkg_dist_dir/dl" "$p_build_dir/dl"
-}
-
 pkg_build() {
     use_env tools
 
