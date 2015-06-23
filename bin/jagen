@@ -34,8 +34,7 @@ case $1 in
         mkdir -p "$pkg_build_dir"
         mkdir -p "$pkg_build_include_dir"
         _jagen refresh || die "Refresh failed"
-        include "$jagen_root/lib/toolchain"
-        generate_toolchain_wrappers
+        _jagen build toolchain
         ;;
     *)
         _jagen "$@"

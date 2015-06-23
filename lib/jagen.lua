@@ -39,6 +39,10 @@ function filter(pred, list)
     return o
 end
 
+function concat(...)
+	return table.concat(map(tostring, {...}), ' ')
+end
+
 function string.split(s, sep)
     local o, b, e = {}
     local init = 1
@@ -218,25 +222,49 @@ function Package:directory()
 end
 
 --}}}
---{{{ format
-
-local format = {}
-
-function format.indent(n)
-    local t = {}
-    for i = 1, n do
-        table.insert(t, " ")
-    end
-    return table.concat(t)
-end
-
---}}}
 --{{{ Ninja
 
 Ninja = {}
 
+function Ninja:new()
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+function Ninja:indent(n)
+    local t = {}
+    for i = 1, n or 4 do
+        table.insert(t, ' ')
+    end
+    return table.concat(t)
+end
+
+function Ninja:header()
+    local o = {
+        string.format('builddir = %s\n', jagen.build_dir),
+        string.format('rule command'),
+        string.format('    command = $command\n'),
+        string.format('rule script'),
+        string.format('    command = %s/$script && touch $out\n\n', jagen.bin_dir)
+    }
+    return table.concat(o, '\n')
+end
+
+function Ninja:build(build)
+    local o = {
+        string.format('build %s: %s %s',
+            concat(unpack(build.outputs)), build.rule,
+            concat(unpack(build.inputs))),
+        string.format('%scommand = %s', self:indent(), build.command),
+        '\n'
+    }
+    return table.concat(o, '\n')
+end
+
 function Ninja:format_inputs(inputs)
-    local sep = string.format(' $\n%s', format.indent(16))
+    local sep = string.format(' $\n%s', self:indent(16))
     local t = {}
     for _, d in ipairs(inputs) do
         table.insert(t, tostring(d))
@@ -244,16 +272,19 @@ function Ninja:format_inputs(inputs)
     return table.concat(t, sep)
 end
 
-function Ninja:generate(packages, out_file)
+function Ninja:generate(out_file, packages)
     local out = io.open(out_file, 'w')
 
-    out:write(string.format('builddir = %s\n\n', os.getenv('pkg_build_dir')))
-    out:write(string.format('rule command\n'))
-    out:write(string.format('    command = $command\n\n'))
-    out:write(string.format('rule script\n'))
-    out:write(string.format('    command = ' .. os.getenv('pkg_bin_dir') .. '/$script && touch $out\n\n'))
+    out:write(self:header())
 
-    local sep = string.format(' $\n%s', format.indent(16))
+    out:write(self:build({
+                rule    = 'command',
+                outputs = { 'toolchain' },
+                inputs  = { system.mkpath(jagen.lib_dir, 'toolchain.sh') },
+                command = jagen.cmd..' toolchain',
+        }))
+
+    local sep = string.format(' $\n%s', self:indent(16))
 
     for i, pkg in ipairs(packages) do
         local pn = pkg.name
@@ -262,7 +293,7 @@ function Ninja:generate(packages, out_file)
             local sc = stage.config
             out:write(string.format('build %s: script', tostring(stage)))
             if #stage.inputs > 0 then
-                out:write(' $\n' .. format.indent(16))
+                out:write(' $\n' .. self:indent(16))
                 out:write(Ninja:format_inputs(stage.inputs))
             end
             out:write('\n')
@@ -441,7 +472,9 @@ end
 
 function jagen.generate()
     local packages = jagen.load_rules()
-    Ninja:generate(packages, jagen.build_file)
+	local ninja = Ninja:new()
+
+	ninja:generate(jagen.build_file, packages)
 
     for _, package in ipairs(packages) do
         jagen.generate_include_script(package)
@@ -581,7 +614,7 @@ function build.find_targets(packages, arg)
             end
         end
         if #targets == 0 then
-            jagen.warning('No targets found for:', arg)
+            jagen.warning('No packages found for target:', arg)
         end
     end
 
