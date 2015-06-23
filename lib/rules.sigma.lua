@@ -99,6 +99,14 @@ if jagen.flag('debug') then
         { 'install', 'host' }
     }
 
+    package {
+        name   = 'valgrind',
+        config = 'target',
+        { 'patch',  { 'libtool', 'install' } },
+        { 'build'   },
+        { 'install' }
+    }
+
     rootfs_package {
         name = 'gdbserver'
     }
