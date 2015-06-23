@@ -408,33 +408,29 @@ function jagen.exec(...)
     return system.exec(jagen.cmd, ...)
 end
 
-function jagen.tostring(...)
-    return table.concat(map(tostring, {...}), ' ')
-end
-
 function jagen.message(...)
-    print(string.format('\027[1;34m:::\027[0m %s', jagen.tostring(...)))
+    print(string.format('\027[1;34m:::\027[0m %s', concat(...)))
 end
 function jagen.warning(...)
-    print(string.format('\027[1;33m:::\027[0m %s', jagen.tostring(...)))
+    print(string.format('\027[1;33m:::\027[0m %s', concat(...)))
 end
 function jagen.error(...)
-    print(string.format('\027[1;31m:::\027[0m %s', jagen.tostring(...)))
+    print(string.format('\027[1;31m:::\027[0m %s', concat(...)))
 end
 
 function jagen.debug(...)
     if jagen.debug then
-        print(string.format('\027[1;36m:::\027[0m %s', jagen.tostring(...)))
+        print(string.format('\027[1;36m:::\027[0m %s', concat(...)))
     end
 end
 function jagen.debug1(...)
     if os.getenv('pkg_debug') >= '1' then
-        print(string.format('\027[1;36m:::\027[0m %s', jagen.tostring(...)))
+        print(string.format('\027[1;36m:::\027[0m %s', concat(...)))
     end
 end
 function jagen.debug2(...)
     if os.getenv('pkg_debug') >= '2' then
-        print(string.format('\027[1;36m:::\027[0m %s', jagen.tostring(...)))
+        print(string.format('\027[1;36m:::\027[0m %s', concat(...)))
     end
 end
 
@@ -655,7 +651,7 @@ end
 
 function src.popen_git(p, ...)
     local dir = Package.directory(p)
-    return io.popen('git -C '..dir..' '..jagen.tostring(...)):read() or ''
+    return io.popen('git -C '..dir..' '..concat(...)):read() or ''
 end
 
 function src.exec_hg(p, ...)
@@ -665,7 +661,7 @@ end
 
 function src.popen_hg(p, ...)
     local dir = Package.directory(p)
-    return io.popen('hg -R '..dir..' '..jagen.tostring(...)):read() or ''
+    return io.popen('hg -R '..dir..' '..concat(...)):read() or ''
 end
 
 function src.head(p)
