@@ -39,8 +39,17 @@ function filter(pred, list)
     return o
 end
 
+function find(list, pred)
+    for _, item in ipairs(list or {}) do
+        if pred(item) then
+            return item
+        end
+    end
+    return nil
+end
+
 function concat(...)
-	return table.concat(map(tostring, {...}), ' ')
+    return table.concat(map(tostring, {...}), ' ')
 end
 
 function string.split(s, sep)
@@ -118,6 +127,7 @@ function Package.from_rule(rule, stages)
     pkg.stages = append(default_stages, stages or {}, pkg)
     pkg:add_special_dependencies()
     pkg:merge_stages()
+    pkg:add_target_build_dependencies()
     pkg:add_ordering_dependencies()
 
     return pkg
@@ -185,6 +195,16 @@ function Package:merge_stages()
         end
     end
     self.stages = collected
+end
+
+function Package:add_target_build_dependencies()
+    local build = self.build
+    local target_build = find(self.stages, function (t)
+            return t.stage == 'build' and t.config == 'target'
+        end)
+    if target_build then
+        table.insert(target_build.inputs, 1, Target.new('toolchain'))
+    end
 end
 
 function Package:add_ordering_dependencies()

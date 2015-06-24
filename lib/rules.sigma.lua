@@ -85,7 +85,6 @@ package {
     { 'build',   'host' },
     { 'install', 'host' },
     { 'build',   'target',
-        { 'toolchain'        },
         { 'dbus',  'install' },
         { 'gpgme', 'install' },
     },
@@ -228,7 +227,6 @@ package {
     { 'build',   'host' },
     { 'install', 'host' },
     { 'build',   'target',
-        { 'toolchain'                   },
         { 'chicken',  'install', 'host' }
     },
     { 'install', 'target',
@@ -255,9 +253,9 @@ package {
 
 package {
     name = 'libuv',
-    { 'build',   'host' },
-    { 'install', 'host' },
-    { 'build',   'target', { 'toolchain' } },
+    { 'build',   'host'   },
+    { 'install', 'host'   },
+    { 'build',   'target' },
     { 'install', 'target',
         { 'firmware', 'unpack' }
     }
@@ -329,7 +327,6 @@ package {
     },
     { 'install', 'host' },
     { 'build',   'target',
-        { 'toolchain'           },
         { 'ast-files', 'unpack' }
     },
     { 'install', 'target',
@@ -356,7 +353,6 @@ package {
     },
     { 'install', 'host'                       },
     { 'build',   'target',
-        { 'toolchain'                         },
         { 'astindex',     'unpack'            },
         { 'chicken',      'install', 'target' },
         { 'chicken-eggs', 'install', 'host'   },
