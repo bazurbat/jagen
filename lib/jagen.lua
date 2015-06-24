@@ -541,13 +541,21 @@ end
 
 function Script:config()
     local config = self.pkg.config
-    local o = {
-        'use_toolchain '..config,
-        'p_system="$target_system"',
-        'p_prefix="$target_prefix"',
-        'p_dest_dir="$target_dir"',
-    }
-    return table.concat(o, '\n')
+    if config == 'target' then
+        return table.concat({
+                'use_toolchain target',
+                'p_system="$target_system"',
+                'p_prefix="$target_prefix"',
+                'p_dest_dir="$target_dir"',
+            }, '\n')
+    elseif config == 'rootfs' then
+        return table.concat({
+                'use_toolchain target',
+                'p_system="$target_system"',
+                'p_prefix=""',
+                'p_dest_dir="$sdk_rootfs_prefix"',
+            }, '\n')
+    end
 end
 
 function Script:build()

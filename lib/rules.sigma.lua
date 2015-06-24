@@ -112,7 +112,7 @@ if jagen.flag('debug') then
 
     package {
         name   = 'valgrind',
-        config = 'target',
+        config = 'rootfs',
         { 'patch',  { 'libtool', 'install' } },
         { 'build',  { 'toolchain' } },
         { 'install' }
