@@ -577,6 +577,9 @@ function Script:build()
             table.insert(o, string.format("p_libs='%s'",
                 table.concat(build.libs, ' ')))
         end
+        if build.need_libtool then
+            table.insert(o, 'p_need_libtool="yes"')
+        end
     end
     if build.dir then
         table.insert(o, 'p_build_dir="'..build.dir..'"')

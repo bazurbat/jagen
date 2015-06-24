@@ -9,7 +9,6 @@ pkg_patch() {
     # leave python shebang alone
     p_run sed -ie '/${PYTHON}/d' \
         glib/Makefile.am glib/Makefile.in
-    p_autoreconf
 }
 
 pkg_build() {

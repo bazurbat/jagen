@@ -5,10 +5,6 @@ use_toolchain target
 p_prefix=""
 p_dest_dir="$sdk_rootfs_prefix"
 
-pkg_patch() {
-    p_autoreconf
-}
-
 pkg_build() {
     p_run ./configure \
         --host="$target_system" \

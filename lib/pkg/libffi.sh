@@ -4,7 +4,6 @@ pkg_patch() {
     p_run sed -i -e 's:@toolexeclibdir@:$(libdir):g' Makefile.in
     # http://sourceware.org/ml/libffi-discuss/2014/msg00060.html
     p_run sed -i -e 's:@toolexeclibdir@:${libdir}:' libffi.pc.in
-    p_autoreconf
 }
 
 pkg_build() {

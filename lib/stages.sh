@@ -50,6 +50,12 @@ pkg_unpack() {
     esac
 }
 
+pkg_patch_post() {
+    if [ "$p_need_libtool" ]; then
+        p_autoreconf
+    fi
+}
+
 pkg_build_pre() {
     [ -d "$p_build_dir" ] || p_run mkdir -p "$p_build_dir"
     p_run cd "$p_build_dir"
