@@ -1,8 +1,9 @@
 package {
-    name    = 'libffi',
-    build   = {
+    name  = 'libffi',
+    build = {
         type = 'GNU',
-        libs = { 'ffi' }
+        libs = { 'ffi' },
+        need_libtool = true
     },
     source  = 'libffi-3.1.tar.gz',
     patches = {

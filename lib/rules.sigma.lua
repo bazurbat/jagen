@@ -113,7 +113,6 @@ if jagen.flag('debug') then
     package {
         name   = 'valgrind',
         config = 'rootfs',
-        { 'patch',  { 'libtool', 'install' } },
         { 'build',  { 'toolchain' } },
         { 'install' }
     }
@@ -160,8 +159,7 @@ rootfs_package {
 }
 
 rootfs_package {
-    name = 'util-linux',
-    { 'patch', { 'libtool', 'install' } }
+    name = 'util-linux'
 }
 
 -- gpgme
@@ -287,8 +285,7 @@ firmware_package {
 
 firmware_package {
     name   = 'sqlite',
-    config = 'target',
-    { 'patch', { 'libtool', 'install' } }
+    config = 'target'
 }
 
 firmware_package {
@@ -405,15 +402,11 @@ package {
 
 firmware_package {
     name   = 'libffi',
-    config = 'target',
-    { 'patch', { 'libtool',  'install' } }
+    config = 'target'
 }
 
 firmware_package {
     name = 'glib',
-    { 'patch',
-        { 'libtool',  'install' }
-    },
     { 'build',
         { 'zlib',     'install' },
         { 'libffi',   'install' },
@@ -425,7 +418,6 @@ firmware_package {
     { 'build',
         { 'dbus',           'install' },
         { 'glib',           'install' },
-        { 'libtool',        'install' },
         { 'xtables-addons', 'install' },
     }
 }
@@ -433,9 +425,6 @@ firmware_package {
 firmware_package {
     name   = 'fribidi',
     config = 'target',
-    { 'patch',
-        { 'libtool', 'install' }
-    },
     { 'build',
         { 'glib', 'install' }
     }

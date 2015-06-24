@@ -1,11 +1,12 @@
 package {
-    name   = 'fribidi',
-    build  = {
+    name  = 'fribidi',
+    build = {
         type    = 'GNU',
         options = '--with-glib=yes',
-        libs    = { 'fribidi' }
+        libs    = { 'fribidi' },
+        need_libtool = true
     },
-    source = 'fribidi-0.19.6.tar.bz2',
+    source  = 'fribidi-0.19.6.tar.bz2',
     patches = {
         { 'fribidi-0.19.2-nodoc',            0 },
         { 'fribidi-0.19.6-page-size-header', 1 }

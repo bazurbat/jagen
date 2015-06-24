@@ -3,7 +3,8 @@ package {
     build  = {
         type    = 'GNU',
         options = '--enable-only32bit --disable-tls '..
-                  '--with-pagesize=16 --without-mpicc'
+                  '--with-pagesize=16 --without-mpicc',
+        need_libtool = true,
     },
     source  = 'valgrind-3.10.1.tar.bz2',
     patches = {

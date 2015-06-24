@@ -1,4 +1,8 @@
 package {
-    name   = 'connman',
+    name  = 'connman',
+    build = {
+        type = 'GNU',
+        need_libtool = true
+    },
     source = 'connman-1.28.tar.xz'
 }

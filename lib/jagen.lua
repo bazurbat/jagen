@@ -116,6 +116,7 @@ function Package.from_rule(rule, stages)
     pkg:parse_source()
 
     pkg.stages = append(default_stages, stages or {}, pkg)
+    pkg:add_special_dependencies()
     pkg:merge_stages()
     pkg:add_ordering_dependencies()
 
@@ -162,6 +163,13 @@ function Package:parse_source()
         self.source = { type = 'dist', location = source }
     end
     return self
+end
+
+function Package:add_special_dependencies()
+    local build = self.build
+    if build and build.need_libtool then
+        table.insert(self.stages, { 'patch', { 'libtool', 'install' }})
+    end
 end
 
 function Package:merge_stages()

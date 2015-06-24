@@ -1,9 +1,10 @@
 package {
-    name    = 'sqlite',
-    build   = {
+    name  = 'sqlite',
+    build = {
         type    = 'GNU',
         options = '--disable-static',
-        libs    = { 'sqlite3' }
+        libs    = { 'sqlite3' },
+        need_libtool = true,
     },
     source  = 'sqlite-autoconf-3080403.tar.gz',
     patches = {
