@@ -127,7 +127,7 @@ function Package.from_rule(rule, stages)
     pkg.stages = append(default_stages, stages or {}, pkg)
     pkg:add_special_dependencies()
     pkg:merge_stages()
-    pkg:add_target_build_dependencies()
+    pkg:add_toolchain_dependency()
     pkg:add_ordering_dependencies()
 
     return pkg
@@ -197,13 +197,12 @@ function Package:merge_stages()
     self.stages = collected
 end
 
-function Package:add_target_build_dependencies()
-    local build = self.build
-    local target_build = find(self.stages, function (t)
-            return t.stage == 'build' and t.config == 'target'
-        end)
-    if target_build then
-        table.insert(target_build.inputs, 1, Target.new('toolchain'))
+function Package:add_toolchain_dependency()
+    local function is_build_stage(target)
+        return target.stage == 'build'
+    end
+    for _, stage in ipairs(filter(is_build_stage, self.stages)) do
+        table.insert(stage.inputs, 1, Target.new('toolchain'))
     end
 end
 

@@ -6,10 +6,7 @@ end
 
 local function rootfs_package(rule)
     local stages = {
-        { 'build',
-            { 'toolchain' },
-            { 'rootfs', 'build' }
-        },
+        { 'build', { 'rootfs', 'build' } },
         { 'install' }
     }
     package(rule, stages)
@@ -17,10 +14,7 @@ end
 
 local function kernel_package(rule)
     local stages = {
-        { 'build',
-            { 'toolchain' },
-            { 'kernel', 'build' }
-        },
+        { 'build', { 'kernel', 'build' } },
         { 'install' }
     }
     package(rule, stages)
@@ -28,12 +22,8 @@ end
 
 local function firmware_package(rule)
     local stages = {
-        { 'build',
-            { 'toolchain' }
-        },
-        { 'install',
-            { 'firmware', 'unpack' }
-        }
+        { 'build' },
+        { 'install', { 'firmware', 'unpack' } }
     }
     package(rule, stages)
 end
@@ -112,7 +102,7 @@ if jagen.flag('debug') then
     package {
         name   = 'valgrind',
         config = 'rootfs',
-        { 'build',  { 'toolchain' } },
+        { 'build'   },
         { 'install' }
     }
 
@@ -130,7 +120,6 @@ end
 package {
     name = 'rootfs',
     { 'build',
-        { 'toolchain'                       },
         { 'ast-files',  'unpack'            },
         { 'make',       'install', 'host'   },
         { 'xsdk',       'unpack'            },
@@ -189,7 +178,6 @@ package {
         branch = 'sigma-2.6'
     },
     { 'build',
-        { 'toolchain'        },
         { 'ezboot', 'build'  },
         { 'linux',  'unpack' },
         { 'rootfs', 'build'  },
@@ -211,10 +199,7 @@ package {
     source = {
         branch = 'sigma-2.6'
     },
-    { 'build',
-        { 'toolchain'          },
-        { 'kernel',   'build'  }
-    },
+    { 'build',   { 'kernel',   'build'  } },
     { 'modules'  },
     { 'install', { 'firmware', 'unpack' } }
 }
