@@ -32,9 +32,6 @@ package {
 
 package {
     name = 'chicken',
-    source = {
-        branch = 'cmake'
-    },
     { 'build',   'host' },
     { 'install', 'host' },
     { 'build',   'target',
@@ -53,7 +50,7 @@ package {
 package {
     name = 'karaoke-player',
     { 'build', 'target',
-        { 'android-cmake', 'install', 'unpack' },
+        { 'android-cmake', 'unpack'            },
         { 'astindex',      'unpack'            },
         { 'chicken',       'install', 'target' },
         { 'ffmpeg',        'install', 'target' },
