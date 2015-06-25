@@ -17,9 +17,9 @@ export pkg_build_verbose="no"
 jagen_try_include() { [ -f "$1" ] && . "$1"; }
 
 . "$pkg_lib_dir/list.sh" ||
-    { echo "Failed to load list library"; exit 1; }
+    { echo "Failed to load list library"; return 1; }
 . "$pkg_lib_dir/common.sh" ||
-    { echo "Failed to load common library"; exit 1; }
+    { echo "Failed to load common library"; return 1; }
 
 _jagen() {
     lua "$pkg_lib_dir/jagen.lua" "$@"
@@ -42,8 +42,8 @@ export pkg_build_include_dir="$pkg_build_dir/include"
 export pkg_private_dir="$pkg_src_dir/files"
 
 in_flags ccache && use_env ccache
-include "$pkg_lib_dir/env/cmake"
-include "$pkg_lib_dir/env/sdk"
+include "$pkg_lib_dir/env/cmake" || return
+include "$pkg_lib_dir/env/sdk"   || return
 use_env host
 
 export CROSS_MAKE="make ARCH=${target_arch} CROSS_COMPILE=${target_system}-"
