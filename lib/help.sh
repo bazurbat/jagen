@@ -1,24 +1,27 @@
 #!/bin/sh
 
 print_help() {
-    echo "Usage: $0 <COMMAND> [OPTIONS]...
+    echo "Usage: jagen <COMMAND> [OPTIONS...]
 
-Generates and manages a build system from predefined rules.
+  Generates and manages a build system according to the predefined rules.
 
 Commands:
   help		Print this help message
-  clean		Delete the build directory ($pkg_build_dir)
+  clean		Delete the build directory
   update	Update jagen and regenerate the build system
   refresh	Regenerate the build system
   build		Build the specified targets
-  rebuild	Rebuild the specified targets showing the logs to stdout
+  rebuild	Rebuild the specified targets showing the output
 
-  The 'help' command show this help message.
+  The 'help' command shows this help message.
 
-  The 'clean' command removes build directory.
+  The 'clean' command removes the build directory and regenerates the build
+  system. Currently configured build directory:
+
+    $pkg_build_dir
 
   The 'update' command tries to update jagen from the source repository and
-  does refresh afterwards.
+  regenerates the build system afterwards.
 
   The 'refresh' command generates build system from rules according to the
   configuration.
@@ -27,25 +30,38 @@ Commands:
 
     jagen build [TARGETS...]
 
-  see below for TARGETS syntax.
+  and builds the specified targets which are not up to date. If no targets are
+  specified then all will be checked. Build output for each target is saved in
+  the build directory alongside the target stamp file with the '.log' extension
+  appended. See below for TARGETS syntax.
 
   The 'rebuild' command have the form:
 
     jagen rebuild [-t] [-a] [TARGETS...]
 
-  With the '-t' option only the specified targets will be rebuilt. In the
-  default mode the rebuild will start from the specified targets and continue
-  through their dependencies. The '-a' options shows all build logs, even from
-  not specified targets (build dependencies for example).
-  
+  and rebuilds the specified targets including their dependencies showing the
+  output on the console. With the '-t' option only the specified targets will
+  be rebuilt. With the '-a' option the console output will include logs from
+  not specified targets. The output is saved alongside the target stamp file in
+  the build directory with the '.log' extension appended.
+
+TARGETS:
+
   The targets are specified as: <name>[:<stage>][:<config>]. The available
-  package stages are filtered with the given expression. Omitted components
+  package stages are filtered with the given expression. Omitted component
   means 'all'. For example:
 
-  utils              - run all stages of the utils package
-  utils:install      - run all utils install stages
-  utils::host        - run all host utils stages
-  utils:build:host   - run only host utils build stage
+  utils              - select all stages of the utils package
+  utils:install      - select all utils install stages
+  utils::host        - select all host utils stages
+  utils:build:host   - select only host utils build stage
+  :build:host        - select host build stages of all packages
+
+  When a target is succesfully built the stamp file is created in the build
+  directory with the name: <name>-<stage>-<config>. This file is used to
+  determine if the target is up to date. Deleting it will cause the
+  corresponding target to be rebuilt unconditionally on next 'build' or
+  'rebuild' command.
 
 CONFIGURATION:
 
