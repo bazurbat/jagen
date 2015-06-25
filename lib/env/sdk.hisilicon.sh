@@ -23,7 +23,7 @@ fi
 
 p_path_prepend "$JAVA_HOME/bin"
 
-[ "$sdk_dir" ] ||
-    die "sdk_dir is not set"
-[ "$sdk_out_dir" ] ||
-    die "sdk_out_dir is not set"
+[ "$sdk_dir" ] || { error "sdk_dir is not set"; return 1; }
+[ -d "$sdk_dir" ] || { error "sdk_dir is not found"; return 1; }
+[ "$sdk_out_dir" ] || { error "sdk_out_dir is not set"; return 1; }
+[ -d "$sdk_out_dir" ] || { error "sdk_out_dir is not found"; return 1; }
