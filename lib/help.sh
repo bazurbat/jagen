@@ -60,7 +60,7 @@ TARGETS:
   When a target is succesfully built the stamp file is created in the build
   directory with the name: <name>-<stage>-<config>. This file is used to
   determine if the target is up to date. Deleting it will cause the
-  corresponding target to be rebuilt unconditionally on next 'build' or
+  corresponding target to be rebuilt unconditionally on the next 'build' or
   'rebuild' command.
 
 CONFIGURATION:
