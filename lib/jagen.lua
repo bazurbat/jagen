@@ -502,10 +502,25 @@ function jagen.flag(f)
 end
 
 function jagen.load_rules()
-    local packages = dofile(jagen.rules_file)
+    local packages = {}
+    local env = {
+        jagen = jagen
+    }
+
+    function env.package(rule, stages)
+        table.insert(packages, Package.from_rule(rule, stages))
+    end
+
+    local rules = loadfile(jagen.rules_file)
+    if rules then
+        setfenv(rules, env)
+        rules()
+    end
+
     for _, pkg in ipairs(packages) do
         packages[pkg.name] = pkg
     end
+ 
     return packages
 end
 

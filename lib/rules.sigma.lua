@@ -1,9 +1,3 @@
-local packages = {}
-
-local function package(rule, stages)
-    table.insert(packages, Package.from_rule(rule, stages))
-end
-
 local function rootfs_package(rule)
     local stages = {
         { 'build', { 'rootfs', 'build' } },
@@ -419,5 +413,3 @@ firmware_package {
         { 'fribidi',  'install' },
     }
 }
-
-return packages
