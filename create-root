@@ -71,8 +71,6 @@ done
 
 root="${root:-$PWD}"
 
-echo "%% $root | $sdk | $force"
-
 env_file="$root/env.sh"
 config_file="$root/local.sh"
 
