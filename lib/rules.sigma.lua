@@ -67,7 +67,11 @@ package {
 package {
     name = 'utils',
     { 'build',   'host' },
-    { 'install', 'host' },
+    { 'install', 'host' }
+}
+
+package {
+    name = 'utils',
     { 'build',   'target',
         { 'dbus',  'install' },
         { 'gpgme', 'install' },
@@ -200,11 +204,12 @@ package {
 
 package {
     name = 'chicken',
-    source = {
-        branch = 'cmake'
-    },
     { 'build',   'host' },
-    { 'install', 'host' },
+    { 'install', 'host' }
+}
+
+package {
+    name = 'chicken',
     { 'build',   'target',
         { 'chicken',  'install', 'host' }
     },
@@ -215,12 +220,13 @@ package {
 
 package {
     name = 'chicken-eggs',
-    source = {
-        branch = 'master'
-    },
     { 'install', 'host',
         { 'chicken', 'install', 'host'        }
-    },
+    }
+}
+
+package {
+    name = 'chicken-eggs',
     { 'install', 'target',
         { 'toolchain'                         },
         { 'chicken',      'install', 'target' },
@@ -233,7 +239,11 @@ package {
 package {
     name = 'libuv',
     { 'build',   'host'   },
-    { 'install', 'host'   },
+    { 'install', 'host'   }
+}
+
+package {
+    name = 'libuv',
     { 'build',   'target' },
     { 'install', 'target',
         { 'firmware', 'unpack' }
@@ -304,7 +314,11 @@ package {
     { 'build',   'host',
         { 'ast-files', 'unpack' }
     },
-    { 'install', 'host' },
+    { 'install', 'host' }
+}
+
+package {
+    name = 'ffmpeg',
     { 'build',   'target',
         { 'ast-files', 'unpack' }
     },
@@ -330,7 +344,11 @@ package {
         { 'ffmpeg',       'install', 'host'   },
         { 'libuv',        'install', 'host'   },
     },
-    { 'install', 'host'                       },
+    { 'install', 'host'                       }
+}
+
+package {
+    name = 'karaoke-player',
     { 'build',   'target',
         { 'astindex',     'unpack'            },
         { 'chicken',      'install', 'target' },
