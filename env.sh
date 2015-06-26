@@ -1,6 +1,7 @@
 #!/bin/sh
 
 export jagen_root="$PWD"
+export jagen_build_root="$PWD"
 
 . "$jagen_root/lib/env.sh" ||
     { echo "Failed to load environment"; return 1; }
