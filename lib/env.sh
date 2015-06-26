@@ -31,7 +31,7 @@ if [ "$XDG_CONFIG_HOME" ]; then
 else
     jagen_try_include "$HOME/.config/jagen/env"
 fi
-jagen_try_include "$jagen_root/local.sh"
+jagen_try_include "$jagen_build_root/local.sh"
 
 [ "$pkg_sdk" ] ||
     warning "pkg_sdk is not set"
