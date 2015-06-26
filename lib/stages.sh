@@ -62,7 +62,11 @@ pkg_build_pre() {
 }
 
 default_build() {
-    p_run "$p_source_dir/configure" --host="$p_system" --prefix="$p_prefix" $p_options
+    # NOTE: some packages are behaving wierdly with out of tree builds or when
+    # configure is called with absolute path. Namely 'libffi' tries to do
+    # something clever with relative paths.
+
+    p_run ./configure --host="$p_system" --prefix="$p_prefix" $p_options
     p_run make
 }
 
