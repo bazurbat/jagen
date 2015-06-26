@@ -105,9 +105,7 @@ end
 --{{{ Package
 
 Package = {
-    name   = 'package',
-    source = {},
-    stages = {}
+    default_stages = { { 'clean' }, { 'unpack' }, { 'patch' } }
 }
 
 function Package:new(o)
@@ -117,16 +115,12 @@ function Package:new(o)
     return o
 end
 
-function Package.load_rule(rule, stages)
-    local default_stages = {
-        { 'clean' }, { 'unpack' }, { 'patch' }
-    }
-
+function Package:load_rule(rule, stages)
     local pkg = Package.load(rule.name)
     pkg:merge(rule)
     pkg:parse_source()
 
-    pkg.stages = append(default_stages, stages or {}, pkg)
+    pkg.stages = append(copy(self.default_stages), stages or {}, pkg)
     pkg:add_special_dependencies()
 
     return pkg
@@ -196,11 +190,14 @@ function Package:merge_stages()
     self.stages = collected
 end
 
-function Package:add_config()
+function Package:set_config()
     local config = self.config
+    local function non_default_stage(t)
+        return t.stage ~= 'clean' and t.stage ~= 'unpack' and t.stage ~= 'patch'
+    end
     if config then
-        for _, stage in ipairs(self.stages) do
-            stage.config = config
+        for _, stage in ipairs(filter(non_default_stage, self.stages)) do
+            stage.config = stage.config or config
         end
     end
 end
@@ -515,7 +512,7 @@ function jagen.load_rules()
     }
 
     function env.package(rule, stages)
-        local pkg  = Package.load_rule(rule, stages)
+        local pkg  = Package:load_rule(rule, stages)
         local name = pkg.name
         if packages[name] then
             packages[name]:merge(pkg)
@@ -534,6 +531,7 @@ function jagen.load_rules()
     for _, pkg in ipairs(packages) do
         pkg:merge_stages()
         pkg:add_toolchain_dependency()
+        pkg:set_config()
         pkg:add_ordering_dependencies()
     end
 

@@ -232,7 +232,7 @@ package {
         { 'chicken',      'install', 'target' },
         { 'chicken-eggs', 'install', 'host'   },
         { 'dbus',         'install'           },
-        { 'sqlite',       'install'           },
+        { 'sqlite',       'install', 'target' },
     }
 }
 
@@ -252,7 +252,7 @@ package {
 
 firmware_package {
     name = 'dbus',
-    { 'build', { 'expat', 'install' } }
+    { 'build', { 'expat', 'install', 'target' } }
 }
 
 firmware_package {
@@ -283,8 +283,8 @@ firmware_package {
 firmware_package {
     name = 'wpa_supplicant',
     { 'build',
-        { 'dbus',  'install' },
-        { 'libnl', 'install' },
+        { 'dbus',  'install'           },
+        { 'libnl', 'install', 'target' },
     }
 }
 
@@ -306,7 +306,7 @@ firmware_package {
 firmware_package {
     name   = 'xtables-addons',
     config = 'target',
-    { 'build', { 'xtables', 'install' } }
+    { 'build', { 'xtables', 'install', 'target' } }
 }
 
 package {
@@ -356,9 +356,9 @@ package {
         { 'connman',      'install'           },
         { 'dbus',         'install'           },
         { 'ffmpeg',       'install', 'target' },
-        { 'freetype',     'install'           },
-        { 'libass',       'install'           },
-        { 'libpng',       'install'           },
+        { 'freetype',     'install', 'target' },
+        { 'libass',       'install', 'target' },
+        { 'libpng',       'install', 'target' },
         { 'libuv',        'install', 'target' },
         { 'mrua',         'build'             },
         { 'soundtouch',   'install'           },
@@ -374,21 +374,21 @@ package {
         { 'mrua',           'build'             }
     },
     { 'install',
-        { 'connman',        'install'           },
-        { 'dbus',           'install'           },
-        { 'expat',          'install'           },
-        { 'ezboot',         'install'           },
-        { 'freetype',       'install'           },
-        { 'glib',           'install'           },
+        { 'connman',        'install',          },
+        { 'dbus',           'install',          },
+        { 'expat',          'install', 'target' },
+        { 'ezboot',         'install',          },
+        { 'freetype',       'install', 'target' },
+        { 'glib',           'install',          },
         { 'karaoke-player', 'install', 'target' },
         { 'kernel',         'image'             },
-        { 'libffi',         'install'           },
-        { 'libpng',         'install'           },
+        { 'libffi',         'install', 'target' },
+        { 'libpng',         'install', 'target' },
         { 'mrua',           'install'           },
-        { 'rsync',          'install'           },
-        { 'sqlite',         'install'           },
-        { 'wpa_supplicant', 'install'           },
-        { 'zlib',           'install'           },
+        { 'rsync',          'install', 'target' },
+        { 'sqlite',         'install', 'target' },
+        { 'wpa_supplicant', 'install',          },
+        { 'zlib',           'install',          },
     },
     { 'strip' }
 }
@@ -402,16 +402,16 @@ firmware_package {
     name = 'glib',
     { 'build',
         { 'zlib',     'install' },
-        { 'libffi',   'install' },
+        { 'libffi',   'install', 'target' },
     }
 }
 
 firmware_package {
     name = 'connman',
     { 'build',
-        { 'dbus',           'install' },
-        { 'glib',           'install' },
-        { 'xtables-addons', 'install' },
+        { 'dbus',           'install'           },
+        { 'glib',           'install'           },
+        { 'xtables-addons', 'install', 'target' },
     }
 }
 
@@ -427,7 +427,7 @@ firmware_package {
     name   = 'libass',
     config = 'target',
     { 'build',
-        { 'freetype', 'install' },
-        { 'fribidi',  'install' },
+        { 'freetype', 'install', 'target' },
+        { 'fribidi',  'install', 'target' },
     }
 }
