@@ -324,7 +324,6 @@ function Ninja:build_toolchain()
     return self:build({
             rule      = 'command',
             outputs   = { 'toolchain' },
-            inputs    = { system.mkpath(jagen.lib_dir, 'toolchain.sh') },
             variables = { command = jagen.cmd..' toolchain' }
         })
 end
