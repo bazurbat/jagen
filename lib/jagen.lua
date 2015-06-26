@@ -1,3 +1,5 @@
+-- require 'pl'
+
 --{{{ common
 
 function copy(t)
@@ -115,7 +117,7 @@ function Package:new(o)
     return o
 end
 
-function Package.from_rule(rule, stages)
+function Package.load_rule(rule, stages)
     local default_stages = {
         { 'clean' }, { 'unpack' }, { 'patch' }
     }
@@ -126,9 +128,6 @@ function Package.from_rule(rule, stages)
 
     pkg.stages = append(default_stages, stages or {}, pkg)
     pkg:add_special_dependencies()
-    pkg:merge_stages()
-    pkg:add_toolchain_dependency()
-    pkg:add_ordering_dependencies()
 
     return pkg
 end
@@ -195,6 +194,15 @@ function Package:merge_stages()
         end
     end
     self.stages = collected
+end
+
+function Package:add_config()
+    local config = self.config
+    if config then
+        for _, stage in ipairs(self.stages) do
+            stage.config = config
+        end
+    end
 end
 
 function Package:add_toolchain_dependency()
@@ -507,7 +515,14 @@ function jagen.load_rules()
     }
 
     function env.package(rule, stages)
-        table.insert(packages, Package.from_rule(rule, stages))
+        local pkg  = Package.load_rule(rule, stages)
+        local name = pkg.name
+        if packages[name] then
+            packages[name]:merge(pkg)
+        else
+            packages[name] = pkg
+            table.insert(packages, pkg)
+        end
     end
 
     local rules = loadfile(jagen.rules_file)
@@ -517,9 +532,11 @@ function jagen.load_rules()
     end
 
     for _, pkg in ipairs(packages) do
-        packages[pkg.name] = pkg
+        pkg:merge_stages()
+        pkg:add_toolchain_dependency()
+        pkg:add_ordering_dependencies()
     end
- 
+
     return packages
 end
 
@@ -535,9 +552,9 @@ end
 
 function jagen.generate()
     local packages = jagen.load_rules()
-	local ninja = Ninja:new()
+    local ninja = Ninja:new()
 
-	ninja:generate(jagen.build_file, packages)
+    ninja:generate(jagen.build_file, packages)
 
     for _, package in ipairs(packages) do
         jagen.generate_include_script(package)
