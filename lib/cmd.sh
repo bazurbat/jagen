@@ -43,8 +43,7 @@ rebuild() {
 }
 
 toolchain() {
-    . "$pkg_lib_dir/list.sh"   || exit 1
-    . "$pkg_lib_dir/common.sh" || exit 1
+    . "$pkg_lib_dir/env.sh" || exit 1
     include "$jagen_root/lib/toolchain"
     generate_toolchain_wrappers
     touch "$pkg_build_dir/toolchain"
