@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# deal with it
+if [ "$ZSH_VERSION" ]; then
+    setopt shwordsplit
+fi
+
 export pkg_bin_dir="$jagen_root/bin"
 export pkg_lib_dir="$jagen_root/lib"
 
