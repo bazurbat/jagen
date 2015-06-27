@@ -7,20 +7,35 @@ print_help() {
     cat <<EOF
 Usage: init-root [-f] [SDK]
 
-  Initializes current directory as a jagen build root.
+  Initializes current directory as jagen build root.
 
 SYNOPSIS:
 
   The script will put environment file '$env_file' in the current directory.
-  This file should be sourced in the current shell before issuing any other
-  jagen commands.
+  This file should be sourced in the current shell with working directory set
+  to the build root before issuing any other jagen commands. Example:
+
+    cd $PWD
+    $root/init-root
+    . ./$env_file
+    jagen refresh
+
+  For subsequent invocations:
+
+    cd $PWD
+    . ./$env_file
+    jagen refresh
 
   If SDK is specified the template configuration file will be added to the
   generated build root. The existing file will not be overwritten unless the
   '-f' flag is given.
 
-  NOTE: to use remotely mounted build root pathname to the init-root script
-  should be specified relative to the current directory.
+  NOTE: To use remotely mounted build root pathname to the init-root script
+  should be specified relative to the current directory and 'relative' should
+  be given as an argument when sourcing '$env_file'. Example:
+
+    cd "/mnt/src/build"
+    . ./$env_file relative
 
 EOF
 }
@@ -28,8 +43,17 @@ EOF
 write_env() {
     [ -f "$env_file" ] && echo "Overwriting environment file '$env_file'."
     cat >"$env_file" <<EOF || die
-export jagen_root="$root"
-export jagen_build_root="\$PWD"
+jagen_relative_root="$root"
+
+if [ "\$1" = relative ]; then
+    jagen_root="\$jagen_relative_root"
+else
+    jagen_root="$real_root"
+fi
+
+jagen_build_root="\$PWD"
+
+export jagen_root jagen_build_root
 
 . "\$jagen_root/lib/env.sh" ||
     { echo "Failed to load environment"; return 1; }
@@ -61,14 +85,15 @@ write_config() {
 
 die() { [ $# = 0 ] || echo "Error: $@"; exit 1; }
 
+root=$(dirname $0)
+real_root=$(cd "$root"; pwd -P)
+sdk=''
+force=''
+
 if [ $# = 0 ]; then
     print_help
     exit 0
 fi
-
-root=$(dirname $0)
-sdk=''
-force=''
 
 for arg; do
     [ "$arg" = '-f' ] && { force=1; continue; }
