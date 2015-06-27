@@ -703,7 +703,7 @@ function build.find_targets(packages, arg)
             end
         end
         if #targets == 0 then
-            jagen.warning('No packages found for target:', arg)
+            table.insert(args, arg)
         end
     end
 
