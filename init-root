@@ -1,0 +1,93 @@
+#!/bin/sh
+
+env_file="env.sh"
+config_file="local.sh"
+
+print_help() {
+    cat <<EOF
+Usage: init-root [-f] [SDK]
+
+  Initializes current directory as a jagen build root.
+
+SYNOPSIS:
+
+  The script will put environment file '$env_file' in the current directory.
+  This file should be sourced in the current shell before issuing any other
+  jagen commands.
+
+  If SDK is specified the template configuration file will be added to the
+  generated build root. The existing file will not be overwritten unless the
+  '-f' flag is given.
+
+  NOTE: to use remotely mounted build root pathname to the init-root script
+  should be specified relative to the current directory.
+
+EOF
+}
+
+write_env() {
+    [ -f "$env_file" ] && echo "Overwriting environment file '$env_file'."
+    cat >"$env_file" <<EOF || die
+export jagen_root="$root"
+export jagen_build_root="\$PWD"
+
+. "\$jagen_root/lib/env.sh" ||
+    { echo "Failed to load environment"; return 1; }
+
+add_PATH "\$target_bin_dir"
+add_PATH "\$pkg_private_dir/bin"
+add_PATH "\$jagen_root/bin"
+EOF
+}
+
+write_generic_config() {
+    local filename="${1:?}"
+    cat >"$filename" <<EOF || die
+pkg_sdk='$sdk'
+EOF
+}
+
+write_config() {
+    local out="${1:?}"
+    local config
+    if [ -f "$config_dir/config.${sdk}.sh" ]; then
+        config="$config_dir/config.${sdk}.sh"
+        cat "$config" > "$out"
+    else
+        echo "Template configuration for the selected SDK '$sdk' is not available, using default."
+        write_generic_config "$out"
+    fi
+}
+
+die() { [ $# = 0 ] || echo "Error: $@"; exit 1; }
+
+if [ $# = 0 ]; then
+    print_help
+    exit 0
+fi
+
+root=$(dirname $0)
+sdk=''
+force=''
+
+for arg; do
+    [ "$arg" = '-f' ] && { force=1; continue; }
+    [ "$sdk" ] || { sdk="$arg";  continue; }
+done
+
+config_dir="$root/lib/etc"
+
+write_env || die
+
+if [ "$sdk" ]; then
+    if [ -f "$config_file" ]; then
+        if [ "$force" ]; then
+            echo "Overwriting configuration file '$config_file'."
+            write_config "$config_file"
+        else
+            echo "Not overwriting configuration file '$config_file'."
+        fi
+    else
+        write_config "$config_file"
+    fi
+fi
