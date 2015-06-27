@@ -24,12 +24,14 @@ rebuild() {
     done
 
     rm -f $targets
+    for log in $logs; do
+        : > "$log"
+    done
 
     if [ "$show_all" ]; then
         tail -qFn0 *.log 2>/dev/null &
     else
-        rm -f $logs
-        tail -qFn+1 $logs $rebuild_log 2>/dev/null &
+        tail -qfn+1 $logs $rebuild_log 2>/dev/null &
     fi
 
     if [ "$targets_only" ]; then
