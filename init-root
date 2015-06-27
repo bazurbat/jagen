@@ -73,6 +73,9 @@ write_config() {
 # Current build root configuration type.
 pkg_sdk='$sdk'
 
+# A directory containing target toolchain.
+jagen_toolchain_dir=''
+
 # A directory containing source distributions and patches.
 # pkg_dist_dir=''
 
