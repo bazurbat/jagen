@@ -7,6 +7,7 @@ pkg_patch() {
 }
 
 pkg_build() {
-    in_flags "new_toolchain" && CFLAGS="$CFLAGS -mno-compact-eh"
+    # Needed starting from GCC 4.4
+    CFLAGS="$CFLAGS -mno-compact-eh"
     default_build
 }
