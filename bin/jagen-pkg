@@ -18,7 +18,7 @@ cd "$p_work_dir" || die "Failed to cd to $p_work_dir"
 include "$pkg_build_include_dir/$p_name"
 include "$pkg_lib_dir/pkg/$p_name" 
 
-p_source_name=$(basename "$p_source" | sed -r 's/\.t(ar\.)?(gz|bz2|xz)//')
+p_source_name="$(_jagen src name "$p_source")"
 p_source_dir="${p_source_dir:-$p_work_dir/$p_source_name}"
 p_build_dir="${p_build_dir:-$p_source_dir}"
 

@@ -785,6 +785,14 @@ function src.status(args)
     end
 end
 
+function src.name(filename)
+    local name = string.match(filename, '^.*/(.+)') or filename
+    local function m(ext)
+        return string.match(name, '^([%w_.-]+)'..ext)
+    end
+    print(m('%.tar') or m('%.tgz') or m('%.tbz2') or m('%.txz') or m('%.zip'))
+end
+
 --}}}
 
 command = arg[1]
@@ -805,9 +813,11 @@ elseif command == 'src' then
     local args = table.rest(arg, 3)
 
     if not subcommand then
-        jagen.message('Available src subcommands: status')
+        jagen.message('Available src subcommands: status, name')
     elseif subcommand == 'status' then
         src.status(args)
+    elseif subcommand == 'name' then
+        src.name(unpack(args))
     else
         jagen.die('Unknown src subcommand:', subcommand);
     end
