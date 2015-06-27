@@ -80,7 +80,7 @@ p_depmod() {
 p_fix_la() {
     local filename="$1"
     local prefix=${2:-"$sdk_rootfs_prefix"}
-    p_run sed -ri -e "s|^(libdir=)'(.*)'$|\1'${prefix}\2'|" "$filename"
+    p_run sed -i -e "s|^\(libdir=\)'\(.*\)'$|\1'${prefix}\2'|" "$filename"
 }
 
 p_autoreconf() {
