@@ -124,29 +124,3 @@ p_src_clean() {
 
     ( cd "$dir" && p_${kind}_clean ) || exit
 }
-
-p_src_upload() {
-    local src=$(realpath "$1") dst=$(realpath "$2")
-    local name=$(basename "$src")
-    local kind=$(p_src_kind "$src")
-
-    p_run tar -C $(dirname "$src") -cf "$dst/${name}.tar" \
-        "$name/${kind:+.$kind}"
-}
-
-p_src_download() {
-    local src=$(realpath "$1") dst=$(realpath "$2") kind
-    local name=$(basename "$src" .tar)
-
-    [ -d "$dst" ] || mkdir -p "$dst"
-    p_run tar -C "$dst" -xpf "$src"
-    p_src_discard "$dst/$name"
-}
-
-p_src_copy() {
-    local src="$1" dst="$2"
-    [ -d "$src" ] || die "The source directory does not exist: $src"
-    [ -d "$dst" ] || mkdir -p "$dst"
-
-    p_run rsync -Ca "${src}/" "$dst"
-}
