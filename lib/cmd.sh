@@ -2,7 +2,7 @@
 
 build() {
     cd "$pkg_build_dir" || exit 1
-    ninja "$@" | tee "build.log"
+    ninja "$@"
 }
 
 rebuild() {
@@ -46,7 +46,7 @@ rebuild() {
 
 toolchain() {
     . "$pkg_lib_dir/env.sh" || exit 1
-    use_toolchain target
+    use_toolchain target || exit 1
     make_toolchain || exit 1
     touch "$pkg_build_dir/toolchain"
 }
