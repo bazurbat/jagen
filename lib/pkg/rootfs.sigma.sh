@@ -3,9 +3,6 @@
 p_source_dir="$pkg_src_dir/sigma-rootfs"
 p_jobs=1
 
-[ -d "$SMP86XX_TOOLCHAIN_PATH" ] ||
-    die "SMP86XX_TOOLCHAIN_PATH ($SMP86XX_TOOLCHAIN_PATH) is not found"
-
 pkg_build() {
     use_env tools
 

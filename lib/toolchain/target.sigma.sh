@@ -20,6 +20,9 @@ export PKG_CONFIG_SYSROOT_DIR="$target_dir"
 export PKG_CONFIG_LIBDIR="$target_dir$target_prefix/lib/pkgconfig"
 export PKG_CONFIG_PATH="$sdk_rootfs_prefix/lib/pkgconfig"
 
+export SMP86XX_TOOLCHAIN_PATH="$jagen_toolchain_dir"
+export TOOLCHAIN_RUNTIME_PATH="$jagen_toolchain_dir/mips-linux-gnu/libc/el"
+
 make_toolchain() {
     local common_tools="addr2line ar c++filt elfedit gcov gdb gdbtui gprof nm \
 objcopy objdump ranlib readelf size sprite strings strip"

@@ -21,13 +21,6 @@ export sdk_rootfs_prefix="$sdk_rootfs_dir/cross_rootfs"
 
 export sdk_firmware_dir="$pkg_build_dir/firmware"
 
-toolchain_gcc=$(which mips-linux-gnu-gcc 2>/dev/null)
-if [ $? = 0 ] && [ "$toolchain_gcc" ]; then
-    export SMP86XX_TOOLCHAIN_PATH=$(realpath $(dirname "$toolchain_gcc")/..)
-fi
-
-export TOOLCHAIN_RUNTIME_PATH="${SMP86XX_TOOLCHAIN_PATH}/mips-linux-gnu/libc/el"
-
 export pkg_sdk_version=${pkg_sdk_version:-311}
 if [ "$pkg_sdk_version" = 311 ]; then
     pkg_flags="$pkg_flags sigma_with_monitoring"
