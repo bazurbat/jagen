@@ -2,12 +2,10 @@
 
 use_env target
 
-[ "$jagen_toolchain_dir" ] || { error "jagen_toolchain_dir is not set"; return 1; }
-
-export AR="${jagen_toolchain_dir}/bin/${target_system}-ar"
-export CC="${jagen_toolchain_dir}/bin/${target_system}-gcc"
-export CXX="${jagen_toolchain_dir}/bin/${target_system}-g++"
-export STRIP="${jagen_toolchain_dir}/bin/${target_system}-strip"
+export AR="${target_bin_dir}/${target_system}-ar"
+export CC="${target_bin_dir}/${target_system}-gcc"
+export CXX="${target_bin_dir}/${target_system}-g++"
+export STRIP="${target_bin_dir}/${target_system}-strip"
 
 CFLAGS="-O2 -fomit-frame-pointer -fno-strict-aliasing"
 CFLAGS="$CFLAGS -Wa,-mips32r2 -march=24kf -mtune=24kf -pipe"
@@ -20,9 +18,6 @@ export PKG_CONFIG_SYSROOT_DIR="$target_dir"
 export PKG_CONFIG_LIBDIR="$target_dir$target_prefix/lib/pkgconfig"
 export PKG_CONFIG_PATH="$sdk_rootfs_prefix/lib/pkgconfig"
 
-export SMP86XX_TOOLCHAIN_PATH="$jagen_toolchain_dir"
-export TOOLCHAIN_RUNTIME_PATH="$jagen_toolchain_dir/mips-linux-gnu/libc/el"
-
 make_toolchain() {
     local common_tools="addr2line ar c++filt elfedit gcov gdb gdbtui gprof nm \
 objcopy objdump ranlib readelf size sprite strings strip"
@@ -32,8 +27,14 @@ objcopy objdump ranlib readelf size sprite strings strip"
     local gcc_path="$jagen_toolchain_dir/bin/mips-linux-gnu-gcc"
     local gcc_dir=$(dirname "${gcc_path}")
 
-    [ -x "$gcc_path" ] ||
-        { error "${gcc_path} is not found"; return 1; }
+    if ! [ "$jagen_toolchain_dir" ]; then
+        error "jagen_toolchain_dir is not set"
+        return 1
+    fi
+    if ! [ -x "$gcc_path" ]; then
+        error "${gcc_path} is not found"
+        return 1
+    fi
 
     mkdir -p "$target_bin_dir" || return
 

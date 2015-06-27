@@ -12,6 +12,8 @@ export RMCFLAGS="$RMCFLAGS \
 -DWITH_PROD=1"
 
 pkg_build() {
+    PATH="$SMP86XX_TOOLCHAIN_PATH/bin:$PATH"
+
     p_run cd "xos/xboot2/xmasboot/nand_st2"
     p_run ./build_phyblock0.bash
 }

@@ -6,6 +6,8 @@ p_jobs=1
 pkg_build() {
     use_env tools
 
+    PATH="$SMP86XX_TOOLCHAIN_PATH/bin:$PATH"
+
     p_run cp -f config.release .config
     p_run make
 
