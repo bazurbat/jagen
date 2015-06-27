@@ -31,7 +31,7 @@ rebuild() {
     if [ "$show_all" ]; then
         tail -qFn0 *.log 2>/dev/null &
     else
-        tail -qfn+1 $logs $rebuild_log 2>/dev/null &
+        tail -qFn+1 $logs $rebuild_log 2>/dev/null &
     fi
 
     if [ "$targets_only" ]; then
