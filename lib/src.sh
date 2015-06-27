@@ -71,7 +71,7 @@ p_src_kind() {
 }
 
 p_src_is_dirty() {
-    local dir=$(realpath "$1")
+    local dir="$1"
     local kind=$(p_src_kind "$dir")
 
     ( cd "$dir" && p_${kind}_is_dirty )
@@ -91,35 +91,35 @@ p_src_clone() {
 }
 
 p_src_fetch() {
-    local dir=$(realpath "$1")
+    local dir="$1"
     local kind=$(p_src_kind "$dir")
 
     ( cd "$dir" && p_${kind}_fetch ) || exit
 }
 
 p_src_pull() {
-    local dir=$(realpath "$1")
+    local dir="$1"
     local kind=$(p_src_kind "$dir")
 
     ( cd "$dir" && p_${kind}_pull ) || exit
 }
 
 p_src_checkout() {
-    local dir=$(realpath "$1")
+    local dir="$1"
     local kind=$(p_src_kind "$dir")
 
     ( cd "$dir" && p_${kind}_checkout "$2" ) || exit
 }
 
 p_src_discard() {
-    local dir=$(realpath "$1")
+    local dir="$1"
     local kind=$(p_src_kind "$dir")
 
     ( cd "$dir" && p_${kind}_discard ) || exit
 }
 
 p_src_clean() {
-    local dir=$(realpath "$1")
+    local dir="$1"
     local kind=$(p_src_kind "$dir")
 
     ( cd "$dir" && p_${kind}_clean ) || exit
