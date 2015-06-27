@@ -17,8 +17,6 @@ export pkg_src_dir="$jagen_build_root/src"
 
 jagen_try_include() { [ -f "$1" ] && . "$1"; }
 
-. "$pkg_lib_dir/list.sh" ||
-    { echo "Failed to load list library"; return 1; }
 . "$pkg_lib_dir/common.sh" ||
     { echo "Failed to load common library"; return 1; }
 

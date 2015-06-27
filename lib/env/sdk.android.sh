@@ -18,7 +18,7 @@ if in_flags ccache; then
     export USE_CCACHE=1
 fi
 
-p_path_prepend "$JAVA_HOME/bin"
+add_PATH "$JAVA_HOME/bin"
 
 # [ "$sdk_dir" ] || { error "sdk_dir is not set"; return 1; }
 # [ -d "$sdk_dir" ] || { error "sdk_dir is not found"; return 1; }

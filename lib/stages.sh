@@ -6,7 +6,7 @@ pkg_clean() {
 
     case $kind in
         git|hg)
-            if p_in_list "$p_name" "$pkg_source_exclude"; then
+            if in_list "$p_name" "$pkg_source_exclude"; then
                 message "pkg source '$p_name' excluded from cleaning"
             elif [ -d "$p_source_dir" ]; then
                 p_src_discard "$p_source_dir"
@@ -29,7 +29,7 @@ pkg_unpack() {
         git|hg)
             if in_flags "offline"; then
                 message "Offline mode, not checking $p_name"
-            elif p_in_list "$p_name" "$pkg_source_exclude"; then
+            elif in_list "$p_name" "$pkg_source_exclude"; then
                 message "pkg source '$p_name' excluded from pulling"
             elif [ -d "$p_source_dir" ]; then
                 if p_src_is_dirty "$p_source_dir"; then

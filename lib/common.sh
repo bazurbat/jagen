@@ -49,8 +49,36 @@ use_toolchain() {
     done
 }
 
+in_list() {
+    local value="${1:?}"; shift
+    for item; do
+        [ "$item" = "$value" ] && return
+    done
+    return 1
+}
+
+# NOTE: the set trick does not work in zsh for some reason
+list_remove() {
+    local S="${1:?}" value="${2:?}"; shift 2
+    local result
+    local IFS="$S"
+    set -- $@
+    for item; do
+        [ "$item" = "$value" ] || result="$result$S$item"
+    done
+    echo "${result#$S}"
+}
+
 is_function() { type "$1" 2>/dev/null | grep -q 'function'; }
 
 in_path() { $(which "$1" >/dev/null 2>&1); }
 
-in_flags() { p_in_list "$1" "$pkg_flags"; }
+in_flags() { in_list "$1" "$pkg_flags"; }
+
+add_PATH() {
+    PATH="$1":$(list_remove : "$1" $PATH)
+}
+
+add_LD_LIBRARY_PATH() {
+    LD_LIBRARY_PATH="$1":$(list_remove : "$1" $LD_LIBRARY_PATH)
+}

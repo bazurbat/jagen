@@ -80,7 +80,7 @@ export XSDK_DEFAULT_ZBOOT_CERTID=0000
 export XSDK_DEFAULT_CPU_CERTID=0001
 
 if [ -d "$xsdk_dir/xbin" ]; then
-    p_path_prepend "$xsdk_dir/xbin"
+    add_PATH "$xsdk_dir/xbin"
 fi
 
 export kernel_dir="$pkg_src_dir/sigma-kernel"
