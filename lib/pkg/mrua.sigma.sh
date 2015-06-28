@@ -18,6 +18,8 @@ export KCFLAGS="-mhard-float -Wa,-mhard-float"
 
 build_libs="rmcore rmcec rmedid rmhdmi rmhsi rmi2c rmsha1 rmvideoout rmoutput"
 
+PATH="$SMP86XX_TOOLCHAIN_PATH/bin:$PATH"
+
 pkg_build() {
     p_run make
 
