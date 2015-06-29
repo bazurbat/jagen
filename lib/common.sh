@@ -21,18 +21,19 @@ debug() {
     return 0
 }
 
-include() {
-    local basepath="$1"
-
-    if [ -f "${basepath}.${pkg_sdk}.sh" ]; then
-        debug include ${basepath}.${pkg_sdk}.sh
-        . "${basepath}.${pkg_sdk}.sh"
-    elif [ -f "${basepath}.sh" ]; then
-        debug include ${basepath}.sh
-        . "${basepath}.sh"
-    else
-        debug include not found $basepath
+try_include() {
+    if [ -f "$1" ]; then
+        debug include "$1"
+        . "$1"
+        return $?
     fi
+    return 1
+}
+
+include() {
+    local name="${1:?}"
+    local suffix="${2:-$pkg_sdk}"
+    try_include "${name}.${suffix}.sh" || try_include "${name}.sh"
 }
 
 use_env() {
