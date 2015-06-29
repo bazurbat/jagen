@@ -36,11 +36,6 @@ else
 fi
 jagen_try_include "$jagen_build_root/local.sh"
 
-[ "$pkg_sdk" ] ||
-    warning "pkg_sdk is not set"
-[ "$pkg_dist_dir" ] ||
-    error "pkg_dist_dir is not set"
-
 export pkg_patch_dir="$pkg_dist_dir/patches"
 export pkg_build_include_dir="$pkg_build_dir/include"
 export pkg_private_dir="$pkg_src_dir/files"
