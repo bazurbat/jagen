@@ -3,32 +3,33 @@
 env_file="env.sh"
 config_file="local.sh"
 
-print_help() {
+show_help() {
     cat <<EOF
-Usage: init-root [-f] [-s] [SDK]
+Usage: init-root [-h] [-f] [-s] [SDK]
 
   Initializes current directory as jagen build root.
 
 SYNOPSIS:
 
   The script will put environment file '$env_file' in the current directory.
-  This file should be sourced in the current shell with working directory set
-  to the build root before issuing any other jagen commands. Example:
+  This file should be sourced in the current shell before issuing any other
+  jagen commands. Example:
 
     cd $PWD
     $root/init-root
     . ./$env_file
-    jagen refresh
 
   For subsequent invocations:
 
     cd $PWD
     . ./$env_file
-    jagen refresh
 
-  If SDK is specified the template configuration file will be added to the
-  generated build root. The existing file will not be overwritten unless the
-  '-f' flag is given.
+  Note that '$env_file' should be sourced with working directory set to the
+  build root.
+
+  The template configuration file '$config_file' will be added to the build
+  root. The existing file will not be overwritten unless the '-f' flag is
+  given. If SDK is specified it will be set in config.
 
   The '-s' flag specifies that the source packages should be kept in the jagen
   project root. Without this flag the location of sources will be set to the
@@ -38,15 +39,14 @@ SYNOPSIS:
   should be specified relative to the current directory and 'relative' should
   be given as an argument when sourcing '$env_file'. Example:
 
-    cd "/mnt/src/build"
+    cd /mnt/src/build
     . ./$env_file relative
 
 EOF
 }
 
 write_env() {
-    [ -f "$env_file" ] && echo "Overwriting environment file '$env_file'."
-    cat >"$env_file" <<EOF || die
+    cat >"$env_file" <<EOF
 jagen_relative_root="$root"
 
 if [ "\$1" = relative ]; then
@@ -69,7 +69,7 @@ EOF
 }
 
 write_config() {
-    cat >"$config_file" <<EOF || die
+    cat >"$config_file" <<EOF
 # Current build root configuration type.
 pkg_sdk='$sdk'
 
@@ -104,12 +104,8 @@ sdk=''
 use_force=''
 use_source=''
 
-if [ $# = 0 ]; then
-    print_help
-    exit 0
-fi
-
 for arg; do
+    [ "$arg" = '-h' ] && { show_help; exit 0; }
     [ "$arg" = '-f' ] && { use_force=1; continue; }
     [ "$arg" = '-s' ] && { use_source=1; continue; }
     [ "$sdk" ] || { sdk="$arg";  continue; }
@@ -123,15 +119,8 @@ fi
 
 write_env || die
 
-if [ "$sdk" ]; then
-    if [ -f "$config_file" ]; then
-        if [ "$use_force" ]; then
-            echo "Overwriting configuration file '$config_file'."
-            write_config "$config_file"
-        else
-            echo "Not overwriting configuration file '$config_file'."
-        fi
-    else
-        write_config "$config_file"
-    fi
+if [ -f "$config_file" -a ! "$use_force" ]; then
+    echo "Not overwriting '$config_file'"
+else
+    write_config "$config_file" || die
 fi
