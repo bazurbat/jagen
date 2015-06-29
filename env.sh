@@ -1,7 +1,14 @@
-#!/bin/sh
+jagen_relative_root="."
 
-export jagen_root="$PWD"
-export jagen_build_root="$PWD"
+if [ "$1" = relative ]; then
+    jagen_root="$jagen_relative_root"
+else
+    jagen_root="$PWD"
+fi
+
+jagen_build_root="$PWD"
+
+export jagen_root jagen_build_root
 
 . "$jagen_root/lib/env.sh" ||
     { echo "Failed to load environment"; return 1; }
