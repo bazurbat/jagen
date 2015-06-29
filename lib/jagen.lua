@@ -121,7 +121,6 @@ function Package:load_rule(rule, stages)
     pkg:parse_source()
 
     pkg.stages = append(copy(self.default_stages), stages or {}, pkg)
-    pkg:add_special_dependencies()
 
     return pkg
 end
@@ -529,6 +528,7 @@ function jagen.load_rules()
     end
 
     for _, pkg in ipairs(packages) do
+        pkg:add_special_dependencies()
         pkg:merge_stages()
         pkg:add_toolchain_dependency()
         pkg:set_config()
