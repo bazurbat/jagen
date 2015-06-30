@@ -44,5 +44,3 @@ in_flags ccache && use_env ccache
 include "$pkg_lib_dir/env/cmake" || return
 include "$pkg_lib_dir/env/sdk"   || return
 use_env host
-
-export CROSS_MAKE="make ARCH=${target_arch} CROSS_COMPILE=${target_system}-"
