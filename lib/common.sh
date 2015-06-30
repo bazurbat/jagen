@@ -58,7 +58,6 @@ in_list() {
     return 1
 }
 
-# NOTE: the set trick does not work in zsh for some reason
 list_remove() {
     local S="${1:?}" value="${2:?}"; shift 2
     local result
