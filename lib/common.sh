@@ -77,9 +77,11 @@ in_path() { $(which "$1" >/dev/null 2>&1); }
 in_flags() { in_list "$1" $pkg_flags; }
 
 add_PATH() {
+    : ${1:?}
     PATH="$1":$(list_remove : "$1" $PATH)
 }
 
 add_LD_LIBRARY_PATH() {
+    : ${1:?}
     LD_LIBRARY_PATH="$1":$(list_remove : "$1" $LD_LIBRARY_PATH)
 }
