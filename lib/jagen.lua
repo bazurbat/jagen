@@ -121,15 +121,13 @@ function Package:load_rule(rule, stages)
     pkg:parse_source()
 
     local function to_target(stage)
-        return Target.from_stage(rule.name, stage)
+        return Target.from_rule(rule.name, stage)
     end
 
-    pkg.stages = TargetList:new()
+    local stages = map(to_target, append(copy(self.default_stages), stages or {}, pkg))
 
-    local targets = map(to_target, append(copy(self.default_stages), stages or {}, pkg))
-
-    for _, t in ipairs(targets) do
-        pkg.stages:add(t)
+    for _, s in ipairs(stages) do
+        pkg:add_stage(s)
     end
 
     return pkg
@@ -153,6 +151,18 @@ function Package.load(name)
     return Package:new(o)
 end
 
+function Package:add_stage(target)
+    self.stages = self.stages or {}
+    local function equal(t) return t == target end
+    local existing = find(self.stages, equal)
+    if existing then
+        existing:append(target)
+    else
+        table.insert(self.stages, target)
+    end
+    return self
+end
+
 function Package:merge(rule)
     for k, v in pairs(rule) do
         if type(k) ~= 'number' and k ~= 'stages' then
@@ -163,8 +173,8 @@ function Package:merge(rule)
             end
         end
     end
-    for _, t in ipairs(rule.stages or {}) do
-        self.stages:add(t)
+    for _, s in ipairs(rule.stages or {}) do
+        self:add_stage(s)
     end
     for _, v in ipairs(rule) do
         table.insert(self, v)
@@ -178,15 +188,6 @@ function Package:parse_source()
         self.source = { type = 'dist', location = source }
     end
     return self
-end
-
-function Package:add_special_dependencies()
-    local build = self.build
-    if build and build.need_libtool then
-        local t = Target.new(self.name, 'patch')
-        t.inputs = { Target.new('libtool', 'install') }
-        self.stages:add(t)
-    end
 end
 
 function Package:set_config()
@@ -207,6 +208,14 @@ function Package:add_toolchain_dependency()
     end
     for _, stage in ipairs(filter(is_build_stage, self.stages)) do
         table.insert(stage.inputs, 1, Target.new('toolchain'))
+    end
+end
+
+function Package:add_build_dependencies()
+    local build = self.build
+    if build and build.need_libtool then
+        self:add_stage(Target.from_rule(self.name,
+            { 'patch', { 'libtool', 'install' } }))
     end
 end
 
@@ -367,32 +376,12 @@ end
 --}}}
 --{{{ types
 
-TargetList = {}
-TargetList.__index = TargetList
-
-function TargetList:new(o)
-    o = o or {}
-    setmetatable(o, self)
-    return o
-end
-
-function TargetList:add(target)
-    local function equal(t) return t == target end
-    local existing = find(self, equal)
-    if existing then
-        existing:append(target)
-    else
-        table.insert(self, target)
-    end
-    return self
-end
-
 Target = {}
+Target.__index = Target
 
 function Target.new(name, stage, config)
     local target = { name = name, stage = stage, config = config }
     setmetatable(target, Target)
-    Target.__index = Target
     return target
 end
 
@@ -400,7 +389,7 @@ function Target.from_list(list)
     return Target.new(list[1], list[2], list[3])
 end
 
-function Target.from_stage(name, rule)
+function Target.from_rule(name, rule)
     local stage, config
 
     if type(rule[1]) == 'string' then
@@ -418,7 +407,7 @@ function Target.from_stage(name, rule)
     return target
 end
 
-function Target.new_from_arg(arg)
+function Target.from_arg(arg)
     local name, stage, config
     local c = string.split(arg, ':')
 
@@ -451,7 +440,10 @@ function Target.__tostring(t, sep)
 end
 
 function Target:append(target)
-    self.inputs = append(self.inputs, target.inputs)
+    self.inputs = self.inputs or {}
+    for _, i in ipairs(target.inputs or {}) do
+        table.insert(self.inputs, i)
+    end
     return self
 end
 
@@ -548,9 +540,9 @@ function jagen.load_rules()
     end
 
     for _, pkg in ipairs(packages) do
-        pkg:add_special_dependencies()
-        pkg:add_toolchain_dependency()
         pkg:set_config()
+        pkg:add_toolchain_dependency()
+        pkg:add_build_dependencies()
         pkg:add_ordering_dependencies()
     end
 
@@ -720,7 +712,7 @@ function build.find_targets(packages, arg)
     if is_param(arg) then
         table.insert(args, arg)
     else
-        local target = Target.new_from_arg(arg)
+        local target = Target.from_arg(arg)
         local packages = target.name and { packages[target.name] } or packages
         for _, pkg in ipairs(packages) do
             for _, stage in ipairs(pkg.stages) do
