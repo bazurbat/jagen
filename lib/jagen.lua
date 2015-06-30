@@ -541,12 +541,12 @@ end
 function jagen.generate_include_script(pkg)
     local name   = pkg.name
     local config = pkg.config
-    local filename
-    if config then
-        filename = name..'.'..config..'.sh'
-    else
-        filename = name..'.sh'
-    end
+    local filename = name..'.sh'
+    -- if config then
+    --     filename = name..'.'..config..'.sh'
+    -- else
+    --     filename = name..'.sh'
+    -- end
 
     local path = system.mkpath(jagen.build_include_dir, filename)
     local script = Script:new(pkg)
