@@ -107,11 +107,11 @@ end
 Package = {
     default_stages = { { 'clean' }, { 'unpack' }, { 'patch' } }
 }
+Package.__index = Package
 
 function Package:new(o)
     o = o or {}
     setmetatable(o, self)
-    self.__index = self
     return o
 end
 
@@ -120,7 +120,17 @@ function Package:load_rule(rule, stages)
     pkg:merge(rule)
     pkg:parse_source()
 
-    pkg.stages = append(copy(self.default_stages), stages or {}, pkg)
+    local function to_target(stage)
+        return Target.from_stage(rule.name, stage)
+    end
+
+    pkg.stages = TargetList:new()
+
+    local targets = map(to_target, append(copy(self.default_stages), stages or {}, pkg))
+
+    for _, t in ipairs(targets) do
+        pkg.stages:add(t)
+    end
 
     return pkg
 end
@@ -145,13 +155,16 @@ end
 
 function Package:merge(rule)
     for k, v in pairs(rule) do
-        if type(k) ~= 'number' then
+        if type(k) ~= 'number' and k ~= 'stages' then
             if type(v) == 'table' then
                 self[k] = Package.merge(self[k] or {}, v)
             else
                 self[k] = v
             end
         end
+    end
+    for _, t in ipairs(rule.stages or {}) do
+        self.stages:add(t)
     end
     for _, v in ipairs(rule) do
         table.insert(self, v)
@@ -170,23 +183,10 @@ end
 function Package:add_special_dependencies()
     local build = self.build
     if build and build.need_libtool then
-        table.insert(self.stages, { 'patch', { 'libtool', 'install' }})
+        local t = Target.new(self.name, 'patch')
+        t.inputs = { Target.new('libtool', 'install') }
+        self.stages:add(t)
     end
-end
-
-function Package:merge_stages()
-    local collected = {}
-    for _, stage in ipairs(self.stages) do
-        local target = Target.from_stage(self.name, stage)
-        local key = tostring(target)
-        if self.stages[key] then
-            self.stages[key]:append(target)
-        else
-            self.stages[key] = target
-            table.insert(collected, target)
-        end
-    end
-    self.stages = collected
 end
 
 function Package:set_config()
@@ -367,6 +367,26 @@ end
 --}}}
 --{{{ types
 
+TargetList = {}
+TargetList.__index = TargetList
+
+function TargetList:new(o)
+    o = o or {}
+    setmetatable(o, self)
+    return o
+end
+
+function TargetList:add(target)
+    local function equal(t) return t == target end
+    local existing = find(self, equal)
+    if existing then
+        existing:append(target)
+    else
+        table.insert(self, target)
+    end
+    return self
+end
+
 Target = {}
 
 function Target.new(name, stage, config)
@@ -529,7 +549,6 @@ function jagen.load_rules()
 
     for _, pkg in ipairs(packages) do
         pkg:add_special_dependencies()
-        pkg:merge_stages()
         pkg:add_toolchain_dependency()
         pkg:set_config()
         pkg:add_ordering_dependencies()
