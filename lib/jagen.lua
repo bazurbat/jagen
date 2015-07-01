@@ -203,7 +203,14 @@ end
 function Package:set_config()
     local config = self.config
     if config then
-        for _, stage in ipairs(self.stages) do
+        local default_stages = {}
+        for _, s in pairs(self.default_stages) do
+            default_stages[s[1]] = true
+        end
+        local function not_default(s)
+            return not default_stages[s.stage]
+        end
+        for _, stage in ipairs(filter(not_default, self.stages)) do
             stage.config = stage.config or config
         end
     end
@@ -555,8 +562,7 @@ end
 
 function jagen.generate_include_script(pkg)
     local name     = pkg.name
-    local config   = pkg.config
-    local filename = config and name..'.'..config..'.sh' or name..'.sh'
+    local filename = name..'.sh'
     local path     = system.mkpath(jagen.build_include_dir, filename)
     local script   = Script:new(pkg)
 
