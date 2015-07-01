@@ -598,9 +598,6 @@ function Script:__tostring()
     local script = {
         self:header()
     }
-    if self.pkg.config then
-        table.insert(script, self:config())
-    end
     if self.pkg.build then
         table.insert(script, self:build())
     end
@@ -616,31 +613,6 @@ end
 
 function Script:header()
     return '#!/bin/sh'
-end
-
-function Script:config()
-    local config = self.pkg.config
-    if config == 'host' then
-        return table.concat({
-                'use_toolchain host'
-            }, '\n')
-    elseif config == 'target' then
-        return table.concat({
-                'use_toolchain target',
-                'p_system="$target_system"',
-                'p_prefix="$target_prefix"',
-                'p_dest_dir="$target_dir"',
-            }, '\n')
-    elseif config == 'rootfs' then
-        return table.concat({
-                'use_toolchain target',
-                'p_system="$target_system"',
-                'p_prefix=""',
-                'p_dest_dir="$sdk_rootfs_prefix"',
-            }, '\n')
-    else
-        return ''
-    end
 end
 
 function Script:build()

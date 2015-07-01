@@ -32,7 +32,25 @@ run_stage() {
     fi
 }
 
-[ "$p_config" ] && use_toolchain "$p_config"
+if [ "$p_config" ]; then
+    use_toolchain "$p_config"
+fi
+
+if [ "$p_config" = 'host' ]; then
+    p_system="$host_system"
+    p_prefix="$host_prefix"
+    p_dest_dir="$host_dir"
+elif [ "$p_config" = 'target' ]; then
+    p_system="$target_system"
+    p_prefix="$target_prefix"
+    p_dest_dir="$target_dir"
+elif [ "$p_config" = 'rootfs' ]; then
+    use_toolchain target
+    p_system="$target_system"
+    p_prefix=""
+    p_dest_dir="$sdk_rootfs_prefix"
+fi
+
 [ -d "$p_build_dir" ] && cd "$p_build_dir"
 
 run_stage "pkg_${p_stage}_pre"
