@@ -547,17 +547,11 @@ function jagen.load_rules()
 end
 
 function jagen.generate_include_script(pkg)
-    local name   = pkg.name
-    local config = pkg.config
-    local filename = name..'.sh'
-    -- if config then
-    --     filename = name..'.'..config..'.sh'
-    -- else
-    --     filename = name..'.sh'
-    -- end
-
-    local path = system.mkpath(jagen.build_include_dir, filename)
-    local script = Script:new(pkg)
+    local name     = pkg.name
+    local config   = pkg.config
+    local filename = config and name..'.'..config..'.sh' or name..'.sh'
+    local path     = system.mkpath(jagen.build_include_dir, filename)
+    local script   = Script:new(pkg)
 
     local f = assert(io.open(path, 'w+'))
     f:write(tostring(script))
