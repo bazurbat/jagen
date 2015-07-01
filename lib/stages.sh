@@ -62,9 +62,13 @@ pkg_build_pre() {
 }
 
 default_build() {
-    p_run "$p_source_dir/configure" --host="$p_system" --prefix="$p_prefix" \
-        $p_options
-    p_run make
+    if [ -x "$p_source_dir/configure" ]; then
+        p_run "$p_source_dir/configure" \
+            --host="$p_system" \
+            --prefix="$p_prefix" \
+            $p_options
+        p_run make
+    fi
 }
 
 pkg_install_pre() {
