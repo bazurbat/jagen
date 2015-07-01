@@ -103,6 +103,8 @@ install_files() {
     p_run cp -rf "$pkg_private_dir"/rootfs/* "$sdk_rootfs_root"
     if in_flags devenv; then
         p_run cp -rf "$pkg_private_dir"/rootfs-dev/* "$sdk_rootfs_root"
+        rm -f "$sdk_rootfs_root/var/service/dropbear/down"
+        touch "$sdk_rootfs_root/var/service/karaoke-player/down"
     fi
 }
 
