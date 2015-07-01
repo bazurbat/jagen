@@ -76,6 +76,19 @@ function table.rest(t, start)
     return o
 end
 
+function table.merge(a, b)
+    for k, v in pairs(b) do
+        if type(k) ~= 'number' then
+            if type(v) == 'table' then
+                a[k] = table.merge(a[k] or {}, v)
+            else
+                a[k] = v
+            end
+        end
+    end
+    return a
+end
+
 --}}}
 --{{{ system
 
@@ -177,7 +190,7 @@ function Package:merge(rule)
     for k, v in pairs(rule) do
         if type(k) ~= 'number' and k ~= 'stages' then
             if type(v) == 'table' then
-                self[k] = Package.merge(self[k] or {}, v)
+                self[k] = table.merge(self[k] or {}, v)
             else
                 self[k] = v
             end
