@@ -115,21 +115,22 @@ function Package:new(o)
     return o
 end
 
-function Package:load_rule(rule, stages)
-    local pkg = Package.load(rule.name)
-    pkg:merge(rule)
+function Package:from_rules(...)
+    local rules = {...}
+    local name = rules[1].name
+    local pkg = Package:from_file(name)
+
+    for _, rule in ipairs(rules) do
+        pkg:merge(rule)
+    end
+    for _, stage in ipairs(copy(self.default_stages)) do
+        pkg:add_rule(stage)
+    end
+    for _, stage in ipairs(pkg) do
+        pkg:add_rule(stage)
+    end
+
     pkg:parse_source()
-
-    local function to_target(stage)
-        return Target.from_rule(rule.name, stage)
-    end
-
-    local stages = map(to_target, append(copy(self.default_stages), stages or {}, pkg))
-
-    for _, s in ipairs(stages) do
-        pkg:add_stage(s)
-    end
-
     pkg:add_toolchain_dependency()
     pkg:add_build_dependencies()
     pkg:set_config()
@@ -137,7 +138,7 @@ function Package:load_rule(rule, stages)
     return pkg
 end
 
-function Package.load(name)
+function Package:from_file(name)
     local path = system.mkpath(jagen.pkg_dir, name..'.lua')
     local env = {}
     local o
@@ -155,7 +156,12 @@ function Package.load(name)
     return Package:new(o)
 end
 
-function Package:add_stage(target)
+function Package:add_rule(rule)
+    assert(self.name)
+    return self:add_target(Target.from_rule(self.name, rule))
+end
+
+function Package:add_target(target)
     self.stages = self.stages or {}
     local function equal(t) return t == target end
     local existing = find(self.stages, equal)
@@ -178,7 +184,7 @@ function Package:merge(rule)
         end
     end
     for _, s in ipairs(rule.stages or {}) do
-        self:add_stage(s)
+        self:add_target(s)
     end
     for _, v in ipairs(rule) do
         table.insert(self, v)
@@ -215,7 +221,7 @@ end
 function Package:add_build_dependencies()
     local build = self.build
     if build and build.need_libtool then
-        self:add_stage(Target.from_rule(self.name,
+        self:add_target(Target.from_rule(self.name,
             { 'patch', { 'libtool', 'install' } }))
     end
 end
@@ -523,8 +529,8 @@ function jagen.load_rules()
         jagen = jagen
     }
 
-    function env.package(rule, stages)
-        local pkg  = Package:load_rule(rule, stages)
+    function env.package(...)
+        local pkg  = Package:from_rules(...)
         local name = pkg.name
         if packages[name] then
             packages[name]:merge(pkg)

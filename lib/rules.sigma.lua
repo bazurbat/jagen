@@ -1,25 +1,28 @@
 local function rootfs_package(rule)
-    local stages = {
+    local pkg = {
+        name = rule.name,
         { 'build', { 'rootfs', 'build' } },
         { 'install' }
     }
-    package(rule, stages)
+    package(pkg, rule)
 end
 
 local function kernel_package(rule)
-    local stages = {
+    local pkg = {
+        name = rule.name,
         { 'build', { 'kernel', 'build' } },
         { 'install' }
     }
-    package(rule, stages)
+    package(pkg, rule)
 end
 
 local function firmware_package(rule)
-    local stages = {
+    local pkg = {
+        name = rule.name,
         { 'build' },
         { 'install', { 'firmware', 'unpack' } }
     }
-    package(rule, stages)
+    package(pkg, rule)
 end
 
 -- base
