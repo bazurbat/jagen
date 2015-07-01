@@ -192,11 +192,8 @@ end
 
 function Package:set_config()
     local config = self.config
-    local function non_default_stage(t)
-        return t.stage ~= 'clean' and t.stage ~= 'unpack' and t.stage ~= 'patch'
-    end
     if config then
-        for _, stage in ipairs(filter(non_default_stage, self.stages)) do
+        for _, stage in ipairs(self.stages) do
             stage.config = stage.config or config
         end
     end
@@ -540,9 +537,9 @@ function jagen.load_rules()
     end
 
     for _, pkg in ipairs(packages) do
-        pkg:set_config()
         pkg:add_toolchain_dependency()
         pkg:add_build_dependencies()
+        pkg:set_config()
         pkg:add_ordering_dependencies()
     end
 
