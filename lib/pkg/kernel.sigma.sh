@@ -74,7 +74,7 @@ pkg_install() {
 }
 
 get_start_addr() {
-    local NM="${target_system}-nm"
+    local NM="${target_bin_dir}/${target_system}-nm"
     echo 0x$($NM $1 | awk '/\<kernel_entry\>/ { print $1 }')
 }
 
