@@ -50,6 +50,12 @@ pkg_unpack() {
     esac
 }
 
+default_patch() {
+    if [ ! -x "$p_source_dir/configure" -a -x "$p_source_dir/autogen.sh" ]; then
+        "$p_source_dir/autogen.sh"
+    fi
+}
+
 pkg_patch_post() {
     if [ "$p_need_libtool" ]; then
         p_autoreconf
@@ -83,6 +89,8 @@ default_install() {
         p_fix_la "$p_dest_dir$p_prefix/lib/lib${name}.la" "$p_dest_dir"
     done
 }
+
+pkg_patch() { default_patch; }
 
 pkg_build() { default_build; }
 
