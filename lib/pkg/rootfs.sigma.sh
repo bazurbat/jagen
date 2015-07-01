@@ -101,7 +101,7 @@ install_utils() {
 
 install_files() {
     p_run cp -rf "$pkg_private_dir"/rootfs/* "$sdk_rootfs_root"
-    if [ "$pkg_build_type" != "Release" ]; then
+    if in_flags devenv; then
         p_run cp -rf "$pkg_private_dir"/rootfs-dev/* "$sdk_rootfs_root"
     fi
 }
