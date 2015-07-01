@@ -607,7 +607,11 @@ end
 
 function Script:config()
     local config = self.pkg.config
-    if config == 'target' then
+    if config == 'host' then
+        return table.concat({
+                'use_toolchain host'
+            }, '\n')
+    elseif config == 'target' then
         return table.concat({
                 'use_toolchain target',
                 'p_system="$target_system"',
@@ -621,6 +625,8 @@ function Script:config()
                 'p_prefix=""',
                 'p_dest_dir="$sdk_rootfs_prefix"',
             }, '\n')
+    else
+        return ''
     end
 end
 
