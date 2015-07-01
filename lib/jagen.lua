@@ -130,6 +130,10 @@ function Package:load_rule(rule, stages)
         pkg:add_stage(s)
     end
 
+    pkg:add_toolchain_dependency()
+    pkg:add_build_dependencies()
+    pkg:set_config()
+
     return pkg
 end
 
@@ -537,9 +541,6 @@ function jagen.load_rules()
     end
 
     for _, pkg in ipairs(packages) do
-        pkg:add_toolchain_dependency()
-        pkg:add_build_dependencies()
-        pkg:set_config()
         pkg:add_ordering_dependencies()
     end
 
