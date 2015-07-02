@@ -1,6 +1,5 @@
 local function rootfs_package(rule)
     local pkg = {
-        name = rule.name,
         { 'build', { 'rootfs', 'build' } },
         { 'install' }
     }
@@ -9,7 +8,6 @@ end
 
 local function kernel_package(rule)
     local pkg = {
-        name = rule.name,
         { 'build', { 'kernel', 'build' } },
         { 'install' }
     }
@@ -18,7 +16,6 @@ end
 
 local function firmware_package(rule)
     local pkg = {
-        name = rule.name,
         { 'build' },
         { 'install', { 'firmware', 'unpack' } }
     }
@@ -27,99 +24,77 @@ end
 
 -- base
 
-package {
-    name = 'ast-files'
+package { 'ast-files' }
+
+package { 'linux',
+    source = { branch = 'ast50' }
 }
 
-package {
-    name = 'linux',
-    source = {
-        branch = 'ast50'
-    }
-}
-
-package {
-    name = 'xsdk',
+package { 'xsdk',
     source = '${cpukeys}.tar.gz'
 }
 
-package {
-    name = 'ucode',
+package { 'ucode',
     { 'unpack',  { 'mrua',     'build'  } },
     { 'install', { 'firmware', 'unpack' } }
 }
 
 -- tools
 
-package {
-    name = 'make',
-    { 'build',   'host' },
-    { 'install', 'host' }
+package { 'make', 'host',
+    { 'build'   },
+    { 'install' }
 }
 
 -- host
 
-package {
-    name = 'libtool',
+package { 'libtool',
     { 'build'   },
     { 'install' }
 }
 
 -- utils
 
-package {
-    name = 'utils',
-    { 'build',   'host' },
-    { 'install', 'host' }
+package { 'utils', 'host',
+    { 'build'   },
+    { 'install' }
 }
 
-package {
-    name = 'utils',
-    { 'build',   'target',
+package { 'utils', 'target',
+    { 'build',
         { 'dbus',  'install' },
         { 'gpgme', 'install' },
     },
-    { 'install', 'target' }
+    { 'install' }
 }
 
 -- boot
 
-rootfs_package {
-    name = 'ezboot',
-    source = {
-        branch = "sdk4"
-    }
+rootfs_package { 'ezboot',
+    source = { branch = "sdk4" }
 }
 
 -- debugging
 
 if jagen.flag('debug') then
-    package {
-        name = 'gdb',
-        { 'build',   'host' },
-        { 'install', 'host' }
-    }
-
-    package {
-        name   = 'valgrind',
-        config = 'rootfs',
+    package { 'gdb', 'host',
         { 'build'   },
         { 'install' }
     }
 
-    rootfs_package {
-        name = 'gdbserver'
+    package { 'valgrind', 'rootfs',
+        { 'build'   },
+        { 'install' }
     }
 
-    rootfs_package {
-        name = 'strace'
-    }
+    rootfs_package { 'gdbserver' }
+
+    rootfs_package { 'strace' }
 end
 
 -- rootfs
 
-package {
-    name = 'rootfs',
+package { 'rootfs',
     { 'build',
         { 'ast-files',  'unpack'            },
         { 'make',       'install', 'host'   },
@@ -138,99 +113,74 @@ package {
     }
 }
 
-rootfs_package {
-    name = 'busybox',
+rootfs_package { 'busybox',
     { 'patch', { 'ast-files', 'unpack' } }
 }
 
-rootfs_package {
-    name = 'ntpclient'
-}
+rootfs_package { 'ntpclient' }
 
-rootfs_package {
-    name = 'util-linux'
-}
+rootfs_package { 'util-linux' }
 
 -- gpgme
 
-rootfs_package {
-    name = 'libgpg-error'
-}
+rootfs_package { 'libgpg-error' }
 
-rootfs_package {
-    name = 'libassuan',
+rootfs_package { 'libassuan',
     { 'build', { 'libgpg-error', 'install' } }
 }
 
-rootfs_package {
-    name = 'gpgme',
+rootfs_package { 'gpgme',
     { 'build', { 'libassuan', 'install' } }
 }
 
-rootfs_package {
-    name = 'gnupg'
-}
+rootfs_package { 'gnupg' }
 
 -- kernel
 
-package {
-    name = 'kernel',
-    source = {
-        branch = 'sigma-2.6'
-    },
+package { 'kernel',
+    source = { branch = 'sigma-2.6' },
     { 'build',
         { 'ezboot', 'build'  },
         { 'linux',  'unpack' },
         { 'rootfs', 'build'  },
     },
     { 'install' },
-    { 'image', { 'rootfs', 'install' } }
+    { 'image',  { 'rootfs', 'install' } }
 }
 
-kernel_package {
-    name = 'ralink'
-}
+kernel_package { 'ralink' }
 
-kernel_package {
-    name = 'loop-aes'
-}
+kernel_package { 'loop-aes' }
 
-package {
-    name = 'mrua',
-    source = {
-        branch = 'sigma-2.6'
-    },
+package { 'mrua',
+    source = { branch = 'sigma-2.6' },
     { 'build',   { 'kernel',   'build'  } },
     { 'modules'  },
     { 'install', { 'firmware', 'unpack' } }
 }
 
-package {
-    name = 'chicken',
-    { 'build',   'host' },
-    { 'install', 'host' }
+package { 'chicken', 'host',
+    { 'build'   },
+    { 'install' }
 }
 
-package {
-    name = 'chicken',
-    { 'build',   'target',
+package { 'chicken', 'target',
+    { 'build',
         { 'chicken',  'install', 'host' }
     },
-    { 'install', 'target',
+    { 'install',
         { 'firmware', 'unpack'          }
     }
 }
 
-package {
-    name = 'chicken-eggs',
-    { 'install', 'host',
-        { 'chicken', 'install', 'host'        }
+package { 'chicken-eggs', 'host',
+    { 'install',
+        { 'chicken', 'install', 'host' }
     }
 }
 
-package {
-    name = 'chicken-eggs',
-    { 'install', 'target',
+package { 'chicken-eggs', 'target',
+    { 'install',
         { 'toolchain'                         },
         { 'chicken',      'install', 'target' },
         { 'chicken-eggs', 'install', 'host'   },
@@ -239,120 +189,85 @@ package {
     }
 }
 
-package {
-    name = 'libuv',
-    { 'build',   'host'   },
-    { 'install', 'host'   }
+package { 'libuv', 'host',
+    { 'build'   },
+    { 'install' }
 }
 
-package {
-    name = 'libuv',
-    { 'build',   'target' },
-    { 'install', 'target',
+package { 'libuv', 'target',
+    { 'build' },
+    { 'install',
         { 'firmware', 'unpack' }
     }
 }
 
-firmware_package {
-    name = 'dbus',
+firmware_package { 'dbus',
     { 'build', { 'expat', 'install', 'target' } }
 }
 
-firmware_package {
-    name   = 'expat',
-    config = 'target'
-}
+firmware_package { 'expat', 'target' }
 
-firmware_package {
-    name   = 'freetype',
-    config = 'target'
-}
+firmware_package { 'freetype', 'target' }
 
-firmware_package {
-    name   = 'rsync',
-    config = 'target'
-}
+firmware_package { 'rsync', 'target' }
 
-firmware_package {
-    name   = 'sqlite',
-    config = 'target'
-}
+firmware_package { 'sqlite', 'target' }
 
-firmware_package {
-    name   = 'libnl',
-    config = 'target'
-}
+firmware_package { 'libnl', 'target' }
 
-firmware_package {
-    name = 'wpa_supplicant',
+firmware_package { 'wpa_supplicant',
     { 'build',
         { 'dbus',  'install'           },
         { 'libnl', 'install', 'target' },
     }
 }
 
-firmware_package {
-    name = 'zlib'
-}
+firmware_package { 'zlib' }
 
-firmware_package {
-    name   = 'libpng',
-    config = 'target',
+firmware_package { 'libpng', 'target',
     { 'build', { 'zlib', 'install' } }
 }
 
-firmware_package {
-    name   = 'xtables',
-    config = 'target'
-}
+firmware_package { 'xtables', 'target' }
 
-firmware_package {
-    name   = 'xtables-addons',
-    config = 'target',
+firmware_package { 'xtables-addons', 'target',
     { 'build', { 'xtables', 'install', 'target' } }
 }
 
-package {
-    name = 'ffmpeg',
-    { 'build',   'host',
+package { 'ffmpeg', 'host',
+    { 'build',
         { 'ast-files', 'unpack' }
     },
-    { 'install', 'host' }
+    { 'install' }
 }
 
-package {
-    name = 'ffmpeg',
-    { 'build',   'target',
+package { 'ffmpeg', 'target',
+    { 'build',
         { 'ast-files', 'unpack' }
     },
-    { 'install', 'target',
+    { 'install',
         { 'firmware',  'unpack' }
     }
 }
 
-firmware_package {
-    name = 'soundtouch'
-}
+firmware_package { 'soundtouch' }
 
-package {
-    name = 'astindex',
+package { 'astindex',
     { 'unpack', { 'karaoke-player', 'unpack' } }
 }
 
-package {
-    name = 'karaoke-player',
-    { 'build', 'host',
-        { 'astindex',     'unpack'            },
-        { 'chicken-eggs', 'install', 'host'   },
-        { 'ffmpeg',       'install', 'host'   },
-        { 'libuv',        'install', 'host'   },
+package { 'karaoke-player', 'host',
+    { 'build',
+        { 'astindex',     'unpack'          },
+        { 'chicken-eggs', 'install', 'host' },
+        { 'ffmpeg',       'install', 'host' },
+        { 'libuv',        'install', 'host' },
     },
-    { 'install', 'host'                       }
+    { 'install' }
 }
 
-package {
-    name = 'karaoke-player',
-    { 'build',   'target',
+package { 'karaoke-player', 'target',
+    { 'build',
         { 'astindex',     'unpack'            },
         { 'chicken',      'install', 'target' },
         { 'chicken-eggs', 'install', 'host'   },
@@ -366,13 +281,12 @@ package {
         { 'mrua',         'build'             },
         { 'soundtouch',   'install'           },
     },
-    { 'install', 'target',
+    { 'install',
         { 'chicken-eggs', 'install', 'target' }
     }
 }
 
-package {
-    name = 'firmware',
+package { 'firmware',
     { 'material',
         { 'mrua',           'build'             }
     },
@@ -396,21 +310,16 @@ package {
     { 'strip' }
 }
 
-firmware_package {
-    name   = 'libffi',
-    config = 'target'
-}
+firmware_package { 'libffi', 'target' }
 
-firmware_package {
-    name = 'glib',
+firmware_package { 'glib',
     { 'build',
         { 'zlib',     'install' },
         { 'libffi',   'install', 'target' },
     }
 }
 
-firmware_package {
-    name = 'connman',
+firmware_package { 'connman',
     { 'build',
         { 'dbus',           'install'           },
         { 'glib',           'install'           },
@@ -418,17 +327,13 @@ firmware_package {
     }
 }
 
-firmware_package {
-    name   = 'fribidi',
-    config = 'target',
+firmware_package { 'fribidi', 'target',
     { 'build',
         { 'glib', 'install' }
     }
 }
 
-firmware_package {
-    name   = 'libass',
-    config = 'target',
+firmware_package { 'libass', 'target',
     { 'build',
         { 'freetype', 'install', 'target' },
         { 'fribidi',  'install', 'target' },

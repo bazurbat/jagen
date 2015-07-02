@@ -41,13 +41,13 @@ function filter(pred, list)
     return o
 end
 
-function find(list, pred)
-    for _, item in ipairs(list or {}) do
-        if pred(item) then
-            return item
+function find(pred, list)
+    for i, v in ipairs(list or {}) do
+        if pred(v) then
+            return v, i
         end
     end
-    return nil
+    return nil, nil
 end
 
 function concat(...)
@@ -129,13 +129,16 @@ function Package:new(o)
 end
 
 function Package:from_rules(...)
-    local rules = {...}
-    local name = rules[1].name
-    local pkg = Package:from_file(name)
-
-    for _, rule in ipairs(rules) do
-        pkg:merge(rule)
+    local rules = Package:new()
+    for _, rule in ipairs({...}) do
+        rules:merge(rule)
     end
+    rules:convert_name()
+
+    local pkg = Package:from_file(rules.name)
+    pkg:merge(rules)
+    pkg:convert_source()
+
     for _, stage in ipairs(copy(self.default_stages)) do
         pkg:add_rule(stage)
     end
@@ -143,7 +146,6 @@ function Package:from_rules(...)
         pkg:add_rule(stage)
     end
 
-    pkg:parse_source()
     pkg:add_toolchain_dependency()
     pkg:add_build_dependencies()
     pkg:set_config()
@@ -177,7 +179,7 @@ end
 function Package:add_target(target)
     self.stages = self.stages or {}
     local function equal(t) return t == target end
-    local existing = find(self.stages, equal)
+    local existing = find(equal, self.stages)
     if existing then
         existing:append(target)
     else
@@ -205,7 +207,22 @@ function Package:merge(rule)
     return self
 end
 
-function Package:parse_source()
+function Package:convert_name()
+    local function is_string(v)
+        return type(v) == 'string'
+    end
+    local i
+    self.name, i = find(is_string, self)
+    if i then
+        table.remove(self, i)
+        self.config, i = find(is_string, self)
+        if i then
+            table.remove(self, i)
+        end
+    end
+end
+
+function Package:convert_source()
     local source = self.source
     if type(source) == 'string' then
         self.source = { type = 'dist', location = source }
