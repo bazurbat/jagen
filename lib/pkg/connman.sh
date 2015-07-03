@@ -1,15 +1,10 @@
 #!/bin/sh
 
-use_toolchain target
-
-p_prefix="$target_prefix"
-p_dest_dir="$target_dir"
-
 pkg_build() {
     export ac_cv_lib_resolv_ns_initparse=yes
 
     p_run ./configure \
-        --host="$target_system" \
+        --host="$p_system" \
         --prefix="$p_prefix" \
         --sysconfdir="/etc" \
         --localstatedir="/settings" \
@@ -21,8 +16,7 @@ pkg_build() {
         --disable-pacrunner \
         --disable-neard \
         --disable-wispr \
-        --disable-client \
-        --with-sysroot="${target_dir}${target_prefix}"
+        --disable-client
 
     p_run make
 }
