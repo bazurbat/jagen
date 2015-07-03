@@ -176,7 +176,7 @@ package { 'firmware',
         { 'ffmpeg',         'install', 'target' },
         { 'freetype',       'install', 'target' },
         { 'fribidi',        'install', 'target' },
-        { 'glib',           'install',          },
+        { 'glib',           'install', 'target' },
         { 'karaoke-player', 'install', 'target' },
         { 'kernel',         'image'             },
         { 'libass',         'install', 'target' },
@@ -213,7 +213,7 @@ package { 'chicken-eggs', 'target',
 firmware_package { 'connman', 'target',
     { 'build',
         { 'dbus',           'install', 'target' },
-        { 'glib',           'install'           },
+        { 'glib',           'install', 'target' },
         { 'xtables-addons', 'install', 'target' },
     }
 }
@@ -231,10 +231,10 @@ firmware_package { 'ffmpeg', 'target',
 firmware_package { 'freetype', 'target' }
 
 firmware_package { 'fribidi', 'target',
-    { 'build', { 'glib', 'install' } }
+    { 'build', { 'glib', 'install', 'target' } }
 }
 
-firmware_package { 'glib',
+firmware_package { 'glib', 'target',
     { 'build',
         { 'zlib',     'install'           },
         { 'libffi',   'install', 'target' },

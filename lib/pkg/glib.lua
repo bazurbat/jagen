@@ -2,6 +2,7 @@ package {
     name  = 'glib',
     build = {
         type = 'GNU',
+        libs = { 'glib-2.0', 'gthread-2.0', 'gobject-2.0', 'gmodule-2.0', 'gio-2.0' },
         need_libtool = true
     },
     source  = 'glib-2.40.2.tar.xz',
