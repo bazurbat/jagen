@@ -188,7 +188,7 @@ package { 'firmware',
         { 'rsync',          'install', 'target' },
         { 'soundtouch',     'install', 'target' },
         { 'sqlite',         'install', 'target' },
-        { 'wpa_supplicant', 'install',          },
+        { 'wpa_supplicant', 'install', 'target' },
         { 'xtables',        'install', 'target' },
         { 'xtables-addons', 'install', 'target' },
         { 'zlib',           'install', 'target' },
@@ -284,7 +284,7 @@ firmware_package { 'soundtouch', 'target' }
 
 firmware_package { 'sqlite', 'target' }
 
-firmware_package { 'wpa_supplicant',
+firmware_package { 'wpa_supplicant', 'target',
     { 'build',
         { 'dbus',  'install', 'target' },
         { 'libnl', 'install', 'target' },

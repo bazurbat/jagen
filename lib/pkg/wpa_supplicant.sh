@@ -1,10 +1,5 @@
 #!/bin/sh
 
-use_toolchain target
-
-p_prefix="$target_prefix"
-p_dest_dir="$target_dir"
-
 pkg_build() {
     local s="$p_build_dir/$p_name"
 
