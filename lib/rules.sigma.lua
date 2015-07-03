@@ -41,31 +41,21 @@ package { 'ucode',
 
 -- tools
 
-package { 'make', 'host',
-    { 'build'   },
-    { 'install' }
-}
+package { 'make', 'host' }
 
 -- host
 
-package { 'libtool',
-    { 'build'   },
-    { 'install' }
-}
+package { 'libtool' }
 
 -- utils
 
-package { 'utils', 'host',
-    { 'build'   },
-    { 'install' }
-}
+package { 'utils', 'host' }
 
 package { 'utils', 'target',
     { 'build',
         { 'dbus',  'install' },
         { 'gpgme', 'install' },
-    },
-    { 'install' }
+    }
 }
 
 -- boot
@@ -77,15 +67,9 @@ rootfs_package { 'ezboot',
 -- debugging
 
 if jagen.flag('debug') then
-    package { 'gdb', 'host',
-        { 'build'   },
-        { 'install' }
-    }
+    package { 'gdb', 'host' }
 
-    package { 'valgrind', 'rootfs',
-        { 'build'   },
-        { 'install' }
-    }
+    package { 'valgrind', 'rootfs' }
 
     rootfs_package { 'gdbserver' }
 
@@ -159,24 +143,14 @@ package { 'mrua',
     { 'install', { 'firmware', 'unpack' } }
 }
 
-package { 'chicken', 'host',
-    { 'build'   },
-    { 'install' }
-}
+package { 'chicken', 'host' }
 
-package { 'chicken', 'target',
-    { 'build',
-        { 'chicken',  'install', 'host' }
-    },
-    { 'install',
-        { 'firmware', 'unpack'          }
-    }
+firmware_package { 'chicken', 'target',
+    { 'build', { 'chicken',  'install', 'host' } }
 }
 
 package { 'chicken-eggs', 'host',
-    { 'install',
-        { 'chicken', 'install', 'host' }
-    }
+    { 'install', { 'chicken', 'install', 'host' } }
 }
 
 package { 'chicken-eggs', 'target',
@@ -189,17 +163,9 @@ package { 'chicken-eggs', 'target',
     }
 }
 
-package { 'libuv', 'host',
-    { 'build'   },
-    { 'install' }
-}
+package { 'libuv', 'host' }
 
-package { 'libuv', 'target',
-    { 'build' },
-    { 'install',
-        { 'firmware', 'unpack' }
-    }
-}
+firmware_package { 'libuv', 'target' }
 
 firmware_package { 'dbus',
     { 'build', { 'expat', 'install', 'target' } }
@@ -235,19 +201,11 @@ firmware_package { 'xtables-addons', 'target',
 }
 
 package { 'ffmpeg', 'host',
-    { 'build',
-        { 'ast-files', 'unpack' }
-    },
-    { 'install' }
+    { 'build', { 'ast-files', 'unpack' } }
 }
 
-package { 'ffmpeg', 'target',
-    { 'build',
-        { 'ast-files', 'unpack' }
-    },
-    { 'install',
-        { 'firmware',  'unpack' }
-    }
+firmware_package { 'ffmpeg', 'target',
+    { 'build', { 'ast-files', 'unpack' } }
 }
 
 firmware_package { 'soundtouch' }
@@ -262,11 +220,10 @@ package { 'karaoke-player', 'host',
         { 'chicken-eggs', 'install', 'host' },
         { 'ffmpeg',       'install', 'host' },
         { 'libuv',        'install', 'host' },
-    },
-    { 'install' }
+    }
 }
 
-package { 'karaoke-player', 'target',
+firmware_package { 'karaoke-player', 'target',
     { 'build',
         { 'astindex',     'unpack'            },
         { 'chicken',      'install', 'target' },
@@ -328,9 +285,7 @@ firmware_package { 'connman',
 }
 
 firmware_package { 'fribidi', 'target',
-    { 'build',
-        { 'glib', 'install' }
-    }
+    { 'build', { 'glib', 'install' } }
 }
 
 firmware_package { 'libass', 'target',

@@ -142,12 +142,15 @@ function Package:from_rules(...)
     for _, stage in ipairs(copy(self.default_stages)) do
         pkg:add_rule(stage)
     end
+
+    pkg:add_build_dependencies()
+
     for _, stage in ipairs(pkg) do
         pkg:add_rule(stage)
     end
 
     pkg:add_toolchain_dependency()
-    pkg:add_build_dependencies()
+
     pkg:set_config()
 
     return pkg
@@ -257,9 +260,15 @@ end
 
 function Package:add_build_dependencies()
     local build = self.build
-    if build and build.need_libtool then
-        self:add_target(Target.from_rule(self.name,
-            { 'patch', { 'libtool', 'install' } }))
+    if build then
+        if build.type then
+            self:add_rule({ 'build' })
+            self:add_rule({ 'install' })
+        end
+        if build.need_libtool then
+            self:add_target(Target.from_rule(self.name,
+                { 'patch', { 'libtool', 'install' } }))
+        end
     end
 end
 
