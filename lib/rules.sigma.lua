@@ -186,7 +186,7 @@ package { 'firmware',
         { 'libuv',          'install', 'target' },
         { 'mrua',           'install'           },
         { 'rsync',          'install', 'target' },
-        { 'soundtouch',     'install',          },
+        { 'soundtouch',     'install', 'target' },
         { 'sqlite',         'install', 'target' },
         { 'wpa_supplicant', 'install',          },
         { 'xtables',        'install', 'target' },
@@ -254,7 +254,7 @@ firmware_package { 'karaoke-player', 'target',
         { 'libpng',       'install', 'target' },
         { 'libuv',        'install', 'target' },
         { 'mrua',         'build'             },
-        { 'soundtouch',   'install'           },
+        { 'soundtouch',   'install', 'target' },
     },
     { 'install',
         { 'chicken-eggs', 'install', 'target' }
@@ -280,7 +280,7 @@ firmware_package { 'libuv', 'target' }
 
 firmware_package { 'rsync', 'target' }
 
-firmware_package { 'soundtouch' }
+firmware_package { 'soundtouch', 'target' }
 
 firmware_package { 'sqlite', 'target' }
 
