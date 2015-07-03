@@ -1,10 +1,5 @@
 #!/bin/sh
 
-use_toolchain target
-
-p_prefix="$target_prefix"
-p_dest_dir="$target_dir"
-
 pkg_build() {
     p_run ./configure \
         --prefix="$p_prefix" \

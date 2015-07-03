@@ -191,7 +191,7 @@ package { 'firmware',
         { 'wpa_supplicant', 'install',          },
         { 'xtables',        'install', 'target' },
         { 'xtables-addons', 'install', 'target' },
-        { 'zlib',           'install',          },
+        { 'zlib',           'install', 'target' },
     },
     { 'strip' }
 }
@@ -236,7 +236,7 @@ firmware_package { 'fribidi', 'target',
 
 firmware_package { 'glib', 'target',
     { 'build',
-        { 'zlib',     'install'           },
+        { 'zlib',     'install', 'target' },
         { 'libffi',   'install', 'target' },
     }
 }
@@ -273,7 +273,7 @@ firmware_package { 'libffi', 'target' }
 firmware_package { 'libnl', 'target' }
 
 firmware_package { 'libpng', 'target',
-    { 'build', { 'zlib', 'install' } }
+    { 'build', { 'zlib', 'install', 'target' } }
 }
 
 firmware_package { 'libuv', 'target' }
@@ -297,4 +297,4 @@ firmware_package { 'xtables-addons', 'target',
     { 'build', { 'xtables', 'install', 'target' } }
 }
 
-firmware_package { 'zlib' }
+firmware_package { 'zlib', 'target' }
