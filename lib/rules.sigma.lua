@@ -45,7 +45,7 @@ package { 'make', 'host' }
 
 -- host
 
-package { 'libtool' }
+package { 'libtool', 'host' }
 
 -- utils
 

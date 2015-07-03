@@ -267,7 +267,7 @@ function Package:add_build_dependencies()
         end
         if build.need_libtool then
             self:add_target(Target.from_rule(self.name,
-                { 'patch', { 'libtool', 'install' } }))
+                { 'patch', { 'libtool', 'install', 'host' } }))
         end
     end
 end
