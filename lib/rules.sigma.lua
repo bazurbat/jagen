@@ -137,7 +137,7 @@ rootfs_package { 'util-linux' }
 
 rootfs_package { 'utils', 'target',
     { 'build',
-        { 'dbus',  'install' },
+        { 'dbus',  'install', 'target' },
         { 'gpgme', 'install' },
     }
 }
@@ -170,7 +170,7 @@ package { 'firmware',
         { 'chicken',        'install', 'target' },
         { 'chicken-eggs',   'install', 'target' },
         { 'connman',        'install',          },
-        { 'dbus',           'install',          },
+        { 'dbus',           'install', 'target' },
         { 'expat',          'install', 'target' },
         { 'ezboot',         'install',          },
         { 'ffmpeg',         'install', 'target' },
@@ -205,20 +205,20 @@ package { 'chicken-eggs', 'target',
         { 'toolchain'                         },
         { 'chicken',      'install', 'target' },
         { 'chicken-eggs', 'install', 'host'   },
-        { 'dbus',         'install'           },
+        { 'dbus',         'install', 'target' },
         { 'sqlite',       'install', 'target' },
     }
 }
 
 firmware_package { 'connman',
     { 'build',
-        { 'dbus',           'install'           },
+        { 'dbus',           'install', 'target' },
         { 'glib',           'install'           },
         { 'xtables-addons', 'install', 'target' },
     }
 }
 
-firmware_package { 'dbus',
+firmware_package { 'dbus', 'target',
     { 'build', { 'expat', 'install', 'target' } }
 }
 
@@ -247,7 +247,7 @@ firmware_package { 'karaoke-player', 'target',
         { 'chicken',      'install', 'target' },
         { 'chicken-eggs', 'install', 'host'   },
         { 'connman',      'install'           },
-        { 'dbus',         'install'           },
+        { 'dbus',         'install', 'target' },
         { 'ffmpeg',       'install', 'target' },
         { 'freetype',     'install', 'target' },
         { 'libass',       'install', 'target' },
@@ -286,7 +286,7 @@ firmware_package { 'sqlite', 'target' }
 
 firmware_package { 'wpa_supplicant',
     { 'build',
-        { 'dbus',  'install'           },
+        { 'dbus',  'install', 'target' },
         { 'libnl', 'install', 'target' },
     }
 }
