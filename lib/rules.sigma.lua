@@ -162,7 +162,10 @@ local function firmware_package(rule)
     local pkg = {
         config = 'target',
         { 'build' },
-        { 'install', { 'firmware', 'unpack' } }
+        { 'install', { 'firmware', 'unpack' } },
+        inject = {
+            { 'install', { 'firmware', 'unpack' } }
+        }
     }
     package(pkg, rule)
 end

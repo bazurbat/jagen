@@ -151,8 +151,6 @@ function Package:from_rules(...)
         pkg:add_target(target)
     end
 
-    pkg:add_toolchain_dependency()
-
     return pkg
 end
 
@@ -578,7 +576,23 @@ function jagen.load_rules()
         rules()
     end
 
+    local function add_unresolved(pkg)
+        for _, stage in ipairs(pkg.stages) do
+            for _, input in ipairs(stage.inputs) do
+                local name = input.name
+                if not packages[name] then
+                    local p = Package:from_rules { name, pkg.config }
+                    p:merge(pkg.inject or {})
+                    packages[name] = p
+                    table.insert(packages, p)
+                end
+            end
+        end
+    end
+
     for _, pkg in ipairs(packages) do
+        -- add_unresolved(pkg)
+        pkg:add_toolchain_dependency()
         pkg:add_ordering_dependencies()
     end
 
