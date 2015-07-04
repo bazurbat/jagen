@@ -118,7 +118,7 @@ end
 --{{{ Package
 
 Package = {
-    default_stages = { { 'clean' }, { 'unpack' }, { 'patch' } }
+    default_stages = { 'clean', 'unpack', 'patch' }
 }
 Package.__index = Package
 
@@ -139,8 +139,8 @@ function Package:from_rules(...)
     pkg:merge(rules)
     pkg:convert_source()
 
-    for _, stage in ipairs(copy(self.default_stages)) do
-        pkg:add_rule(stage)
+    for _, stage in ipairs(self.default_stages) do
+        pkg:add_target(Target.new(pkg.name, stage))
     end
 
     pkg:add_build_dependencies()
@@ -150,8 +150,6 @@ function Package:from_rules(...)
     end
 
     pkg:add_toolchain_dependency()
-
-    pkg:set_config()
 
     return pkg
 end
@@ -176,7 +174,13 @@ end
 
 function Package:add_rule(rule)
     assert(self.name)
-    return self:add_target(Target.from_rule(self.name, rule))
+    local target = Target.from_rule(self.name, rule)
+    target.config = self.config
+    return self:add_target(target)
+end
+
+function Package:add_stage(stage)
+    return self:add_target(Target.new(self.name, stage, self.config))
 end
 
 function Package:add_target(target)
@@ -233,22 +237,6 @@ function Package:convert_source()
     return self
 end
 
-function Package:set_config()
-    local config = self.config
-    if config then
-        local default_stages = {}
-        for _, s in pairs(self.default_stages) do
-            default_stages[s[1]] = true
-        end
-        local function not_default(s)
-            return not default_stages[s.stage]
-        end
-        for _, stage in ipairs(filter(not_default, self.stages)) do
-            stage.config = stage.config or config
-        end
-    end
-end
-
 function Package:add_toolchain_dependency()
     local function is_build_stage(target)
         return target.stage == 'build'
@@ -262,8 +250,8 @@ function Package:add_build_dependencies()
     local build = self.build
     if build then
         if build.type then
-            self:add_rule({ 'build' })
-            self:add_rule({ 'install' })
+            self:add_stage('build')
+            self:add_stage('install')
         end
         if build.need_libtool then
             self:add_target(Target.from_rule(self.name,
@@ -433,7 +421,12 @@ Target = {}
 Target.__index = Target
 
 function Target.new(name, stage, config)
-    local target = { name = name, stage = stage, config = config }
+    local target = {
+        name   = name,
+        stage  = stage,
+        config = config,
+        inputs = {}
+    }
     setmetatable(target, Target)
     return target
 end
@@ -443,18 +436,14 @@ function Target.from_list(list)
 end
 
 function Target.from_rule(name, rule)
-    local stage, config
+    local stage
 
     if type(rule[1]) == 'string' then
         stage = rule[1]
         table.remove(rule, 1)
     end
-    if type(rule[1]) == 'string' then
-        config = rule[1]
-        table.remove(rule, 1)
-    end
 
-    local target = Target.new(name, stage, config)
+    local target = Target.new(name, stage)
     target.inputs = map(Target.from_list, rule)
 
     return target
