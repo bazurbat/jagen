@@ -179,10 +179,6 @@ function Package:add_rule(rule)
     return self:add_target(target)
 end
 
-function Package:add_stage(stage)
-    return self:add_target(Target.new(self.name, stage, self.config))
-end
-
 function Package:add_target(target)
     self.stages = self.stages or {}
     local function equal(t) return t == target end
@@ -250,8 +246,8 @@ function Package:add_build_dependencies()
     local build = self.build
     if build then
         if build.type then
-            self:add_stage('build')
-            self:add_stage('install')
+            self:add_target(Target.new(self.name, 'build', self.config))
+            self:add_target(Target.new(self.name, 'install', self.config))
         end
         if build.need_libtool then
             self:add_target(Target.from_rule(self.name,
