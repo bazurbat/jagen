@@ -179,31 +179,34 @@ package { 'firmware', 'target',
         { 'kernel', 'image'   },
         { 'mrua',   'install' },
         needs = {
-            'chicken',
-            'chicken-eggs',
-            'connman',
-            'dbus',
-            'expat',
-            'ffmpeg',
-            'freetype',
-            'fribidi',
-            'glib',
             'karaoke-player',
-            'libass',
-            'libffi',
-            'libnl',
-            'libpng',
-            'libuv',
             'rsync',
-            'soundtouch',
-            'sqlite',
             'wpa_supplicant',
-            'xtables',
-            'xtables-addons',
-            'zlib',
         }
     },
     { 'strip' }
+}
+
+firmware_package { 'karaoke-player',
+    { 'build',
+        { 'astindex',     'unpack'            },
+        { 'mrua',         'build'             },
+        { 'chicken-eggs', 'install', 'host'   },
+        needs = {
+            'chicken-eggs',
+            'connman',
+            'dbus',
+            'ffmpeg',
+            'freetype',
+            'libass',
+            'libpng',
+            'libuv',
+            'soundtouch'
+        }
+    },
+    { 'install',
+        needs = { 'chicken-eggs' }
+    }
 }
 
 firmware_package { 'chicken',
@@ -225,60 +228,20 @@ firmware_package { 'connman' }
 
 firmware_package { 'dbus' }
 
-firmware_package { 'expat' }
-
 firmware_package { 'ffmpeg',
     { 'build', { 'ast-files', 'unpack' } }
 }
-
-firmware_package { 'freetype' }
 
 firmware_package { 'fribidi' }
 
 firmware_package { 'glib' }
 
-firmware_package { 'karaoke-player',
-    { 'build',
-        { 'astindex',     'unpack'            },
-        { 'mrua',         'build'             },
-        { 'chicken-eggs', 'install', 'host'   },
-        needs = {
-            'chicken',
-            'connman',
-            'dbus',
-            'ffmpeg',
-            'freetype',
-            'libass',
-            'libpng',
-            'libuv',
-            'soundtouch'
-        }
-    },
-    { 'install',
-        needs = { 'chicken-eggs' }
-    }
-}
-
-firmware_package { 'libass' }
-
-firmware_package { 'libffi' }
-
-firmware_package { 'libnl' }
-
-firmware_package { 'libpng' }
-
 firmware_package { 'libuv' }
 
 firmware_package { 'rsync' }
-
-firmware_package { 'soundtouch' }
 
 firmware_package { 'sqlite' }
 
 firmware_package { 'wpa_supplicant' }
 
 firmware_package { 'xtables' }
-
-firmware_package { 'xtables-addons' }
-
-firmware_package { 'zlib' }
