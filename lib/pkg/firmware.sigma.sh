@@ -1,7 +1,5 @@
 #!/bin/sh
 
-use_toolchain target
-
 p_work_dir="$sdk_firmware_dir"
 p_source_dir="${target_dir}${target_prefix}"
 
