@@ -146,7 +146,9 @@ function Package:from_rules(...)
     pkg:add_build_dependencies()
 
     for _, stage in ipairs(pkg) do
-        pkg:add_rule(stage)
+        local target = Target.from_rule(pkg.name, stage)
+        target.config = pkg.config
+        pkg:add_target(target)
     end
 
     pkg:add_toolchain_dependency()
@@ -170,13 +172,6 @@ function Package:from_file(name)
     end
 
     return Package:new(o)
-end
-
-function Package:add_rule(rule)
-    assert(self.name)
-    local target = Target.from_rule(self.name, rule)
-    target.config = self.config
-    return self:add_target(target)
 end
 
 function Package:add_target(target)
