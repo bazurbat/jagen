@@ -160,6 +160,7 @@ rootfs_package { 'gpgme',
 
 local function firmware_package(rule)
     local pkg = {
+        config = 'target',
         { 'build' },
         { 'install', { 'firmware', 'unpack' } }
     }
@@ -202,7 +203,7 @@ package { 'firmware', 'target',
     { 'strip' }
 }
 
-firmware_package { 'chicken', 'target',
+firmware_package { 'chicken',
     { 'build', { 'chicken',  'install', 'host' } }
 }
 
@@ -218,23 +219,23 @@ package { 'chicken-eggs', 'target',
     }
 }
 
-firmware_package { 'connman', 'target' }
+firmware_package { 'connman' }
 
-firmware_package { 'dbus', 'target' }
+firmware_package { 'dbus' }
 
-firmware_package { 'expat', 'target' }
+firmware_package { 'expat' }
 
-firmware_package { 'ffmpeg', 'target',
+firmware_package { 'ffmpeg',
     { 'build', { 'ast-files', 'unpack' } }
 }
 
-firmware_package { 'freetype', 'target' }
+firmware_package { 'freetype' }
 
-firmware_package { 'fribidi', 'target' }
+firmware_package { 'fribidi' }
 
-firmware_package { 'glib', 'target' }
+firmware_package { 'glib' }
 
-firmware_package { 'karaoke-player', 'target',
+firmware_package { 'karaoke-player',
     { 'build',
         { 'astindex',     'unpack'            },
         { 'mrua',         'build'             },
@@ -256,26 +257,26 @@ firmware_package { 'karaoke-player', 'target',
     }
 }
 
-firmware_package { 'libass', 'target' }
+firmware_package { 'libass' }
 
-firmware_package { 'libffi', 'target' }
+firmware_package { 'libffi' }
 
-firmware_package { 'libnl', 'target' }
+firmware_package { 'libnl' }
 
-firmware_package { 'libpng', 'target' }
+firmware_package { 'libpng' }
 
-firmware_package { 'libuv', 'target' }
+firmware_package { 'libuv' }
 
-firmware_package { 'rsync', 'target' }
+firmware_package { 'rsync' }
 
-firmware_package { 'soundtouch', 'target' }
+firmware_package { 'soundtouch' }
 
-firmware_package { 'sqlite', 'target' }
+firmware_package { 'sqlite' }
 
-firmware_package { 'wpa_supplicant', 'target' }
+firmware_package { 'wpa_supplicant' }
 
-firmware_package { 'xtables', 'target' }
+firmware_package { 'xtables' }
 
-firmware_package { 'xtables-addons', 'target' }
+firmware_package { 'xtables-addons' }
 
-firmware_package { 'zlib', 'target' }
+firmware_package { 'zlib' }
