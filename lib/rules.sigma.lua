@@ -209,7 +209,6 @@ firmware_package { 'chicken',
 
 package { 'chicken-eggs', 'target',
     { 'install',
-        { 'toolchain'                         },
         { 'chicken-eggs', 'install', 'host'   },
         needs = {
             'chicken',
