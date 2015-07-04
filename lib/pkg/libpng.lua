@@ -4,5 +4,8 @@ package {
         type = 'GNU',
         libs = { 'png16' }
     },
-    source = 'libpng-1.6.17.tar.xz'
+    source = 'libpng-1.6.17.tar.xz',
+    { 'build',
+        needs = { 'zlib' }
+    }
 }
