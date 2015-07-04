@@ -213,8 +213,9 @@ function Package:convert_name()
     self.name, i = find(is_string, self)
     if i then
         table.remove(self, i)
-        self.config, i = find(is_string, self)
+        local config, i = find(is_string, self)
         if i then
+            self.config = config
             table.remove(self, i)
         end
     end
