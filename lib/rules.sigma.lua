@@ -37,7 +37,9 @@ package { 'astindex',
 package { 'chicken', 'host' }
 
 package { 'chicken-eggs', 'host',
-    { 'install', { 'chicken', 'install', 'host' } }
+    { 'install',
+        needs = { 'chicken' }
+    }
 }
 
 package { 'ffmpeg', 'host',
@@ -50,11 +52,13 @@ package { 'utils', 'host' }
 
 package { 'karaoke-player', 'host',
     { 'build',
-        { 'astindex',     'unpack'          },
-        { 'chicken',      'install', 'host' },
-        { 'chicken-eggs', 'install', 'host' },
-        { 'ffmpeg',       'install', 'host' },
-        { 'libuv',        'install', 'host' },
+        { 'astindex', 'unpack' },
+        needs = {
+            'chicken',
+            'chicken-eggs',
+            'ffmpeg',
+            'libuv'
+        }
     }
 }
 
@@ -203,23 +207,25 @@ firmware_package { 'chicken', 'target',
 package { 'chicken-eggs', 'target',
     { 'install',
         { 'toolchain'                         },
-        { 'chicken',      'install', 'target' },
         { 'chicken-eggs', 'install', 'host'   },
-        { 'dbus',         'install', 'target' },
-        { 'sqlite',       'install', 'target' },
+        needs = {
+            'chicken',
+            'dbus',
+            'sqlite'
+        }
     }
 }
 
 firmware_package { 'connman', 'target',
     { 'build',
-        { 'dbus',           'install', 'target' },
-        { 'glib',           'install', 'target' },
-        { 'xtables-addons', 'install', 'target' },
+        needs = { 'dbus', 'glib', 'xtables-addons' }
     }
 }
 
 firmware_package { 'dbus', 'target',
-    { 'build', { 'expat', 'install', 'target' } }
+    { 'build',
+        needs = { 'expat' }
+    }
 }
 
 firmware_package { 'expat', 'target' }
@@ -231,40 +237,42 @@ firmware_package { 'ffmpeg', 'target',
 firmware_package { 'freetype', 'target' }
 
 firmware_package { 'fribidi', 'target',
-    { 'build', { 'glib', 'install', 'target' } }
+    { 'build',
+        needs = { 'glib' }
+    }
 }
 
 firmware_package { 'glib', 'target',
     { 'build',
-        { 'zlib',     'install', 'target' },
-        { 'libffi',   'install', 'target' },
+        needs = { 'libffi', 'zlib' }
     }
 }
 
 firmware_package { 'karaoke-player', 'target',
     { 'build',
         { 'astindex',     'unpack'            },
-        { 'chicken',      'install', 'target' },
-        { 'chicken-eggs', 'install', 'host'   },
-        { 'connman',      'install', 'target' },
-        { 'dbus',         'install', 'target' },
-        { 'ffmpeg',       'install', 'target' },
-        { 'freetype',     'install', 'target' },
-        { 'libass',       'install', 'target' },
-        { 'libpng',       'install', 'target' },
-        { 'libuv',        'install', 'target' },
         { 'mrua',         'build'             },
-        { 'soundtouch',   'install', 'target' },
+        { 'chicken-eggs', 'install', 'host'   },
+        needs = {
+            'chicken',
+            'connman',
+            'dbus',
+            'ffmpeg',
+            'freetype',
+            'libass',
+            'libpng',
+            'libuv',
+            'soundtouch'
+        }
     },
     { 'install',
-        { 'chicken-eggs', 'install', 'target' }
+        needs = { 'chicken-eggs' }
     }
 }
 
 firmware_package { 'libass', 'target',
     { 'build',
-        { 'freetype', 'install', 'target' },
-        { 'fribidi',  'install', 'target' },
+        needs = { 'freetype', 'fribidi' }
     }
 }
 
@@ -273,7 +281,9 @@ firmware_package { 'libffi', 'target' }
 firmware_package { 'libnl', 'target' }
 
 firmware_package { 'libpng', 'target',
-    { 'build', { 'zlib', 'install', 'target' } }
+    { 'build',
+        needs = { 'zlib' }
+    }
 }
 
 firmware_package { 'libuv', 'target' }
@@ -286,15 +296,16 @@ firmware_package { 'sqlite', 'target' }
 
 firmware_package { 'wpa_supplicant', 'target',
     { 'build',
-        { 'dbus',  'install', 'target' },
-        { 'libnl', 'install', 'target' },
+        needs = { 'dbus', 'libnl' }
     }
 }
 
 firmware_package { 'xtables', 'target' }
 
 firmware_package { 'xtables-addons', 'target',
-    { 'build', { 'xtables', 'install', 'target' } }
+    { 'build',
+        needs = { 'xtables' }
+    }
 }
 
 firmware_package { 'zlib', 'target' }

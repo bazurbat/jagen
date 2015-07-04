@@ -146,7 +146,7 @@ function Package:from_rules(...)
     pkg:add_build_dependencies()
 
     for _, stage in ipairs(pkg) do
-        local target = Target.from_rule(pkg.name, stage)
+        local target = Target.from_rule(pkg, stage)
         target.config = pkg.config
         pkg:add_target(target)
     end
@@ -245,8 +245,9 @@ function Package:add_build_dependencies()
             self:add_target(Target.new(self.name, 'install', self.config))
         end
         if build.need_libtool then
-            self:add_target(Target.from_rule(self.name,
-                { 'patch', { 'libtool', 'install', 'host' } }))
+            local target = Target.new(self.name, 'patch')
+            target.inputs = { Target.new('libtool', 'install', 'host') }
+            self:add_target(target)
         end
     end
 end
@@ -426,7 +427,7 @@ function Target.from_list(list)
     return Target.new(list[1], list[2], list[3])
 end
 
-function Target.from_rule(name, rule)
+function Target.from_rule(pkg, rule)
     local stage
 
     if type(rule[1]) == 'string' then
@@ -434,8 +435,12 @@ function Target.from_rule(name, rule)
         table.remove(rule, 1)
     end
 
-    local target = Target.new(name, stage)
+    local target = Target.new(pkg.name, stage, pkg.config)
     target.inputs = map(Target.from_list, rule)
+
+    for _, name in ipairs(rule.needs or {}) do
+        table.insert(target.inputs, Target.new(name, 'install', pkg.config))
+    end
 
     return target
 end
