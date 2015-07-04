@@ -86,6 +86,9 @@ function table.merge(a, b)
             end
         end
     end
+    for _, v in ipairs(b) do
+        table.insert(a, v)
+    end
     return a
 end
 
@@ -582,7 +585,11 @@ function jagen.load_rules()
                 local name = input.name
                 if not packages[name] then
                     local p = Package:from_rules { name, pkg.config }
-                    p:merge(pkg.inject or {})
+                    p.inject = copy(pkg.inject or {})
+                    for _, s in ipairs(p.inject) do
+                        local t = Target.from_rule(p, s)
+                        p:add_target(t)
+                    end
                     packages[name] = p
                     table.insert(packages, p)
                 end
@@ -591,7 +598,7 @@ function jagen.load_rules()
     end
 
     for _, pkg in ipairs(packages) do
-        -- add_unresolved(pkg)
+        add_unresolved(pkg)
         pkg:add_toolchain_dependency()
         pkg:add_ordering_dependencies()
     end
@@ -613,6 +620,10 @@ end
 function jagen.generate()
     local packages = jagen.load_rules()
     local ninja = Ninja:new()
+
+    table.sort(packages, function (a, b)
+            return a.name < b.name
+        end)
 
     ninja:generate(jagen.build_file, packages)
 
