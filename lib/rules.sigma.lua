@@ -1,5 +1,13 @@
 -- Sigma rules
 
+local function rootfs_package(rule)
+    local pkg = {
+        { 'build', { 'rootfs', 'build' } },
+        { 'install' }
+    }
+    package(pkg, rule)
+end
+
 -- base
 
 package { 'ast-files' }
@@ -90,14 +98,6 @@ kernel_package { 'loop-aes' }
 kernel_package { 'ralink' }
 
 -- rootfs
-
-local function rootfs_package(rule)
-    local pkg = {
-        { 'build', { 'rootfs', 'build' } },
-        { 'install' }
-    }
-    package(pkg, rule)
-end
 
 package { 'rootfs',
     { 'build',
