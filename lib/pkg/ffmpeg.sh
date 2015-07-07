@@ -16,6 +16,9 @@ pkg_patch() {
 pkg_build() {
     local prefix cross_options
 
+    CFLAGS=""
+    CXXFLAGS=""
+
     if [ "$p_config" = "host" ]; then
         prefix="$host_dir"
     else
@@ -67,7 +70,6 @@ pkg_build() {
     case $pkg_build_type in
         Rel*) options="--disable-debug" ;;
         Debug)
-            export CFLAGS=""
             options="--disable-optimizations"
             ;;
     esac
@@ -75,24 +77,27 @@ pkg_build() {
     p_run $p_source_dir/configure --prefix="$prefix" \
         --bindir="${prefix}/bin" \
         --enable-gpl --enable-nonfree \
-        --disable-static --enable-shared --disable-runtime-cpudetect \
-        --disable-programs --enable-ffmpeg --enable-ffprobe --disable-avdevice \
-        --disable-postproc --disable-doc --disable-htmlpages \
-        --disable-manpages --disable-podpages --disable-txtpages \
+        --disable-static --enable-shared \
+        --disable-runtime-cpudetect \
+        --disable-programs \
+        --disable-doc \
+        --disable-avdevice \
+        --disable-postproc \
         --disable-everything \
-        --disable-encoders $encoders \
-        --disable-decoders $decoders \
-        --disable-hwaccels \
-        --disable-muxers $muxers \
+        $encoders \
+        $decoders \
+        $muxers \
         --enable-demuxers \
         --enable-parsers \
-        --disable-bsfs $bsfs \
-        --disable-protocols $protocols \
-        --disable-indevs --disable-outdevs --disable-devices \
-        --disable-filters $filters \
+        $bsfs \
+        $protocols \
+        $filters \
         $cross_options \
-        --disable-symver --disable-safe-bitstream-reader \
-        --disable-stripping $options
+        --extra-ldflags="-fPIC" \
+        --enable-pic \
+        --disable-symver \
+        --disable-stripping \
+        $options
 
     p_run make
 }
