@@ -236,6 +236,10 @@ firmware_package { 'fribidi' }
 
 firmware_package { 'glib' }
 
+firmware_package { 'libffi',
+    { 'build', { 'rootfs', 'install' } }
+}
+
 firmware_package { 'libuv' }
 
 firmware_package { 'rsync' }
