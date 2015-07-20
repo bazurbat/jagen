@@ -580,6 +580,7 @@ function jagen.load_rules()
     end
 
     local function add_unresolved(pkg)
+        local added = {}
         for _, stage in ipairs(pkg.stages) do
             for _, input in ipairs(stage.inputs) do
                 local name = input.name
@@ -592,13 +593,19 @@ function jagen.load_rules()
                     end
                     packages[name] = p
                     table.insert(packages, p)
+                    table.insert(added, p)
                 end
             end
         end
+        return added
     end
 
     for _, pkg in ipairs(packages) do
-        add_unresolved(pkg)
+        local added = {}
+        repeat
+            added = add_unresolved(pkg)
+        until #added == 0
+
         pkg:add_toolchain_dependency()
         pkg:add_ordering_dependencies()
     end
