@@ -482,7 +482,11 @@ end
 function Target:append(target)
     self.inputs = self.inputs or {}
     for _, i in ipairs(target.inputs or {}) do
-        table.insert(self.inputs, i)
+        local k = tostring(i)
+        if not self.inputs[k] then
+            self.inputs[k] = true
+            table.insert(self.inputs, i)
+        end
     end
     return self
 end
