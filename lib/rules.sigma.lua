@@ -54,8 +54,6 @@ package { 'ffmpeg', 'host',
     { 'build', { 'ast-files', 'unpack' } }
 }
 
-package { 'libuv', 'host' }
-
 package { 'utils', 'host' }
 
 package { 'karaoke-player', 'host',
@@ -235,8 +233,6 @@ firmware_package { 'ffmpeg',
 firmware_package { 'fribidi' }
 
 firmware_package { 'glib' }
-
-firmware_package { 'libuv' }
 
 firmware_package { 'rsync' }
 
