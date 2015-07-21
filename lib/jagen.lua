@@ -431,15 +431,12 @@ function Target.from_list(list)
 end
 
 function Target.from_rule(pkg, rule)
-    local stage
-
-    if type(rule[1]) == 'string' then
-        stage = rule[1]
-        table.remove(rule, 1)
-    end
-
+    local stage = rule[1]; assert(type(stage) == 'string')
     local target = Target.new(pkg.name, stage, pkg.config)
-    target.inputs = map(Target.from_list, rule)
+
+    for i = 2, #rule do
+        table.insert(target.inputs, Target.from_list(rule[i]))
+    end
 
     for _, name in ipairs(rule.needs or {}) do
         target.needs[name] = true
@@ -592,6 +589,13 @@ function jagen.load_rules()
                     local p = packages[name]
                     p:add_target(Target.new(name, 'build', pkg.config))
                     p:add_target(Target.new(name, 'install', pkg.config))
+                    -- if pkg.inject then
+                    --     p.inject = copy(pkg.inject)
+                    --     for _, s in ipairs(p.inject) do
+                    --         local t = Target.from_rule(p, s)
+                    --         p:add_target(t)
+                    --     end
+                    -- end
                 else
                     local p = Package:from_rules { name, pkg.config }
                     p.inject = copy(pkg.inject or {})
