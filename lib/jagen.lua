@@ -133,13 +133,13 @@ end
 
 function Package:from_rules(...)
     local rules = Package:new()
-    for _, rule in ipairs({...}) do
-        rules:merge(rule)
+    for _, arg in ipairs({...}) do
+        table.merge(rules, arg)
     end
     rules:convert_name()
 
     local pkg = Package:from_file(rules.name)
-    pkg:merge(rules)
+    table.merge(pkg, rules)
     pkg:convert_source()
 
     for _, stage in ipairs(self.default_stages) do
@@ -568,13 +568,8 @@ function jagen.load_rules()
 
     function env.package(...)
         local pkg  = Package:from_rules(...)
-        local name = pkg.name
-        if packages[name] then
-            packages[name]:merge(pkg)
-        else
-            packages[name] = pkg
-            table.insert(packages, pkg)
-        end
+        packages[pkg.name] = pkg
+        table.insert(packages, pkg)
     end
 
     local rules = loadfile(jagen.rules_file)
@@ -609,12 +604,27 @@ function jagen.load_rules()
         repeat
             added = add_unresolved(pkg)
         until #added == 0
+    end
 
+    rules = {}
+
+    for _, pkg in ipairs(packages) do
+        local name = pkg.name
+        local rule = rules[name]
+        if rule then
+            rule:merge(pkg)
+        else
+            rules[name] = pkg
+            table.insert(rules, pkg)
+        end
+    end
+
+    for _, pkg in ipairs(rules) do
         pkg:add_toolchain_dependency()
         pkg:add_ordering_dependencies()
     end
 
-    return packages
+    return rules
 end
 
 function jagen.generate_include_script(pkg)
