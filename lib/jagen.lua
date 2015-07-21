@@ -419,6 +419,7 @@ function Target.new(name, stage, config)
         name   = name,
         stage  = stage,
         config = config,
+        needs  = {},
         inputs = {}
     }
     setmetatable(target, Target)
@@ -441,6 +442,7 @@ function Target.from_rule(pkg, rule)
     target.inputs = map(Target.from_list, rule)
 
     for _, name in ipairs(rule.needs or {}) do
+        target.needs[name] = true
         table.insert(target.inputs, Target.new(name, 'install', pkg.config))
     end
 
@@ -480,7 +482,10 @@ function Target.__tostring(t, sep)
 end
 
 function Target:append(target)
-    self.inputs = self.inputs or {}
+    for name, _ in pairs(target.needs or {}) do
+        self.needs[name] = true
+    end
+
     for _, i in ipairs(target.inputs or {}) do
         local k = tostring(i)
         if not self.inputs[k] then
@@ -488,6 +493,7 @@ function Target:append(target)
             table.insert(self.inputs, i)
         end
     end
+
     return self
 end
 
