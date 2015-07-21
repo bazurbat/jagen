@@ -587,9 +587,12 @@ function jagen.load_rules()
     local function add_unresolved(pkg)
         local added = {}
         for _, stage in ipairs(pkg.stages) do
-            for _, input in ipairs(stage.inputs) do
-                local name = input.name
-                if not packages[name] then
+            for name, _ in pairs(stage.needs) do
+                if packages[name] then
+                    local p = packages[name]
+                    p:add_target(Target.new(name, 'build', pkg.config))
+                    p:add_target(Target.new(name, 'install', pkg.config))
+                else
                     local p = Package:from_rules { name, pkg.config }
                     p.inject = copy(pkg.inject or {})
                     for _, s in ipairs(p.inject) do
@@ -598,7 +601,6 @@ function jagen.load_rules()
                     end
                     packages[name] = p
                     table.insert(packages, p)
-                    table.insert(added, p)
                 end
             end
         end
