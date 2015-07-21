@@ -222,22 +222,12 @@ package { 'chicken-eggs', 'target',
     }
 }
 
-firmware_package { 'connman' }
-
-firmware_package { 'dbus' }
-
 firmware_package { 'ffmpeg',
     { 'build', { 'ast-files', 'unpack' } }
 }
-
-firmware_package { 'fribidi' }
-
-firmware_package { 'glib' }
 
 firmware_package { 'rsync' }
 
 firmware_package { 'sqlite' }
 
 firmware_package { 'wpa_supplicant' }
-
-firmware_package { 'xtables' }
