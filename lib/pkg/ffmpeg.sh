@@ -14,15 +14,15 @@ flac
 h261
 h264
 mjpeg
+mp2
 mp3float
 mpeg2video
 mpeg4
 msmpeg4v1
 msmpeg4v2
 msmpeg4v3
+pcm_dvd
 pcm_s16le
-pcm_s24le
-pcm_s32le
 srt
 vc1
 vorbis
@@ -41,10 +41,9 @@ matroska
 mjpeg
 mov
 mp3
+mpegps
+mpegts
 ogg
-pcm_s16le
-pcm_s24le
-pcm_s32le
 srt
 wav
 "
@@ -129,6 +128,7 @@ pkg_build() {
         Rel*) options="--disable-debug" ;;
         Debug)
             options="--disable-optimizations"
+            components="$components --enable-decoder=eac3"
             ;;
     esac
 
