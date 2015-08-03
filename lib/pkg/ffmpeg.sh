@@ -2,6 +2,63 @@
 
 p_build_dir="$p_work_dir/build${p_config:+-$p_config}"
 
+encoders="pcm_s16le"
+
+decoders="
+aac
+ac3
+ass
+cdgraphics
+dca
+flac
+h261
+h264
+mjpeg
+mp3float
+mpeg2video
+mpeg4
+msmpeg4v1
+msmpeg4v2
+msmpeg4v3
+pcm_s16le
+pcm_s24le
+pcm_s32le
+srt
+vc1
+vorbis
+"
+
+muxers="wav"
+
+demuxers="
+ass
+avi
+cdg
+flac
+flv
+image2
+matroska
+mjpeg
+mov
+mp3
+ogg
+pcm_s16le
+pcm_s24le
+pcm_s32le
+srt
+wav
+"
+
+parsers="
+mpegvideo
+"
+
+bsfs="h264_mp4toannexb"
+
+protocols="file pipe"
+
+filters="afade aresample volume"
+
 pkg_patch() {
     if [ "$pkg_sdk" = "hisilicon" ]; then
         sed -ri "s/^(SLIBNAME_WITH_MAJOR)='.*'$/\\1='\$(SLIBNAME)'/g" \
@@ -40,33 +97,34 @@ pkg_build() {
         esac
     fi
 
-    local options
-    local encoders decoders muxers protocols bsfs
+    local components=""
 
-    for i in aac pcm_s16le; do
-        encoders="$encoders --enable-encoder=$i"
+    for i in $encoders; do
+        components="$components --enable-encoder=$i"
+    done
+    for i in $decoders; do
+        components="$components --enable-decoder=$i"
+    done
+    for i in $muxers; do
+        components="$components --enable-muxer=$i"
+    done
+    for i in $demuxers; do
+        components="$components --enable-demuxer=$i"
+    done
+    for i in $parsers; do
+        components="$components --enable-parser=$i"
+    done
+    for i in $bsfs; do
+        components="$components --enable-bsf=$i"
+    done
+    for i in $protocols; do
+        components="$components --enable-protocol=$i"
+    done
+    for i in $filters; do
+        components="$components --enable-filter=$i"
     done
 
-    for i in $(cat "$pkg_private_dir/cfg/ffmpeg_codecs.txt") cdgraphics hevc; do
-        decoders="$decoders --enable-decoder=$i"
-    done
-
-	for i in adts pcm_s16le wav; do
-		muxers="$muxers --enable-muxer=$i"
-	done
-
-    for i in file pipe; do
-        protocols="$protocols --enable-protocol=$i"
-    done
-
-    for i in h264_mp4toannexb; do
-        bsfs="$bsfs --enable-bsf=$i"
-    done
-
-    for i in $(cat "$pkg_private_dir/cfg/ffmpeg_filters.txt"); do
-        filters="$filters --enable-filter=$i"
-    done
-
+    local options=""
     case $pkg_build_type in
         Rel*) options="--disable-debug" ;;
         Debug)
@@ -84,14 +142,7 @@ pkg_build() {
         --disable-avdevice \
         --disable-postproc \
         --disable-everything \
-        $encoders \
-        $decoders \
-        $muxers \
-        --enable-demuxers \
-        --enable-parsers \
-        $bsfs \
-        $protocols \
-        $filters \
+        $components \
         $cross_options \
         --extra-ldflags="-fPIC" \
         --enable-pic \
