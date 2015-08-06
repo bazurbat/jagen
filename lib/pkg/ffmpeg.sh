@@ -11,20 +11,10 @@ ass
 cdgraphics
 dca
 flac
-h261
-h264
 mjpeg
-mp2
 mp3float
-mpeg2video
-mpeg4
-msmpeg4v1
-msmpeg4v2
-msmpeg4v3
-pcm_dvd
 pcm_s16le
 srt
-vc1
 vorbis
 "
 
