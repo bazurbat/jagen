@@ -44,7 +44,7 @@ mpegvideo
 
 bsfs="h264_mp4toannexb"
 
-protocols="file pipe"
+protocols="file pipe tcp"
 
 filters="afade aresample volume"
 
