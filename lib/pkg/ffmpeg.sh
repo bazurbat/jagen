@@ -39,6 +39,12 @@ wav
 "
 
 parsers="
+aac
+ac3
+dca
+flac
+mjpeg
+mpegaudio
 mpegvideo
 "
 
