@@ -26,7 +26,7 @@ jagen_try_include() { [ -f "$1" ] && . "$1"; }
     { echo "Failed to load common library"; return 1; }
 
 _jagen() {
-    lua "$pkg_lib_dir/jagen.lua" "$@"
+    ${jagen_lua:-lua} "$pkg_lib_dir/jagen.lua" "$@"
 }
 
 if [ "$XDG_CONFIG_HOME" ]; then
