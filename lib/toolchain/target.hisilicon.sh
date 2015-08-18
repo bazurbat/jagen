@@ -2,15 +2,11 @@
 
 use_env target
 
-[ "$android_toolchain_dir" ] ||
-    die "android_toolchain_dir is not set"
+export AR="${target_bin_dir}/${target_system}-ar"
+export CC="${target_bin_dir}/${target_system}-gcc"
+export CXX="${target_bin_dir}/${target_system}-g++"
+export STRIP="${target_bin_dir}/${target_system}-strip"
 
-export AR="${android_toolchain_dir}/bin/${target_system}-ar"
-export CC="${android_toolchain_dir}/bin/${target_system}-gcc"
-export CXX="${android_toolchain_dir}/bin/${target_system}-g++"
-export STRIP="${android_toolchain_dir}/bin/${target_system}-strip"
-
-# export CFLAGS="-O2 -fomit-frame-pointer -fno-strict-aliasing -pipe"
 export CFLAGS=""
 export CXXFLAGS="$CFLAGS"
 export ASMFLAGS="$CFLAGS"
@@ -18,4 +14,22 @@ export LDFLAGS=""
 
 export PKG_CONFIG_SYSROOT_DIR="$target_dir"
 export PKG_CONFIG_LIBDIR="$target_dir$target_prefix/lib/pkgconfig"
-# export PKG_CONFIG_PATH="$sdk_rootfs_prefix/lib/pkgconfig"
+
+add_PATH "$target_bin_dir"
+
+make_toolchain() {
+    local bin name
+
+    if ! [ "$jagen_toolchain_dir" ]; then
+        error "jagen_toolchain_dir is not set"
+        return 1
+    fi
+
+    [ -d "$target_bin_dir" ] && rm -r "$target_bin_dir"
+    mkdir -p "$target_bin_dir"
+
+    for bin in "$jagen_toolchain_dir"/bin/*; do
+        name="$(basename "$bin" | cut -d- -f5-)"
+        ln -sf "$bin" "${target_bin_dir}/${target_system}-${name}"
+    done
+}
