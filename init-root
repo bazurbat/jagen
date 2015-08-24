@@ -70,28 +70,31 @@ EOF
 write_config() {
     cat >"$config_file" <<EOF
 # Current build root configuration type.
-pkg_sdk='$sdk'
+pkg_sdk="$sdk"
 
 # A directory containing target toolchain.
-jagen_toolchain_dir=''
+jagen_toolchain_dir=""
 
-# A directory containing source distributions and patches.
-# pkg_dist_dir=''
+# A directory containing software distributions and patches.
+# pkg_dist_dir=""
 
-# A directory for source packages.
+# A directory where source packages will be checked out.
 pkg_src_dir="$source_dir"
+
+# A directory where build products will be stored.
+pkg_build_dir="\$jagen_build_root/build"
 
 # Space separated list of optional features.
 #   debug - build debugging tools
-pkg_flags=''
+pkg_flags=""
 
 # Package names excluded from clear and update during rebuilds.
 # Example: pkg_source_exclude='chicken karaoke-player'
-pkg_source_exclude=''
+pkg_source_exclude=""
 
 # Global build type.
 # Available values: Release|RelWithDebInfo|Debug
-pkg_build_type='Release'
+pkg_build_type="Release"
 EOF
 }
 
