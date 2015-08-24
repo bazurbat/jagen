@@ -5,20 +5,20 @@ if [ "$ZSH_VERSION" ]; then
     setopt shwordsplit
 fi
 
-export pkg_bin_dir="$jagen_root/bin"
-export pkg_lib_dir="$jagen_root/lib"
+pkg_bin_dir="$jagen_root/bin"
+pkg_lib_dir="$jagen_root/lib"
 
-export pkg_debug=""
+pkg_debug=""
 
-export pkg_flags=""
-export pkg_sdk=""
-export pkg_source_exclude=""
+pkg_flags=""
+pkg_sdk=""
+pkg_source_exclude=""
 
-export pkg_build_dir="$jagen_build_root/build"
-export pkg_build_type="Release"
-export pkg_build_verbose="no"
+pkg_build_dir="$jagen_build_root/build"
+pkg_build_type="Release"
+pkg_build_verbose="no"
 
-export pkg_src_dir="$jagen_build_root/src"
+pkg_src_dir="$jagen_build_root/src"
 
 . "$pkg_lib_dir/common.sh" ||
     { echo "Failed to load common library"; return 1; }
@@ -30,9 +30,9 @@ else
 fi
 try_include "$jagen_build_root/local.sh"
 
-export pkg_patch_dir="$pkg_dist_dir/patches"
-export pkg_build_include_dir="$pkg_build_dir/include"
-export pkg_private_dir="$pkg_src_dir/files"
+pkg_patch_dir="$pkg_dist_dir/patches"
+pkg_build_include_dir="$pkg_build_dir/include"
+pkg_private_dir="$pkg_src_dir/files"
 
 in_flags ccache && use_env ccache
 include "$pkg_lib_dir/env/cmake" || return
