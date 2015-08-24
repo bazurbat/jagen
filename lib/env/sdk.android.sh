@@ -10,4 +10,6 @@ if in_flags ccache; then
     export USE_CCACHE=1
 fi
 
+sdk_firmware_dir="$pkg_build_dir/firmware"
+
 add_PATH "$JAVA_HOME/bin"
