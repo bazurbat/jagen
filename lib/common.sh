@@ -84,3 +84,7 @@ add_LD_LIBRARY_PATH() {
     : ${1:?}
     LD_LIBRARY_PATH="$1":$(list_remove : "$1" $LD_LIBRARY_PATH)
 }
+
+_jagen() {
+    ${jagen_lua:-lua} "$pkg_lib_dir/jagen.lua" "$@"
+}

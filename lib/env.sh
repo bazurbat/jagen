@@ -23,10 +23,6 @@ export pkg_src_dir="$jagen_build_root/src"
 . "$pkg_lib_dir/common.sh" ||
     { echo "Failed to load common library"; return 1; }
 
-_jagen() {
-    ${jagen_lua:-lua} "$pkg_lib_dir/jagen.lua" "$@"
-}
-
 if [ "$XDG_CONFIG_HOME" ]; then
     try_include "$XDG_CONFIG_HOME/jagen/env"
 else
