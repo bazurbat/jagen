@@ -17,8 +17,8 @@ pkg_build_host() {
 }
 
 pkg_build_target() {
-    case $sdk_target_board in
-        ast50|ast100)
+    case $target_board in
+        ast25|ast50|ast100)
             p_run cmake -G"$cmake_generator" \
                 -DCMAKE_BUILD_TYPE="$cmake_build_type" \
                 -DCMAKE_SYSTEM_NAME="Linux" \

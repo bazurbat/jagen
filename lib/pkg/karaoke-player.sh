@@ -13,7 +13,22 @@ pkg_build_host() {
 }
 
 pkg_build_target() {
-    case $sdk_target_board in
+    case $target_board in
+        ast25)
+            p_run cmake -G"$cmake_generator" \
+                -DCMAKE_BUILD_TYPE="$cmake_build_type" \
+                -DCMAKE_SYSTEM_NAME="Linux" \
+                -DCMAKE_INSTALL_PREFIX="${target_dir}${target_prefix}" \
+                -DCMAKE_FIND_ROOT_PATH="${target_dir}${target_prefix}" \
+                -DSIGMA_SDK_DIR="$pkg_src_dir/sigma-mrua" \
+                -DSIGMA_SDK_VERSION="$pkg_sdk_version" \
+                -DSIGMA_ROOTFS_DIR="$pkg_src_dir/sigma-rootfs" \
+                -DCHICKEN_COMPILER="$host_dir/bin/chicken" \
+                -DCHICKEN_INTERPRETER="$host_dir/bin/csi" \
+                -DCHICKEN_DEPENDS="$host_dir/bin/chicken-depends" \
+                -DTARGET_BOARD="$target_board" \
+                "$p_source_dir"
+            ;;
         ast50|ast100)
             p_run cmake -G"$cmake_generator" \
                 -DCMAKE_BUILD_TYPE="$cmake_build_type" \
@@ -26,6 +41,7 @@ pkg_build_target() {
                 -DCHICKEN_COMPILER="$host_dir/bin/chicken" \
                 -DCHICKEN_INTERPRETER="$host_dir/bin/csi" \
                 -DCHICKEN_DEPENDS="$host_dir/bin/chicken-depends" \
+                -DTARGET_BOARD="$target_board" \
                 "$p_source_dir"
             ;;
         *)
@@ -39,6 +55,7 @@ pkg_build_target() {
                 -DCMAKE_FIND_ROOT_PATH="${target_dir}${target_prefix}" \
                 -DHISILICON_ROOT_DIR="$sdk_dir" \
                 -DHISILICON_OUT_DIR="$sdk_out_dir" \
+                -DTARGET_BOARD="$target_board" \
                 "$p_source_dir"
             ;;
     esac

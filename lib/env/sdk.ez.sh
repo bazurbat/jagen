@@ -7,7 +7,7 @@ export target_arch="arm"
 export target_cpu="armv7-a"
 export target_system="arm-none-linux-gnueabi"
 
-export sdk_target_board="ast200"
+export target_board="ast200"
 
 export sdk_rootfs_dir="$target_dir"
 

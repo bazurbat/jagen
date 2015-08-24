@@ -4,14 +4,14 @@ p_source="git git@bitbucket.org:art-system/linux.git"
 p_source_dir="$pkg_src_dir/linux"
 p_source_branch="ast200"
 
-if [ "$sdk_target_board" = "ti_evm" ]; then
+if [ "$target_board" = "ti_evm" ]; then
     defconfig="ti8168_evm_defconfig"
     uimage="uImage-evm"
-elif [ "$sdk_target_board" = "ast200" ]; then
+elif [ "$target_board" = "ast200" ]; then
     defconfig="ast200_defconfig"
     uimage="uImage-ast200"
 else
-    die "Unknown target board: $sdk_target_board"
+    die "Unknown target board: $target_board"
 fi
 
 pkg_build_target() {
