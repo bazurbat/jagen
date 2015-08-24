@@ -20,8 +20,6 @@ export pkg_build_verbose="no"
 
 export pkg_src_dir="$jagen_build_root/src"
 
-jagen_try_include() { [ -f "$1" ] && . "$1"; }
-
 . "$pkg_lib_dir/common.sh" ||
     { echo "Failed to load common library"; return 1; }
 
@@ -30,11 +28,11 @@ _jagen() {
 }
 
 if [ "$XDG_CONFIG_HOME" ]; then
-    jagen_try_include "$XDG_CONFIG_HOME/jagen/env"
+    try_include "$XDG_CONFIG_HOME/jagen/env"
 else
-    jagen_try_include "$HOME/.config/jagen/env"
+    try_include "$HOME/.config/jagen/env"
 fi
-jagen_try_include "$jagen_build_root/local.sh"
+try_include "$jagen_build_root/local.sh"
 
 export pkg_patch_dir="$pkg_dist_dir/patches"
 export pkg_build_include_dir="$pkg_build_dir/include"
