@@ -9,7 +9,7 @@ export target_system="mipsel-linux-gnu"
 
 export target_bin_dir="$target_dir/bin"
 
-export target_board="ast100"
+export target_board="${target_board:-ast100}"
 
 export sdk_ezboot_dir="$pkg_src_dir/sigma-ezboot"
 export sdk_kernel_dir="$pkg_src_dir/sigma-kernel"
