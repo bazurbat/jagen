@@ -79,6 +79,8 @@ get_start_addr() {
 }
 
 pkg_image() {
+    add_PATH "$sdk_rootfs_prefix/bin"
+
     local tmpdir="$target_dir/kernel-image"
     p_clean_dir "$tmpdir"
 
