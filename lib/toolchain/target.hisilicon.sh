@@ -1,7 +1,5 @@
 #!/bin/sh
 
-use_env target
-
 export AR="${target_bin_dir}/${target_system}-ar"
 export CC="${target_bin_dir}/${target_system}-gcc"
 export CXX="${target_bin_dir}/${target_system}-g++"
