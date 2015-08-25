@@ -24,6 +24,7 @@ objcopy objdump ranlib readelf size sprite strings strip"
 
     local gcc_path="$jagen_toolchain_dir/bin/mips-linux-gnu-gcc"
     local gcc_dir=$(dirname "${gcc_path}")
+    local ccache
 
     if ! [ "$jagen_toolchain_dir" ]; then
         error "jagen_toolchain_dir is not set"
@@ -41,7 +42,7 @@ objcopy objdump ranlib readelf size sprite strings strip"
 
     make_tool cpp -EL "$inc_opt $lib_opt"
 
-    in_flags ccache && ccache="ccache"
+    in_flags ccache && ccache='$jagen_ccache'
 
     for name in c++ g++ gcc; do
         make_tool $name -EL "$inc_opt $lib_opt"
