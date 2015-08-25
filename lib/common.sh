@@ -25,29 +25,28 @@ try_include() {
     if [ -f "$1" ]; then
         debug include "$1"
         . "$1"
-        return $?
     fi
-    return 1
 }
 
 include() {
-    local name="${1:?}"
+    local pathname="${1:?}"
     local suffix="${2:-$pkg_sdk}"
-    try_include "${name}.${suffix}.sh" || try_include "${name}.sh"
+    if [ -f "${pathname}.${suffix}.sh" ]; then
+        try_include "${pathname}.${suffix}.sh"
+    elif [ -f "${pathname}.sh" ]; then
+        try_include "${pathname}.sh"
+    else
+        error "Failed to include file: $1 $2"
+        return 2
+    fi
 }
 
 use_env() {
-    local e
-    for e in "$@"; do
-        include "$pkg_lib_dir/env/$e"
-    done
+    include "$pkg_lib_dir/env/$1" "$2"
 }
 
 use_toolchain() {
-    local f
-    for f in "$@"; do
-        include "$pkg_lib_dir/toolchain/$f"
-    done
+    include "$pkg_lib_dir/toolchain/$1" "$2"
 }
 
 in_list() {

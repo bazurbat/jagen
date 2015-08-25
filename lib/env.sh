@@ -20,21 +20,20 @@ pkg_build_verbose="no"
 
 pkg_src_dir="$jagen_build_root/src"
 
-. "$pkg_lib_dir/common.sh" ||
-    { echo "Failed to load common library"; return 1; }
+. "$pkg_lib_dir/common.sh" || return
 
 if [ "$XDG_CONFIG_HOME" ]; then
-    try_include "$XDG_CONFIG_HOME/jagen/env"
+    try_include "$XDG_CONFIG_HOME/jagen/env" || return
 else
-    try_include "$HOME/.config/jagen/env"
+    try_include "$HOME/.config/jagen/env" || return
 fi
-try_include "$jagen_build_root/local.sh"
+try_include "$jagen_build_root/local.sh" || return
 
 pkg_patch_dir="$pkg_dist_dir/patches"
 pkg_build_include_dir="$pkg_build_dir/include"
 pkg_private_dir="$pkg_src_dir/files"
 
 in_flags ccache && use_env ccache
-include "$pkg_lib_dir/env/cmake" || return
-include "$pkg_lib_dir/env/sdk"   || return
-use_env host
+use_env cmake || return
+use_env sdk   || return
+use_env host  || return
