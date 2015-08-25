@@ -5,20 +5,17 @@ if [ "$ZSH_VERSION" ]; then
     setopt shwordsplit
 fi
 
-export pkg_bin_dir="$jagen_root/bin"
-export pkg_lib_dir="$jagen_root/lib"
-
 export pkg_debug=""
-
 export pkg_flags=""
 export pkg_sdk=""
-pkg_source_exclude=""
 
+export pkg_bin_dir="$jagen_root/bin"
+export pkg_lib_dir="$jagen_root/lib"
+export pkg_src_dir="$jagen_build_root/src"
 export pkg_build_dir="$jagen_build_root/build"
+
 pkg_build_type="Release"
 pkg_build_verbose="no"
-
-export pkg_src_dir="$jagen_build_root/src"
 
 . "$pkg_lib_dir/common.sh" || return
 
