@@ -34,6 +34,7 @@ pkg_build_include_dir="$pkg_build_dir/include"
 pkg_private_dir="$pkg_src_dir/files"
 
 in_flags ccache && use_env ccache
-use_env cmake || return
-use_env sdk   || return
-use_env host  || return
+use_env cmake  || return
+use_env host   || return
+use_env target || return
+use_env sdk    || return

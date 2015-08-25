@@ -1,27 +1,24 @@
 #!/bin/sh
 
-export target_dir="$pkg_build_dir/target"
-export target_prefix="/firmware"
+target_prefix="/firmware"
 
-export target_arch="mips"
-export target_cpu="24kf"
-export target_system="mipsel-linux-gnu"
+target_system="mipsel-linux-gnu"
 
-export target_bin_dir="$target_dir/bin"
+target_arch="mips"
+target_cpu="24kf"
+target_board="${target_board:-ast100}"
 
-export target_board="${target_board:-ast100}"
+sdk_firmware_dir="$pkg_build_dir/firmware"
 
-export sdk_ezboot_dir="$pkg_src_dir/sigma-ezboot"
-export sdk_kernel_dir="$pkg_src_dir/sigma-kernel"
-export sdk_mrua_dir="$pkg_src_dir/sigma-mrua"
+sdk_ezboot_dir="$pkg_src_dir/sigma-ezboot"
+sdk_kernel_dir="$pkg_src_dir/sigma-kernel"
+sdk_mrua_dir="$pkg_src_dir/sigma-mrua"
 
-export sdk_rootfs_dir="$pkg_src_dir/sigma-rootfs"
-export sdk_rootfs_root="$sdk_rootfs_dir/build_mipsel/root"
-export sdk_rootfs_prefix="$sdk_rootfs_dir/cross_rootfs"
+sdk_rootfs_dir="$pkg_src_dir/sigma-rootfs"
+sdk_rootfs_root="$sdk_rootfs_dir/build_mipsel/root"
+sdk_rootfs_prefix="$sdk_rootfs_dir/cross_rootfs"
 
-export sdk_firmware_dir="$pkg_build_dir/firmware"
-
-export pkg_sdk_version=${pkg_sdk_version:-311}
+pkg_sdk_version=${pkg_sdk_version:-311}
 if [ "$pkg_sdk_version" = 311 ]; then
     pkg_flags="$pkg_flags sigma_with_monitoring"
 fi
@@ -70,8 +67,7 @@ if in_flags "new_kernel"; then
 else
     kernel_release="2.6.32.15-21-sigma"
 fi
-export kernel_release
-export cpukeys="CPU_KEYS_SMP86xx_2010-02-12"
+cpukeys="CPU_KEYS_SMP86xx_2010-02-12"
 
 xsdk_dir="$pkg_build_dir/pkg/xsdk/$cpukeys"
 
@@ -85,9 +81,9 @@ if [ -d "$xsdk_dir/xbin" ]; then
     add_PATH "$xsdk_dir/xbin"
 fi
 
-export kernel_dir="$pkg_src_dir/sigma-kernel"
-export kernel_modules_dir="$sdk_rootfs_root/lib/modules/$kernel_release"
-export kernel_extra_modules_dir="$kernel_modules_dir/extra"
+kernel_dir="$pkg_src_dir/sigma-kernel"
+kernel_modules_dir="$sdk_rootfs_root/lib/modules/$kernel_release"
+kernel_extra_modules_dir="$kernel_modules_dir/extra"
 
 export LINUX_KERNEL="$kernel_dir/linux"
 export UCLINUX_KERNEL="$LINUX_KERNEL"
