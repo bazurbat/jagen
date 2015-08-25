@@ -242,14 +242,14 @@ end
 function Package:add_build_dependencies()
     local build = self.build
     if build then
+        if build.need_libtool then
+            local target = Target.new(self.name, 'configure')
+            target.inputs = { Target.new('libtool', 'install', 'host') }
+            self:add_target(target)
+        end
         if build.type then
             self:add_target(Target.new(self.name, 'build', self.config))
             self:add_target(Target.new(self.name, 'install', self.config))
-        end
-        if build.need_libtool then
-            local target = Target.new(self.name, 'patch')
-            target.inputs = { Target.new('libtool', 'install', 'host') }
-            self:add_target(target)
         end
     end
 end
