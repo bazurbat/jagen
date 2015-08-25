@@ -26,8 +26,14 @@ if [ "$pkg_sdk_version" = 311 ]; then
     pkg_flags="$pkg_flags sigma_with_monitoring"
 fi
 
+export SMP86XX_ROOTFS_PATH="$sdk_rootfs_dir"
+export INSTALL_MOD_PATH="$sdk_rootfs_root"
+
 export SMP86XX_TOOLCHAIN_PATH="$jagen_toolchain_dir"
 export TOOLCHAIN_RUNTIME_PATH="$jagen_toolchain_dir/mips-linux-gnu/libc/el"
+
+# for genzbf
+add_PATH="$sdk_rootfs_prefix/bin"
 
 # MRUA
 export RMCFLAGS="-DEM86XX_CHIP=EM86XX_CHIPID_TANGO3 \
