@@ -36,7 +36,6 @@ include() {
     elif [ -f "${pathname}.sh" ]; then
         try_include "${pathname}.sh"
     else
-        error "Failed to include file: $1 $2"
         return 2
     fi
 }
