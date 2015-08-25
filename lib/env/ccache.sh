@@ -1,7 +1,5 @@
 #!/bin/sh
 
-export jagen_ccache_bin_dir="/usr/lib/ccache/bin"
-
 # This should allow sharing cache between different roots.
 export CCACHE_BASEDIR="$jagen_root"
 
