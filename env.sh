@@ -6,12 +6,14 @@ else
     jagen_root="$PWD"
 fi
 
-jagen_build_root="$PWD"
+export jagen_root
+export jagen_build_root="$PWD"
 
-export jagen_root jagen_build_root
-
-. "$jagen_root/lib/env.sh" ||
-    { echo "Failed to load environment"; return 1; }
+. "$jagen_root/lib/env.sh"; sts=$?
+if [ $sts != 0 ]; then
+    echo "Failed to load jagen environment"
+    return $sts
+fi
 
 add_PATH "$pkg_private_dir/bin"
 add_PATH "$jagen_root/bin"
