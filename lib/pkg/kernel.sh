@@ -1,16 +1,5 @@
 #!/bin/sh
 
-p_source_dir="$pkg_src_dir/sigma-kernel"
-
-if in_flags "new_kernel"; then
-    p_source_branch="master"
-else
-    p_source_branch="sigma-2.6"
-fi
-
-protectordir="$sdk_ezboot_dir/protector/"
-
-in_flags "new_kernel" || use_env tools
 use_toolchain target
 
 : ${with_kernel_config_default:=yes}
@@ -21,23 +10,20 @@ export CROSS_COMPILE="${toolchain_bin_dir}/${target_system}-"
 export CROSS_MAKE="make ARCH=${target_arch}"
 export KCFLAGS="-mhard-float -Wa,-mhard-float"
 
+protectordir="$sdk_ezboot_dir/protector/"
+
 pkg_build() {
     p_run ln -sfT "$pkg_src_dir/linux" linux
 
     if [ $with_kernel_config_default = yes ]; then
-        if in_flags "new_kernel"; then
-            p_run cp -f config-3.4 linux/.config
-        else
-            p_run cp -f kernel-config linux/.config
-        fi
+        p_run cp -f kernel-config linux/.config
     fi
 
     p_run cd linux
 
     p_run $CROSS_MAKE
 
-    if [ $with_kernel_proprietary_modules = yes ] && ! in_flags "new_kernel"
-    then
+    if [ $with_kernel_proprietary_modules = yes ]; then
         p_run cd "$p_source_dir/proprietary"
         p_run $CROSS_MAKE -C spinor clean
         p_run $CROSS_MAKE -C spinor
