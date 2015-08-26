@@ -45,5 +45,5 @@ export PATH
 export LD_LIBRARY_PATH
 
 in_flags ccache && use_env ccache
-use_env cmake  || return
-use_env sdk    || return
+use_env cmake || return
+use_env sdk   || return
