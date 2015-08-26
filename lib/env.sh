@@ -50,6 +50,7 @@ add_LD_LIBRARY_PATH "$host_dir/lib"
 
 export PATH
 export LD_LIBRARY_PATH
+export LINGUAS=""
 
 in_flags ccache && use_env ccache
 use_env sdk || return
