@@ -8,8 +8,7 @@ pkg_build() {
         --prefix="" \
         --disable-dependency-tracking \
         --enable-shared \
-        --disable-static \
-        --disable-nls
+        --disable-static
 
     p_run make
 }

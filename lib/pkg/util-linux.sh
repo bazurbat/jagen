@@ -11,7 +11,6 @@ pkg_build() {
         --prefix="$p_prefix" \
         --enable-shared \
         --disable-static \
-        --disable-nls \
         --disable-rpath \
         --disable-most-builds \
         --disable-libuuid \

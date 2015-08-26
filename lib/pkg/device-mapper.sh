@@ -27,8 +27,7 @@ pkg_build() {
         --disable-write_install \
         --disable-fsadm \
         --disable-dmeventd \
-        --disable-selinux \
-        --disable-nls
+        --disable-selinux
 
     p_run make device-mapper
 }

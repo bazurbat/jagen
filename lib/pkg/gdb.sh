@@ -13,7 +13,6 @@ pkg_build_host() {
         --disable-gprof \
         --disable-ld \
         --disable-gdbserver \
-        --disable-nls \
         --disable-readline \
         --with-system-readline \
         --with-expat \

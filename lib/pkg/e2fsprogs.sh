@@ -40,7 +40,6 @@ pkg_build() {
         --disable-e2initrd-helper \
         --disable-tls \
         --disable-uuidd \
-        --disable-nls \
         --disable-rpath \
         --with-root-prefix=""
 

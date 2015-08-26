@@ -9,7 +9,6 @@ pkg_build() {
     p_run ./configure \
         --host="$target_system" \
         --prefix="$p_prefix" \
-        --disable-nls \
         --disable-rpath \
         --disable-languages
 

@@ -13,7 +13,6 @@ pkg_build() {
         --disable-dependency-tracking \
         --disable-static \
         --enable-shared \
-        --disable-nls \
         --disable-rpath \
         --disable-pwquality \
         --disable-veritysetup \
