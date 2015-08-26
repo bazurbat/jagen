@@ -100,7 +100,7 @@ kernel_package { 'ralink' }
 package { 'rootfs',
     { 'build',
         { 'ast-files',  'unpack'            },
-        { 'make',       'install', 'host'   },
+        { 'make',       'install', 'tools'  },
         { 'xsdk',       'unpack'            },
     },
     { 'install',
@@ -123,7 +123,10 @@ package { 'mrua',
 }
 
 rootfs_package { 'ezboot',
-    source = { branch = "sdk4" }
+    source = { branch = "sdk4" },
+    { 'build',
+        { 'make', 'install', 'tools' }
+    }
 }
 
 rootfs_package { 'busybox',
