@@ -1,7 +1,5 @@
 #!/bin/sh
 
-use_env tools
-
 pkg_build_host() {
     p_run ./configure \
         --target="$target_system" \

@@ -1,8 +1,6 @@
 #!/bin/sh
 
 pkg_build_host() {
-    use_env tools
-
     p_run ./configure \
         --prefix="$tools_dir" \
         --disable-dependency-tracking \

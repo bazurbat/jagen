@@ -4,8 +4,6 @@ p_source_dir="$pkg_src_dir/sigma-utils"
 p_build_dir="$p_work_dir/build${p_config:+-$p_config}"
 
 pkg_build_host() {
-    use_env tools
-
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$cmake_build_type" \
         -DCMAKE_INSTALL_PREFIX="$tools_dir" \
