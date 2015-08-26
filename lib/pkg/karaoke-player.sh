@@ -1,8 +1,6 @@
 #!/bin/sh
 
 pkg_build_host() {
-    in_flags chicken_next && use_env tools
-
     p_run cmake -G"$cmake_generator" \
         -DCMAKE_BUILD_TYPE="$cmake_build_type" \
         -DCMAKE_INSTALL_PREFIX="$host_dir" \
