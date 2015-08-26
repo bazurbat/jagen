@@ -1,12 +1,13 @@
 #!/bin/sh
 
-target_prefix="/firmware"
-
 target_system="mipsel-linux-gnu"
+target_prefix="/firmware"
 
 target_arch="mips"
 target_cpu="24kf"
 target_board="${target_board:-ast100}"
+
+toolchain_bin_dir="${target_dir}/bin"
 
 sdk_ezboot_dir="$pkg_src_dir/sigma-ezboot"
 sdk_kernel_dir="$pkg_src_dir/sigma-kernel"
@@ -15,8 +16,6 @@ sdk_mrua_dir="$pkg_src_dir/sigma-mrua"
 sdk_rootfs_dir="$pkg_src_dir/sigma-rootfs"
 sdk_rootfs_root="$sdk_rootfs_dir/build_mipsel/root"
 sdk_rootfs_prefix="$sdk_rootfs_dir/cross_rootfs"
-
-toolchain_bin_dir="${target_dir}/bin"
 
 pkg_sdk_version=${pkg_sdk_version:-311}
 if [ "$pkg_sdk_version" = 311 ]; then
@@ -86,6 +85,8 @@ export LINUX_KERNEL="$kernel_dir/linux"
 export UCLINUX_KERNEL="$LINUX_KERNEL"
 
 make_toolchain() {
+    : ${jagen_toolchain_dir:?}
+
     local common_tools="addr2line ar c++filt elfedit gcov gdb gdbtui gprof nm \
 objcopy objdump ranlib readelf size sprite strings strip"
     local inc_opt="-isystem \"$sdk_rootfs_prefix/include\""
@@ -95,16 +96,8 @@ objcopy objdump ranlib readelf size sprite strings strip"
     local gcc_dir=$(dirname "${gcc_path}")
     local ccache
 
-    if ! [ "$jagen_toolchain_dir" ]; then
-        error "jagen_toolchain_dir is not set"
-        return 1
-    fi
-    if ! [ -x "$gcc_path" ]; then
-        error "${gcc_path} is not found"
-        return 1
-    fi
-
-    mkdir -p "$toolchain_bin_dir" || return
+    rm -fr "$toolchain_bin_dir"
+    mkdir -p "$toolchain_bin_dir"
 
     make_tool ld -EL
     make_tool as -EL "$inc_opt"

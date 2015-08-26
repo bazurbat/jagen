@@ -45,9 +45,8 @@ rebuild() {
 }
 
 toolchain() {
-    . "$pkg_lib_dir/env.sh" || exit 1
-    use_toolchain target || exit 1
-    make_toolchain || exit 1
+    . "${pkg_lib_dir}/env.sh" || return
+    make_toolchain || return
     touch "$pkg_build_dir/toolchain"
 }
 

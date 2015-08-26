@@ -1,8 +1,7 @@
 #!/bin/sh
 
-target_prefix="/system"
-
 target_system="arm-linux-androideabi"
+target_prefix="/system"
 
 target_arch="arm"
 target_platform="${target_platform:-android-17}"
@@ -24,6 +23,10 @@ add_PATH "$JAVA_HOME/bin"
 
 make_toolchain() {
     : ${jagen_toolchain_dir:?}
+
+    rm -fr "$toolchain_bin_dir"
+    mkdir -p "$toolchain_bin_dir"
+
     "$jagen_toolchain_dir/build/tools/make-standalone-toolchain.sh" \
         --platform="$target_platform" \
         --toolchain="$target_toolchain" \
