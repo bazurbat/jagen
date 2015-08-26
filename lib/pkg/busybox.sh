@@ -5,7 +5,7 @@ use_toolchain target
 p_prefix=""
 p_dest_dir="$sdk_rootfs_root"
 
-export CROSS_COMPILE="${target_bin_dir}/${target_system}-"
+export CROSS_COMPILE="${toolchain_bin_dir}/${target_system}-"
 
 pkg_patch() {
     p_run cp -f "$pkg_private_dir/cfg/busybox.config" ".config"

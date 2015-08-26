@@ -8,7 +8,7 @@ pkg_build() {
     p_run sed -i 's|^\(HAS_NATIVE_WPA_SUPPLICANT_SUPPORT=\).*$|\1y|' \
         os/linux/config.mk
 
-    p_run make CROSS_COMPILE="${target_bin_dir}/${target_system}-" \
+    p_run make CROSS_COMPILE="${toolchain_bin_dir}/${target_system}-" \
         CHIPSET=5370 LINUX_SRC="$LINUX_KERNEL"
 }
 

@@ -1,9 +1,11 @@
 #!/bin/sh
 
-export AR="${target_dir}/${target_toolchain}/bin/${target_system}-ar"
-export CC="${target_dir}/${target_toolchain}/bin/${target_system}-gcc"
-export CXX="${target_dir}/${target_toolchain}/bin/${target_system}-g++"
-export STRIP="${target_dir}/${target_toolchain}/bin/${target_system}-strip"
+toolchain_bin_dir="${target_dir}/${target_toolchain}/bin"
+
+export AR="${toolchain_bin_dir}/${target_system}-ar"
+export CC="${toolchain_bin_dir}/${target_system}-gcc"
+export CXX="${toolchain_bin_dir}/${target_system}-g++"
+export STRIP="${toolchain_bin_dir}/${target_system}-strip"
 
 export CFLAGS=""
 export CXXFLAGS="$CFLAGS"
@@ -11,7 +13,7 @@ export ASMFLAGS="$CFLAGS"
 export LDFLAGS=""
 
 export PKG_CONFIG_SYSROOT_DIR="$target_dir"
-export PKG_CONFIG_LIBDIR="$target_dir$target_prefix/lib/pkgconfig"
+export PKG_CONFIG_LIBDIR="${target_dir}${target_prefix}/lib/pkgconfig"
 
 make_toolchain() {
     : ${jagen_toolchain_dir:?}

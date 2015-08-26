@@ -79,7 +79,7 @@ pkg_build() {
         cross_options="--target-os=linux --enable-cross-compile"
         case $target_board in
             ast25|ast50|ast100)
-                cross_options="$cross_options --cross-prefix=${target_bin_dir}/${target_system}-"
+                cross_options="$cross_options --cross-prefix=${toolchain_bin_dir}/${target_system}-"
                 cross_options="$cross_options --arch=mipsel --cpu=24kf"
                 ;;
             *)

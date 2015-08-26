@@ -17,7 +17,7 @@ use_toolchain target
 : ${with_kernel_proprietary_modules:=yes}
 : ${with_kernel_extras:=yes}
 
-export CROSS_COMPILE="${target_bin_dir}/${target_system}-"
+export CROSS_COMPILE="${toolchain_bin_dir}/${target_system}-"
 export CROSS_MAKE="make ARCH=${target_arch}"
 export KCFLAGS="-mhard-float -Wa,-mhard-float"
 
@@ -74,7 +74,7 @@ pkg_install() {
 }
 
 get_start_addr() {
-    local NM="${target_bin_dir}/${target_system}-nm"
+    local NM="${toolchain_bin_dir}/${target_system}-nm"
     echo 0x$($NM $1 | awk '/\<kernel_entry\>/ { print $1 }')
 }
 

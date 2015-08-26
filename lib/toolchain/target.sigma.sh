@@ -1,9 +1,11 @@
 #!/bin/sh
 
-export AR="${target_bin_dir}/${target_system}-ar"
-export CC="${target_bin_dir}/${target_system}-gcc"
-export CXX="${target_bin_dir}/${target_system}-g++"
-export STRIP="${target_bin_dir}/${target_system}-strip"
+toolchain_bin_dir="${target_dir}/bin"
+
+export AR="${toolchain_bin_dir}/${target_system}-ar"
+export CC="${toolchain_bin_dir}/${target_system}-gcc"
+export CXX="${toolchain_bin_dir}/${target_system}-g++"
+export STRIP="${toolchain_bin_dir}/${target_system}-strip"
 
 CFLAGS="-O2 -fomit-frame-pointer -fno-strict-aliasing"
 CFLAGS="$CFLAGS -Wa,-mips32r2 -march=24kf -mtune=24kf -pipe"
@@ -35,7 +37,7 @@ objcopy objdump ranlib readelf size sprite strings strip"
         return 1
     fi
 
-    mkdir -p "$target_bin_dir" || return
+    mkdir -p "$toolchain_bin_dir" || return
 
     make_tool ld -EL
     make_tool as -EL "$inc_opt"
@@ -54,12 +56,12 @@ objcopy objdump ranlib readelf size sprite strings strip"
         make_tool $name
     done
 
-    chmod 755 "$target_bin_dir"/* || return
+    chmod 755 "$toolchain_bin_dir"/* || return
 }
 
 make_tool() {
     local name="$1" pre_opt="$2" post_opt="$3"
-    cat >"${target_bin_dir}/${target_system}-${name}" <<EOF
+    cat >"${toolchain_bin_dir}/${target_system}-${name}" <<EOF
 #!/bin/sh
 exec $ccache $gcc_dir/mips-linux-gnu-${name} $pre_opt "\$@" $post_opt
 EOF
