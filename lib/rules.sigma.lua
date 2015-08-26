@@ -123,7 +123,6 @@ package { 'mrua',
 }
 
 rootfs_package { 'ezboot',
-    source = { branch = "sdk4" },
     { 'build',
         { 'make', 'install', 'tools' }
     }
