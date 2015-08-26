@@ -5,8 +5,7 @@ use_toolchain target
 pkg_build() {
     p_run ./configure \
         --host="$target_system" \
-        --prefix="" \
-        --disable-dependency-tracking
+        --prefix=""
 
     p_run make
 }

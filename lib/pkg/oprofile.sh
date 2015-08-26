@@ -7,7 +7,6 @@ pkg_build() {
     p_run ./configure \
         --host="$target_system" \
         --prefix="$target_prefix" \
-        --disable-dependency-tracking \
         --enable-shared \
         --disable-static \
         --disable-gui \

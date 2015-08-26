@@ -10,7 +10,6 @@ pkg_build() {
     p_run ./configure \
         --host="$target_system" \
         --prefix="" \
-        --disable-dependency-tracking \
         --disable-static \
         --enable-shared \
         --enable-ciphers=cast5,aes \

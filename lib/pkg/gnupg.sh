@@ -6,7 +6,6 @@ pkg_build() {
     p_run ./configure \
         --host="$target_system" \
         --prefix="" \
-        --disable-dependency-tracking \
         --enable-minimal \
         --disable-card-support \
         --disable-agent-support \
