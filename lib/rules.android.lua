@@ -10,6 +10,8 @@ local function firmware_package(rule)
     package(pkg, rule)
 end
 
+package { 'android-cmake' }
+
 package { 'firmware', 'target',
     { 'install',
         needs = {
