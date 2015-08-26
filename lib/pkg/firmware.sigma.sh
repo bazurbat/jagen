@@ -1,6 +1,6 @@
 #!/bin/sh
 
-p_work_dir="$sdk_firmware_dir"
+p_work_dir="$install_dir"
 p_source_dir="${target_dir}${target_prefix}"
 
 pkg_clean() {
@@ -79,24 +79,24 @@ pkg_install() {
         csi i2c_debug uart-shell ast-service pcf8563 agent-smith"
 
     p_run cd "$p_source_dir/bin"
-    p_run install -vm 755 $bin "$sdk_firmware_dir/bin"
+    p_run install -vm 755 $bin "$install_dir/bin"
 
     p_run install -vm 755 \
         "$p_source_dir/sbin/connmand" \
-        "$sdk_firmware_dir/sbin"
+        "$install_dir/sbin"
 
     p_run cd "$p_source_dir/lib"
-    p_run cp -va chicken "$sdk_firmware_dir/lib"
-    p_run cp -va *.so* "$sdk_firmware_dir/lib"
+    p_run cp -va chicken "$install_dir/lib"
+    p_run cp -va *.so* "$install_dir/lib"
 
-    p_run cp -af "$p_source_dir/etc" "$sdk_firmware_dir"
-    p_run cp -af "$p_source_dir/share/dbus-1" "$sdk_firmware_dir/share"
+    p_run cp -af "$p_source_dir/etc" "$install_dir"
+    p_run cp -af "$p_source_dir/share/dbus-1" "$install_dir/share"
 
-    p_run cp -vf "$target_dir/xmaterial.romfs" "$sdk_firmware_dir/"
-    p_run cp -vf "$target_dir/imaterial.romfs" "$sdk_firmware_dir/"
-    p_run cp -vf "$target_dir/zbimage-linux-xload.zbc" "$sdk_firmware_dir/"
-    p_run cp -vf "$target_dir/phyblock0-0x20000padded.AST50" "$sdk_firmware_dir/"
-    p_run cp -vf "$target_dir/phyblock0-0x20000padded.AST100" "$sdk_firmware_dir/"
+    p_run cp -vf "$target_dir/xmaterial.romfs" "$install_dir/"
+    p_run cp -vf "$target_dir/imaterial.romfs" "$install_dir/"
+    p_run cp -vf "$target_dir/zbimage-linux-xload.zbc" "$install_dir/"
+    p_run cp -vf "$target_dir/phyblock0-0x20000padded.AST50" "$install_dir/"
+    p_run cp -vf "$target_dir/phyblock0-0x20000padded.AST100" "$install_dir/"
 
     install_dbus
     install_rsync
@@ -113,7 +113,7 @@ pkg_install() {
         "$p_work_dir"/lib/libnl-nf* \
         "$p_work_dir"/lib/libnl-route*
 
-    p_run cp -vaf "$pkg_private_dir"/firmware/* "$sdk_firmware_dir"
+    p_run cp -vaf "$pkg_private_dir"/firmware/* "$install_dir"
 }
 
 pkg_strip() {

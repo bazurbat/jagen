@@ -36,6 +36,8 @@ host_prefix=""
 target_dir="$pkg_build_dir/target"
 target_prefix=""
 
+install_dir="$pkg_build_dir/firmware"
+
 add_PATH "$host_dir/bin"
 add_LD_LIBRARY_PATH "$host_dir/lib"
 

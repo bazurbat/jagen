@@ -47,8 +47,8 @@ pkg_modules() {
 }
 
 pkg_install() {
-    local bin_dst="$sdk_firmware_dir/bin"
-    local lib_dst="$sdk_firmware_dir/lib"
+    local bin_dst="$install_dir/bin"
+    local lib_dst="$install_dir/lib"
 
     for bin in ikc xkc; do
         p_run cp -va "$p_source_dir/bin/$bin" "$bin_dst"

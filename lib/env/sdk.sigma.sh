@@ -8,8 +8,6 @@ target_arch="mips"
 target_cpu="24kf"
 target_board="${target_board:-ast100}"
 
-sdk_firmware_dir="$pkg_build_dir/firmware"
-
 sdk_ezboot_dir="$pkg_src_dir/sigma-ezboot"
 sdk_kernel_dir="$pkg_src_dir/sigma-kernel"
 sdk_mrua_dir="$pkg_src_dir/sigma-mrua"

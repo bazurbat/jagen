@@ -1,7 +1,7 @@
 #!/bin/sh
 
 pkg_install() {
-    local dst="$sdk_firmware_dir/xload"
+    local dst="$install_dir/xload"
     local dts real
 
     p_run install -vd "$dst"
