@@ -31,7 +31,7 @@ try_include() {
 include() {
     local pathname="${1:?}"
     local suffix="${2:-$pkg_sdk}"
-    if [ -f "${pathname}.${suffix}.sh" ]; then
+    if [ "${suffix}" != "default" -a -f "${pathname}.${suffix}.sh" ]; then
         try_include "${pathname}.${suffix}.sh"
     elif [ -f "${pathname}.sh" ]; then
         try_include "${pathname}.sh"
