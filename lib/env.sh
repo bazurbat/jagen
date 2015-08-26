@@ -30,6 +30,10 @@ export pkg_patch_dir="$pkg_dist_dir/patches"
 export pkg_build_include_dir="$pkg_build_dir/include"
 export pkg_private_dir="$pkg_src_dir/files"
 
+cmake_generator="${cmake_generator:-Ninja}"
+cmake_build_options="${cmake_build_options}"
+cmake_build_type="$pkg_build_type"
+
 install_dir="$pkg_build_dir/firmware"
 
 host_dir="$pkg_build_dir/host"
@@ -48,5 +52,4 @@ export PATH
 export LD_LIBRARY_PATH
 
 in_flags ccache && use_env ccache
-use_env cmake || return
-use_env sdk   || return
+use_env sdk || return
