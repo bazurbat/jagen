@@ -4,7 +4,7 @@ package {
         type    = 'GNU',
         options = '--disable-static',
         libs    = { 'sqlite3' },
-        need_libtool = true,
+        with_provided_libtool = true,
     },
     source  = 'sqlite-autoconf-3080403.tar.gz',
     patches = {

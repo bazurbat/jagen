@@ -242,7 +242,7 @@ end
 function Package:add_build_dependencies()
     local build = self.build
     if build then
-        if build.need_libtool then
+        if build.with_provided_libtool then
             local target = Target.new(self.name, 'configure')
             target.inputs = { Target.new('libtool', 'install', 'host') }
             self:add_target(target)
@@ -706,8 +706,8 @@ function Script:build()
             table.insert(o, string.format("p_libs='%s'",
                 table.concat(build.libs, ' ')))
         end
-        if build.need_libtool then
-            table.insert(o, 'p_need_libtool="yes"')
+        if build.with_provided_libtool then
+            table.insert(o, 'p_with_provided_libtool="yes"')
         end
     end
     if build.dir then

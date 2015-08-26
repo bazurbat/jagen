@@ -57,7 +57,7 @@ default_patch() {
 }
 
 pkg_configure() {
-    if [ "$p_need_libtool" ]; then
+    if [ "$p_with_provided_libtool" ]; then
         p_autoreconf
     fi
 }

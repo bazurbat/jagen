@@ -2,7 +2,7 @@ package {
     name  = 'util-linux',
     build = {
         type = 'GNU',
-        need_libtool = true
+        with_provided_libtool = true
     },
     source  = 'util-linux-2.23.2.tar.xz',
     patches = {

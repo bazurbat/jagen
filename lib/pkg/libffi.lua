@@ -4,7 +4,7 @@ package {
         type    = 'GNU',
         options = '--disable-builddir',
         libs    = { 'ffi' },
-        need_libtool = true
+        with_provided_libtool = true
     },
     source  = 'libffi-3.1.tar.gz',
     patches = {

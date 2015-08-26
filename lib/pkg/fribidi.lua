@@ -4,7 +4,7 @@ package {
         type    = 'GNU',
         options = '--with-glib=yes',
         libs    = { 'fribidi' },
-        need_libtool = true
+        with_provided_libtool = true
     },
     source  = 'fribidi-0.19.6.tar.bz2',
     patches = {
