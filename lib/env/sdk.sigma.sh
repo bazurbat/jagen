@@ -17,11 +17,6 @@ sdk_rootfs_dir="$pkg_src_dir/sigma-rootfs"
 sdk_rootfs_root="$sdk_rootfs_dir/build_mipsel/root"
 sdk_rootfs_prefix="$sdk_rootfs_dir/cross_rootfs"
 
-pkg_sdk_version=${pkg_sdk_version:-311}
-if [ "$pkg_sdk_version" = 311 ]; then
-    pkg_flags="$pkg_flags sigma_with_monitoring"
-fi
-
 export SMP86XX_ROOTFS_PATH="$sdk_rootfs_dir"
 export INSTALL_MOD_PATH="$sdk_rootfs_root"
 

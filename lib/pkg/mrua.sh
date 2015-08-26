@@ -1,13 +1,5 @@
 #!/bin/sh
 
-p_source_dir="$pkg_src_dir/sigma-mrua"
-
-case $pkg_sdk_version in
-    309) p_source_branch="3.9.2"  ;;
-    311) p_source_branch="3.11.3" ;;
-    400) p_source_branch="4.0.0"  ;;
-esac
-
 p_jobs=1
 
 use_env tools

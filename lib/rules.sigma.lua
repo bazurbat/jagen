@@ -117,7 +117,6 @@ package { 'rootfs',
 }
 
 package { 'mrua',
-    source = { branch = 'sigma-2.6' },
     { 'build',   { 'kernel',   'build'  } },
     { 'modules'  },
     { 'install', { 'firmware', 'unpack' } }
