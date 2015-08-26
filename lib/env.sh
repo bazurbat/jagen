@@ -30,13 +30,16 @@ export pkg_patch_dir="$pkg_dist_dir/patches"
 export pkg_build_include_dir="$pkg_build_dir/include"
 export pkg_private_dir="$pkg_src_dir/files"
 
+install_dir="$pkg_build_dir/firmware"
+
 host_dir="$pkg_build_dir/host"
 host_prefix=""
 
 target_dir="$pkg_build_dir/target"
 target_prefix=""
 
-install_dir="$pkg_build_dir/firmware"
+tools_dir="$pkg_build_dir/tools"
+tools_prefix=""
 
 add_PATH "$host_dir/bin"
 add_LD_LIBRARY_PATH "$host_dir/lib"
