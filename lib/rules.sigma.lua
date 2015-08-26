@@ -27,7 +27,7 @@ package { 'ucode',
 
 -- tools
 
-package { 'make', 'host' }
+package { 'make', 'tools' }
 
 if jagen.flag('debug') then
     package        { 'gdb', 'host' }
