@@ -44,6 +44,10 @@ elif [ "$p_config" = 'target' ]; then
     p_system="$target_system"
     p_prefix="$target_prefix"
     p_dest_dir="$target_dir"
+elif [ "$p_config" = 'tools' ]; then
+    p_system="$host_system"
+    p_prefix=""
+    p_dest_dir="$tools_dir"
 elif [ "$p_config" = 'rootfs' ]; then
     use_toolchain target
     p_system="$target_system"
