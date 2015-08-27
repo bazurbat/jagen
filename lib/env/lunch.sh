@@ -3,6 +3,8 @@
 require bash || return
 require sdk_dir || return
 
+use_toolchain target
+
 message "Changing current directory to: $jagen_sdk_dir"
 cd "$jagen_sdk_dir" || return
 
