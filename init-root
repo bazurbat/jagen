@@ -60,7 +60,7 @@ export jagen_build_root="\$PWD"
 
 . "\$jagen_root/lib/env.sh"; sts=\$?
 if [ \$sts != 0 ]; then
-    echo "Failed to load jagen environment"
+    echo "Error: failed to load jagen environment"
     return \$sts
 fi
 
