@@ -48,6 +48,10 @@ use_toolchain() {
     include "$pkg_lib_dir/toolchain/$1" "$2"
 }
 
+require() {
+    include "$pkg_lib_dir/require/$1" "$2"
+}
+
 in_list() {
     local value="${1:?}"; shift
     for item; do

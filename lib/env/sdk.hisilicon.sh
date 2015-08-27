@@ -3,13 +3,9 @@
 use_env sdk android
 
 target_system="arm-hisiv200-linux"
-toolchain_bin_dir="${target_dir}/bin"
+target_product="Hi3719CV100"
 
-if [ ! "$BASH" ]; then
-    error "Android build requires Bash shell, please run it and source the \
-environment again."
-    return 22
-fi
+toolchain_bin_dir="${target_dir}/bin"
 
 make_toolchain() {
     : ${jagen_toolchain_dir:?}
