@@ -2,6 +2,7 @@
 
 require bash || return
 require sdk_dir || return
+require u-boot-tools || return
 
 use_toolchain target
 
