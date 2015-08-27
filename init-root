@@ -74,6 +74,9 @@ write_config() {
 # Current build root configuration type.
 pkg_sdk="$sdk"
 
+# A directory containing SDK (optional).
+# jagen_sdk_dir=""
+
 # A directory containing target toolchain.
 jagen_toolchain_dir=""
 
