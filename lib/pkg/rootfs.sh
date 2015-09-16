@@ -100,11 +100,20 @@ install_utils() {
 }
 
 install_files() {
-    p_run cp -rf "$pkg_private_dir"/rootfs/* "$sdk_rootfs_root"
+    local root_dir="$sdk_rootfs_root"
+    local flags_dir="$root_dir/etc/flags"
+
+    p_run cp -rf "$pkg_private_dir"/rootfs/* "$root_dir"
+    p_run mkdir -p "$flags_dir"
+
     if in_flags devenv; then
-        p_run cp -rf "$pkg_private_dir"/rootfs-dev/* "$sdk_rootfs_root"
-        rm -f "$sdk_rootfs_root/var/service/dropbear/down"
-        touch "$sdk_rootfs_root/var/service/karaoke-player/down"
+        p_run cp -rf "$pkg_private_dir"/rootfs-dev/* "$root_dir"
+        rm -f "$root_dir/var/service/dropbear/down"
+        touch "$flags_dir/devenv"
+    fi
+
+    if in_flags sigma_persist_logs; then
+        touch "$flags_dir/persist_logs"
     fi
 }
 
