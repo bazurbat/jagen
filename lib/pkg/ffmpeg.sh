@@ -12,6 +12,7 @@ cdgraphics
 dca
 flac
 mjpeg
+mp2float
 mp3float
 pcm_s16le
 srt
@@ -36,6 +37,7 @@ mpegts
 ogg
 srt
 wav
+rtsp
 "
 
 parsers="
@@ -50,7 +52,7 @@ mpegvideo
 
 bsfs="h264_mp4toannexb"
 
-protocols="file pipe tcp"
+protocols="file pipe tcp rtsp"
 
 filters="afade aresample volume"
 
