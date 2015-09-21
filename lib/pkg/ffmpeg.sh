@@ -21,25 +21,6 @@ vorbis
 
 muxers="wav"
 
-demuxers="
-ass
-avi
-cdg
-flac
-flv
-image2
-matroska
-mjpeg
-mov
-mp3
-mpegps
-mpegts
-ogg
-srt
-wav
-rtsp
-"
-
 parsers="
 aac
 ac3
@@ -52,7 +33,7 @@ mpegvideo
 
 bsfs="h264_mp4toannexb"
 
-protocols="file pipe tcp rtsp"
+protocols="file pipe rtp tcp"
 
 filters="afade aresample volume"
 
@@ -105,9 +86,6 @@ pkg_build() {
     for i in $muxers; do
         components="$components --enable-muxer=$i"
     done
-    for i in $demuxers; do
-        components="$components --enable-demuxer=$i"
-    done
     for i in $parsers; do
         components="$components --enable-parser=$i"
     done
@@ -140,6 +118,7 @@ pkg_build() {
         --disable-avdevice \
         --disable-postproc \
         --disable-everything \
+        --enable-demuxers \
         $components \
         $cross_options \
         --extra-ldflags="-fPIC" \
