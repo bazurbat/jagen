@@ -26,6 +26,7 @@ make_toolchain() {
     mkdir -p "$toolchain_bin_dir"
 
     "$jagen_toolchain_dir/build/tools/make-standalone-toolchain.sh" \
+        --system="linux-x86_64" \
         --platform="$target_platform" \
         --toolchain="$target_toolchain" \
         --install-dir="${target_dir}/${target_toolchain}"
