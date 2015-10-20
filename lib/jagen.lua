@@ -362,7 +362,7 @@ function Ninja:header()
             }),
         self:rule({
                 name    = 'script',
-                command = string.format('%s/$script && touch $out', jagen.bin_dir)
+                command = '$script && touch $out'
             }),
     }
     return table.concat(o)
@@ -377,11 +377,16 @@ function Ninja:build_toolchain()
 end
 
 function Ninja:build_stage(target)
+    local shell = jagen.shell
+    local script = 'jagen-pkg '..target:__tostring(' ')
+    if shell and #shell > 0 then
+        script = shell.." "..script
+    end
     return self:build({
             rule      = 'script',
             outputs   = { tostring(target) },
             inputs    = target.inputs,
-            variables = { script = 'jagen-pkg '..target:__tostring(' ') }
+            variables = { script = script }
         })
 end
 
