@@ -5,6 +5,8 @@ if [ "$ZSH_VERSION" ]; then
     setopt shwordsplit
 fi
 
+export pkg_shell=""
+
 export pkg_debug=""
 export pkg_flags=""
 export pkg_sdk=""

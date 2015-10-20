@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Many Android build and utility scripts assume Bash shell
+pkg_shell="/bin/bash"
+
 target_system="arm-linux-androideabi"
 target_prefix="/system"
 
