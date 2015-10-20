@@ -114,7 +114,7 @@ function system.exec(...)
     local line = table.concat(command, ' ')
     jagen.debug1(line)
     local status = os.execute(line)
-    return status
+    return status % 0xFF
 end
 
 --}}}
@@ -825,6 +825,8 @@ end
 
 local src = {}
 
+-- mindless conversion from shell scripts
+
 function src.exec_git(p, ...)
     local dir = Package.directory(p)
     return system.exec('git', '-C', dir, ...)
@@ -863,6 +865,63 @@ function src.dirty(p)
     end
 end
 
+function src.fetch(p)
+    local kind = Package.type(p)
+    local status = 0
+    if kind == 'git' then
+        status = src.exec_git(p, 'fetch', '--quiet', '--prune', '--no-tags')
+    elseif kind == 'hg' then
+        status = src.exec_hg(p, '--quiet', 'pull')
+    else
+        jagen.die('Unknown package type: ', kind)
+    end
+    if status ~= 0 then
+        jagen.die('Failed to fetch package: ', p.name)
+    end
+    return status
+end
+
+function src.checkout(p, branch)
+    local kind = Package.type(p)
+    local status = 0
+    if kind == 'git' then
+        branch = branch or 'master'
+        local exist = src.popen_git(p, 'branch', '--list', branch)
+        if #exist > 0 then
+            if string.sub(exist, 1, 1) ~= '*' then
+                status = src.exec_git(p, 'checkout', '--quiet', branch)
+            end
+        else
+            status = src.exec_git(p, 'checkout', '--quiet',
+                '-b', branch, '-t', 'origin/'..branch)
+        end
+    elseif kind == 'hg' then
+        status = src.exec_hg(p, '--quiet', 'update', '-c')
+    else
+        jagen.die('Unknown package type: ', kind)
+    end
+    if status ~= 0 then
+        jagen.die('Failed to checkout package: ', p.name)
+    end
+    return status
+end
+
+function src.pull(p)
+    local kind = Package.type(p)
+    local status = 0
+    if kind == 'git' then
+        status = src.exec_git(p, 'pull', '--quiet', '--ff-only')
+    elseif kind == 'hg' then
+        status = src.exec_hg(p, '--quiet', 'pull', '-u')
+    else
+        jagen.die('Unknown package type: ', kind)
+    end
+    if status ~= 0 then
+        jagen.die('Failed to pull package: ', p.name)
+    end
+    return status
+end
+
 function src.status(args)
     local packages = jagen.load_rules()
     local source_packages = filter(Package.is_source, packages)
@@ -879,6 +938,17 @@ function src.name(filename)
         return string.match(name, '^([%w_.-]+)'..ext)
     end
     print(m('%.tar') or m('%.tgz') or m('%.tbz2') or m('%.txz') or m('%.zip'))
+end
+
+function src.update(...)
+    local packages = jagen.load_rules()
+    local source_packages = filter(Package.is_source, packages)
+
+    for _, p in ipairs(source_packages) do
+        -- src.fetch(p)
+        src.checkout(p, p.source.branch)
+        src.pull(p)
+    end
 end
 
 --}}}
@@ -906,6 +976,8 @@ elseif command == 'src' then
         src.status(args)
     elseif subcommand == 'name' then
         src.name(unpack(args))
+    elseif subcommand == 'update' then
+        src.update(args)
     else
         jagen.die('Unknown src subcommand:', subcommand);
     end
