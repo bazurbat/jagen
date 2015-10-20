@@ -106,12 +106,12 @@ function system.mkpath(...)
     return table.concat(path, sep)
 end
 
-function system.exec(command, ...)
-    local cmd = { command }
+function system.exec(...)
+    local command = {}
     for _, arg in ipairs({...}) do
-        table.insert(cmd, string.format('%q', tostring(arg)))
+        table.insert(command, string.format('%q', tostring(arg)))
     end
-    local line = table.concat(cmd, ' ')
+    local line = table.concat(command, ' ')
     jagen.debug1(line)
     local status = os.execute(line)
     return status
@@ -499,6 +499,8 @@ end
 
 jagen =
 {
+    shell = os.getenv('pkg_shell'),
+
     debug = os.getenv('pkg_debug'),
     flags = os.getenv('pkg_flags'),
     sdk   = os.getenv('pkg_sdk'),
