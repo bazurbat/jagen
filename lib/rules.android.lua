@@ -12,6 +12,8 @@ end
 
 package { 'android-cmake' }
 
+package { 'chicken', 'host' }
+
 package { 'firmware', 'target',
     { 'install',
         needs = {
@@ -26,4 +28,11 @@ firmware_package { 'libuv',
     build  = {
         options = '--disable-static'
     }
+}
+
+firmware_package { 'chicken',
+    source = {
+        branch = 'stable-cmake'
+    },
+    { 'build', { 'chicken', 'install', 'host' } }
 }
