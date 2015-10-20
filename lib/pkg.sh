@@ -3,7 +3,7 @@
 . "$jagen_root/lib/env.sh" ||
     { echo "Failed to load environment"; exit 1; }
 
-: ${p_jobs:=1}
+: ${p_jobs:=$(nproc)}
 : ${p_run_on_error:=exit}
 
 p_run() {
