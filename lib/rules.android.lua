@@ -30,6 +30,8 @@ firmware_package { 'libuv',
     }
 }
 
+firmware_package { 'ffmpeg' }
+
 firmware_package { 'chicken',
     source = {
         branch = 'stable-cmake'

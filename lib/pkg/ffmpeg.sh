@@ -67,9 +67,9 @@ pkg_build() {
                 ;;
             *)
                 cross_options="$cross_options \
-                    --cross-prefix=${android_toolchain_dir}/bin/${target_system}-"
+                    --cross-prefix=${toolchain_dir}/bin/${target_system}-"
                 cross_options="$cross_options \
-                    --sysroot=$android_toolchain_dir/sysroot"
+                    --sysroot=${toolchain_dir}/sysroot"
                 cross_options="$cross_options --arch=$target_arch"
                 ;;
         esac
