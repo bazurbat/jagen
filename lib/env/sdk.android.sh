@@ -10,7 +10,8 @@ target_arch="arm"
 target_platform="${target_platform:-android-17}"
 target_toolchain="${target_toolchain:-${target_system}-4.6}"
 
-toolchain_bin_dir="${target_dir}/${target_toolchain}/bin"
+toolchain_dir="${target_dir}/${target_toolchain}"
+toolchain_bin_dir="${toolchain_dir}/bin"
 
 export JAVA_HOME="/usr/lib/jvm/sun-jdk-1.6"
 export JAVAC="$JAVA_HOME/bin/javac"
