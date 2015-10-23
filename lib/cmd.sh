@@ -34,6 +34,9 @@ rebuild() {
         tail -qFn+1 $logs $rebuild_log 2>/dev/null &
     fi
 
+    # ninja will receive SIGINT and exit but we still need to do cleanup
+    trap '' INT
+
     if [ "$targets_only" ]; then
         ninja $targets >$rebuild_log; status=$?
     else
