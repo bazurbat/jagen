@@ -5,6 +5,8 @@ build() {
     ninja "$@"
 }
 
+on_rebuild_interrupt() { :; }
+
 rebuild() {
     local IFS="$(printf '\n\t')"
     local tab="$(printf '\t')"
@@ -34,8 +36,8 @@ rebuild() {
         tail -qFn+1 $logs $rebuild_log 2>/dev/null &
     fi
 
-    # ninja will receive SIGINT and exit but we still need to do cleanup
-    trap '' INT
+    # just plainly ignoring it seems to not work well in all cases
+    trap on_rebuild_interrupt INT
 
     if [ "$targets_only" ]; then
         ninja $targets >$rebuild_log; status=$?
