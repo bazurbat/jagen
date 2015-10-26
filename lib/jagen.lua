@@ -821,105 +821,144 @@ function jagen.rebuild(args)
 end
 
 ---}}}
---{{{ src
+--{{{ Source
 
-local src = {}
+Source = {}
 
--- mindless conversion from shell scripts
+function Source:new(p)
+    local o = { package = p }
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
 
-function src.exec_git(p, ...)
-    local dir = Package.directory(p)
+function Source:create(p)
+    local kind = p:type()
+    if kind == 'git' then
+        return GitSource:new(p)
+    elseif kind == 'hg' then
+        return HgSource:new(p)
+    else
+        return Source:new(p)
+    end
+end
+
+function Source.name(filename)
+    local name = string.match(filename, '^.*/(.+)') or filename
+    local function m(ext)
+        return string.match(name, '^([%w_.-]+)'..ext)
+    end
+    return m('%.tar') or m('%.tgz') or m('%.tbz2') or m('%.txz') or m('%.zip')
+end
+
+function Source:exec(...)
+    print(...)
+end
+
+GitSource = Source:new()
+
+function GitSource:exec(...)
+    local dir = self.package:directory()
     return system.exec('git', '-C', dir, ...)
 end
 
-function src.popen_git(p, ...)
-    local dir = Package.directory(p)
+function GitSource:popen(...)
+    local dir = self.package:directory()
     return io.popen('git -C '..dir..' '..concat(...)):read() or ''
 end
 
-function src.exec_hg(p, ...)
-    local dir = Package.directory(p)
+function GitSource:head()
+    return self:popen('rev-parse', 'HEAD')
+end
+
+function GitSource:dirty()
+    return string.len(self:popen('status', '--porcelain')) > 0
+end
+
+function GitSource:fetch()
+    local status = 0
+    status = self:exec('fetch', '--quiet', '--prune', '--no-tags')
+    if status > 0 then
+        jagen.die("failed to fetch "..self.package.name)
+    end
+end
+
+function GitSource:checkout(branch)
+    local status = 0
+    branch = branch or 'master'
+    local exist = self:popen('branch', '--list', branch)
+    if #exist > 0 then
+        if string.sub(exist, 1, 1) ~= '*' then
+            status = self:exec('checkout', '--quiet', branch)
+        end
+    else
+        status = self:exec('checkout', '--quiet',
+            '-b', branch, '-t', 'origin/'..branch)
+    end
+    if status > 0 then
+        jagen.die('failed to checkout '..branch..' branch of '..self.package.name)
+    end
+end
+
+function GitSource:pull()
+    local status = 0
+    status = self:exec('pull', '--quiet', '--ff-only')
+    if status > 0 then
+        jagen.die('failed to pull '..self.package.name)
+    end
+end
+
+HgSource = Source:new()
+
+function HgSource:exec(...)
+    local dir = self.package:directory()
     return system.exec('hg', '-R', dir, ...)
 end
 
-function src.popen_hg(p, ...)
-    local dir = Package.directory(p)
+function HgSource:popen(...)
+    local dir = self.package:directory()
     return io.popen('hg -R '..dir..' '..concat(...)):read() or ''
 end
 
-function src.head(p)
-    local kind = Package.type(p)
-    if kind == 'git' then
-        return src.popen_git(p, 'rev-parse', 'HEAD')
-    elseif kind == 'hg' then
-        return src.popen_hg(p, 'id', '-i')
-    end
+function HgSource:head()
+    return self:popen('id', '-i')
 end
 
-function src.dirty(p)
-    local kind = Package.type(p)
-    if kind == 'git' then
-        return string.len(src.popen_git(p, 'status', '--porcelain')) > 0
-    elseif kind == 'hg' then
-        return string.len(src.popen_hg(p, 'status')) > 0
-    end
+function HgSource:dirty()
+    return string.len(self:popen('status')) > 0
 end
 
-function src.fetch(p)
-    local kind = Package.type(p)
+function HgSource:fetch()
     local status = 0
-    if kind == 'git' then
-        status = src.exec_git(p, 'fetch', '--quiet', '--prune', '--no-tags')
-    elseif kind == 'hg' then
-        status = src.exec_hg(p, '--quiet', 'pull')
-    else
-        jagen.die('Unknown package type: ', kind)
+    status = self:exec('--quiet', 'pull')
+    if status > 0 then
+        jagen.die("Failed to fetch "..self.package.name)
     end
-    if status ~= 0 then
-        jagen.die('Failed to fetch package: ', p.name)
-    end
-    return status
 end
 
-function src.checkout(p, branch)
-    local kind = Package.type(p)
+function HgSource:checkout(branch)
     local status = 0
-    if kind == 'git' then
-        branch = branch or 'master'
-        local exist = src.popen_git(p, 'branch', '--list', branch)
-        if #exist > 0 then
-            if string.sub(exist, 1, 1) ~= '*' then
-                status = src.exec_git(p, 'checkout', '--quiet', branch)
-            end
-        else
-            status = src.exec_git(p, 'checkout', '--quiet',
-                '-b', branch, '-t', 'origin/'..branch)
-        end
-    elseif kind == 'hg' then
-        status = src.exec_hg(p, '--quiet', 'update', '-c')
-    else
-        jagen.die('Unknown package type: ', kind)
+    status = self:exec('--quiet', 'update', '-c')
+    if status > 0 then
+        jagen.die('failed to checkout '..self.package.name)
     end
-    if status ~= 0 then
-        jagen.die('Failed to checkout package: ', p.name)
-    end
-    return status
 end
 
-function src.pull(p)
-    local kind = Package.type(p)
+function HgSource:pull()
     local status = 0
-    if kind == 'git' then
-        status = src.exec_git(p, 'pull', '--quiet', '--ff-only')
-    elseif kind == 'hg' then
-        status = src.exec_hg(p, '--quiet', 'pull', '-u')
-    else
-        jagen.die('Unknown package type: ', kind)
+    status = self:exec('--quiet', 'pull', '-u')
+    if status > 0 then
+        jagen.die('failed to pull '..self.package.name)
     end
-    if status ~= 0 then
-        jagen.die('Failed to pull package: ', p.name)
-    end
-    return status
+end
+
+--}}}
+--{{{ src
+
+src = {}
+
+function src.name(filename)
+    print(Source.name(filename))
 end
 
 function src.status(args)
@@ -927,17 +966,11 @@ function src.status(args)
     local source_packages = filter(Package.is_source, packages)
 
     for _, p in ipairs(source_packages) do
-        local dirty = src.dirty(p) and 'dirty' or ''
-        print(string.format("%s: %s %s", p.name, src.head(p), dirty))
+        local s = Source:create(p)
+        local dirty = s:dirty() and 'dirty' or ''
+        local head = s:head()
+        print(string.format("%s: %s %s", p.name, head, dirty))
     end
-end
-
-function src.name(filename)
-    local name = string.match(filename, '^.*/(.+)') or filename
-    local function m(ext)
-        return string.match(name, '^([%w_.-]+)'..ext)
-    end
-    print(m('%.tar') or m('%.tgz') or m('%.tbz2') or m('%.txz') or m('%.zip'))
 end
 
 function src.update(...)
@@ -945,9 +978,11 @@ function src.update(...)
     local source_packages = filter(Package.is_source, packages)
 
     for _, p in ipairs(source_packages) do
-        -- src.fetch(p)
-        src.checkout(p, p.source.branch)
-        src.pull(p)
+        jagen.message("update "..p.name)
+        local source = Source:create(p)
+        source:fetch()
+        source:checkout(p.source.branch)
+        source:pull()
     end
 end
 
@@ -971,11 +1006,11 @@ elseif command == 'src' then
     local args = table.rest(arg, 3)
 
     if not subcommand then
-        jagen.message('Available src subcommands: status, name')
-    elseif subcommand == 'status' then
-        src.status(args)
+        jagen.message('Available src subcommands: name, status, update')
     elseif subcommand == 'name' then
         src.name(unpack(args))
+    elseif subcommand == 'status' then
+        src.status(args)
     elseif subcommand == 'update' then
         src.update(args)
     else
