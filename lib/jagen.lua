@@ -417,7 +417,7 @@ function Ninja:generate(out_file, packages)
 end
 
 --}}}
---{{{ types
+--{{{ Target
 
 Target = {}
 Target.__index = Target
