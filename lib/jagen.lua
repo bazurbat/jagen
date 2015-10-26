@@ -111,6 +111,9 @@ function system.exec(...)
     for _, arg in ipairs({...}) do
         table.insert(command, string.format('%q', tostring(arg)))
     end
+    if jagen.output_file then
+        table.insert(command, string.format('| tee -a %s', jagen.output_file))
+    end
     local line = table.concat(command, ' ')
     jagen.debug1(line)
     local status = os.execute(line)
@@ -518,6 +521,9 @@ jagen =
     patch_dir         = os.getenv('pkg_patch_dir'),
     build_include_dir = os.getenv('pkg_build_include_dir'),
     private_dir       = os.getenv('pkg_private_dir'),
+
+    output = nil,
+    output_file = nil,
 }
 
 jagen.pkg_dir = system.mkpath(jagen.lib_dir, 'pkg')
@@ -530,28 +536,43 @@ function jagen.exec(...)
     return system.exec(jagen.cmd, ...)
 end
 
+function jagen.write(...)
+    if jagen.output then
+        local o = jagen.output
+        o:seek('end')
+        o:write(concat(...), '\n')
+        o:flush()
+    end
+end
+
 function jagen.message(...)
+    jagen.write(...)
     print(string.format('\027[1;34m:::\027[0m %s', concat(...)))
 end
 function jagen.warning(...)
+    jagen.write('Warning: ', ...)
     print(string.format('\027[1;33m:::\027[0m %s', concat(...)))
 end
 function jagen.error(...)
+    jagen.write('Error: ', ...)
     print(string.format('\027[1;31m:::\027[0m %s', concat(...)))
 end
 
 function jagen.debug(...)
     if jagen.debug then
+        jagen.write('D: ', ...)
         print(string.format('\027[1;36m:::\027[0m %s', concat(...)))
     end
 end
 function jagen.debug1(...)
     if os.getenv('pkg_debug') >= '1' then
+        jagen.write('D1: ', ...)
         print(string.format('\027[1;36m:::\027[0m %s', concat(...)))
     end
 end
 function jagen.debug2(...)
     if os.getenv('pkg_debug') >= '2' then
+        jagen.write('D2: ', ...)
         print(string.format('\027[1;36m:::\027[0m %s', concat(...)))
     end
 end
@@ -851,10 +872,6 @@ function Source.name(filename)
     return m('%.tar') or m('%.tgz') or m('%.tbz2') or m('%.txz') or m('%.zip')
 end
 
-function Source:exec(...)
-    print(...)
-end
-
 GitSource = Source:new()
 
 function GitSource:exec(...)
@@ -877,7 +894,7 @@ end
 
 function GitSource:fetch()
     local status = 0
-    status = self:exec('fetch', '--quiet', '--prune', '--no-tags')
+    status = self:exec('fetch', '--prune', '--no-tags')
     if status > 0 then
         jagen.die("failed to fetch "..self.package.name)
     end
@@ -889,10 +906,10 @@ function GitSource:checkout(branch)
     local exist = self:popen('branch', '--list', branch)
     if #exist > 0 then
         if string.sub(exist, 1, 1) ~= '*' then
-            status = self:exec('checkout', '--quiet', branch)
+            status = self:exec('checkout', branch)
         end
     else
-        status = self:exec('checkout', '--quiet',
+        status = self:exec('checkout',
             '-b', branch, '-t', 'origin/'..branch)
     end
     if status > 0 then
@@ -902,7 +919,7 @@ end
 
 function GitSource:pull()
     local status = 0
-    status = self:exec('pull', '--quiet', '--ff-only')
+    status = self:exec('pull', '--ff-only')
     if status > 0 then
         jagen.die('failed to pull '..self.package.name)
     end
@@ -930,7 +947,7 @@ end
 
 function HgSource:fetch()
     local status = 0
-    status = self:exec('--quiet', 'pull')
+    status = self:exec('pull')
     if status > 0 then
         jagen.die("Failed to fetch "..self.package.name)
     end
@@ -938,7 +955,7 @@ end
 
 function HgSource:checkout(branch)
     local status = 0
-    status = self:exec('--quiet', 'update', '-c')
+    status = self:exec('update', '-c')
     if status > 0 then
         jagen.die('failed to checkout '..self.package.name)
     end
@@ -946,7 +963,7 @@ end
 
 function HgSource:pull()
     local status = 0
-    status = self:exec('--quiet', 'pull', '-u')
+    status = self:exec('pull', '-u')
     if status > 0 then
         jagen.die('failed to pull '..self.package.name)
     end
@@ -974,6 +991,9 @@ function src.status(args)
 end
 
 function src.update(...)
+    jagen.output_file = system.mkpath(jagen.build_dir, 'update.log')
+    jagen.output = assert(io.open(jagen.output_file, 'w'))
+
     local packages = jagen.load_rules()
     local source_packages = filter(Package.is_source, packages)
 
@@ -983,6 +1003,10 @@ function src.update(...)
         source:fetch()
         source:checkout(p.source.branch)
         source:pull()
+    end
+
+    if jagen.output then
+        jagen.output:close()
     end
 end
 
