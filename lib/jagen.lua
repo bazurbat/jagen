@@ -546,34 +546,29 @@ function jagen.write(...)
 end
 
 function jagen.message(...)
-    jagen.write(...)
-    print(string.format('\027[1;34m:::\027[0m %s', concat(...)))
+    io.write(concat(...), '\n')
+    io.flush()
 end
 function jagen.warning(...)
-    jagen.write('Warning: ', ...)
-    print(string.format('\027[1;33m:::\027[0m %s', concat(...)))
+    jagen.message('Warning: ', ...)
 end
 function jagen.error(...)
-    jagen.write('Error: ', ...)
-    print(string.format('\027[1;31m:::\027[0m %s', concat(...)))
+    jagen.message('Error: ', ...)
 end
 
-function jagen.debug(...)
+function jagen.debug0(...)
     if jagen.debug then
-        jagen.write('D: ', ...)
-        print(string.format('\027[1;36m:::\027[0m %s', concat(...)))
+        jagen.message(...)
     end
 end
 function jagen.debug1(...)
-    if os.getenv('pkg_debug') >= '1' then
-        jagen.write('D1: ', ...)
-        print(string.format('\027[1;36m:::\027[0m %s', concat(...)))
+    if jagen.debug >= '1' then
+        jagen.message(...)
     end
 end
 function jagen.debug2(...)
-    if os.getenv('pkg_debug') >= '2' then
-        jagen.write('D2: ', ...)
-        print(string.format('\027[1;36m:::\027[0m %s', concat(...)))
+    if jagen.debug >= '2' then
+        jagen.message(...)
     end
 end
 
