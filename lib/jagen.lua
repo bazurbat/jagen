@@ -893,24 +893,33 @@ function GitSource:dirty()
 end
 
 function GitSource:fetch()
-    local status = 0
-    status = self:exec('fetch', '--prune', '--no-tags')
+    local branch = self.package.source.branch
+    local args = { 'fetch', '--prune', '--no-tags', 'origin' }
+    if branch then
+        local src = 'refs/heads/'..branch
+        local dst = 'refs/remotes/origin/'..branch
+        table.insert(args, '+'..src..':'..dst)
+    end
+    local status = self:exec(unpack(args))
     if status > 0 then
         jagen.die("failed to fetch "..self.package.name)
     end
 end
 
-function GitSource:checkout(branch)
+function GitSource:checkout()
     local status = 0
-    branch = branch or 'master'
+    local branch = self.package.source.branch
     local exist = self:popen('branch', '--list', branch)
     if #exist > 0 then
         if string.sub(exist, 1, 1) ~= '*' then
             status = self:exec('checkout', branch)
         end
     else
-        status = self:exec('checkout',
-            '-b', branch, '-t', 'origin/'..branch)
+        status = self:exec('remote', 'set-branches', '--add', 'origin', branch)
+        if status > 0 then
+            jagen.die('failed to set remote branches')
+        end
+        status = self:exec('checkout', '-b', branch, '-t', 'origin/'..branch)
     end
     if status > 0 then
         jagen.die('failed to checkout '..branch..' branch of '..self.package.name)
@@ -923,6 +932,31 @@ function GitSource:pull()
     if status > 0 then
         jagen.die('failed to pull '..self.package.name)
     end
+end
+
+function GitSource:clone()
+    local command = { 'git', 'clone', '--progress', '--depth', 1 }
+    if self.package.source.branch then
+        table.insert(command, '--branch')
+        table.insert(command, self.package.source.branch)
+    end
+    table.insert(command, self.package.source.location)
+    table.insert(command, self.package:directory())
+
+    local status = system.exec(unpack(command))
+    if status > 0 then
+        jagen.die('failed to clone', self.package.name)
+    end
+end
+
+function GitSource:discard()
+    local status = 0
+    status = self:exec('checkout', '.')
+end
+
+function GitSource:clean()
+    local status = 0
+    status = self:exec('clean', '-fxd')
 end
 
 HgSource = Source:new()
@@ -969,10 +1003,55 @@ function HgSource:pull()
     end
 end
 
+function HgSource:clone()
+    local command = { 'hg', 'clone', '-r', 'tip' }
+    table.insert(command, self.package.source.location)
+    table.insert(command, self.package:directory())
+
+    local status = system.exec(unpack(command))
+    if status > 0 then
+        jagen.die('failed to clone', self.package.name)
+    end
+end
+
+function HgSource:discard()
+    status = self:exec('update', '-C')
+end
+
+function HgSource:clean()
+    status = self:exec('purge', '--all')
+end
+
 --}}}
 --{{{ src
 
 src = {}
+
+function src.open_output()
+    if not jagen.output then
+        jagen.output_file = system.mkpath(jagen.build_dir, 'src.log')
+        jagen.output = assert(io.open(jagen.output_file, 'w'))
+    end
+end
+
+function src.packages(names)
+    local rules = jagen.load_rules()
+    local packages = {}
+
+    if #names > 0 then
+        for _, name in ipairs(names) do
+            if rules[name] then
+                table.insert(packages, rules[name])
+            else
+                jagen.die('no such package:', name)
+            end
+        end
+    else
+        packages = filter(Rule.is_source, rules)
+    end
+
+    return packages
+end
 
 function src.name(filename)
     print(Source.name(filename))
@@ -991,38 +1070,24 @@ function src.status(args)
 end
 
 function src.update(names)
-    if jagen.output_file then
-        jagen.output = assert(io.open(jagen.output_file, 'a'))
-    else
-        jagen.output_file = system.mkpath(jagen.build_dir, 'update.log')
-        jagen.output = assert(io.open(jagen.output_file, 'w'))
-    end
-
-    local rules = jagen.load_rules()
-    local packages = {}
-
-    if #names > 0 then
-        for _, name in ipairs(names) do
-            if rules[name] then
-                table.insert(packages, rules[name])
-            else
-                jagen.die('no such package:', name)
-            end
-        end
-    else
-        packages = filter(Rule.is_source, rules)
-    end
+    local packages = src.packages(names)
 
     for _, pkg in ipairs(packages) do
-        jagen.message("update "..pkg.name)
+        jagen.message('update', pkg.name)
         local source = Source:create(pkg)
         source:fetch()
-        source:checkout(pkg.source.branch)
+        source:checkout()
         source:pull()
     end
+end
 
-    if jagen.output then
-        jagen.output:close()
+function src.clone(names)
+    local packages = src.packages(names)
+
+    for _, pkg in ipairs(packages) do
+        jagen.message('clone', pkg.name)
+        local source = Source:create(pkg)
+        source:clone()
     end
 end
 
@@ -1053,11 +1118,17 @@ elseif command == 'src' then
         src.status(args)
     elseif subcommand == 'update' then
         src.update(args)
+    elseif subcommand == 'clone' then
+        src.clone(args)
     else
         jagen.die('Unknown src subcommand:', subcommand);
     end
 else
     jagen.die('Unknown command:', command)
+end
+
+if jagen.output then
+    jagen.output:close()
 end
 
 os.exit(status % 0xFF)
