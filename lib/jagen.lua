@@ -892,8 +892,27 @@ function GitSource:dirty()
     return string.len(self:popen('status', '--porcelain')) > 0
 end
 
-function GitSource:fetch()
-    local branch = self.package.source.branch
+function GitSource:branch_list(branch)
+    assert(branch)
+    return self:popen('branch', '--list', branch)
+end
+
+function GitSource:branch_active(name)
+    assert(name)
+    return string.sub(name, 1, 1) == '*'
+end
+
+function GitSource:branch_remote_add(branch)
+    assert(branch)
+    local status = 0
+    status = self:exec('remote', 'set-branches', '--add', 'origin', branch)
+    if status > 0 then
+        jagen.die('failed to add remote branch for', self.package.name)
+    end
+end
+
+function GitSource:fetch(branch)
+    assert(branch)
     local args = { 'fetch', '--prune', '--no-tags', 'origin' }
     if branch then
         local src = 'refs/heads/'..branch
@@ -906,23 +925,30 @@ function GitSource:fetch()
     end
 end
 
-function GitSource:checkout()
+function GitSource:checkout(branch)
+    assert(branch)
     local status = 0
-    local branch = self.package.source.branch
-    local exist = self:popen('branch', '--list', branch)
-    if #exist > 0 then
-        if string.sub(exist, 1, 1) ~= '*' then
+    local name = self:branch_list(branch)
+    if #name > 0 then
+        if not self:branch_active(name) then
             status = self:exec('checkout', branch)
         end
     else
-        status = self:exec('remote', 'set-branches', '--add', 'origin', branch)
-        if status > 0 then
-            jagen.die('failed to set remote branches')
-        end
+        self:branch_remote_add(branch)
         status = self:exec('checkout', '-b', branch, '-t', 'origin/'..branch)
     end
     if status > 0 then
         jagen.die('failed to checkout '..branch..' branch of '..self.package.name)
+    end
+end
+
+function GitSource:merge(branch)
+    assert(branch)
+    local status = 0
+    local args = { 'merge', '--ff-only', 'origin/'..branch }
+    status = self:exec(unpack(args))
+    if status > 0 then
+        jagen.die('failed to merge', self.package.name)
     end
 end
 
@@ -932,6 +958,13 @@ function GitSource:pull()
     if status > 0 then
         jagen.die('failed to pull '..self.package.name)
     end
+end
+
+function GitSource:update()
+    local branch = self.package.source.branch
+    self:fetch(branch)
+    self:checkout(branch)
+    self:merge(branch)
 end
 
 function GitSource:clone()
@@ -1001,6 +1034,9 @@ function HgSource:pull()
     if status > 0 then
         jagen.die('failed to pull '..self.package.name)
     end
+end
+
+function HgSource:update()
 end
 
 function HgSource:clone()
@@ -1075,9 +1111,7 @@ function src.update(names)
     for _, pkg in ipairs(packages) do
         jagen.message('update', pkg.name)
         local source = Source:create(pkg)
-        source:fetch()
-        source:checkout()
-        source:pull()
+        source:update()
     end
 end
 
