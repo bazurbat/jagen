@@ -523,7 +523,7 @@ jagen =
     private_dir       = os.getenv('pkg_private_dir'),
 
     output = nil,
-    output_file = nil,
+    output_file = os.getenv('p_log'),
 }
 
 jagen.pkg_dir = system.mkpath(jagen.lib_dir, 'pkg')
@@ -990,18 +990,34 @@ function src.status(args)
     end
 end
 
-function src.update(...)
-    jagen.output_file = system.mkpath(jagen.build_dir, 'update.log')
-    jagen.output = assert(io.open(jagen.output_file, 'w'))
+function src.update(names)
+    if jagen.output_file then
+        jagen.output = assert(io.open(jagen.output_file, 'a'))
+    else
+        jagen.output_file = system.mkpath(jagen.build_dir, 'update.log')
+        jagen.output = assert(io.open(jagen.output_file, 'w'))
+    end
 
-    local packages = jagen.load_rules()
-    local source_packages = filter(Rule.is_source, packages)
+    local rules = jagen.load_rules()
+    local packages = {}
 
-    for _, p in ipairs(source_packages) do
-        jagen.message("update "..p.name)
-        local source = Source:create(p)
+    if #names > 0 then
+        for _, name in ipairs(names) do
+            if rules[name] then
+                table.insert(packages, rules[name])
+            else
+                jagen.die('no such package:', name)
+            end
+        end
+    else
+        packages = filter(Rule.is_source, rules)
+    end
+
+    for _, pkg in ipairs(packages) do
+        jagen.message("update "..pkg.name)
+        local source = Source:create(pkg)
         source:fetch()
-        source:checkout(p.source.branch)
+        source:checkout(pkg.source.branch)
         source:pull()
     end
 
