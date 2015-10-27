@@ -961,7 +961,7 @@ function GitSource:pull()
 end
 
 function GitSource:update()
-    local branch = self.package.source.branch
+    local branch = self.package.source.branch or 'master'
     self:fetch(branch)
     self:checkout(branch)
     self:merge(branch)
