@@ -523,7 +523,7 @@ jagen =
     private_dir       = os.getenv('pkg_private_dir'),
 
     output = nil,
-    output_file = os.getenv('p_log'),
+    output_file = nil,
 }
 
 jagen.pkg_dir = system.mkpath(jagen.lib_dir, 'pkg')
