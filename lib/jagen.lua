@@ -1029,14 +1029,29 @@ function HgSource:checkout(branch)
 end
 
 function HgSource:pull()
-    local status = 0
-    status = self:exec('pull', '-u')
+    local status = self:exec('pull')
     if status > 0 then
-        jagen.die('failed to pull '..self.package.name)
+        jagen.die('failed to pull', self.package.name)
     end
 end
 
 function HgSource:update()
+    self:pull()
+
+    local args = { 'update' }
+    local bookmark = self.package.source.bookmark
+    local branch = self.package.source.branch
+    if bookmark then
+        table.insert(args, '-r')
+        table.insert(args, bookmark)
+    elseif branch then
+        table.insert(args, '-r')
+        table.insert(args, branch)
+    end
+    local status = self:exec(unpack(args))
+    if status > 0 then
+        jagen.die('failed to update', self.package.name)
+    end
 end
 
 function HgSource:clone()
