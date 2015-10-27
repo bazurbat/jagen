@@ -960,6 +960,11 @@ function GitSource:pull()
     end
 end
 
+function GitSource:clean()
+    self:exec('checkout', 'HEAD', '.')
+    self:exec('clean', '-fxd')
+end
+
 function GitSource:update()
     local branch = self.package.source.branch or 'master'
     self:fetch(branch)
@@ -980,16 +985,6 @@ function GitSource:clone()
     if status > 0 then
         jagen.die('failed to clone', self.package.name)
     end
-end
-
-function GitSource:discard()
-    local status = 0
-    status = self:exec('checkout', '.')
-end
-
-function GitSource:clean()
-    local status = 0
-    status = self:exec('clean', '-fxd')
 end
 
 HgSource = Source:new()
@@ -1035,6 +1030,11 @@ function HgSource:pull()
     end
 end
 
+function HgSource:clean()
+    self:exec('update', '-C')
+    self:exec('purge', '--all')
+end
+
 function HgSource:update()
     self:pull()
 
@@ -1063,14 +1063,6 @@ function HgSource:clone()
     if status > 0 then
         jagen.die('failed to clone', self.package.name)
     end
-end
-
-function HgSource:discard()
-    status = self:exec('update', '-C')
-end
-
-function HgSource:clean()
-    status = self:exec('purge', '--all')
 end
 
 --}}}
@@ -1120,6 +1112,14 @@ function src.status(args)
     end
 end
 
+function src.clean(names)
+    for _, pkg in ipairs(src.packages(names)) do
+        jagen.message('clean', pkg.name)
+        local source = Source:create(pkg)
+        source:clean()
+    end
+end
+
 function src.update(names)
     local packages = src.packages(names)
 
@@ -1165,6 +1165,8 @@ elseif command == 'src' then
         src.name(unpack(args))
     elseif subcommand == 'status' then
         src.status(args)
+    elseif subcommand == 'clean' then
+        src.clean(args)
     elseif subcommand == 'update' then
         src.update(args)
     elseif subcommand == 'clone' then

@@ -9,8 +9,7 @@ pkg_clean() {
             if in_list "$p_name" $pkg_source_exclude; then
                 message "pkg source '$p_name' excluded from cleaning"
             elif [ -d "$p_source_dir" ]; then
-                p_src_discard "$p_source_dir"
-                p_src_clean "$p_source_dir"
+                _jagen src clean "$p_name"
             fi
             ;;
     esac
