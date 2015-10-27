@@ -117,7 +117,7 @@ function system.exec(...)
     local line = table.concat(command, ' ')
     jagen.debug1(line)
     local status = os.execute(line)
-    return status % 0xFF
+    return status == 0, status % 0xFF
 end
 
 --}}}
@@ -904,11 +904,7 @@ end
 
 function GitSource:branch_remote_add(branch)
     assert(branch)
-    local status = 0
-    status = self:exec('remote', 'set-branches', '--add', 'origin', branch)
-    if status > 0 then
-        jagen.die('failed to add remote branch for', self.package.name)
-    end
+    return self:exec('remote', 'set-branches', '--add', 'origin', branch)
 end
 
 function GitSource:fetch(branch)
@@ -919,57 +915,36 @@ function GitSource:fetch(branch)
         local dst = 'refs/remotes/origin/'..branch
         table.insert(args, '+'..src..':'..dst)
     end
-    local status = self:exec(unpack(args))
-    if status > 0 then
-        jagen.die("failed to fetch "..self.package.name)
-    end
+    return self:exec(unpack(args))
 end
 
 function GitSource:checkout(branch)
     assert(branch)
-    local status = 0
     local name = self:branch_list(branch)
     if #name > 0 then
-        if not self:branch_active(name) then
-            status = self:exec('checkout', branch)
+        if self:branch_active(name) then
+            return true
+        else
+            return self:exec('checkout', branch)
         end
     else
-        self:branch_remote_add(branch)
-        status = self:exec('checkout', '-b', branch, '-t', 'origin/'..branch)
-    end
-    if status > 0 then
-        jagen.die('failed to checkout '..branch..' branch of '..self.package.name)
+        return self:branch_remote_add(branch) and
+            self:exec('checkout', '-b', branch, '-t', 'origin/'..branch)
     end
 end
 
 function GitSource:merge(branch)
     assert(branch)
-    local status = 0
-    local args = { 'merge', '--ff-only', 'origin/'..branch }
-    status = self:exec(unpack(args))
-    if status > 0 then
-        jagen.die('failed to merge', self.package.name)
-    end
-end
-
-function GitSource:pull()
-    local status = 0
-    status = self:exec('pull', '--ff-only')
-    if status > 0 then
-        jagen.die('failed to pull '..self.package.name)
-    end
+    return self:exec('merge', '--ff-only', 'origin/'..branch)
 end
 
 function GitSource:clean()
-    self:exec('checkout', 'HEAD', '.')
-    self:exec('clean', '-fxd')
+    return self:exec('checkout', 'HEAD', '.') and self:exec('clean', '-fxd')
 end
 
 function GitSource:update()
     local branch = self.package.source.branch or 'master'
-    self:fetch(branch)
-    self:checkout(branch)
-    self:merge(branch)
+    return self:fetch(branch) and self:checkout(branch) and self:merge(branch)
 end
 
 function GitSource:clone()
@@ -981,10 +956,7 @@ function GitSource:clone()
     table.insert(command, self.package.source.location)
     table.insert(command, self.package:directory())
 
-    local status = system.exec(unpack(command))
-    if status > 0 then
-        jagen.die('failed to clone', self.package.name)
-    end
+    return system.exec(unpack(command))
 end
 
 HgSource = Source:new()
@@ -1007,37 +979,11 @@ function HgSource:dirty()
     return string.len(self:popen('status')) > 0
 end
 
-function HgSource:fetch()
-    local status = 0
-    status = self:exec('pull')
-    if status > 0 then
-        jagen.die("Failed to fetch "..self.package.name)
-    end
-end
-
-function HgSource:checkout(branch)
-    local status = 0
-    status = self:exec('update', '-c')
-    if status > 0 then
-        jagen.die('failed to checkout '..self.package.name)
-    end
-end
-
-function HgSource:pull()
-    local status = self:exec('pull')
-    if status > 0 then
-        jagen.die('failed to pull', self.package.name)
-    end
-end
-
 function HgSource:clean()
-    self:exec('update', '-C')
-    self:exec('purge', '--all')
+    return self:exec('update', '-C') and self:exec('purge', '--all')
 end
 
 function HgSource:update()
-    self:pull()
-
     local args = { 'update' }
     local bookmark = self.package.source.bookmark
     local branch = self.package.source.branch
@@ -1048,21 +994,14 @@ function HgSource:update()
         table.insert(args, '-r')
         table.insert(args, branch)
     end
-    local status = self:exec(unpack(args))
-    if status > 0 then
-        jagen.die('failed to update', self.package.name)
-    end
+    return self:exec('pull') and self:exec(unpack(args))
 end
 
 function HgSource:clone()
     local command = { 'hg', 'clone', '-r', 'tip' }
     table.insert(command, self.package.source.location)
     table.insert(command, self.package:directory())
-
-    local status = system.exec(unpack(command))
-    if status > 0 then
-        jagen.die('failed to clone', self.package.name)
-    end
+    return system.exec(unpack(command))
 end
 
 --}}}
@@ -1116,7 +1055,9 @@ function src.clean(names)
     for _, pkg in ipairs(src.packages(names)) do
         jagen.message('clean', pkg.name)
         local source = Source:create(pkg)
-        source:clean()
+        if not source:clean() then
+            jagen.die('failed to clean', pkg.name)
+        end
     end
 end
 
@@ -1126,7 +1067,9 @@ function src.update(names)
     for _, pkg in ipairs(packages) do
         jagen.message('update', pkg.name)
         local source = Source:create(pkg)
-        source:update()
+        if not source:update() then
+            jagen.die('failed to update', pkg.name)
+        end
     end
 end
 
@@ -1136,13 +1079,16 @@ function src.clone(names)
     for _, pkg in ipairs(packages) do
         jagen.message('clone', pkg.name)
         local source = Source:create(pkg)
-        source:clone()
+        if not source:clone() then
+            jagen.die('failed to clone', pkg.name)
+        end
     end
 end
 
 --}}}
 
 command = arg[1]
+ok = true
 status = 0
 
 if command == 'refresh' then
@@ -1150,11 +1096,11 @@ if command == 'refresh' then
 elseif command == 'build' then
     local args = table.rest(arg, 2)
 
-    status = jagen.build(args)
+    ok, status = jagen.build(args)
 elseif command == 'rebuild' then
     local args = table.rest(arg, 2)
 
-    status = jagen.rebuild(args)
+    ok, status = jagen.rebuild(args)
 elseif command == 'src' then
     local subcommand = arg[2]
     local args = table.rest(arg, 3)
