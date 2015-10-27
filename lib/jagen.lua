@@ -134,16 +134,34 @@ function Rule:new(o)
     return o
 end
 
-function Rule:from_rules(...)
+function Rule:load_pkg(name)
+    local path = system.mkpath(jagen.pkg_dir, name..'.lua')
+    local env = {}
+    local o
+
+    function env.package(rule)
+        o = rule
+    end
+
+    local def = loadfile(path)
+    if def then
+        setfenv(def, env)
+        def()
+    end
+
+    return Rule:new(o)
+end
+
+function Rule:parse(...)
     local rules = Rule:new()
     for _, arg in ipairs({...}) do
         table.merge(rules, arg)
     end
-    rules:convert_name()
+    rules:parse_name()
 
-    local pkg = Rule:from_file(rules.name)
+    local pkg = Rule:load_pkg(rules.name)
     table.merge(pkg, rules)
-    pkg:convert_source()
+    pkg:parse_source()
 
     for _, stage in ipairs(self.default_stages) do
         pkg:add_target(Target.new(pkg.name, stage))
@@ -160,22 +178,28 @@ function Rule:from_rules(...)
     return pkg
 end
 
-function Rule:from_file(name)
-    local path = system.mkpath(jagen.pkg_dir, name..'.lua')
-    local env = {}
-    local o
-
-    function env.package(rule)
-        o = rule
+function Rule:parse_name()
+    local function is_string(v)
+        return type(v) == 'string'
     end
-
-    local def = loadfile(path)
-    if def then
-        setfenv(def, env)
-        def()
+    local i
+    self.name, i = find(is_string, self)
+    if i then
+        table.remove(self, i)
+        local config, i = find(is_string, self)
+        if i then
+            self.config = config
+            table.remove(self, i)
+        end
     end
+end
 
-    return Rule:new(o)
+function Rule:parse_source()
+    local source = self.source
+    if type(source) == 'string' then
+        self.source = { type = 'dist', location = source }
+    end
+    return self
 end
 
 function Rule:add_target(target)
@@ -205,30 +229,6 @@ function Rule:merge(rule)
     end
     for _, v in ipairs(rule) do
         table.insert(self, v)
-    end
-    return self
-end
-
-function Rule:convert_name()
-    local function is_string(v)
-        return type(v) == 'string'
-    end
-    local i
-    self.name, i = find(is_string, self)
-    if i then
-        table.remove(self, i)
-        local config, i = find(is_string, self)
-        if i then
-            self.config = config
-            table.remove(self, i)
-        end
-    end
-end
-
-function Rule:convert_source()
-    local source = self.source
-    if type(source) == 'string' then
-        self.source = { type = 'dist', location = source }
     end
     return self
 end
@@ -598,7 +598,7 @@ function jagen.load_rules()
     }
 
     function env.package(...)
-        local pkg  = Rule:from_rules(...)
+        local pkg  = Rule:parse(...)
         packages[pkg.name] = pkg
         table.insert(packages, pkg)
     end
@@ -622,7 +622,7 @@ function jagen.load_rules()
                         p:add_target(t)
                     end
                 else
-                    local p = Rule:from_rules { name, pkg.config }
+                    local p = Rule:parse { name, pkg.config }
                     p.inject = pkg.inject or {}
                     for _, rule in ipairs(pkg.inject or {}) do
                         local t = Target.from_rule(p, rule)
