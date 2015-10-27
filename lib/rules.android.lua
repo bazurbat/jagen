@@ -12,7 +12,18 @@ end
 
 package { 'android-cmake' }
 
-package { 'chicken', 'host' }
+package { 'libtool', 'host' }
+
+package { 'chicken', 'host',
+    source = { branch = 'stable-cmake' }
+}
+
+package { 'chicken-eggs', 'host',
+    source = { branch = 'newchicken' },
+    { 'install',
+        needs = { 'chicken' }
+    }
+}
 
 package { 'firmware', 'target',
     { 'install',
@@ -37,4 +48,14 @@ firmware_package { 'chicken',
         branch = 'stable-cmake'
     },
     { 'build', { 'chicken', 'install', 'host' } }
+}
+
+firmware_package { 'chicken-eggs',
+    source = { branch = 'newchicken' },
+    { 'install',
+        needs = {
+            'chicken',
+            'sqlite'
+        }
+    }
 }

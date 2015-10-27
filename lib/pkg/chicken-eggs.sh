@@ -24,14 +24,30 @@ pkg_install_host() {
 pkg_install_target() {
     delete_install_targets
 
-    p_run cmake -G"$cmake_generator" \
-        -DCMAKE_BUILD_TYPE="$cmake_build_type" \
-        -DCMAKE_SYSTEM_NAME="Linux" \
-        -DCMAKE_FIND_ROOT_PATH="$target_dir$target_prefix" \
-        -DCHICKEN_COMPILER="$host_dir/bin/chicken" \
-        -DCHICKEN_INTERPRETER="$host_dir/bin/csi" \
-        -DCHICKEN_DEPENDS="$host_dir/bin/chicken-depends" \
-        "$p_source_dir"
+    case $target_board in
+        ast25|ast50|ast100)
+            p_run cmake -G"$cmake_generator" \
+                -DCMAKE_BUILD_TYPE="$cmake_build_type" \
+                -DCMAKE_SYSTEM_NAME="Linux" \
+                -DCMAKE_FIND_ROOT_PATH="$target_dir$target_prefix" \
+                -DCHICKEN_COMPILER="$host_dir/bin/chicken" \
+                -DCHICKEN_INTERPRETER="$host_dir/bin/csi" \
+                -DCHICKEN_DEPENDS="$host_dir/bin/chicken-depends" \
+                "$p_source_dir"
+            ;;
+        *)
+            p_run cmake -G"$cmake_generator" \
+                -DCMAKE_TOOLCHAIN_FILE="$pkg_src_dir/android-cmake/android.toolchain.cmake" \
+                -DANDROID_STANDALONE_TOOLCHAIN="${target_dir}/${target_toolchain}" \
+                -DCMAKE_BUILD_TYPE="$cmake_build_type" \
+                -DCMAKE_SYSTEM_NAME="Linux" \
+                -DCMAKE_INSTALL_PREFIX="${target_dir}${target_prefix}" \
+                -DCHICKEN_COMPILER="$host_dir/bin/chicken" \
+                -DCHICKEN_INTERPRETER="$host_dir/bin/csi" \
+                -DCHICKEN_DEPENDS="$host_dir/bin/chicken-depends" \
+                "$p_source_dir"
+            ;;
+    esac
 
     p_run cmake --build . -- $cmake_build_options
 }
