@@ -13,8 +13,8 @@ export pkg_sdk=""
 
 export pkg_bin_dir="$jagen_dir/bin"
 export pkg_lib_dir="$jagen_dir/lib"
-export pkg_src_dir="$jagen_build_root/src"
-export pkg_build_dir="$jagen_build_root/build"
+export pkg_src_dir="$jagen_root/src"
+export pkg_build_dir="$jagen_root/build"
 
 pkg_build_type="Release"
 pkg_build_verbose="no"
@@ -26,7 +26,7 @@ if [ "$XDG_CONFIG_HOME" ]; then
 else
     try_include "$HOME/.config/jagen/env" || return
 fi
-try_include "$jagen_build_root/local.sh" || return
+try_include "$jagen_root/local.sh" || return
 
 export pkg_patch_dir="$pkg_dist_dir/patches"
 export pkg_build_include_dir="$pkg_build_dir/include"

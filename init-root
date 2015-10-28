@@ -56,7 +56,7 @@ else
 fi
 
 export jagen_dir
-export jagen_build_root="\$PWD"
+export jagen_root="\$PWD"
 
 . "\$jagen_dir/lib/env.sh"; sts=\$?
 if [ \$sts != 0 ]; then
@@ -87,7 +87,7 @@ jagen_toolchain_dir=""
 pkg_src_dir="$source_dir"
 
 # A directory where build products will be stored.
-pkg_build_dir="\$jagen_build_root/build"
+pkg_build_dir="\$jagen_root/build"
 
 # Space separated list of optional features.
 #   debug - build debugging tools
@@ -121,7 +121,7 @@ done
 if [ "$use_source" ]; then
     source_dir='$jagen_dir/src'
 else
-    source_dir='$jagen_build_root/src'
+    source_dir='$jagen_root/src'
 fi
 
 write_env || die
