@@ -50,22 +50,22 @@ write_env() {
 jagen_relative_root="$root"
 
 if [ "\$1" = relative ]; then
-    jagen_root="\$jagen_relative_root"
+    jagen_dir="\$jagen_relative_root"
 else
-    jagen_root="$real_root"
+    jagen_dir="$real_root"
 fi
 
-export jagen_root
+export jagen_dir
 export jagen_build_root="\$PWD"
 
-. "\$jagen_root/lib/env.sh"; sts=\$?
+. "\$jagen_dir/lib/env.sh"; sts=\$?
 if [ \$sts != 0 ]; then
     echo "Error: failed to load jagen environment"
     return \$sts
 fi
 
 add_PATH "\$pkg_private_dir/bin"
-add_PATH "\$jagen_root/bin"
+add_PATH "\$jagen_dir/bin"
 EOF
 }
 
@@ -119,7 +119,7 @@ for arg; do
 done
 
 if [ "$use_source" ]; then
-    source_dir='$jagen_root/src'
+    source_dir='$jagen_dir/src'
 else
     source_dir='$jagen_build_root/src'
 fi

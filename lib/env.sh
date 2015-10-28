@@ -11,8 +11,8 @@ export pkg_debug=""
 export pkg_flags=""
 export pkg_sdk=""
 
-export pkg_bin_dir="$jagen_root/bin"
-export pkg_lib_dir="$jagen_root/lib"
+export pkg_bin_dir="$jagen_dir/bin"
+export pkg_lib_dir="$jagen_dir/lib"
 export pkg_src_dir="$jagen_build_root/src"
 export pkg_build_dir="$jagen_build_root/build"
 
