@@ -31,6 +31,7 @@ package { 'firmware', 'target',
             'chicken',
             'chicken-eggs',
             'ffmpeg',
+            'karaoke-player',
             'libuv',
         }
     },
@@ -61,4 +62,22 @@ firmware_package { 'chicken-eggs',
             'sqlite'
         }
     }
+}
+
+package { 'astindex',
+    { 'unpack', { 'karaoke-player', 'unpack' } }
+}
+
+firmware_package { 'karaoke-player',
+    source = { bookmark = 'newchicken' },
+    { 'build',
+        { 'astindex', 'unpack' },
+        { 'chicken-eggs', 'install', 'host' },
+        needs = {
+            'chicken',
+            'chicken-eggs',
+            'ffmpeg',
+        }
+    },
+    { 'install' }
 }

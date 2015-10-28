@@ -9,12 +9,10 @@ pkg_clean() {
 }
 
 pkg_install() {
-    local bin=
+    local bins="csi smplayer"
 
     [ -d "$p_work_dir/bin" ] || mkdir -p "$p_work_dir/bin"
     [ -d "$p_work_dir/lib" ] || mkdir -p "$p_work_dir/lib"
-
-    bins="csi"
 
     for bin in $bins; do
         p_run install -m755 "$p_source_dir/bin/$bin" "$install_dir/bin"

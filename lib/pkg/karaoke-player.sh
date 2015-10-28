@@ -30,13 +30,13 @@ pkg_build_target() {
         *)
             p_run cmake -G"$cmake_generator" \
                 -DCMAKE_TOOLCHAIN_FILE="$pkg_src_dir/android-cmake/android.toolchain.cmake" \
-                -DANDROID_STANDALONE_TOOLCHAIN="$android_toolchain_dir" \
-                -DANDROID_GOLD_LINKER=NO \
+                -DANDROID_STANDALONE_TOOLCHAIN="${target_dir}/${target_toolchain}" \
                 -DCMAKE_BUILD_TYPE="$cmake_build_type" \
                 -DCMAKE_SYSTEM_NAME="Linux" \
                 -DCMAKE_INSTALL_PREFIX="${target_dir}${target_prefix}" \
-                -DCMAKE_FIND_ROOT_PATH="${target_dir}${target_prefix}" \
-                -DHISILICON_ROOT_DIR="$sdk_dir" \
+                -DCHICKEN_COMPILER="$host_dir/bin/chicken" \
+                -DCHICKEN_INTERPRETER="$host_dir/bin/csi" \
+                -DHISILICON_ROOT_DIR="$jagen_sdk_dir" \
                 -DHISILICON_OUT_DIR="$sdk_out_dir" \
                 -DTARGET_BOARD="$target_board" \
                 "$p_source_dir"
