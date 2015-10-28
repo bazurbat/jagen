@@ -21,6 +21,12 @@ if in_flags ccache; then
     export USE_CCACHE=1
 fi
 
+if [ "$jagen_sdk_dir" -a -d "$jagen_sdk_dir" ]; then
+    sdk_out_dir="$jagen_sdk_dir/out/target/product/Hi3719CV100"
+    # adb uses this
+    export ANDROID_PRODUCT_OUT="$sdk_out_dir"
+fi
+
 add_PATH "$JAVA_HOME/bin"
 
 make_toolchain() {

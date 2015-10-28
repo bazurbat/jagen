@@ -1,6 +1,6 @@
 #!/bin/sh
 
-p_work_dir="${pkg_build_dir}/firmware"
+p_work_dir="$install_dir"
 p_source_dir="${target_dir}${target_prefix}"
 
 pkg_clean() {
@@ -9,8 +9,16 @@ pkg_clean() {
 }
 
 pkg_install() {
+    local bin=
+
     [ -d "$p_work_dir/bin" ] || mkdir -p "$p_work_dir/bin"
     [ -d "$p_work_dir/lib" ] || mkdir -p "$p_work_dir/lib"
+
+    bins="csi"
+
+    for bin in $bins; do
+        p_run install -m755 "$p_source_dir/bin/$bin" "$install_dir/bin"
+    done
 
     p_run cp -va "$p_source_dir/lib/"*.so* "$p_work_dir/lib"
 
@@ -28,6 +36,7 @@ pkg_strip() {
 }
 
 pkg_deploy() {
+    : ${sdk_out_dir:?}
     local out_dir="$sdk_out_dir/system"
 
     if [ ! -d "$out_dir" ]; then
