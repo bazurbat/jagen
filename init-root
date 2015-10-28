@@ -74,12 +74,6 @@ write_config() {
 # Current build root configuration type.
 pkg_sdk="$sdk"
 
-# A directory containing SDK (optional).
-# jagen_sdk_dir=""
-
-# A directory containing target toolchain.
-jagen_toolchain_dir=""
-
 # A directory containing software distributions and patches.
 # pkg_dist_dir=""
 
@@ -88,6 +82,12 @@ pkg_src_dir="$source_dir"
 
 # A directory where build products will be stored.
 pkg_build_dir="\$jagen_root/build"
+
+# A directory containing SDK (optional).
+# jagen_sdk_dir=""
+
+# A directory containing target toolchain.
+jagen_toolchain_dir=""
 
 # Space separated list of optional features.
 #   debug - build debugging tools
