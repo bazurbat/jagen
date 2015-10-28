@@ -546,29 +546,38 @@ function jagen.write(...)
 end
 
 function jagen.message(...)
-    io.write(concat(...), '\n')
+    io.write('(I) ', concat(...), '\n')
     io.flush()
 end
+
 function jagen.warning(...)
-    jagen.message('Warning: ', ...)
+    io.stderr:write('(W) ', concat(...), '\n')
+    io.stderr:flush()
 end
+
 function jagen.error(...)
-    jagen.message('Error: ', ...)
+    io.stderr:write('(E) ', concat(...), '\n')
+    io.stderr:flush()
 end
 
 function jagen.debug0(...)
     if jagen.debug then
-        jagen.message(...)
+        io.write('(D) ', concat(...), '\n')
+        io.flush()
     end
 end
+
 function jagen.debug1(...)
     if jagen.debug >= '1' then
-        jagen.message(...)
+        io.write('(D) ', concat(...), '\n')
+        io.flush()
     end
 end
+
 function jagen.debug2(...)
     if jagen.debug >= '2' then
-        jagen.message(...)
+        io.write('(D) ', concat(...), '\n')
+        io.flush()
     end
 end
 

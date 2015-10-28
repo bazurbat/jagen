@@ -1,8 +1,22 @@
 #!/bin/sh
 
-message() { printf "\033[1;34m:::\033[0m %s\n" "$*"; }
-warning() { printf "\033[1;33m:::\033[0m %s\n" "$*"; }
-error() { printf "\033[1;31m:::\033[0m %s\n" "$*" >&2; }
+message() {
+    printf "(I) %s\n" "$*"
+}
+
+warning() {
+    printf "(W) %s\n" "$*" >&2
+}
+
+error() {
+    printf "(E) %s\n" "$*" >&2
+}
+
+debug() {
+    if [ "$pkg_debug" ]; then
+        printf "(D) %s\n" "$*"
+    fi
+}
 
 die() {
     local ret=$?
@@ -12,13 +26,6 @@ die() {
         error "$*"
     fi
     exit $ret
-}
-
-debug() {
-    if [ "$pkg_debug" ]; then
-        printf "\033[1;36m:::\033[0m %s\n" "$*"
-    fi
-    return 0
 }
 
 try_include() {
