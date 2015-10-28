@@ -78,6 +78,10 @@ list_remove() {
     echo "${result#$S}"
 }
 
+real_path() {
+    echo $(cd "$1"; pwd -P)
+}
+
 is_function() { type "$1" 2>/dev/null | grep -q 'function'; }
 
 in_path() { $(which "$1" >/dev/null 2>&1); }

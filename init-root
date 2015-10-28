@@ -47,16 +47,13 @@ EOF
 
 write_env() {
     cat >"$env_file" <<EOF
-jagen_relative_root="$root"
+#!/bin/sh
 
-if [ "\$1" = relative ]; then
-    jagen_dir="\$jagen_relative_root"
-else
-    jagen_dir="$real_root"
-fi
+jagen_relative_dir="$root"
 
-export jagen_dir
-export jagen_root="\$PWD"
+jagen_dir=\$(cd "\$jagen_relative_dir"; pwd -P)
+jagen_root=\$(pwd -P)
+export jagen_dir jagen_root
 
 . "\$jagen_dir/lib/env.sh"; sts=\$?
 if [ \$sts != 0 ]; then

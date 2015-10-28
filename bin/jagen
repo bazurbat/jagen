@@ -4,9 +4,9 @@
     { echo "jagen_root is not set, please source env.sh in the project root.";
       exit 1; }
 
-. "$jagen_root/lib/pkg.sh" ||
+. "$jagen_dir/lib/pkg.sh" ||
     { echo "Failed to load pkg environment"; exit 1; }
-. "$jagen_root/lib/help.sh" ||
+. "$jagen_dir/lib/help.sh" ||
     { echo "Failed to load help"; exit 1; }
 
 if [ $# = 0 ]; then
@@ -23,10 +23,10 @@ case $1 in
         exec jagen refresh
         ;;
     update)
-        if p_src_is_dirty "$jagen_root"; then
-            warning "$jagen_root is dirty, not updating"
+        if p_src_is_dirty "$jagen_dir"; then
+            warning "$jagen_dir is dirty, not updating"
         else
-            p_src_pull "$jagen_root"
+            p_src_pull "$jagen_dir"
         fi
         exec jagen refresh
         ;;
