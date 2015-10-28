@@ -33,7 +33,6 @@ pkg_build_target() {
                 -DANDROID_GOLD_LINKER=NO \
                 -DCMAKE_BUILD_TYPE="$cmake_build_type" \
                 -DCMAKE_SYSTEM_NAME="Linux" \
-                -DCMAKE_SYSTEM_PROCESSOR="mips32" \
                 -DCMAKE_INSTALL_PREFIX="$target_prefix" \
                 "$p_source_dir"
             ;;
