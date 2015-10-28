@@ -28,7 +28,10 @@ package { 'chicken-eggs', 'host',
 package { 'firmware', 'target',
     { 'install',
         needs = {
-            'libuv'
+            'chicken',
+            'chicken-eggs',
+            'ffmpeg',
+            'libuv',
         }
     },
     { 'strip' },
