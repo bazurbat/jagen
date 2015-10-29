@@ -5,7 +5,7 @@ config_file="local.sh"
 
 show_help() {
     cat <<EOF
-Usage: init-root [-h] [-f] [-s] [SDK]
+Usage: init-root [-h] [-f] [SDK]
 
   Initializes current directory as jagen build root.
 
@@ -16,7 +16,7 @@ SYNOPSIS:
   jagen commands. Example:
 
     cd $PWD
-    $root/init-root
+    $curr_root/init-root
     . ./$env_file
 
   For subsequent invocations:
@@ -29,18 +29,9 @@ SYNOPSIS:
 
   The template configuration file '$config_file' will be added to the build
   root. The existing file will not be overwritten unless the '-f' flag is
-  given. If SDK is specified it will be set in config.
-
-  The '-s' flag specifies that the source packages should be kept in the jagen
-  project root. Without this flag the location of sources will be set to the
-  build root.
-
-  NOTE: To use remotely mounted build root pathname to the init-root script
-  should be specified relative to the current directory and 'relative' should
-  be given as an argument when sourcing '$env_file'. Example:
-
-    cd /mnt/src/build
-    . ./$env_file relative
+  given.
+  
+  If SDK is specified it will be set in the config.
 
 EOF
 }
@@ -49,7 +40,7 @@ write_env() {
     cat >"$env_file" <<EOF
 #!/bin/sh
 
-jagen_relative_dir="$root"
+jagen_relative_dir="$curr_root"
 
 jagen_dir=\$(cd "\$jagen_relative_dir"; pwd -P)
 jagen_root=\$(pwd -P)
@@ -71,23 +62,27 @@ write_config() {
 # Current build root configuration type.
 pkg_sdk="$sdk"
 
+# Toplevel working directory (for convenience)
+base_dir=\$(real_path "\$jagen_root/..")
+
 # A directory containing software distributions and patches.
-# pkg_dist_dir=""
+pkg_dist_dir="\$base_dir/dist"
 
 # A directory where source packages will be checked out.
-pkg_src_dir="$source_dir"
+pkg_src_dir="\$base_dir/src"
 
 # A directory where build products will be stored.
 pkg_build_dir="\$jagen_root/build"
 
 # A directory containing SDK (optional).
-# jagen_sdk_dir=""
+jagen_sdk_dir="$sdk_dir"
 
 # A directory containing target toolchain.
-jagen_toolchain_dir=""
+jagen_toolchain_dir="$toolchain_dir"
 
 # Space separated list of optional features.
-#   debug - build debugging tools
+#   debug  - build debugging tools
+#   ccache - wrap compilation commands with ccache
 pkg_flags=""
 
 # Package names excluded from clear and update during rebuilds.
@@ -102,24 +97,42 @@ EOF
 
 die() { [ $# = 0 ] || echo "Error: $@"; exit 1; }
 
-root=$(dirname $0)
-real_root=$(cd "$root"; pwd -P)
+curr_root=$(dirname $0)
+real_root=$(cd "$curr_root"; pwd -P)
+
 sdk=''
 use_force=''
-use_source=''
 
-for arg; do
-    [ "$arg" = '-h' ] && { show_help; exit 0; }
-    [ "$arg" = '-f' ] && { use_force=1; continue; }
-    [ "$arg" = '-s' ] && { use_source=1; continue; }
-    [ "$sdk" ] || { sdk="$arg";  continue; }
+while [ $# -gt 0 ]; do
+    case $1 in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        -f|--force)
+            use_force=1
+            ;;
+        *)
+            sdk="$1"
+            ;;
+    esac
+    shift
 done
 
-if [ "$use_source" ]; then
-    source_dir='$jagen_dir/src'
-else
-    source_dir='$jagen_root/src'
-fi
+case $sdk in
+    sigma)
+        sdk_dir='$pkg_src_dir/sigma-mrua'
+        toolchain_dir='$base_dir/toolchain/mips-2012.03'
+        ;;
+    hisilicon)
+        sdk_dir='$pkg_src_dir/hisilicon'
+        toolchain_dir='$base_dir/toolchain/arm-hisiv200-linux'
+        ;;
+    android)
+        sdk_dir='$pkg_src_dir/hisilicon'
+        toolchain_dir='$base_dir/toolchain/android-ndk-r10d'
+        ;;
+esac
 
 write_env || die
 
