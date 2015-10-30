@@ -15,13 +15,13 @@ pkg_build() {
     add_PATH "$SMP86XX_TOOLCHAIN_PATH/bin"
     add_PATH "$sdk_rootfs_prefix/bin"
 
-    p_run cd "xos/xboot2/xmasboot/nand_st2"
-    p_run ./build_phyblock0.bash
+    pkg_run cd "xos/xboot2/xmasboot/nand_st2"
+    pkg_run ./build_phyblock0.bash
 }
 
 pkg_install() {
-    p_run mkdir -p "$jagen_target_dir"
-    p_run cd "xos/xboot2/xmasboot/nand_st2"
-    p_run cp -f phyblock0-0x20000padded.AST50 "$jagen_target_dir"
-    p_run cp -f phyblock0-0x20000padded.AST100 "$jagen_target_dir"
+    pkg_run mkdir -p "$jagen_target_dir"
+    pkg_run cd "xos/xboot2/xmasboot/nand_st2"
+    pkg_run cp -f phyblock0-0x20000padded.AST50 "$jagen_target_dir"
+    pkg_run cp -f phyblock0-0x20000padded.AST100 "$jagen_target_dir"
 }

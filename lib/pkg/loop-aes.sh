@@ -7,7 +7,7 @@ export ARCH=mips
 pkg_build() {
     PATH="$jagen_toolchain_dir/bin:$PATH"
 
-    p_run make \
+    pkg_run make \
         LINUX_SOURCE="$LINUX_KERNEL" \
         KBUILD_OUTPUT="$LINUX_KERNEL" \
         USE_KBUILD=y MODINST=n RUNDM=n

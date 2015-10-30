@@ -41,7 +41,7 @@ pkg_unpack() {
             fi
             ;;
         *)
-            p_run tar -C "$p_work_dir" -xf "$src"
+            pkg_run tar -C "$p_work_dir" -xf "$src"
             ;;
     esac
 }
@@ -59,17 +59,17 @@ pkg_configure() {
 }
 
 pkg_build_pre() {
-    [ -d "$p_build_dir" ] || p_run mkdir -p "$p_build_dir"
-    p_run cd "$p_build_dir"
+    [ -d "$p_build_dir" ] || pkg_run mkdir -p "$p_build_dir"
+    pkg_run cd "$p_build_dir"
 }
 
 default_build() {
     if [ -x "$p_source_dir/configure" ]; then
-        p_run "$p_source_dir/configure" \
+        pkg_run "$p_source_dir/configure" \
             --host="$p_system" \
             --prefix="$p_prefix" \
             $p_options
-        p_run make
+        pkg_run make
     fi
 }
 
@@ -79,7 +79,7 @@ pkg_install_pre() {
 }
 
 default_install() {
-    p_run make DESTDIR="$p_dest_dir" install
+    pkg_run make DESTDIR="$p_dest_dir" install
 
     for name in $p_libs; do
         p_fix_la "$p_dest_dir$p_prefix/lib/lib${name}.la" "$p_dest_dir"

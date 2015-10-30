@@ -2,7 +2,7 @@
 
 pkg_patch() {
     # leave python shebang alone
-    p_run sed -ie '/${PYTHON}/d' \
+    pkg_run sed -ie '/${PYTHON}/d' \
         glib/Makefile.am glib/Makefile.in
 }
 
@@ -13,7 +13,7 @@ pkg_build() {
     echo "ac_cv_func_posix_getgrgid_r=yes" >> "$cache"
     echo "glib_cv_uscore=yes" >> "$cache"
 
-    p_run ./configure \
+    pkg_run ./configure \
         --cache-file="$cache" \
         --host="$p_system" \
         --prefix="$p_prefix" \
@@ -31,5 +31,5 @@ pkg_build() {
         --disable-Bsymbolic \
         --disable-znodelete
 
-    p_run make
+    pkg_run make
 }

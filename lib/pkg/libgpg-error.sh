@@ -6,16 +6,16 @@ p_prefix=""
 p_dest_dir="$sdk_rootfs_prefix"
 
 pkg_build() {
-    p_run ./configure \
+    pkg_run ./configure \
         --host="$target_system" \
         --prefix="$p_prefix" \
         --disable-rpath \
         --disable-languages
 
-    p_run make
+    pkg_run make
 }
 
 pkg_install() {
-    p_run make DESTDIR="$p_dest_dir" install
+    pkg_run make DESTDIR="$p_dest_dir" install
     p_fix_la "$p_dest_dir/lib/libgpg-error.la"
 }

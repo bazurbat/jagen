@@ -3,7 +3,7 @@
 use_toolchain target
 
 pkg_build() {
-    p_run ./configure \
+    pkg_run ./configure \
         --host="$target_system" \
         --prefix="" \
         --disable-maintainer-mode \
@@ -13,9 +13,9 @@ pkg_build() {
         --disable-alsaloop \
         --disable-xmlto
 
-    p_run make
+    pkg_run make
 }
 
 pkg_install() {
-    p_run make DESTDIR="$sdk_rootfs_prefix" install
+    pkg_run make DESTDIR="$sdk_rootfs_prefix" install
 }

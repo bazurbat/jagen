@@ -1,7 +1,7 @@
 #!/bin/sh
 
 pkg_build_host() {
-    p_run ./configure \
+    pkg_run ./configure \
         --target="$target_system" \
         --prefix="$jagen_tools_dir" \
         --program-transform-name='' \
@@ -19,9 +19,9 @@ pkg_build_host() {
         --with-python="/usr/bin/python2.7" \
         --with-zlib
 
-    p_run make
+    pkg_run make
 }
 
 pkg_install_host() {
-    p_run make install
+    pkg_run make install
 }

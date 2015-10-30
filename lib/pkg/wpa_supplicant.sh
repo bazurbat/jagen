@@ -36,30 +36,30 @@ pkg_build() {
 
     echo "CONFIG_IEEE8021X_EAPOL=y"          >> .config
 
-    p_run make
+    pkg_run make
 }
 
 pkg_install() {
     local s="$p_build_dir/$p_name"
     local d="$p_dest_dir$p_prefix"
 
-    p_run install -vd "$d/bin" "$d/sbin" \
+    pkg_run install -vd "$d/bin" "$d/sbin" \
         "$d/etc/dbus-1/system.d" \
         "$d/share/dbus-1/system-services"
 
-    p_run install -vm755 "$s/wpa_cli" "$s/wpa_passphrase" "$d/bin"
+    pkg_run install -vm755 "$s/wpa_cli" "$s/wpa_passphrase" "$d/bin"
 
-    p_run install -vm755 "$s/wpa_supplicant" "$d/sbin"
+    pkg_run install -vm755 "$s/wpa_supplicant" "$d/sbin"
 
-    p_run install -vm644 \
+    pkg_run install -vm644 \
         "$s/dbus/dbus-wpa_supplicant.conf" \
         "$d/etc/dbus-1/system.d/wpa_supplicant.conf"
 
-    p_run install -vm644 \
+    pkg_run install -vm644 \
         "$s/dbus/fi.w1.wpa_supplicant1.service" \
         "$d/share/dbus-1/system-services"
 
-    p_run sed -ri \
+    pkg_run sed -ri \
         -e "s|^Exec=.*(/wpa_supplicant.*)|Exec=$p_prefix/sbin\1|" \
         $d/share/dbus-1/system-services/fi.w1.wpa_supplicant1.service
 }

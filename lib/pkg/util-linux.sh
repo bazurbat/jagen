@@ -6,7 +6,7 @@ p_prefix=""
 p_dest_dir="$sdk_rootfs_prefix"
 
 pkg_build() {
-    p_run ./configure \
+    pkg_run ./configure \
         --host="$target_system" \
         --prefix="$p_prefix" \
         --enable-shared \
@@ -72,9 +72,9 @@ pkg_build() {
         --without-slang \
         --without-utempter
 
-    p_run make
+    pkg_run make
 }
 
 pkg_install() {
-    p_run make DESTDIR="$p_dest_dir" install
+    pkg_run make DESTDIR="$p_dest_dir" install
 }

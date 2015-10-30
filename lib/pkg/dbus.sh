@@ -5,7 +5,7 @@ pkg_build() {
     CFLAGS="$CFLAGS -I$p_dest_dir$p_prefix/include"
     LDFLAGS="$LDFLAGS -L$p_dest_dir$p_prefix/lib"
 
-    p_run ./configure \
+    pkg_run ./configure \
         --host="$p_system" \
         --prefix="$p_prefix" \
         --with-system-pid-file=/run/dbus.pid \
@@ -40,5 +40,5 @@ pkg_build() {
         --without-valgrind \
         --without-x
 
-    p_run make
+    pkg_run make
 }

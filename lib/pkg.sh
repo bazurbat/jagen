@@ -6,7 +6,7 @@
 : ${p_jobs:=$(nproc)}
 : ${p_run_on_error:=exit}
 
-p_run() {
+pkg_run() {
     local cmd="$1"
     debug "$*"
     shift
@@ -44,7 +44,7 @@ p_strip() {
         xargs -r file | grep "ELF.*\(executable\|shared object\).*not stripped" | cut -d: -f1)
 
     for f in $files; do
-        p_run "$STRIP" -v --strip-unneeded \
+        pkg_run "$STRIP" -v --strip-unneeded \
             -R .comment \
             -R .GCC.command.line \
             -R .note.gnu.gold-version \
@@ -53,7 +53,7 @@ p_strip() {
 }
 
 p_patch() {
-    p_run patch -p${1} -i "$jagen_patch_dir/${2}.patch"
+    pkg_run patch -p${1} -i "$jagen_patch_dir/${2}.patch"
 }
 
 p_install_modules() {
@@ -71,7 +71,7 @@ p_install_modules() {
 }
 
 p_depmod() {
-    p_run /sbin/depmod -ae \
+    pkg_run /sbin/depmod -ae \
         -F "$LINUX_KERNEL/System.map" \
         -b "$INSTALL_MOD_PATH" \
         "$kernel_release"
@@ -80,11 +80,11 @@ p_depmod() {
 p_fix_la() {
     local filename="$1"
     local prefix=${2:-"$sdk_rootfs_prefix"}
-    p_run sed -i -e "s|^\(libdir=\)'\(.*\)'$|\1'${prefix}\2'|" "$filename"
+    pkg_run sed -i -e "s|^\(libdir=\)'\(.*\)'$|\1'${prefix}\2'|" "$filename"
 }
 
 p_autoreconf() {
-    p_run autoreconf -if -I "$jagen_host_dir/share/aclocal"
+    pkg_run autoreconf -if -I "$jagen_host_dir/share/aclocal"
 }
 
 . "$jagen_lib_dir/src.sh" || exit

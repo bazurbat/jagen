@@ -2,10 +2,10 @@
 
 p_git_is_dirty() { test "$(git status --porcelain)"; }
 
-p_git_head() { p_run git rev-parse HEAD; }
+p_git_head() { pkg_run git rev-parse HEAD; }
 
 p_git_clone() {
-    p_run git clone \
+    pkg_run git clone \
         --progress \
         --depth 1 \
         --no-single-branch \
@@ -13,39 +13,39 @@ p_git_clone() {
         "$1" "$2"
 }
 
-p_git_fetch() { p_run git fetch --progress -np; }
+p_git_fetch() { pkg_run git fetch --progress -np; }
 
-p_git_pull() { p_run git pull --progress --ff-only; }
+p_git_pull() { pkg_run git pull --progress --ff-only; }
 
 p_git_checkout() {
     local branch=${1:-master}
 
     if [ "$(git branch --list $branch)" ]; then
-        p_run git checkout "$branch"
+        pkg_run git checkout "$branch"
     else
-        p_run git checkout -b "$branch" -t origin/$branch
+        pkg_run git checkout -b "$branch" -t origin/$branch
     fi
 }
 
-p_git_discard() { p_run git checkout .; }
+p_git_discard() { pkg_run git checkout .; }
 
-p_git_clean() { p_run git clean -fxd; }
+p_git_clean() { pkg_run git clean -fxd; }
 
 p_hg_is_dirty() { test "$(hg status)"; }
 
-p_hg_head() { p_run hg id -i; }
+p_hg_head() { pkg_run hg id -i; }
 
-p_hg_clone() { p_run hg clone -r tip "$1" "$2"; }
+p_hg_clone() { pkg_run hg clone -r tip "$1" "$2"; }
 
-p_hg_fetch() { p_run hg pull; }
+p_hg_fetch() { pkg_run hg pull; }
 
-p_hg_pull() { p_run hg pull -u; }
+p_hg_pull() { pkg_run hg pull -u; }
 
-p_hg_checkout() { p_run hg update -c; }
+p_hg_checkout() { pkg_run hg update -c; }
 
-p_hg_discard() { p_run hg update -C; }
+p_hg_discard() { pkg_run hg update -C; }
 
-p_hg_clean() { p_run hg purge --all; }
+p_hg_clean() { pkg_run hg purge --all; }
 
 p__is_dirty() { :; }
 

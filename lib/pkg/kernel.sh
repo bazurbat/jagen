@@ -13,50 +13,50 @@ export KCFLAGS="-mhard-float -Wa,-mhard-float"
 protectordir="$sdk_ezboot_dir/protector/"
 
 pkg_build() {
-    p_run ln -sfT "$jagen_src_dir/linux" linux
+    pkg_run ln -sfT "$jagen_src_dir/linux" linux
 
     if [ $with_kernel_config_default = yes ]; then
-        p_run cp -f kernel-config linux/.config
+        pkg_run cp -f kernel-config linux/.config
     fi
 
-    p_run cd linux
+    pkg_run cd linux
 
-    p_run $CROSS_MAKE
+    pkg_run $CROSS_MAKE
 
     if [ $with_kernel_proprietary_modules = yes ]; then
-        p_run cd "$p_source_dir/proprietary"
-        p_run $CROSS_MAKE -C spinor clean
-        p_run $CROSS_MAKE -C spinor
-        p_run $CROSS_MAKE -C sd_block
+        pkg_run cd "$p_source_dir/proprietary"
+        pkg_run $CROSS_MAKE -C spinor clean
+        pkg_run $CROSS_MAKE -C spinor
+        pkg_run $CROSS_MAKE -C sd_block
     fi
 
     if [ $with_kernel_extras = yes ]; then
-        p_run cd "$p_source_dir/extra"
-        p_run $CROSS_MAKE clean
-        p_run $CROSS_MAKE all
+        pkg_run cd "$p_source_dir/extra"
+        pkg_run $CROSS_MAKE clean
+        pkg_run $CROSS_MAKE all
     fi
 
-    p_run $CROSS_MAKE -C "$protectordir"
+    pkg_run $CROSS_MAKE -C "$protectordir"
 }
 
 pkg_install() {
     cd linux || return $?
 
-    p_run $CROSS_MAKE modules_install
+    pkg_run $CROSS_MAKE modules_install
 
     if [ $with_kernel_proprietary_modules = yes ]; then
-        p_run cd "$kernel_dir/proprietary"
-        p_run $CROSS_MAKE -C spinor modules_install
-        p_run $CROSS_MAKE -C sd_block modules_install
+        pkg_run cd "$kernel_dir/proprietary"
+        pkg_run $CROSS_MAKE -C spinor modules_install
+        pkg_run $CROSS_MAKE -C sd_block modules_install
     fi
 
     if [ $with_kernel_extras = yes ]; then
-        p_run cd "$kernel_dir/extra"
-        p_run $CROSS_MAKE modules_install
+        pkg_run cd "$kernel_dir/extra"
+        pkg_run $CROSS_MAKE modules_install
     fi
 
-    p_run cd "$kernel_modules_dir"
-    p_run rm -f "build" "source"
+    pkg_run cd "$kernel_modules_dir"
+    pkg_run rm -f "build" "source"
 }
 
 get_start_addr() {
@@ -70,25 +70,25 @@ pkg_image() {
     local tmpdir="$jagen_target_dir/kernel-image"
     p_clean_dir "$tmpdir"
 
-    p_run cd linux
-    p_run $CROSS_MAKE vmlinux.bin
+    pkg_run cd linux
+    pkg_run $CROSS_MAKE vmlinux.bin
     gzip -9cnf arch/mips/boot/vmlinux.bin > "$tmpdir/vmlinux_gz.zbf" || exit
 
-    p_run cd "$tmpdir"
-    p_run bash "$jagen_private_dir/scripts/build_cpu_xload.bash" \
+    pkg_run cd "$tmpdir"
+    pkg_run bash "$jagen_private_dir/scripts/build_cpu_xload.bash" \
         vmlinux_gz $XSDK_DEFAULT_CPU_CERTID $XSDK_DEFAULT_KEY_DOMAIN
-    p_run genzbf \
+    pkg_run genzbf \
         -l 0x84000000 \
         -s $(get_start_addr "$LINUX_KERNEL/vmlinux") \
         -a lzef -o vmlinux_xload.zbf \
         vmlinux_gz_${XSDK_DEFAULT_KEY_DOMAIN}.xload
 
     p_clean_dir romfs
-    p_run cp vmlinux_xload.zbf romfs
-    p_run genromfs -V MIPSLINUX_XLOAD -d romfs \
+    pkg_run cp vmlinux_xload.zbf romfs
+    pkg_run genromfs -V MIPSLINUX_XLOAD -d romfs \
         -f "$jagen_target_dir/zbimage-linux-xload"
 
-    p_run "$protectordir/zbprotector" \
+    pkg_run "$protectordir/zbprotector" \
         "$jagen_target_dir/zbimage-linux-xload" \
         "$jagen_target_dir/zbimage-linux-xload.zbc"
 }

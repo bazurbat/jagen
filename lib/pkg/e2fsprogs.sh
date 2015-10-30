@@ -3,7 +3,7 @@
 use_toolchain target
 
 pkg_patch() {
-    p_run rm -rf doc
+    pkg_run rm -rf doc
 }
 
 pkg_build() {
@@ -14,7 +14,7 @@ pkg_build() {
     CFLAGS="$CFLAGS -D_GNU_SOURCE" \
     ac_cv_path_LDCONFIG=: \
     QUOTA_CMT='#' \
-    p_run ./configure \
+    pkg_run ./configure \
         --prefix="" \
         --host="$target_system" \
         --enable-symlink-install \
@@ -43,9 +43,9 @@ pkg_build() {
         --disable-rpath \
         --with-root-prefix=""
 
-    p_run make
+    pkg_run make
 }
 
 pkg_install() {
-    p_run make DESTDIR="$sdk_rootfs_prefix" install
+    pkg_run make DESTDIR="$sdk_rootfs_prefix" install
 }

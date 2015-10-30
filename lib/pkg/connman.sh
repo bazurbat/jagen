@@ -3,7 +3,7 @@
 pkg_build() {
     export ac_cv_lib_resolv_ns_initparse=yes
 
-    p_run ./configure \
+    pkg_run ./configure \
         --host="$p_system" \
         --prefix="$p_prefix" \
         --sysconfdir="/etc" \
@@ -18,18 +18,18 @@ pkg_build() {
         --disable-wispr \
         --disable-client
 
-    p_run make
+    pkg_run make
 }
 
 install_dbus_conf() {
     local conf_path="/etc/dbus-1/system.d"
 
-    p_run install -vd "$sdk_rootfs_root$conf_path"
-    p_run install -vm 644 \
+    pkg_run install -vd "$sdk_rootfs_root$conf_path"
+    pkg_run install -vm 644 \
         "$jagen_target_dir$conf_path/connman.conf" \
         "$sdk_rootfs_root$conf_path"
 }
 
 pkg_install() {
-    p_run make DESTDIR="$p_dest_dir" install
+    pkg_run make DESTDIR="$p_dest_dir" install
 }

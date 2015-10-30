@@ -108,7 +108,7 @@ pkg_build() {
             ;;
     esac
 
-    p_run $p_source_dir/configure --prefix="$prefix" \
+    pkg_run $p_source_dir/configure --prefix="$prefix" \
         --bindir="${prefix}/bin" \
         --enable-gpl --enable-nonfree \
         --disable-static --enable-shared \
@@ -127,7 +127,7 @@ pkg_build() {
         --disable-stripping \
         $options
 
-    p_run make
+    pkg_run make
 }
 
 pkg_build_host() {
@@ -139,9 +139,9 @@ pkg_build_target() {
 }
 
 pkg_install_host() {
-    p_run make install
+    pkg_run make install
 }
 
 pkg_install_target() {
-    p_run make DESTDIR="$jagen_target_dir" install
+    pkg_run make DESTDIR="$jagen_target_dir" install
 }

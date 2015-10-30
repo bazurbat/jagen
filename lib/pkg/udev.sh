@@ -13,7 +13,7 @@ pkg_build() {
     export KMOD_CFLAGS="-I$include_dir"
     export KMOD_LIBS="-L$lib_dir -lkmod"
 
-    p_run ./configure \
+    pkg_run ./configure \
         --host="$target_system" \
         --prefix="" \
         --disable-gtk-doc-html \
@@ -25,9 +25,9 @@ pkg_build() {
         --disable-rule_generator \
         --disable-floppy
 
-    p_run make
+    pkg_run make
 }
 
 pkg_install() {
-    p_run make DESTDIR="$p_dest_dir" install
+    pkg_run make DESTDIR="$p_dest_dir" install
 }

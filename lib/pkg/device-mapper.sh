@@ -3,7 +3,7 @@
 use_toolchain target
 
 pkg_build() {
-    p_run ./configure \
+    pkg_run ./configure \
         --host="$target_system" \
         --prefix="" \
         --disable-lvm1_fallback \
@@ -29,11 +29,11 @@ pkg_build() {
         --disable-dmeventd \
         --disable-selinux
 
-    p_run make device-mapper
+    pkg_run make device-mapper
 }
 
 pkg_install() {
-    p_run make DESTDIR="$sdk_rootfs_prefix" install_device-mapper
-    p_run chmod 755 "$sdk_rootfs_prefix"/lib/libdevmapper*
-    p_run chmod 755 "$sdk_rootfs_prefix"/sbin/dmsetup*
+    pkg_run make DESTDIR="$sdk_rootfs_prefix" install_device-mapper
+    pkg_run chmod 755 "$sdk_rootfs_prefix"/lib/libdevmapper*
+    pkg_run chmod 755 "$sdk_rootfs_prefix"/sbin/dmsetup*
 }

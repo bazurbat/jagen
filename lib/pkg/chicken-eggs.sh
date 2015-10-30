@@ -7,18 +7,18 @@ case $jagen_cmake_build_type in
 esac
 
 delete_install_targets() {
-    p_run find "$p_build_dir" -name "*-install" -delete
+    pkg_run find "$p_build_dir" -name "*-install" -delete
 }
 
 pkg_install_host() {
     delete_install_targets
 
-    p_run cmake -G"$jagen_cmake_generator" \
+    pkg_run cmake -G"$jagen_cmake_generator" \
         -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
         -DCMAKE_INSTALL_PREFIX="$jagen_host_dir" \
         "$p_source_dir"
 
-    p_run cmake --build . -- $jagen_cmake_build_options
+    pkg_run cmake --build . -- $jagen_cmake_build_options
 }
 
 pkg_install_target() {
@@ -26,7 +26,7 @@ pkg_install_target() {
 
     case $target_board in
         ast25|ast50|ast100)
-            p_run cmake -G"$jagen_cmake_generator" \
+            pkg_run cmake -G"$jagen_cmake_generator" \
                 -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
                 -DCMAKE_SYSTEM_NAME="Linux" \
                 -DCMAKE_FIND_ROOT_PATH="$jagen_target_dir$jagen_target_prefix" \
@@ -36,7 +36,7 @@ pkg_install_target() {
                 "$p_source_dir"
             ;;
         *)
-            p_run cmake -G"$jagen_cmake_generator" \
+            pkg_run cmake -G"$jagen_cmake_generator" \
                 -DCMAKE_TOOLCHAIN_FILE="$jagen_src_dir/android-cmake/android.toolchain.cmake" \
                 -DANDROID_STANDALONE_TOOLCHAIN="${jagen_target_dir}/${target_toolchain}" \
                 -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
@@ -49,5 +49,5 @@ pkg_install_target() {
             ;;
     esac
 
-    p_run cmake --build . -- $jagen_cmake_build_options
+    pkg_run cmake --build . -- $jagen_cmake_build_options
 }

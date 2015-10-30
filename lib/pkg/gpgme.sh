@@ -8,7 +8,7 @@ p_dest_dir="$sdk_rootfs_prefix"
 pkg_build() {
     export ac_cv_lib_pthread_pthread_create=no
 
-    p_run ./configure \
+    pkg_run ./configure \
         --host="$target_system" \
         --prefix="" \
         --includedir="/include" \
@@ -20,10 +20,10 @@ pkg_build() {
         --disable-g13-test \
         --with-sysroot="$p_dest_dir"
 
-    p_run make
+    pkg_run make
 }
 
 pkg_install() {
-    p_run make DESTDIR="$p_dest_dir" install
+    pkg_run make DESTDIR="$p_dest_dir" install
     p_fix_la "$p_dest_dir/lib/libgpgme.la"
 }
