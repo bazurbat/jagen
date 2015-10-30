@@ -1,6 +1,6 @@
 #!/bin/sh
 
-pkg_jobs=1
+pkg_run_jobs=1
 
 use_env tools
 use_toolchain target
