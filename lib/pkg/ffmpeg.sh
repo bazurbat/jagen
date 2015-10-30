@@ -1,6 +1,6 @@
 #!/bin/sh
 
-p_build_dir="$p_work_dir/build${p_config:+-$p_config}"
+pkg_build_dir="$pkg_work_dir/build${pkg_config:+-$pkg_config}"
 
 encoders="pcm_s16le"
 
@@ -37,24 +37,24 @@ protocols="file pipe rtp tcp"
 
 filters="afade aresample volume"
 
-pkg_patch() {
+jagen_pkg_patch() {
     if [ "$jagen_sdk" = "hisilicon" ]; then
         sed -ri "s/^(SLIBNAME_WITH_MAJOR)='.*'$/\\1='\$(SLIBNAME)'/g" \
-            "$p_source_dir/configure"
+            "$pkg_source_dir/configure"
         sed -ri "s/^(SLIB_INSTALL_NAME)='.*'$/\\1='\$(SLIBNAME)'/g" \
-            "$p_source_dir/configure"
+            "$pkg_source_dir/configure"
         sed -ri "s/^(SLIB_INSTALL_LINKS)='.*'$/\\1=''/g" \
-            "$p_source_dir/configure"
+            "$pkg_source_dir/configure"
     fi
 }
 
-pkg_build() {
+jagen_pkg_build() {
     local prefix cross_options
 
     CFLAGS=""
     CXXFLAGS=""
 
-    if [ "$p_config" = "host" ]; then
+    if [ "$pkg_config" = "host" ]; then
         prefix="$jagen_host_dir"
     else
         prefix="$jagen_target_prefix"
@@ -108,7 +108,7 @@ pkg_build() {
             ;;
     esac
 
-    pkg_run $p_source_dir/configure --prefix="$prefix" \
+    pkg_run $pkg_source_dir/configure --prefix="$prefix" \
         --bindir="${prefix}/bin" \
         --enable-gpl --enable-nonfree \
         --disable-static --enable-shared \
@@ -130,18 +130,18 @@ pkg_build() {
     pkg_run make
 }
 
-pkg_build_host() {
-    pkg_build
+jagen_pkg_build_host() {
+    jagen_pkg_build
 }
 
-pkg_build_target() {
-    pkg_build
+jagen_pkg_build_target() {
+    jagen_pkg_build
 }
 
-pkg_install_host() {
+jagen_pkg_install_host() {
     pkg_run make install
 }
 
-pkg_install_target() {
+jagen_pkg_install_target() {
     pkg_run make DESTDIR="$jagen_target_dir" install
 }
