@@ -23,10 +23,15 @@ case $1 in
         exec jagen refresh
         ;;
     update)
-        if pkg_src_is_dirty "$jagen_dir"; then
-            warning "$jagen_dir is dirty, not updating"
+        if in_flags offline; then
+            warning "offline mode, skipping jagen update"
         else
-            pkg_src_pull "$jagen_dir"
+            cd "$jagen_dir" || exit
+            if [ "$(git status --porcelain)" ]; then
+                warning "$jagen_dir is dirty, not updating"
+            else
+                git pull --ff-only
+            fi
         fi
         exec jagen refresh
         ;;
