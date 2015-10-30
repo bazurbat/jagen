@@ -787,7 +787,7 @@ function Script:patch()
     for _, patch in ipairs(self.pkg.patches or {}) do
         local name = patch[1]
         local strip = patch[2]
-        table.insert(o, string.format('  p_patch %d "%s"', strip, name))
+        table.insert(o, string.format('  pkg_run_patch %d "%s"', strip, name))
     end
     table.insert(o, '}')
     return table.concat(o, '\n')

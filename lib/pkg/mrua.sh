@@ -28,13 +28,13 @@ pkg_modules() {
     local src_dir="$p_source_dir/modules/$kernel_release"
 
     pkg_run cd "$src_dir"
-    p_install_modules em8xxx llad
+    pkg_install_modules em8xxx llad
 
     if in_flags with_alsa; then
         pkg_run cp -f \
             "$p_source_dir/MRUA_src/rua/emhwlib_kernel/kernel_src/em8xxxalsa.ko" \
             "$src_dir"
-        p_install_modules em8xxxalsa
+        pkg_install_modules em8xxxalsa
     fi
 }
 

@@ -54,7 +54,7 @@ default_patch() {
 
 pkg_configure() {
     if [ "$p_with_provided_libtool" ]; then
-        p_autoreconf
+        pkg_run_autoreconf
     fi
 }
 
@@ -82,7 +82,7 @@ default_install() {
     pkg_run make DESTDIR="$p_dest_dir" install
 
     for name in $p_libs; do
-        p_fix_la "$p_dest_dir$p_prefix/lib/lib${name}.la" "$p_dest_dir"
+        pkg_fix_la "$p_dest_dir$p_prefix/lib/lib${name}.la" "$p_dest_dir"
     done
 }
 

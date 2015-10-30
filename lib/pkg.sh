@@ -52,11 +52,11 @@ pkg_strip_dir() {
     done
 }
 
-p_patch() {
+pkg_run_patch() {
     pkg_run patch -p${1} -i "$jagen_patch_dir/${2}.patch"
 }
 
-p_install_modules() {
+pkg_install_modules() {
     mkdir -p "$kernel_extra_modules_dir"
     touch "$kernel_modules_dir/modules.order"
     touch "$kernel_modules_dir/modules.builtin"
@@ -70,20 +70,20 @@ p_install_modules() {
     )
 }
 
-p_depmod() {
+pkg_run_depmod() {
     pkg_run /sbin/depmod -ae \
         -F "$LINUX_KERNEL/System.map" \
         -b "$INSTALL_MOD_PATH" \
         "$kernel_release"
 }
 
-p_fix_la() {
+pkg_fix_la() {
     local filename="$1"
     local prefix=${2:-"$sdk_rootfs_prefix"}
     pkg_run sed -i -e "s|^\(libdir=\)'\(.*\)'$|\1'${prefix}\2'|" "$filename"
 }
 
-p_autoreconf() {
+pkg_run_autoreconf() {
     pkg_run autoreconf -if -I "$jagen_host_dir/share/aclocal"
 }
 

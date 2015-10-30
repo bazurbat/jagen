@@ -17,5 +17,5 @@ pkg_build() {
 
 pkg_install() {
     pkg_run make DESTDIR="$p_dest_dir" install
-    p_fix_la "$p_dest_dir/lib/libgpg-error.la"
+    pkg_fix_la "$p_dest_dir/lib/libgpg-error.la"
 }

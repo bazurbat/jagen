@@ -20,7 +20,7 @@ pkg_install() {
 
     pkg_run install -vm644 os/linux/rt5370sta.ko "$dest"
 
-    p_depmod || return $?
+    pkg_run_depmod || return $?
 
     pkg_run install -vd "$cfg_dest"
     pkg_run install -vm644 RT2870STA.dat "$cfg_dest"

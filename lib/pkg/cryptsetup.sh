@@ -3,7 +3,7 @@
 use_toolchain target
 
 pkg_patch() {
-    p_autoreconf
+    pkg_run_autoreconf
 }
 
 pkg_build() {

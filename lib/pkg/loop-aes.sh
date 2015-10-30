@@ -15,5 +15,5 @@ pkg_build() {
 
 pkg_install() {
     cd "tmp-d-kbuild" &&
-    p_install_modules "loop"
+    pkg_install_modules "loop"
 }
