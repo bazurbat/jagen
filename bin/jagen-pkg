@@ -57,12 +57,12 @@ fi
 
 [ -d "$p_build_dir" ] && cd "$p_build_dir"
 
-run_stage "jagen_${p_stage}_pre"
+run_stage "jagen_pkg_${p_stage}_pre"
 
-if is_function "jagen_${p_stage}_${p_config}"; then
-    run_stage "jagen_${p_stage}_${p_config}"
+if is_function "jagen_pkg_${p_stage}_${p_config}"; then
+    run_stage "jagen_pkg_${p_stage}_${p_config}"
 else
-    run_stage "jagen_${p_stage}"
+    run_stage "jagen_pkg_${p_stage}"
 fi
 
-run_stage "jagen_${p_stage}_post"
+run_stage "jagen_pkg_${p_stage}_post"

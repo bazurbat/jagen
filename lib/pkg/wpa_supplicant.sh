@@ -1,6 +1,6 @@
 #!/bin/sh
 
-pkg_build() {
+jagen_pkg_build() {
     local s="$p_build_dir/$p_name"
 
     cd "$p_name" || return $?
@@ -39,7 +39,7 @@ pkg_build() {
     pkg_run make
 }
 
-pkg_install() {
+jagen_pkg_install() {
     local s="$p_build_dir/$p_name"
     local d="$p_dest_dir$p_prefix"
 

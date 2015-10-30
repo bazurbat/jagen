@@ -12,7 +12,7 @@ build_libs="rmcore rmcec rmedid rmhdmi rmhsi rmi2c rmsha1 rmvideoout rmoutput"
 
 PATH="$SMP86XX_TOOLCHAIN_PATH/bin:$PATH"
 
-pkg_build() {
+jagen_pkg_build() {
     pkg_run make
 
     for lib in $build_libs; do
@@ -24,7 +24,7 @@ pkg_build() {
     pkg_run make -C MRUA_src/splashscreen/utils
 }
 
-pkg_modules() {
+jagen_pkg_modules() {
     local src_dir="$p_source_dir/modules/$kernel_release"
 
     pkg_run cd "$src_dir"
@@ -38,7 +38,7 @@ pkg_modules() {
     fi
 }
 
-pkg_install() {
+jagen_pkg_install() {
     local bin_dst="$jagen_install_dir/bin"
     local lib_dst="$jagen_install_dir/lib"
 

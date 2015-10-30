@@ -1,6 +1,6 @@
 #!/bin/sh
 
-pkg_patch() {
+jagen_pkg_patch() {
     enable_option() {
         sed -i -e "/#define $1/a #define $1" \
             include/freetype/config/ftoption.h \

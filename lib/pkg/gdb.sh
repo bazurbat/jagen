@@ -1,6 +1,6 @@
 #!/bin/sh
 
-pkg_build_host() {
+jagen_pkg_build_host() {
     pkg_run ./configure \
         --target="$target_system" \
         --prefix="$jagen_tools_dir" \
@@ -22,6 +22,6 @@ pkg_build_host() {
     pkg_run make
 }
 
-pkg_install_host() {
+jagen_pkg_install_host() {
     pkg_run make install
 }

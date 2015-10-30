@@ -1,6 +1,6 @@
 #!/bin/sh
 
-pkg_install() {
+jagen_pkg_install() {
     local dst="$jagen_install_dir/xload"
     local dts real
 

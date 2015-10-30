@@ -4,7 +4,7 @@ use_toolchain target
 
 export ARCH=mips
 
-pkg_build() {
+jagen_pkg_build() {
     PATH="$jagen_toolchain_dir/bin:$PATH"
 
     pkg_run make \
@@ -13,7 +13,7 @@ pkg_build() {
         USE_KBUILD=y MODINST=n RUNDM=n
 }
 
-pkg_install() {
+jagen_pkg_install() {
     cd "tmp-d-kbuild" &&
     pkg_install_modules "loop"
 }

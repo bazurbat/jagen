@@ -3,7 +3,7 @@
 p_source_dir="$jagen_src_dir/sigma-rootfs"
 p_jobs=1
 
-pkg_build() {
+jagen_pkg_build() {
     use_env tools
 
     PATH="$SMP86XX_TOOLCHAIN_PATH/bin:$PATH"
@@ -117,7 +117,7 @@ install_files() {
     fi
 }
 
-pkg_install() {
+jagen_pkg_install() {
     use_toolchain target
 
     pkg_run cd "$sdk_rootfs_root"

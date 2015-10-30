@@ -4,7 +4,7 @@ use_toolchain target
 
 workdir="gdb/gdbserver"
 
-pkg_build() {
+jagen_pkg_build() {
     pkg_run cd "$workdir"
     pkg_run ./configure \
         --host="$target_system" \
@@ -15,7 +15,7 @@ pkg_build() {
     pkg_run make
 }
 
-pkg_install() {
+jagen_pkg_install() {
     pkg_run cd "$workdir"
     pkg_run make DESTDIR="$sdk_rootfs_prefix" install
 }

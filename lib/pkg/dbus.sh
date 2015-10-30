@@ -1,6 +1,6 @@
 #!/bin/sh
 
-pkg_build() {
+jagen_pkg_build() {
     # configure fails to run expat test program without this
     CFLAGS="$CFLAGS -I$p_dest_dir$p_prefix/include"
     LDFLAGS="$LDFLAGS -L$p_dest_dir$p_prefix/lib"

@@ -12,7 +12,7 @@ export KCFLAGS="-mhard-float -Wa,-mhard-float"
 
 protectordir="$sdk_ezboot_dir/protector/"
 
-pkg_build() {
+jagen_pkg_build() {
     pkg_run ln -sfT "$jagen_src_dir/linux" linux
 
     if [ $with_kernel_config_default = yes ]; then
@@ -39,7 +39,7 @@ pkg_build() {
     pkg_run $CROSS_MAKE -C "$protectordir"
 }
 
-pkg_install() {
+jagen_pkg_install() {
     cd linux || return $?
 
     pkg_run $CROSS_MAKE modules_install
@@ -64,7 +64,7 @@ get_start_addr() {
     echo 0x$($NM $1 | awk '/\<kernel_entry\>/ { print $1 }')
 }
 
-pkg_image() {
+jagen_pkg_image() {
     add_PATH "$sdk_rootfs_prefix/bin"
 
     local tmpdir="$jagen_target_dir/kernel-image"

@@ -3,12 +3,12 @@
 p_work_dir="$jagen_install_dir"
 p_source_dir="${jagen_target_dir}${jagen_target_prefix}"
 
-pkg_clean() {
+jagen_pkg_clean() {
     pkg_clean_dir "$p_work_dir"
     pkg_clean_dir "$p_source_dir"
 }
 
-pkg_install() {
+jagen_pkg_install() {
     local bins="csi smplayer"
 
     [ -d "$p_work_dir/bin" ] || mkdir -p "$p_work_dir/bin"
@@ -25,7 +25,7 @@ pkg_install() {
     fi
 }
 
-pkg_strip() {
+jagen_pkg_strip() {
     pkg_run cd "$p_work_dir"
 
     pkg_run find lib -type f \
@@ -33,7 +33,7 @@ pkg_strip() {
         -print -delete
 }
 
-pkg_deploy() {
+jagen_pkg_deploy() {
     : ${sdk_out_dir:?}
     local out_dir="$sdk_out_dir/system"
 

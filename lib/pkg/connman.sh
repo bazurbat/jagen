@@ -1,6 +1,6 @@
 #!/bin/sh
 
-pkg_build() {
+jagen_pkg_build() {
     export ac_cv_lib_resolv_ns_initparse=yes
 
     pkg_run ./configure \
@@ -30,6 +30,6 @@ install_dbus_conf() {
         "$sdk_rootfs_root$conf_path"
 }
 
-pkg_install() {
+jagen_pkg_install() {
     pkg_run make DESTDIR="$p_dest_dir" install
 }

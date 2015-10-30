@@ -5,13 +5,13 @@ use_toolchain target
 p_prefix=""
 p_dest_dir="$sdk_rootfs_prefix"
 
-pkg_patch() {
+jagen_pkg_patch() {
     pkg_run sed -ri \
         's:^(pkgconfigdir = ).*$:\1$(libdir)/pkgconfig:g' \
         Makefile.in
 }
 
-pkg_build() {
+jagen_pkg_build() {
     export LIBUSB_CFLAGS="-I$sdk_rootfs_prefix/include/libusb-1.0"
     export LIBUSB_LIBS="-L$sdk_rootfs_prefix/lib -lusb-1.0"
 
@@ -24,6 +24,6 @@ pkg_build() {
     pkg_run make
 }
 
-pkg_install() {
+jagen_pkg_install() {
     pkg_run make DESTDIR="$p_dest_dir" install
 }

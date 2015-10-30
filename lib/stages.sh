@@ -1,6 +1,6 @@
 #!/bin/sh
 
-pkg_clean() {
+jagen_pkg_clean() {
     set -- $p_source
     local kind="$1"
 
@@ -17,7 +17,7 @@ pkg_clean() {
     pkg_clean_dir "$p_work_dir"
 }
 
-pkg_unpack() {
+jagen_pkg_unpack() {
     set -- $p_source
     local kind="$1"
     local src="${2:-$1}"
@@ -52,13 +52,13 @@ default_patch() {
     fi
 }
 
-pkg_configure() {
+jagen_pkg_configure() {
     if [ "$p_with_provided_libtool" ]; then
         pkg_run_autoreconf
     fi
 }
 
-pkg_build_pre() {
+jagen_pkg_build_pre() {
     [ -d "$p_build_dir" ] || pkg_run mkdir -p "$p_build_dir"
     pkg_run cd "$p_build_dir"
 }
@@ -73,7 +73,7 @@ default_build() {
     fi
 }
 
-pkg_install_pre() {
+jagen_pkg_install_pre() {
     # for packages that do not have build stage
     pkg_build_pre
 }
@@ -86,8 +86,8 @@ default_install() {
     done
 }
 
-pkg_patch() { default_patch; }
+jagen_pkg_patch() { default_patch; }
 
-pkg_build() { default_build; }
+jagen_pkg_build() { default_build; }
 
-pkg_install() { default_install; }
+jagen_pkg_install() { default_install; }

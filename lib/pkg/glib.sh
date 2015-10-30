@@ -1,12 +1,12 @@
 #!/bin/sh
 
-pkg_patch() {
+jagen_pkg_patch() {
     # leave python shebang alone
     pkg_run sed -ie '/${PYTHON}/d' \
         glib/Makefile.am glib/Makefile.in
 }
 
-pkg_build() {
+jagen_pkg_build() {
     local cache="cross_cache.conf"
     echo "glib_cv_stack_grows=no" > "$cache"
     echo "ac_cv_func_posix_getpwuid_r=yes" >> "$cache"

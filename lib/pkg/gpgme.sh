@@ -5,7 +5,7 @@ use_toolchain target
 p_prefix=""
 p_dest_dir="$sdk_rootfs_prefix"
 
-pkg_build() {
+jagen_pkg_build() {
     export ac_cv_lib_pthread_pthread_create=no
 
     pkg_run ./configure \
@@ -23,7 +23,7 @@ pkg_build() {
     pkg_run make
 }
 
-pkg_install() {
+jagen_pkg_install() {
     pkg_run make DESTDIR="$p_dest_dir" install
     pkg_fix_la "$p_dest_dir/lib/libgpgme.la"
 }

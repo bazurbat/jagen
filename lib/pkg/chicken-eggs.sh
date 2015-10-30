@@ -10,7 +10,7 @@ delete_install_targets() {
     pkg_run find "$p_build_dir" -name "*-install" -delete
 }
 
-pkg_install_host() {
+jagen_pkg_install_host() {
     delete_install_targets
 
     pkg_run cmake -G"$jagen_cmake_generator" \
@@ -21,7 +21,7 @@ pkg_install_host() {
     pkg_run cmake --build . -- $jagen_cmake_build_options
 }
 
-pkg_install_target() {
+jagen_pkg_install_target() {
     delete_install_targets
 
     case $target_board in

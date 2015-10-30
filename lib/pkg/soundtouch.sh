@@ -2,6 +2,6 @@
 
 p_source_dir="$p_work_dir/soundtouch"
 
-pkg_patch() {
+jagen_pkg_patch() {
     pkg_run ./bootstrap
 }

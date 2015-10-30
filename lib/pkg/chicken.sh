@@ -6,7 +6,7 @@ case $jagen_cmake_build_type in
     *) jagen_cmake_build_type=Release ;;
 esac
 
-pkg_build_host() {
+jagen_pkg_build_host() {
     pkg_run cmake -G"$jagen_cmake_generator" \
         -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
         -DCMAKE_INSTALL_PREFIX="$jagen_host_dir" \
@@ -16,7 +16,7 @@ pkg_build_host() {
     pkg_run cmake --build . -- $jagen_cmake_build_options
 }
 
-pkg_build_target() {
+jagen_pkg_build_target() {
     case $target_board in
         ast25|ast50|ast100)
             pkg_run cmake -G"$jagen_cmake_generator" \
@@ -41,11 +41,11 @@ pkg_build_target() {
     pkg_run cmake --build . -- $jagen_cmake_build_options
 }
 
-pkg_install_host() {
+jagen_pkg_install_host() {
     pkg_run cmake --build . --target install -- $jagen_cmake_build_options
 }
 
-pkg_install_target() {
+jagen_pkg_install_target() {
     # supplying this directly on command line fails on Ubuntu
     export DESTDIR="$jagen_target_dir"
     pkg_run cmake --build . --target install -- $jagen_cmake_build_options

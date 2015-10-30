@@ -2,7 +2,7 @@
 
 use_toolchain target
 
-pkg_build() {
+jagen_pkg_build() {
     CFLAGS="$CFLAGS -I$jagen_target_dir/$jagen_target_prefix/include" \
     pkg_run ./configure \
         --host="$target_system" \
@@ -19,6 +19,6 @@ pkg_build() {
     pkg_run make
 }
 
-pkg_install() {
+jagen_pkg_install() {
     pkg_run make DESTDIR="$jagen_target_dir" install
 }

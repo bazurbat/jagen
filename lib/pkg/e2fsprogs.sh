@@ -2,11 +2,11 @@
 
 use_toolchain target
 
-pkg_patch() {
+jagen_pkg_patch() {
     pkg_run rm -rf doc
 }
 
-pkg_build() {
+jagen_pkg_build() {
 # ac_cv_lib_uuid_uuid_generate=yes \
 # ac_cv_lib_blkid_blkid_get_cache=yes \
 # to use from util-linux
@@ -46,6 +46,6 @@ pkg_build() {
     pkg_run make
 }
 
-pkg_install() {
+jagen_pkg_install() {
     pkg_run make DESTDIR="$sdk_rootfs_prefix" install
 }

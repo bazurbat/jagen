@@ -2,11 +2,11 @@
 
 use_toolchain target
 
-pkg_patch() {
+jagen_pkg_patch() {
     pkg_run_autoreconf
 }
 
-pkg_build() {
+jagen_pkg_build() {
     pkg_run ./configure \
         --host="$target_system" \
         --prefix="" \
@@ -26,6 +26,6 @@ pkg_build() {
     pkg_run make
 }
 
-pkg_install() {
+jagen_pkg_install() {
     pkg_run make DESTDIR="$sdk_rootfs_prefix" install
 }

@@ -2,7 +2,7 @@
 
 use_toolchain target
 
-pkg_build() {
+jagen_pkg_build() {
     # NOTE: alsa utils fail with link errors without ucm
     pkg_run ./configure \
         --host="$target_system" \
@@ -28,6 +28,6 @@ pkg_build() {
     pkg_run make
 }
 
-pkg_install() {
+jagen_pkg_install() {
     pkg_run make DESTDIR="$sdk_rootfs_prefix" install
 }

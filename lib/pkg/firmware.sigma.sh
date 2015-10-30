@@ -3,12 +3,12 @@
 p_work_dir="$jagen_install_dir"
 p_source_dir="${jagen_target_dir}${jagen_target_prefix}"
 
-pkg_clean() {
+jagen_pkg_clean() {
     pkg_clean_dir "$p_work_dir"
     pkg_clean_dir "$p_source_dir"
 }
 
-pkg_unpack() {
+jagen_pkg_unpack() {
     pkg_run cd "$p_work_dir"
 
     pkg_run install -d -m 755 bin dev etc home lib libexec mnt proc run sbin share sys usr var
@@ -47,7 +47,7 @@ create_xmaterial() {
     pkg_run genromfs -d "$workdir" -f "$jagen_target_dir/xmaterial.romfs" -V xmaterial
 }
 
-pkg_material() {
+jagen_pkg_material() {
     create_imaterial || return $?
     create_xmaterial || return $?
 }
@@ -74,7 +74,7 @@ install_wpa_supplicant() {
         "$p_work_dir/sbin"
 }
 
-pkg_install() {
+jagen_pkg_install() {
     local bin="audioplayer demo jabba midiplayer smplayer db-service \
         csi i2c_debug uart-shell ast-service pcf8563 agent-smith"
 
@@ -116,7 +116,7 @@ pkg_install() {
     pkg_run cp -vaf "$jagen_private_dir"/firmware/* "$jagen_install_dir"
 }
 
-pkg_strip() {
+jagen_pkg_strip() {
     pkg_run cd "$p_work_dir"
 
     pkg_run find lib -type f \

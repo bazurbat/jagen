@@ -2,7 +2,7 @@
 
 use_toolchain target
 
-pkg_build() {
+jagen_pkg_build() {
     pkg_run ./configure \
         --host="$target_system" \
         --prefix="" \
@@ -32,7 +32,7 @@ pkg_build() {
     pkg_run make device-mapper
 }
 
-pkg_install() {
+jagen_pkg_install() {
     pkg_run make DESTDIR="$sdk_rootfs_prefix" install_device-mapper
     pkg_run chmod 755 "$sdk_rootfs_prefix"/lib/libdevmapper*
     pkg_run chmod 755 "$sdk_rootfs_prefix"/sbin/dmsetup*

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-pkg_build_host() {
+jagen_pkg_build_host() {
     pkg_run cmake -G"$jagen_cmake_generator" \
         -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
         -DCMAKE_INSTALL_PREFIX="$jagen_tools_dir" \
@@ -11,7 +11,7 @@ pkg_build_host() {
     pkg_run cmake --build . -- $jagen_cmake_build_options
 }
 
-pkg_build_target() {
+jagen_pkg_build_target() {
     pkg_run cmake -G"$jagen_cmake_generator" \
         -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
         -DCMAKE_INSTALL_PREFIX="$sdk_rootfs_root" \
@@ -21,10 +21,10 @@ pkg_build_target() {
     pkg_run cmake --build . -- $jagen_cmake_build_options
 }
 
-pkg_install_host() {
+jagen_pkg_install_host() {
     pkg_run cmake --build . --target install
 }
 
-pkg_install_target() {
+jagen_pkg_install_target() {
     pkg_run cmake --build . --target install
 }

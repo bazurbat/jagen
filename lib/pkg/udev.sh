@@ -4,7 +4,7 @@ use_toolchain target
 
 p_dest_dir="$sdk_rootfs_prefix"
 
-pkg_build() {
+jagen_pkg_build() {
     local include_dir="$sdk_rootfs_prefix/include"
     local lib_dir="$sdk_rootfs_prefix/lib"
 
@@ -28,6 +28,6 @@ pkg_build() {
     pkg_run make
 }
 
-pkg_install() {
+jagen_pkg_install() {
     pkg_run make DESTDIR="$p_dest_dir" install
 }
