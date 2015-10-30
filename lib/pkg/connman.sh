@@ -26,7 +26,7 @@ install_dbus_conf() {
 
     p_run install -vd "$sdk_rootfs_root$conf_path"
     p_run install -vm 644 \
-        "$target_dir$conf_path/connman.conf" \
+        "$jagen_target_dir$conf_path/connman.conf" \
         "$sdk_rootfs_root$conf_path"
 }
 

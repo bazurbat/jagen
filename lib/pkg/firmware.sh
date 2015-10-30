@@ -1,7 +1,7 @@
 #!/bin/sh
 
-p_work_dir="$install_dir"
-p_source_dir="${target_dir}${target_prefix}"
+p_work_dir="$jagen_install_dir"
+p_source_dir="${jagen_target_dir}${jagen_target_prefix}"
 
 pkg_clean() {
     p_clean_dir "$p_work_dir"
@@ -15,7 +15,7 @@ pkg_install() {
     [ -d "$p_work_dir/lib" ] || mkdir -p "$p_work_dir/lib"
 
     for bin in $bins; do
-        p_run install -m755 "$p_source_dir/bin/$bin" "$install_dir/bin"
+        p_run install -m755 "$p_source_dir/bin/$bin" "$jagen_install_dir/bin"
     done
 
     p_run cp -va "$p_source_dir/lib/"*.so* "$p_work_dir/lib"

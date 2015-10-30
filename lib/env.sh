@@ -5,19 +5,19 @@ if [ "$ZSH_VERSION" ]; then
     setopt shwordsplit
 fi
 
-export pkg_shell=""
+export jagen_shell=""
 
-export pkg_debug=""
-export pkg_flags=""
-export pkg_sdk=""
+export jagen_debug=""
+export jagen_flags=""
+export jagen_sdk=""
 
 export jagen_bin_dir="$jagen_dir/bin"
 export jagen_lib_dir="$jagen_dir/lib"
 export jagen_src_dir="$jagen_root/src"
 export jagen_build_dir="$jagen_root/build"
 
-pkg_build_type="Release"
-pkg_build_verbose="no"
+jagen_build_type="Release"
+jagen_build_verbose="no"
 
 . "$jagen_lib_dir/common.sh" || return
 
@@ -28,27 +28,27 @@ else
 fi
 try_include "$jagen_root/local.sh" || return
 
-export jagen_patch_dir="$pkg_dist_dir/patches"
-export jagen_build_include_dir="$pkg_build_dir/include"
-export jagen_private_dir="$pkg_src_dir/files"
+export jagen_patch_dir="$jagen_dist_dir/patches"
+export jagen_build_include_dir="$jagen_build_dir/include"
+export jagen_private_dir="$jagen_src_dir/files"
 
-cmake_generator="${cmake_generator:-Ninja}"
-cmake_build_options="${cmake_build_options}"
-cmake_build_type="$pkg_build_type"
+jagen_cmake_generator="${jagen_cmake_generator:-Ninja}"
+jagen_cmake_build_options="${jagen_cmake_build_options}"
+jagen_cmake_build_type="$jagen_build_type"
 
-install_dir="$jagen_build_dir/firmware"
+jagen_install_dir="$jagen_build_dir/firmware"
 
-host_dir="$jagen_build_dir/host"
-host_prefix=""
+jagen_host_dir="$jagen_build_dir/host"
+jagen_host_prefix=""
 
-target_dir="$jagen_build_dir/target"
-target_prefix=""
+jagen_target_dir="$jagen_build_dir/target"
+jagen_target_prefix=""
 
-tools_dir="$jagen_build_dir/tools"
-tools_prefix=""
+jagen_tools_dir="$jagen_build_dir/tools"
+jagen_tools_prefix=""
 
-add_PATH "$host_dir/bin"
-add_LD_LIBRARY_PATH "$host_dir/lib"
+add_PATH "$jagen_host_dir/bin"
+add_LD_LIBRARY_PATH "$jagen_host_dir/lib"
 
 export PATH
 export LD_LIBRARY_PATH

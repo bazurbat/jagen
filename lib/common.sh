@@ -13,7 +13,7 @@ error() {
 }
 
 debug() {
-    if [ "$pkg_debug" ]; then
+    if [ "$jagen_debug" ]; then
         printf "(D) %s\n" "$*"
     fi
 }
@@ -37,7 +37,7 @@ try_include() {
 
 include() {
     local pathname="${1:?}"
-    local suffix="${2:-$pkg_sdk}"
+    local suffix="${2:-$jagen_sdk}"
     if [ "${suffix}" != "default" -a -f "${pathname}.${suffix}.sh" ]; then
         try_include "${pathname}.${suffix}.sh"
     elif [ -f "${pathname}.sh" ]; then
@@ -86,7 +86,7 @@ is_function() { type "$1" 2>/dev/null | grep -q 'function'; }
 
 in_path() { $(which "$1" >/dev/null 2>&1); }
 
-in_flags() { in_list "$1" $pkg_flags; }
+in_flags() { in_list "$1" $jagen_flags; }
 
 add_PATH() {
     : ${1:?}

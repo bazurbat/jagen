@@ -7,7 +7,7 @@ pkg_build() {
 
 	p_run ./configure \
 		--host="$target_system" \
-		--prefix="$target_prefix" \
+		--prefix="$jagen_target_prefix" \
 		--disable-valgrind \
 		--disable-experimental
 
@@ -15,5 +15,5 @@ pkg_build() {
 }
 
 pkg_install() {
-	p_run make DESTDIR="$target_dir" install
+	p_run make DESTDIR="$jagen_target_dir" install
 }

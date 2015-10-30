@@ -60,7 +60,7 @@ EOF
 write_config() {
     cat >"$config_file" <<EOF
 # Current build root configuration type.
-pkg_sdk="$sdk"
+jagen_sdk="$sdk"
 
 # Toplevel working directory (for convenience)
 base_dir=\$(real_path "\$jagen_root/..")
@@ -83,15 +83,15 @@ jagen_toolchain_dir="$toolchain_dir"
 # Space separated list of optional features.
 #   debug  - build debugging tools
 #   ccache - wrap compilation commands with ccache
-pkg_flags=""
+jagen_flags=""
 
 # Package names excluded from clear and update during rebuilds.
-# Example: pkg_source_exclude='chicken karaoke-player'
-pkg_source_exclude=""
+# Example: jagen_source_exclude='chicken karaoke-player'
+jagen_source_exclude=""
 
 # Global build type.
 # Available values: Release|RelWithDebInfo|Debug
-pkg_build_type="Release"
+jagen_build_type="Release"
 EOF
 }
 

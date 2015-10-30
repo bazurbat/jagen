@@ -1,7 +1,7 @@
 #!/bin/sh
 
-p_work_dir="$install_dir"
-p_source_dir="${target_dir}${target_prefix}"
+p_work_dir="$jagen_install_dir"
+p_source_dir="${jagen_target_dir}${jagen_target_prefix}"
 
 pkg_clean() {
     p_clean_dir "$p_work_dir"
@@ -17,7 +17,7 @@ pkg_unpack() {
 }
 
 create_imaterial() {
-    local workdir="$target_dir/imaterial"
+    local workdir="$jagen_target_dir/imaterial"
     local bmp2sdd="$sdk_mrua_dir/MRUA_src/splashscreen/utils/bmp2sdd"
 
     rm -rf "$workdir" && mkdir -p "$workdir" || return $?
@@ -31,11 +31,11 @@ create_imaterial() {
         "$jagen_private_dir/splash/artsystem-splash-2013-720p-32bpp.bmp" \
         "$workdir/splash_picture.sdd"
 
-    p_run genromfs -d "$workdir" -f "$target_dir/imaterial.romfs" -V imaterial
+    p_run genromfs -d "$workdir" -f "$jagen_target_dir/imaterial.romfs" -V imaterial
 }
 
 create_xmaterial() {
-    local workdir="$target_dir/xmaterial"
+    local workdir="$jagen_target_dir/xmaterial"
 
     rm -rf "$workdir" && mkdir -p "$workdir" || return $?
 
@@ -44,7 +44,7 @@ create_xmaterial() {
         "$jagen_private_dir/ucode/ios.bin.gz_8644_ES1_dev_0006.xload" \
         "$workdir"
 
-    p_run genromfs -d "$workdir" -f "$target_dir/xmaterial.romfs" -V xmaterial
+    p_run genromfs -d "$workdir" -f "$jagen_target_dir/xmaterial.romfs" -V xmaterial
 }
 
 pkg_material() {
@@ -79,24 +79,24 @@ pkg_install() {
         csi i2c_debug uart-shell ast-service pcf8563 agent-smith"
 
     p_run cd "$p_source_dir/bin"
-    p_run install -vm 755 $bin "$install_dir/bin"
+    p_run install -vm 755 $bin "$jagen_install_dir/bin"
 
     p_run install -vm 755 \
         "$p_source_dir/sbin/connmand" \
-        "$install_dir/sbin"
+        "$jagen_install_dir/sbin"
 
     p_run cd "$p_source_dir/lib"
-    p_run cp -va chicken "$install_dir/lib"
-    p_run cp -va *.so* "$install_dir/lib"
+    p_run cp -va chicken "$jagen_install_dir/lib"
+    p_run cp -va *.so* "$jagen_install_dir/lib"
 
-    p_run cp -af "$p_source_dir/etc" "$install_dir"
-    p_run cp -af "$p_source_dir/share/dbus-1" "$install_dir/share"
+    p_run cp -af "$p_source_dir/etc" "$jagen_install_dir"
+    p_run cp -af "$p_source_dir/share/dbus-1" "$jagen_install_dir/share"
 
-    p_run cp -vf "$target_dir/xmaterial.romfs" "$install_dir/"
-    p_run cp -vf "$target_dir/imaterial.romfs" "$install_dir/"
-    p_run cp -vf "$target_dir/zbimage-linux-xload.zbc" "$install_dir/"
-    p_run cp -vf "$target_dir/phyblock0-0x20000padded.AST50" "$install_dir/"
-    p_run cp -vf "$target_dir/phyblock0-0x20000padded.AST100" "$install_dir/"
+    p_run cp -vf "$jagen_target_dir/xmaterial.romfs" "$jagen_install_dir/"
+    p_run cp -vf "$jagen_target_dir/imaterial.romfs" "$jagen_install_dir/"
+    p_run cp -vf "$jagen_target_dir/zbimage-linux-xload.zbc" "$jagen_install_dir/"
+    p_run cp -vf "$jagen_target_dir/phyblock0-0x20000padded.AST50" "$jagen_install_dir/"
+    p_run cp -vf "$jagen_target_dir/phyblock0-0x20000padded.AST100" "$jagen_install_dir/"
 
     install_dbus
     install_rsync
@@ -113,7 +113,7 @@ pkg_install() {
         "$p_work_dir"/lib/libnl-nf* \
         "$p_work_dir"/lib/libnl-route*
 
-    p_run cp -vaf "$jagen_private_dir"/firmware/* "$install_dir"
+    p_run cp -vaf "$jagen_private_dir"/firmware/* "$jagen_install_dir"
 }
 
 pkg_strip() {
@@ -130,7 +130,7 @@ pkg_strip() {
         -o -name "*.types" \
         ")" -print -delete
 
-    if [ "$pkg_build_type" = "Release" ]; then
+    if [ "$jagen_build_type" = "Release" ]; then
         p_run find lib/chicken -type f "(" \
             -name "*.import.*" \
             -o -name "*.scm" \

@@ -15,7 +15,7 @@ pkg_build() {
     export CONFIG_SHELL=/bin/bash
 
     p_run ./configure \
-        --prefix="$host_dir$host_prefix" \
+        --prefix="$jagen_host_dir$jagen_host_prefix" \
         --disable-ltdl-install
 
     p_run make

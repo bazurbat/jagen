@@ -20,8 +20,8 @@ pkg_build() {
 }
 
 pkg_install() {
-    p_run mkdir -p "$target_dir"
+    p_run mkdir -p "$jagen_target_dir"
     p_run cd "xos/xboot2/xmasboot/nand_st2"
-    p_run cp -f phyblock0-0x20000padded.AST50 "$target_dir"
-    p_run cp -f phyblock0-0x20000padded.AST100 "$target_dir"
+    p_run cp -f phyblock0-0x20000padded.AST50 "$jagen_target_dir"
+    p_run cp -f phyblock0-0x20000padded.AST100 "$jagen_target_dir"
 }

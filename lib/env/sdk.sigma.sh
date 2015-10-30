@@ -1,13 +1,13 @@
 #!/bin/sh
 
 target_system="mipsel-linux-gnu"
-target_prefix="/firmware"
+jagen_target_prefix="/firmware"
 
 target_arch="mips"
 target_cpu="24kf"
 target_board="${target_board:-ast100}"
 
-toolchain_bin_dir="${target_dir}/bin"
+toolchain_bin_dir="${jagen_target_dir}/bin"
 
 sdk_ezboot_dir="$jagen_src_dir/sigma-ezboot"
 sdk_kernel_dir="$jagen_src_dir/sigma-kernel"
@@ -38,7 +38,7 @@ if in_flags "sigma_with_monitoring"; then
 fi
 
 export COMPILKIND="codesourcery glibc hardfloat"
-if [ "$pkg_build_type" = "Debug" ]; then
+if [ "$jagen_build_type" = "Debug" ]; then
     COMPILKIND="$COMPILKIND debug"
 else
     COMPILKIND="$COMPILKIND release"

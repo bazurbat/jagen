@@ -9,4 +9,4 @@ export CXXFLAGS="$CFLAGS"
 export LDFLAGS=""
 export ASMFLAGS="$CFLAGS"
 
-export PKG_CONFIG_PATH="$host_dir/lib/pkgconfig"
+export PKG_CONFIG_PATH="$jagen_host_dir/lib/pkgconfig"

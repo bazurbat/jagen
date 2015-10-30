@@ -14,11 +14,11 @@ p_run() {
     case $cmd in
         make)
             cmd="$cmd -j$p_jobs"
-            [ "$pkg_build_verbose" = "yes" ] && cmd="$cmd V=1"
+            [ "$jagen_build_verbose" = "yes" ] && cmd="$cmd V=1"
             ;;
         ninja)
             cmd="$cmd -j$p_jobs"
-            [ "$pkg_build_verbose" = "yes" ] && cmd="$cmd -v"
+            [ "$jagen_build_verbose" = "yes" ] && cmd="$cmd -v"
             ;;
     esac
 
@@ -84,7 +84,7 @@ p_fix_la() {
 }
 
 p_autoreconf() {
-    p_run autoreconf -if -I "$host_dir/share/aclocal"
+    p_run autoreconf -if -I "$jagen_host_dir/share/aclocal"
 }
 
 . "$jagen_lib_dir/src.sh" || exit

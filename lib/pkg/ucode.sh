@@ -1,7 +1,7 @@
 #!/bin/sh
 
 pkg_install() {
-    local dst="$install_dir/xload"
+    local dst="$jagen_install_dir/xload"
     local dts real
 
     p_run install -vd "$dst"

@@ -1,16 +1,16 @@
 #!/bin/sh
 
 # Many Android build and utility scripts assume Bash shell
-pkg_shell="/bin/bash"
+jagen_shell="/bin/bash"
 
 target_system="arm-linux-androideabi"
-target_prefix="/system"
+jagen_target_prefix="/system"
 
 target_arch="arm"
 target_platform="${target_platform:-android-17}"
 target_toolchain="${target_toolchain:-${target_system}-4.6}"
 
-toolchain_dir="${target_dir}/${target_toolchain}"
+toolchain_dir="${jagen_target_dir}/${target_toolchain}"
 toolchain_bin_dir="${toolchain_dir}/bin"
 
 export JAVA_HOME="/usr/lib/jvm/sun-jdk-1.6"
@@ -39,5 +39,5 @@ make_toolchain() {
         --system="linux-x86_64" \
         --platform="$target_platform" \
         --toolchain="$target_toolchain" \
-        --install-dir="${target_dir}/${target_toolchain}"
+        --install-dir="${jagen_target_dir}/${target_toolchain}"
 }

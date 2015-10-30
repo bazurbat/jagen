@@ -70,9 +70,9 @@ CONFIGURATION:
   are sourced during the build process and should have the form of shell
   variable declarations, for example:
 
-  pkg_sdk=\"sigma\"
+  jagen_sdk=\"sigma\"
   jagen_build_dir=\"/tmp/build\"
-  pkg_source_exclude=\"chicken karaoke-player\"
+  jagen_source_exclude=\"chicken karaoke-player\"
 
   In fact, any shell code is possible, but it is advised to stick to POSIX
   shell syntax for portability.
@@ -80,7 +80,7 @@ CONFIGURATION:
 NOTES:
 
   Package stages with name 'clean' usually wipe their respective working and
-  source directories. Add package names to the 'pkg_source_exclude'
+  source directories. Add package names to the 'jagen_source_exclude'
   configuration variable as in the example above to stop the build scripts from
   touching their source directories (build directories will still be wiped).
 "

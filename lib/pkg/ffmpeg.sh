@@ -38,7 +38,7 @@ protocols="file pipe rtp tcp"
 filters="afade aresample volume"
 
 pkg_patch() {
-    if [ "$pkg_sdk" = "hisilicon" ]; then
+    if [ "$jagen_sdk" = "hisilicon" ]; then
         sed -ri "s/^(SLIBNAME_WITH_MAJOR)='.*'$/\\1='\$(SLIBNAME)'/g" \
             "$p_source_dir/configure"
         sed -ri "s/^(SLIB_INSTALL_NAME)='.*'$/\\1='\$(SLIBNAME)'/g" \
@@ -55,9 +55,9 @@ pkg_build() {
     CXXFLAGS=""
 
     if [ "$p_config" = "host" ]; then
-        prefix="$host_dir"
+        prefix="$jagen_host_dir"
     else
-        prefix="$target_prefix"
+        prefix="$jagen_target_prefix"
 
         cross_options="--target-os=linux --enable-cross-compile"
         case $target_board in
@@ -100,7 +100,7 @@ pkg_build() {
     done
 
     local options=""
-    case $pkg_build_type in
+    case $jagen_build_type in
         Rel*) options="--disable-debug" ;;
         Debug)
             options="--disable-optimizations"
@@ -143,5 +143,5 @@ pkg_install_host() {
 }
 
 pkg_install_target() {
-    p_run make DESTDIR="$target_dir" install
+    p_run make DESTDIR="$jagen_target_dir" install
 }

@@ -67,7 +67,7 @@ get_start_addr() {
 pkg_image() {
     add_PATH "$sdk_rootfs_prefix/bin"
 
-    local tmpdir="$target_dir/kernel-image"
+    local tmpdir="$jagen_target_dir/kernel-image"
     p_clean_dir "$tmpdir"
 
     p_run cd linux
@@ -86,9 +86,9 @@ pkg_image() {
     p_clean_dir romfs
     p_run cp vmlinux_xload.zbf romfs
     p_run genromfs -V MIPSLINUX_XLOAD -d romfs \
-        -f "$target_dir/zbimage-linux-xload"
+        -f "$jagen_target_dir/zbimage-linux-xload"
 
     p_run "$protectordir/zbprotector" \
-        "$target_dir/zbimage-linux-xload" \
-        "$target_dir/zbimage-linux-xload.zbc"
+        "$jagen_target_dir/zbimage-linux-xload" \
+        "$jagen_target_dir/zbimage-linux-xload.zbc"
 }

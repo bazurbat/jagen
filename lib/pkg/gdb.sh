@@ -3,7 +3,7 @@
 pkg_build_host() {
     p_run ./configure \
         --target="$target_system" \
-        --prefix="$tools_dir" \
+        --prefix="$jagen_tools_dir" \
         --program-transform-name='' \
         --disable-werror \
         --disable-binutils \

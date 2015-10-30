@@ -5,5 +5,5 @@ pkg_build() {
 }
 
 pkg_install() {
-    p_run make DESTDIR="$target_dir" prefix="$target_prefix" install
+    p_run make DESTDIR="$jagen_target_dir" prefix="$jagen_target_prefix" install
 }

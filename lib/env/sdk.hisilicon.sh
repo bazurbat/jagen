@@ -5,7 +5,7 @@ use_env sdk android
 target_system="arm-hisiv200-linux"
 target_product="Hi3719CV100"
 
-toolchain_bin_dir="${target_dir}/bin"
+toolchain_bin_dir="${jagen_target_dir}/bin"
 
 make_toolchain() {
     : ${jagen_toolchain_dir:?}

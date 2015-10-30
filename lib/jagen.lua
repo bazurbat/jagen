@@ -135,7 +135,7 @@ function Rule:new(o)
 end
 
 function Rule:load_pkg(name)
-    local path = system.mkpath(jagen.pkg_dir, name..'.lua')
+    local path = system.mkpath(jagen.jagen_dir, name..'.lua')
     local env = {}
     local o
 
@@ -519,11 +519,11 @@ end
 
 jagen =
 {
-    shell = os.getenv('pkg_shell'),
+    shell = os.getenv('jagen_shell'),
 
-    debug = os.getenv('pkg_debug'),
-    flags = os.getenv('pkg_flags'),
-    sdk   = os.getenv('pkg_sdk'),
+    debug = os.getenv('jagen_debug'),
+    flags = os.getenv('jagen_flags'),
+    sdk   = os.getenv('jagen_sdk'),
 
     bin_dir   = os.getenv('jagen_bin_dir'),
     lib_dir   = os.getenv('jagen_lib_dir'),
@@ -783,7 +783,7 @@ end
 
 function Script:patch()
     local o = {}
-    table.insert(o, 'pkg_patch_pre() {')
+    table.insert(o, 'jagen_patch_pre() {')
     for _, patch in ipairs(self.pkg.patches or {}) do
         local name = patch[1]
         local strip = patch[2]

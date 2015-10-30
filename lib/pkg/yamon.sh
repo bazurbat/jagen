@@ -13,6 +13,6 @@ pkg_build() {
 }
 
 pkg_install() {
-    p_run mkdir -p "$target_dir"
-    p_run cp -f bin/zbimage-yamon-2.13 "$target_dir"
+    p_run mkdir -p "$jagen_target_dir"
+    p_run cp -f bin/zbimage-yamon-2.13 "$jagen_target_dir"
 }
