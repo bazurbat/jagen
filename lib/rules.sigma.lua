@@ -57,6 +57,7 @@ package { 'ffmpeg', 'host',
 package { 'utils', 'host' }
 
 package { 'karaoke-player', 'host',
+    source = { branch = 'master' },
     { 'build',
         { 'astindex', 'unpack' },
         needs = {
@@ -187,6 +188,7 @@ package { 'firmware', 'target',
 }
 
 firmware_package { 'karaoke-player',
+    source = { branch = 'master' },
     { 'build',
         { 'astindex',     'unpack'            },
         { 'mrua',         'build'             },

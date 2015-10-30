@@ -69,7 +69,7 @@ package { 'astindex',
 }
 
 firmware_package { 'karaoke-player',
-    source = { bookmark = 'newchicken' },
+    source = { branch = 'newchicken' },
     { 'build',
         { 'astindex', 'unpack' },
         { 'chicken-eggs', 'install', 'host' },
