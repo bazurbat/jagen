@@ -26,9 +26,11 @@ run_stage() {
 
     if is_function "$name"; then
         debug "$pkg: $name"
-        eval "$name" >"$pkg_log" 2>&1 || die "Failed to run '$name' stage of package $pkg"
+        eval "$name" >>"$pkg_log" 2>&1 || die "Failed to run '$name' stage of package $pkg"
     fi
 }
+
+: >"$pkg_log"
 
 if [ "$pkg_config" ]; then
     use_toolchain "$pkg_config"
