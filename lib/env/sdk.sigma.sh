@@ -9,11 +9,11 @@ target_board="${target_board:-ast100}"
 
 toolchain_bin_dir="${target_dir}/bin"
 
-sdk_ezboot_dir="$pkg_src_dir/sigma-ezboot"
-sdk_kernel_dir="$pkg_src_dir/sigma-kernel"
-sdk_mrua_dir="$pkg_src_dir/sigma-mrua"
+sdk_ezboot_dir="$jagen_src_dir/sigma-ezboot"
+sdk_kernel_dir="$jagen_src_dir/sigma-kernel"
+sdk_mrua_dir="$jagen_src_dir/sigma-mrua"
 
-sdk_rootfs_dir="$pkg_src_dir/sigma-rootfs"
+sdk_rootfs_dir="$jagen_src_dir/sigma-rootfs"
 sdk_rootfs_root="$sdk_rootfs_dir/build_mipsel/root"
 sdk_rootfs_prefix="$sdk_rootfs_dir/cross_rootfs"
 
@@ -47,7 +47,7 @@ fi
 kernel_release="2.6.32.15-21-sigma"
 cpukeys="CPU_KEYS_SMP86xx_2010-02-12"
 
-xsdk_dir="$pkg_build_dir/pkg/xsdk/$cpukeys"
+xsdk_dir="$jagen_build_dir/pkg/xsdk/$cpukeys"
 
 # XSDK
 export XSDK_ROOT="$xsdk_dir/signed_items"
@@ -59,7 +59,7 @@ if [ -d "$xsdk_dir/xbin" ]; then
     add_PATH "$xsdk_dir/xbin"
 fi
 
-kernel_dir="$pkg_src_dir/sigma-kernel"
+kernel_dir="$jagen_src_dir/sigma-kernel"
 kernel_modules_dir="$sdk_rootfs_root/lib/modules/$kernel_release"
 kernel_extra_modules_dir="$kernel_modules_dir/extra"
 

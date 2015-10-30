@@ -13,7 +13,7 @@ export KCFLAGS="-mhard-float -Wa,-mhard-float"
 protectordir="$sdk_ezboot_dir/protector/"
 
 pkg_build() {
-    p_run ln -sfT "$pkg_src_dir/linux" linux
+    p_run ln -sfT "$jagen_src_dir/linux" linux
 
     if [ $with_kernel_config_default = yes ]; then
         p_run cp -f kernel-config linux/.config
@@ -75,7 +75,7 @@ pkg_image() {
     gzip -9cnf arch/mips/boot/vmlinux.bin > "$tmpdir/vmlinux_gz.zbf" || exit
 
     p_run cd "$tmpdir"
-    p_run bash "$pkg_private_dir/scripts/build_cpu_xload.bash" \
+    p_run bash "$jagen_private_dir/scripts/build_cpu_xload.bash" \
         vmlinux_gz $XSDK_DEFAULT_CPU_CERTID $XSDK_DEFAULT_KEY_DOMAIN
     p_run genzbf \
         -l 0x84000000 \

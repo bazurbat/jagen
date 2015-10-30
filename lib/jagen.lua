@@ -525,20 +525,20 @@ jagen =
     flags = os.getenv('pkg_flags'),
     sdk   = os.getenv('pkg_sdk'),
 
-    bin_dir   = os.getenv('pkg_bin_dir'),
-    lib_dir   = os.getenv('pkg_lib_dir'),
-    src_dir   = os.getenv('pkg_src_dir'),
-    build_dir = os.getenv('pkg_build_dir'),
+    bin_dir   = os.getenv('jagen_bin_dir'),
+    lib_dir   = os.getenv('jagen_lib_dir'),
+    src_dir   = os.getenv('jagen_src_dir'),
+    build_dir = os.getenv('jagen_build_dir'),
 
-    patch_dir         = os.getenv('pkg_patch_dir'),
-    build_include_dir = os.getenv('pkg_build_include_dir'),
-    private_dir       = os.getenv('pkg_private_dir'),
+    patch_dir         = os.getenv('jagen_patch_dir'),
+    build_include_dir = os.getenv('jagen_build_include_dir'),
+    private_dir       = os.getenv('jagen_private_dir'),
 
     output = nil,
     output_file = nil,
 }
 
-jagen.pkg_dir = system.mkpath(jagen.lib_dir, 'pkg')
+jagen.jagen_dir = system.mkpath(jagen.lib_dir, 'pkg')
 
 jagen.cmd = system.mkpath(jagen.lib_dir, 'cmd.sh')
 jagen.rules_file = system.mkpath(jagen.lib_dir, 'rules.'..jagen.sdk..'.lua')
@@ -769,7 +769,7 @@ function Script:source()
         table.insert(s, source.type)
         table.insert(s, source.location)
     elseif source.type == 'dist' then
-        table.insert(s, system.mkpath('$pkg_dist_dir', source.location))
+        table.insert(s, system.mkpath('$jagen_dist_dir', source.location))
     end
     table.insert(o, string.format('p_source="%s"', table.concat(s, ' ')))
     if source.branch then

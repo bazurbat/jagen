@@ -52,7 +52,7 @@ if [ \$sts != 0 ]; then
     return \$sts
 fi
 
-add_PATH "\$pkg_private_dir/bin"
+add_PATH "\$jagen_private_dir/bin"
 add_PATH "\$jagen_dir/bin"
 EOF
 }
@@ -66,13 +66,13 @@ pkg_sdk="$sdk"
 base_dir=\$(real_path "\$jagen_root/..")
 
 # A directory containing software distributions and patches.
-pkg_dist_dir="\$base_dir/dist"
+jagen_dist_dir="\$base_dir/dist"
 
 # A directory where source packages will be checked out.
-pkg_src_dir="\$base_dir/src"
+jagen_src_dir="\$base_dir/src"
 
 # A directory where build products will be stored.
-pkg_build_dir="\$jagen_root/build"
+jagen_build_dir="\$jagen_root/build"
 
 # A directory containing SDK (optional).
 jagen_sdk_dir="$sdk_dir"
@@ -121,15 +121,15 @@ done
 
 case $sdk in
     sigma)
-        sdk_dir='$pkg_src_dir/sigma-mrua'
+        sdk_dir='$jagen_src_dir/sigma-mrua'
         toolchain_dir='$base_dir/toolchain/mips-2012.03'
         ;;
     hisilicon)
-        sdk_dir='$pkg_src_dir/hisilicon'
+        sdk_dir='$jagen_src_dir/hisilicon'
         toolchain_dir='$base_dir/toolchain/arm-hisiv200-linux'
         ;;
     android)
-        sdk_dir='$pkg_src_dir/hisilicon'
+        sdk_dir='$jagen_src_dir/hisilicon'
         toolchain_dir='$base_dir/toolchain/android-ndk-r10d'
         ;;
 esac

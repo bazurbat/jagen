@@ -1,6 +1,6 @@
 #!/bin/sh
 
-p_source_dir="$pkg_src_dir/sigma-rootfs"
+p_source_dir="$jagen_src_dir/sigma-rootfs"
 p_jobs=1
 
 pkg_build() {
@@ -30,7 +30,7 @@ install_alsa() {
 
     p_run mkdir -p "$sdk_rootfs_root/etc/modprobe.d"
     p_run cp -f \
-        "$pkg_private_dir/cfg/alsa.conf" \
+        "$jagen_private_dir/cfg/alsa.conf" \
         "$sdk_rootfs_root/etc/modprobe.d"
 
     p_run cp -a \
@@ -61,7 +61,7 @@ install_timezone() {
 install_keys() {
     p_run mkdir -p "$sdk_rootfs_root/lib/firmware"
     p_run cp -a \
-        "$pkg_private_dir/keys/keyfile.gpg" \
+        "$jagen_private_dir/keys/keyfile.gpg" \
         "$sdk_rootfs_root/lib/firmware"
 }
 
@@ -103,11 +103,11 @@ install_files() {
     local root_dir="$sdk_rootfs_root"
     local flags_dir="$root_dir/etc/flags"
 
-    p_run cp -rf "$pkg_private_dir"/rootfs/* "$root_dir"
+    p_run cp -rf "$jagen_private_dir"/rootfs/* "$root_dir"
     p_run mkdir -p "$flags_dir"
 
     if in_flags devenv; then
-        p_run cp -rf "$pkg_private_dir"/rootfs-dev/* "$root_dir"
+        p_run cp -rf "$jagen_private_dir"/rootfs-dev/* "$root_dir"
         rm -f "$root_dir/var/service/dropbear/down"
         touch "$flags_dir/devenv"
     fi

@@ -23,12 +23,12 @@ create_imaterial() {
     rm -rf "$workdir" && mkdir -p "$workdir" || return $?
 
     p_run cp -f \
-        "$pkg_private_dir/ucode/itask_loader.iload" \
-        "$pkg_private_dir/ucode/itask_splashscreen.iload" \
+        "$jagen_private_dir/ucode/itask_loader.iload" \
+        "$jagen_private_dir/ucode/itask_splashscreen.iload" \
         "$workdir"
 
     p_run "$bmp2sdd" \
-        "$pkg_private_dir/splash/artsystem-splash-2013-720p-32bpp.bmp" \
+        "$jagen_private_dir/splash/artsystem-splash-2013-720p-32bpp.bmp" \
         "$workdir/splash_picture.sdd"
 
     p_run genromfs -d "$workdir" -f "$target_dir/imaterial.romfs" -V imaterial
@@ -40,8 +40,8 @@ create_xmaterial() {
     rm -rf "$workdir" && mkdir -p "$workdir" || return $?
 
     p_run cp -f \
-        "$pkg_private_dir/ucode/xtask_loader.xload" \
-        "$pkg_private_dir/ucode/ios.bin.gz_8644_ES1_dev_0006.xload" \
+        "$jagen_private_dir/ucode/xtask_loader.xload" \
+        "$jagen_private_dir/ucode/ios.bin.gz_8644_ES1_dev_0006.xload" \
         "$workdir"
 
     p_run genromfs -d "$workdir" -f "$target_dir/xmaterial.romfs" -V xmaterial
@@ -113,7 +113,7 @@ pkg_install() {
         "$p_work_dir"/lib/libnl-nf* \
         "$p_work_dir"/lib/libnl-route*
 
-    p_run cp -vaf "$pkg_private_dir"/firmware/* "$install_dir"
+    p_run cp -vaf "$jagen_private_dir"/firmware/* "$install_dir"
 }
 
 pkg_strip() {

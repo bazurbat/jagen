@@ -28,7 +28,7 @@ pkg_build_target() {
             ;;
         *)
             p_run cmake -G"$cmake_generator" \
-                -DCMAKE_TOOLCHAIN_FILE="$pkg_src_dir/android-cmake/android.toolchain.cmake" \
+                -DCMAKE_TOOLCHAIN_FILE="$jagen_src_dir/android-cmake/android.toolchain.cmake" \
                 -DANDROID_STANDALONE_TOOLCHAIN="${target_dir}/${target_toolchain}" \
                 -DANDROID_GOLD_LINKER=NO \
                 -DCMAKE_BUILD_TYPE="$cmake_build_type" \

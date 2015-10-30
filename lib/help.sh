@@ -18,7 +18,7 @@ Commands:
   The 'clean' command removes the build directory and regenerates the build
   system. Currently configured build directory:
 
-    $pkg_build_dir
+    $jagen_build_dir
 
   The 'update' command tries to update jagen from the source repository and
   regenerates the build system afterwards.
@@ -71,7 +71,7 @@ CONFIGURATION:
   variable declarations, for example:
 
   pkg_sdk=\"sigma\"
-  pkg_build_dir=\"/tmp/build\"
+  jagen_build_dir=\"/tmp/build\"
   pkg_source_exclude=\"chicken karaoke-player\"
 
   In fact, any shell code is possible, but it is advised to stick to POSIX

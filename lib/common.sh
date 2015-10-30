@@ -48,15 +48,15 @@ include() {
 }
 
 use_env() {
-    include "$pkg_lib_dir/env/$1" "$2"
+    include "$jagen_lib_dir/env/$1" "$2"
 }
 
 use_toolchain() {
-    include "$pkg_lib_dir/toolchain/$1" "$2"
+    include "$jagen_lib_dir/toolchain/$1" "$2"
 }
 
 require() {
-    include "$pkg_lib_dir/require/$1" "$2"
+    include "$jagen_lib_dir/require/$1" "$2"
 }
 
 in_list() {
@@ -99,5 +99,5 @@ add_LD_LIBRARY_PATH() {
 }
 
 _jagen() {
-    ${jagen_lua:-lua} "$pkg_lib_dir/jagen.lua" "$@"
+    ${jagen_lua:-lua} "$jagen_lib_dir/jagen.lua" "$@"
 }

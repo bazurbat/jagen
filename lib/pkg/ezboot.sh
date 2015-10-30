@@ -1,6 +1,6 @@
 #!/bin/sh
 
-p_source_dir="$pkg_src_dir/sigma-ezboot"
+p_source_dir="$jagen_src_dir/sigma-ezboot"
 p_source_branch="sdk4"
 
 use_env tools

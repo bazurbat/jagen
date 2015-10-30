@@ -5,7 +5,7 @@ use_toolchain target
 
 pkg_patch() {
     p_run mkdir -p "$p_source_dir/sources"
-    p_run cp "$pkg_dist_dir/dl/yamon-src-02.13.tar.gz" "$p_source_dir/sources"
+    p_run cp "$jagen_dist_dir/dl/yamon-src-02.13.tar.gz" "$p_source_dir/sources"
 }
 
 pkg_build() {

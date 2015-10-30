@@ -1,7 +1,7 @@
 #!/bin/sh
 
 build() {
-    cd "$pkg_build_dir" || exit 1
+    cd "$jagen_build_dir" || exit 1
     ninja "$@"
 }
 
@@ -14,7 +14,7 @@ rebuild() {
     local target targets logs status
     local rebuild_log="rebuild.log"
 
-    cd "$pkg_build_dir" || exit 1
+    cd "$jagen_build_dir" || exit 1
     : > "$rebuild_log"
 
     for target in "$@"; do
@@ -50,9 +50,9 @@ rebuild() {
 }
 
 toolchain() {
-    . "${pkg_lib_dir}/env.sh" || return
+    . "${jagen_lib_dir}/env.sh" || return
     make_toolchain || return
-    touch "$pkg_build_dir/toolchain"
+    touch "$jagen_build_dir/toolchain"
 }
 
 case $1 in

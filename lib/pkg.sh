@@ -53,7 +53,7 @@ p_strip() {
 }
 
 p_patch() {
-    p_run patch -p${1} -i "$pkg_patch_dir/${2}.patch"
+    p_run patch -p${1} -i "$jagen_patch_dir/${2}.patch"
 }
 
 p_install_modules() {
@@ -87,5 +87,5 @@ p_autoreconf() {
     p_run autoreconf -if -I "$host_dir/share/aclocal"
 }
 
-. "$pkg_lib_dir/src.sh" || exit
-. "$pkg_lib_dir/stages.sh" || exit
+. "$jagen_lib_dir/src.sh" || exit
+. "$jagen_lib_dir/stages.sh" || exit

@@ -8,7 +8,7 @@ p_dest_dir="$sdk_rootfs_root"
 export CROSS_COMPILE="${toolchain_bin_dir}/${target_system}-"
 
 pkg_patch() {
-    p_run cp -f "$pkg_private_dir/cfg/busybox.config" ".config"
+    p_run cp -f "$jagen_private_dir/cfg/busybox.config" ".config"
 }
 
 pkg_build() {

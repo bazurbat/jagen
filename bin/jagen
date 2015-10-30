@@ -19,7 +19,7 @@ case $1 in
         print_help
         ;;
     clean)
-        p_clean_dir "$pkg_build_dir"
+        p_clean_dir "$jagen_build_dir"
         exec jagen refresh
         ;;
     update)
@@ -31,8 +31,8 @@ case $1 in
         exec jagen refresh
         ;;
     refresh)
-        mkdir -p "$pkg_build_dir"
-        mkdir -p "$pkg_build_include_dir"
+        mkdir -p "$jagen_build_dir"
+        mkdir -p "$jagen_build_include_dir"
         _jagen refresh || die "Refresh failed"
         ;;
     *)
