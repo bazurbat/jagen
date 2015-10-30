@@ -2,14 +2,12 @@
 
 . "$jagen_dir/lib/pkg.sh" || die "Failed to load pkg env"
 
-pkg_build_root="$jagen_build_dir/pkg"
-
 pkg_name="$1"
 pkg_stage="$2"
 pkg_config="$3"
 
 pkg_log="${jagen_build_dir}/${pkg_name}-${pkg_stage}${pkg_config:+-${pkg_config}}.log"
-pkg_work_dir="$pkg_build_root/$pkg_name"
+pkg_work_dir="$jagen_build_dir/pkg/$pkg_name"
 
 rm -f "$pkg_log" || die "Failed to rm $pkg_log"
 mkdir -p "$pkg_work_dir" || die "Failed to mkdir $pkg_work_dir"
