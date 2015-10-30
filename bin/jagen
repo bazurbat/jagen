@@ -19,7 +19,7 @@ case $1 in
         print_help
         ;;
     clean)
-        p_clean_dir "$jagen_build_dir"
+        pkg_clean_dir "$jagen_build_dir"
         exec jagen refresh
         ;;
     update)

@@ -68,7 +68,7 @@ pkg_image() {
     add_PATH "$sdk_rootfs_prefix/bin"
 
     local tmpdir="$jagen_target_dir/kernel-image"
-    p_clean_dir "$tmpdir"
+    pkg_clean_dir "$tmpdir"
 
     pkg_run cd linux
     pkg_run $CROSS_MAKE vmlinux.bin
@@ -83,7 +83,7 @@ pkg_image() {
         -a lzef -o vmlinux_xload.zbf \
         vmlinux_gz_${XSDK_DEFAULT_KEY_DOMAIN}.xload
 
-    p_clean_dir romfs
+    pkg_clean_dir romfs
     pkg_run cp vmlinux_xload.zbf romfs
     pkg_run genromfs -V MIPSLINUX_XLOAD -d romfs \
         -f "$jagen_target_dir/zbimage-linux-xload"

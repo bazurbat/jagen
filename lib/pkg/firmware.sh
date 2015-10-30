@@ -4,8 +4,8 @@ p_work_dir="$jagen_install_dir"
 p_source_dir="${jagen_target_dir}${jagen_target_prefix}"
 
 pkg_clean() {
-    p_clean_dir "$p_work_dir"
-    p_clean_dir "$p_source_dir"
+    pkg_clean_dir "$p_work_dir"
+    pkg_clean_dir "$p_source_dir"
 }
 
 pkg_install() {

@@ -14,7 +14,7 @@ pkg_clean() {
             ;;
     esac
 
-    p_clean_dir "$p_work_dir"
+    pkg_clean_dir "$p_work_dir"
 }
 
 pkg_unpack() {

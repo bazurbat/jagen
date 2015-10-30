@@ -25,7 +25,7 @@ pkg_run() {
     $cmd "$@" || $p_run_on_error
 }
 
-p_clean_dir() {
+pkg_clean_dir() {
     local dir="$1"
     if [ -d "$dir" ]; then
         rm -rf "$dir"/* ||
