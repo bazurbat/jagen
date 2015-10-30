@@ -87,5 +87,4 @@ pkg_run_autoreconf() {
     pkg_run autoreconf -if -I "$jagen_host_dir/share/aclocal"
 }
 
-. "$jagen_lib_dir/src.sh" || exit
 . "$jagen_lib_dir/stages.sh" || exit
