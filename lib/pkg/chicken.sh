@@ -11,7 +11,7 @@ jagen_pkg_build_host() {
         -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
         -DCMAKE_INSTALL_PREFIX="$jagen_host_dir" \
         -DCMAKE_FIND_NO_INSTALL_PREFIX=TRUE \
-        "$p_source_dir"
+        "$pkg_source_dir"
 
     pkg_run cmake --build . -- $jagen_cmake_build_options
 }
@@ -24,7 +24,7 @@ jagen_pkg_build_target() {
                 -DCMAKE_SYSTEM_NAME="Linux" \
                 -DCMAKE_SYSTEM_PROCESSOR="mips32" \
                 -DCMAKE_INSTALL_PREFIX="$jagen_target_prefix" \
-                "$p_source_dir"
+                "$pkg_source_dir"
             ;;
         *)
             pkg_run cmake -G"$jagen_cmake_generator" \
@@ -34,7 +34,7 @@ jagen_pkg_build_target() {
                 -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
                 -DCMAKE_SYSTEM_NAME="Linux" \
                 -DCMAKE_INSTALL_PREFIX="$jagen_target_prefix" \
-                "$p_source_dir"
+                "$pkg_source_dir"
             ;;
     esac
 

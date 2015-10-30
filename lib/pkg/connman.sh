@@ -4,8 +4,8 @@ jagen_pkg_build() {
     export ac_cv_lib_resolv_ns_initparse=yes
 
     pkg_run ./configure \
-        --host="$p_system" \
-        --prefix="$p_prefix" \
+        --host="$pkg_system" \
+        --prefix="$pkg_prefix" \
         --sysconfdir="/etc" \
         --localstatedir="/settings" \
         --enable-pie \
@@ -31,5 +31,5 @@ install_dbus_conf() {
 }
 
 jagen_pkg_install() {
-    pkg_run make DESTDIR="$p_dest_dir" install
+    pkg_run make DESTDIR="$pkg_dest_dir" install
 }

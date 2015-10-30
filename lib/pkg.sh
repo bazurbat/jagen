@@ -3,8 +3,8 @@
 . "$jagen_dir/lib/env.sh" ||
     { echo "Failed to load environment"; exit 1; }
 
-: ${p_jobs:=$(nproc)}
-: ${p_run_on_error:=exit}
+: ${pkg_jobs:=$(nproc)}
+: ${pkg_run_on_error:=exit}
 
 pkg_run() {
     local cmd="$1"
@@ -13,16 +13,16 @@ pkg_run() {
 
     case $cmd in
         make)
-            cmd="$cmd -j$p_jobs"
+            cmd="$cmd -j$pkg_jobs"
             [ "$jagen_build_verbose" = "yes" ] && cmd="$cmd V=1"
             ;;
         ninja)
-            cmd="$cmd -j$p_jobs"
+            cmd="$cmd -j$pkg_jobs"
             [ "$jagen_build_verbose" = "yes" ] && cmd="$cmd -v"
             ;;
     esac
 
-    $cmd "$@" || $p_run_on_error
+    $cmd "$@" || $pkg_run_on_error
 }
 
 pkg_clean_dir() {

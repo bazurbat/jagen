@@ -1,13 +1,13 @@
 #!/bin/sh
 
 jagen_pkg_build() {
-    local s="$p_build_dir/$p_name"
+    local s="$pkg_build_dir/$pkg_name"
 
-    cd "$p_name" || return $?
+    cd "$pkg_name" || return $?
 
     rm -f .config
 
-    echo "BINDIR=$p_prefix/bin"              >> .config
+    echo "BINDIR=$pkg_prefix/bin"              >> .config
 
     echo "CONFIG_CTRL_IFACE=y"               >> .config
     echo "CONFIG_BACKEND=file"               >> .config
@@ -40,8 +40,8 @@ jagen_pkg_build() {
 }
 
 jagen_pkg_install() {
-    local s="$p_build_dir/$p_name"
-    local d="$p_dest_dir$p_prefix"
+    local s="$pkg_build_dir/$pkg_name"
+    local d="$pkg_dest_dir$pkg_prefix"
 
     pkg_run install -vd "$d/bin" "$d/sbin" \
         "$d/etc/dbus-1/system.d" \
@@ -60,6 +60,6 @@ jagen_pkg_install() {
         "$d/share/dbus-1/system-services"
 
     pkg_run sed -ri \
-        -e "s|^Exec=.*(/wpa_supplicant.*)|Exec=$p_prefix/sbin\1|" \
+        -e "s|^Exec=.*(/wpa_supplicant.*)|Exec=$pkg_prefix/sbin\1|" \
         $d/share/dbus-1/system-services/fi.w1.wpa_supplicant1.service
 }

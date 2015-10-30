@@ -4,8 +4,8 @@ use_env tools
 use_toolchain target
 
 jagen_pkg_patch() {
-    pkg_run mkdir -p "$p_source_dir/sources"
-    pkg_run cp "$jagen_dist_dir/dl/yamon-src-02.13.tar.gz" "$p_source_dir/sources"
+    pkg_run mkdir -p "$pkg_source_dir/sources"
+    pkg_run cp "$jagen_dist_dir/dl/yamon-src-02.13.tar.gz" "$pkg_source_dir/sources"
 }
 
 jagen_pkg_build() {

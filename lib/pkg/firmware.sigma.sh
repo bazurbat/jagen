@@ -1,15 +1,15 @@
 #!/bin/sh
 
-p_work_dir="$jagen_install_dir"
-p_source_dir="${jagen_target_dir}${jagen_target_prefix}"
+pkg_work_dir="$jagen_install_dir"
+pkg_source_dir="${jagen_target_dir}${jagen_target_prefix}"
 
 jagen_pkg_clean() {
-    pkg_clean_dir "$p_work_dir"
-    pkg_clean_dir "$p_source_dir"
+    pkg_clean_dir "$pkg_work_dir"
+    pkg_clean_dir "$pkg_source_dir"
 }
 
 jagen_pkg_unpack() {
-    pkg_run cd "$p_work_dir"
+    pkg_run cd "$pkg_work_dir"
 
     pkg_run install -d -m 755 bin dev etc home lib libexec mnt proc run sbin share sys usr var
     pkg_run install -d -m 700 root
@@ -53,44 +53,44 @@ jagen_pkg_material() {
 }
 
 install_dbus() {
-    pkg_run cp -vaf "$p_source_dir/etc/dbus-1" "$p_work_dir/etc"
-    pkg_run install -vm755 "$p_source_dir"/bin/dbus-* "$p_work_dir/bin"
+    pkg_run cp -vaf "$pkg_source_dir/etc/dbus-1" "$pkg_work_dir/etc"
+    pkg_run install -vm755 "$pkg_source_dir"/bin/dbus-* "$pkg_work_dir/bin"
     pkg_run install -vm755 \
-        "$p_source_dir/libexec/dbus-daemon-launch-helper" \
-        "$p_work_dir/libexec"
+        "$pkg_source_dir/libexec/dbus-daemon-launch-helper" \
+        "$pkg_work_dir/libexec"
 }
 
 install_rsync() {
-    pkg_run install -vm755 "$p_source_dir/bin/rsync" "$p_work_dir/bin"
+    pkg_run install -vm755 "$pkg_source_dir/bin/rsync" "$pkg_work_dir/bin"
 }
 
 install_wpa_supplicant() {
     pkg_run install -m755 \
-        "$p_source_dir/bin/wpa_cli" \
-        "$p_source_dir/bin/wpa_passphrase" \
-        "$p_work_dir/bin"
+        "$pkg_source_dir/bin/wpa_cli" \
+        "$pkg_source_dir/bin/wpa_passphrase" \
+        "$pkg_work_dir/bin"
     pkg_run install -m755 \
-        "$p_source_dir/sbin/wpa_supplicant" \
-        "$p_work_dir/sbin"
+        "$pkg_source_dir/sbin/wpa_supplicant" \
+        "$pkg_work_dir/sbin"
 }
 
 jagen_pkg_install() {
     local bin="audioplayer demo jabba midiplayer smplayer db-service \
         csi i2c_debug uart-shell ast-service pcf8563 agent-smith"
 
-    pkg_run cd "$p_source_dir/bin"
+    pkg_run cd "$pkg_source_dir/bin"
     pkg_run install -vm 755 $bin "$jagen_install_dir/bin"
 
     pkg_run install -vm 755 \
-        "$p_source_dir/sbin/connmand" \
+        "$pkg_source_dir/sbin/connmand" \
         "$jagen_install_dir/sbin"
 
-    pkg_run cd "$p_source_dir/lib"
+    pkg_run cd "$pkg_source_dir/lib"
     pkg_run cp -va chicken "$jagen_install_dir/lib"
     pkg_run cp -va *.so* "$jagen_install_dir/lib"
 
-    pkg_run cp -af "$p_source_dir/etc" "$jagen_install_dir"
-    pkg_run cp -af "$p_source_dir/share/dbus-1" "$jagen_install_dir/share"
+    pkg_run cp -af "$pkg_source_dir/etc" "$jagen_install_dir"
+    pkg_run cp -af "$pkg_source_dir/share/dbus-1" "$jagen_install_dir/share"
 
     pkg_run cp -vf "$jagen_target_dir/xmaterial.romfs" "$jagen_install_dir/"
     pkg_run cp -vf "$jagen_target_dir/imaterial.romfs" "$jagen_install_dir/"
@@ -103,21 +103,21 @@ jagen_pkg_install() {
     install_wpa_supplicant
 
     # delete not used libraries
-    pkg_run rm -f "$p_work_dir"/lib/libxt_*
+    pkg_run rm -f "$pkg_work_dir"/lib/libxt_*
     pkg_run rm -f \
-        "$p_work_dir"/lib/libgio* \
-        "$p_work_dir"/lib/libgmodule* \
-        "$p_work_dir"/lib/libgobject*
+        "$pkg_work_dir"/lib/libgio* \
+        "$pkg_work_dir"/lib/libgmodule* \
+        "$pkg_work_dir"/lib/libgobject*
     pkg_run rm -f \
-        "$p_work_dir"/lib/libnl-idiag* \
-        "$p_work_dir"/lib/libnl-nf* \
-        "$p_work_dir"/lib/libnl-route*
+        "$pkg_work_dir"/lib/libnl-idiag* \
+        "$pkg_work_dir"/lib/libnl-nf* \
+        "$pkg_work_dir"/lib/libnl-route*
 
     pkg_run cp -vaf "$jagen_private_dir"/firmware/* "$jagen_install_dir"
 }
 
 jagen_pkg_strip() {
-    pkg_run cd "$p_work_dir"
+    pkg_run cd "$pkg_work_dir"
 
     pkg_run find lib -type f \
         "(" -name "*.a" -o -name "*.la" ")" \
@@ -137,8 +137,8 @@ jagen_pkg_strip() {
             -o -name "types.db" \
             ")" -print -delete
 
-        pkg_strip_dir "$p_work_dir"
+        pkg_strip_dir "$pkg_work_dir"
     fi
 
-    _jagen src status > "$p_work_dir/heads" || die
+    _jagen src status > "$pkg_work_dir/heads" || die
 }

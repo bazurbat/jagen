@@ -1,7 +1,7 @@
 #!/bin/sh
 
-p_source_dir="$jagen_src_dir/sigma-ezboot"
-p_source_branch="sdk4"
+pkg_source_dir="$jagen_src_dir/sigma-ezboot"
+pkg_source_branch="sdk4"
 
 use_env tools
 use_toolchain target

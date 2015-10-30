@@ -7,7 +7,7 @@ case $jagen_cmake_build_type in
 esac
 
 delete_install_targets() {
-    pkg_run find "$p_build_dir" -name "*-install" -delete
+    pkg_run find "$pkg_build_dir" -name "*-install" -delete
 }
 
 jagen_pkg_install_host() {
@@ -16,7 +16,7 @@ jagen_pkg_install_host() {
     pkg_run cmake -G"$jagen_cmake_generator" \
         -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
         -DCMAKE_INSTALL_PREFIX="$jagen_host_dir" \
-        "$p_source_dir"
+        "$pkg_source_dir"
 
     pkg_run cmake --build . -- $jagen_cmake_build_options
 }
@@ -33,7 +33,7 @@ jagen_pkg_install_target() {
                 -DCHICKEN_COMPILER="$jagen_host_dir/bin/chicken" \
                 -DCHICKEN_INTERPRETER="$jagen_host_dir/bin/csi" \
                 -DCHICKEN_DEPENDS="$jagen_host_dir/bin/chicken-depends" \
-                "$p_source_dir"
+                "$pkg_source_dir"
             ;;
         *)
             pkg_run cmake -G"$jagen_cmake_generator" \
@@ -45,7 +45,7 @@ jagen_pkg_install_target() {
                 -DCHICKEN_COMPILER="$jagen_host_dir/bin/chicken" \
                 -DCHICKEN_INTERPRETER="$jagen_host_dir/bin/csi" \
                 -DCHICKEN_DEPENDS="$jagen_host_dir/bin/chicken-depends" \
-                "$p_source_dir"
+                "$pkg_source_dir"
             ;;
     esac
 

@@ -1,74 +1,74 @@
 #!/bin/sh
 
 jagen_pkg_clean() {
-    set -- $p_source
+    set -- $pkg_source
     local kind="$1"
 
     case $kind in
         git|hg)
-            if in_list "$p_name" $jagen_source_exclude; then
-                message "pkg source '$p_name' excluded from cleaning"
-            elif [ -d "$p_source_dir" ]; then
-                _jagen src clean "$p_name"
+            if in_list "$pkg_name" $jagen_source_exclude; then
+                message "pkg source '$pkg_name' excluded from cleaning"
+            elif [ -d "$pkg_source_dir" ]; then
+                _jagen src clean "$pkg_name"
             fi
             ;;
     esac
 
-    pkg_clean_dir "$p_work_dir"
+    pkg_clean_dir "$pkg_work_dir"
 }
 
 jagen_pkg_unpack() {
-    set -- $p_source
+    set -- $pkg_source
     local kind="$1"
     local src="${2:-$1}"
 
-    [ "$p_source" ] || return 0
+    [ "$pkg_source" ] || return 0
 
     case $kind in
         git|hg)
             if in_flags "offline"; then
-                message "Offline mode, not checking $p_name"
-            elif in_list "$p_name" $jagen_source_exclude; then
-                message "pkg source '$p_name' excluded from pulling"
-            elif [ -d "$p_source_dir" ]; then
-                if p_src_is_dirty "$p_source_dir"; then
-                    warning "$p_source_dir is dirty, not updating"
+                message "Offline mode, not checking $pkg_name"
+            elif in_list "$pkg_name" $jagen_source_exclude; then
+                message "pkg source '$pkg_name' excluded from pulling"
+            elif [ -d "$pkg_source_dir" ]; then
+                if pkg_src_is_dirty "$pkg_source_dir"; then
+                    warning "$pkg_source_dir is dirty, not updating"
                 else
-                    _jagen src update "$p_name"
+                    _jagen src update "$pkg_name"
                 fi
             else
-                _jagen src clone "$p_name"
+                _jagen src clone "$pkg_name"
             fi
             ;;
         *)
-            pkg_run tar -C "$p_work_dir" -xf "$src"
+            pkg_run tar -C "$pkg_work_dir" -xf "$src"
             ;;
     esac
 }
 
 default_patch() {
-    if [ ! -x "$p_source_dir/configure" -a -x "$p_source_dir/autogen.sh" ]; then
-        "$p_source_dir/autogen.sh"
+    if [ ! -x "$pkg_source_dir/configure" -a -x "$pkg_source_dir/autogen.sh" ]; then
+        "$pkg_source_dir/autogen.sh"
     fi
 }
 
 jagen_pkg_configure() {
-    if [ "$p_with_provided_libtool" ]; then
+    if [ "$pkg_with_provided_libtool" ]; then
         pkg_run_autoreconf
     fi
 }
 
 jagen_pkg_build_pre() {
-    [ -d "$p_build_dir" ] || pkg_run mkdir -p "$p_build_dir"
-    pkg_run cd "$p_build_dir"
+    [ -d "$pkg_build_dir" ] || pkg_run mkdir -p "$pkg_build_dir"
+    pkg_run cd "$pkg_build_dir"
 }
 
 default_build() {
-    if [ -x "$p_source_dir/configure" ]; then
-        pkg_run "$p_source_dir/configure" \
-            --host="$p_system" \
-            --prefix="$p_prefix" \
-            $p_options
+    if [ -x "$pkg_source_dir/configure" ]; then
+        pkg_run "$pkg_source_dir/configure" \
+            --host="$pkg_system" \
+            --prefix="$pkg_prefix" \
+            $pkg_options
         pkg_run make
     fi
 }
@@ -79,10 +79,10 @@ jagen_pkg_install_pre() {
 }
 
 default_install() {
-    pkg_run make DESTDIR="$p_dest_dir" install
+    pkg_run make DESTDIR="$pkg_dest_dir" install
 
-    for name in $p_libs; do
-        pkg_fix_la "$p_dest_dir$p_prefix/lib/lib${name}.la" "$p_dest_dir"
+    for name in $pkg_libs; do
+        pkg_fix_la "$pkg_dest_dir$pkg_prefix/lib/lib${name}.la" "$pkg_dest_dir"
     done
 }
 

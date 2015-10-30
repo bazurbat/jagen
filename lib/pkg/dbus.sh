@@ -2,12 +2,12 @@
 
 jagen_pkg_build() {
     # configure fails to run expat test program without this
-    CFLAGS="$CFLAGS -I$p_dest_dir$p_prefix/include"
-    LDFLAGS="$LDFLAGS -L$p_dest_dir$p_prefix/lib"
+    CFLAGS="$CFLAGS -I$pkg_dest_dir$pkg_prefix/include"
+    LDFLAGS="$LDFLAGS -L$pkg_dest_dir$pkg_prefix/lib"
 
     pkg_run ./configure \
-        --host="$p_system" \
-        --prefix="$p_prefix" \
+        --host="$pkg_system" \
+        --prefix="$pkg_prefix" \
         --with-system-pid-file=/run/dbus.pid \
         --with-system-socket=/run/dbus/system_bus_socket \
         --disable-compiler-coverage \

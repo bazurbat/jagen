@@ -24,14 +24,14 @@ jagen_pkg_build() {
     pkg_run $CROSS_MAKE
 
     if [ $with_kernel_proprietary_modules = yes ]; then
-        pkg_run cd "$p_source_dir/proprietary"
+        pkg_run cd "$pkg_source_dir/proprietary"
         pkg_run $CROSS_MAKE -C spinor clean
         pkg_run $CROSS_MAKE -C spinor
         pkg_run $CROSS_MAKE -C sd_block
     fi
 
     if [ $with_kernel_extras = yes ]; then
-        pkg_run cd "$p_source_dir/extra"
+        pkg_run cd "$pkg_source_dir/extra"
         pkg_run $CROSS_MAKE clean
         pkg_run $CROSS_MAKE all
     fi

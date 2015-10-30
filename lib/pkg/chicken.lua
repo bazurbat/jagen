@@ -2,7 +2,7 @@ package {
     name   = 'chicken',
     build = {
         type = 'CMake',
-        dir  = '$p_work_dir/build${p_config:+-$p_config}'
+        dir  = '$pkg_work_dir/build${pkg_config:+-$pkg_config}'
     },
     source = {
         type     = 'git',

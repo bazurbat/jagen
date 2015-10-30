@@ -2,8 +2,8 @@
 
 use_toolchain target
 
-p_prefix=""
-p_dest_dir="$sdk_rootfs_prefix"
+pkg_prefix=""
+pkg_dest_dir="$sdk_rootfs_prefix"
 
 jagen_pkg_build() {
     export ac_cv_lib_pthread_pthread_create=no
@@ -18,12 +18,12 @@ jagen_pkg_build() {
         --disable-gpg-test \
         --disable-gpgsm-test \
         --disable-g13-test \
-        --with-sysroot="$p_dest_dir"
+        --with-sysroot="$pkg_dest_dir"
 
     pkg_run make
 }
 
 jagen_pkg_install() {
-    pkg_run make DESTDIR="$p_dest_dir" install
-    pkg_fix_la "$p_dest_dir/lib/libgpgme.la"
+    pkg_run make DESTDIR="$pkg_dest_dir" install
+    pkg_fix_la "$pkg_dest_dir/lib/libgpgme.la"
 }

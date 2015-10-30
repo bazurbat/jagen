@@ -2,8 +2,8 @@
 
 use_toolchain target
 
-p_prefix=""
-p_dest_dir="$sdk_rootfs_root"
+pkg_prefix=""
+pkg_dest_dir="$sdk_rootfs_root"
 
 export CROSS_COMPILE="${toolchain_bin_dir}/${target_system}-"
 
@@ -17,5 +17,5 @@ jagen_pkg_build() {
 }
 
 jagen_pkg_install() {
-    pkg_run make CONFIG_PREFIX="$p_dest_dir" install
+    pkg_run make CONFIG_PREFIX="$pkg_dest_dir" install
 }

@@ -2,13 +2,13 @@
 
 use_toolchain target
 
-p_prefix=""
-p_dest_dir="$sdk_rootfs_prefix"
+pkg_prefix=""
+pkg_dest_dir="$sdk_rootfs_prefix"
 
 jagen_pkg_build() {
     pkg_run ./configure \
         --host="$target_system" \
-        --prefix="$p_prefix" \
+        --prefix="$pkg_prefix" \
         --enable-shared \
         --disable-static \
         --disable-rpath \
@@ -76,5 +76,5 @@ jagen_pkg_build() {
 }
 
 jagen_pkg_install() {
-    pkg_run make DESTDIR="$p_dest_dir" install
+    pkg_run make DESTDIR="$pkg_dest_dir" install
 }

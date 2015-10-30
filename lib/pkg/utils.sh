@@ -6,7 +6,7 @@ jagen_pkg_build_host() {
         -DCMAKE_INSTALL_PREFIX="$jagen_tools_dir" \
         -DUSE_LOOPAES=0 \
         ${losetup:+"-DLOSETUP=$losetup"} \
-        "$p_source_dir"
+        "$pkg_source_dir"
 
     pkg_run cmake --build . -- $jagen_cmake_build_options
 }
@@ -16,7 +16,7 @@ jagen_pkg_build_target() {
         -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
         -DCMAKE_INSTALL_PREFIX="$sdk_rootfs_root" \
         -DUSE_LOOPAES=1 \
-        "$p_source_dir"
+        "$pkg_source_dir"
 
     pkg_run cmake --build . -- $jagen_cmake_build_options
 }

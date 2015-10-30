@@ -15,8 +15,8 @@ jagen_pkg_build() {
 
     pkg_run ./configure \
         --cache-file="$cache" \
-        --host="$p_system" \
-        --prefix="$p_prefix" \
+        --host="$pkg_system" \
+        --prefix="$pkg_prefix" \
         --disable-mem-pools \
         --disable-rebuilds \
         --disable-selinux \

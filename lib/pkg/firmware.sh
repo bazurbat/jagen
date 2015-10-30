@@ -1,32 +1,32 @@
 #!/bin/sh
 
-p_work_dir="$jagen_install_dir"
-p_source_dir="${jagen_target_dir}${jagen_target_prefix}"
+pkg_work_dir="$jagen_install_dir"
+pkg_source_dir="${jagen_target_dir}${jagen_target_prefix}"
 
 jagen_pkg_clean() {
-    pkg_clean_dir "$p_work_dir"
-    pkg_clean_dir "$p_source_dir"
+    pkg_clean_dir "$pkg_work_dir"
+    pkg_clean_dir "$pkg_source_dir"
 }
 
 jagen_pkg_install() {
     local bins="csi smplayer"
 
-    [ -d "$p_work_dir/bin" ] || mkdir -p "$p_work_dir/bin"
-    [ -d "$p_work_dir/lib" ] || mkdir -p "$p_work_dir/lib"
+    [ -d "$pkg_work_dir/bin" ] || mkdir -p "$pkg_work_dir/bin"
+    [ -d "$pkg_work_dir/lib" ] || mkdir -p "$pkg_work_dir/lib"
 
     for bin in $bins; do
-        pkg_run install -m755 "$p_source_dir/bin/$bin" "$jagen_install_dir/bin"
+        pkg_run install -m755 "$pkg_source_dir/bin/$bin" "$jagen_install_dir/bin"
     done
 
-    pkg_run cp -va "$p_source_dir/lib/"*.so* "$p_work_dir/lib"
+    pkg_run cp -va "$pkg_source_dir/lib/"*.so* "$pkg_work_dir/lib"
 
-    if [ -d "$p_source_dir/lib/chicken" ]; then
-        pkg_run cp -va "$p_source_dir/lib/chicken" "$p_work_dir/lib"
+    if [ -d "$pkg_source_dir/lib/chicken" ]; then
+        pkg_run cp -va "$pkg_source_dir/lib/chicken" "$pkg_work_dir/lib"
     fi
 }
 
 jagen_pkg_strip() {
-    pkg_run cd "$p_work_dir"
+    pkg_run cd "$pkg_work_dir"
 
     pkg_run find lib -type f \
         "(" -name "*.la" ")" \
@@ -42,5 +42,5 @@ jagen_pkg_deploy() {
         return 0
     fi
 
-    pkg_run cp -av "$p_work_dir"/* "$out_dir"
+    pkg_run cp -av "$pkg_work_dir"/* "$out_dir"
 }

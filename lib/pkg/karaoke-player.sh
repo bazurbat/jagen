@@ -6,7 +6,7 @@ jagen_pkg_build_host() {
         -DCMAKE_INSTALL_PREFIX="$jagen_host_dir" \
         -DCMAKE_FIND_ROOT_PATH="$jagen_host_dir" \
         -DTARGET_BOARD="$target_board" \
-        "$p_source_dir"
+        "$pkg_source_dir"
 
     pkg_run cmake --build . -- $jagen_cmake_build_options
 }
@@ -25,7 +25,7 @@ jagen_pkg_build_target() {
                 -DCHICKEN_INTERPRETER="$jagen_host_dir/bin/csi" \
                 -DCHICKEN_DEPENDS="$jagen_host_dir/bin/chicken-depends" \
                 -DTARGET_BOARD="$target_board" \
-                "$p_source_dir"
+                "$pkg_source_dir"
             ;;
         *)
             pkg_run cmake -G"$jagen_cmake_generator" \
@@ -39,7 +39,7 @@ jagen_pkg_build_target() {
                 -DHISILICON_ROOT_DIR="$jagen_sdk_dir" \
                 -DHISILICON_OUT_DIR="$sdk_out_dir" \
                 -DTARGET_BOARD="$target_board" \
-                "$p_source_dir"
+                "$pkg_source_dir"
             ;;
     esac
 

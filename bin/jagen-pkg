@@ -2,67 +2,67 @@
 
 . "$jagen_dir/lib/pkg.sh" || die "Failed to load pkg env"
 
-p_build_root="$jagen_build_dir/pkg"
+pkg_build_root="$jagen_build_dir/pkg"
 
-p_name="$1"
-p_stage="$2"
-p_config="$3"
+pkg_name="$1"
+pkg_stage="$2"
+pkg_config="$3"
 
-p_log="${jagen_build_dir}/${p_name}-${p_stage}${p_config:+-${p_config}}.log"
-p_work_dir="$p_build_root/$p_name"
+pkg_log="${jagen_build_dir}/${pkg_name}-${pkg_stage}${pkg_config:+-${pkg_config}}.log"
+pkg_work_dir="$pkg_build_root/$pkg_name"
 
-rm -f "$p_log" || die "Failed to rm $p_log"
-mkdir -p "$p_work_dir" || die "Failed to mkdir $p_work_dir"
-cd "$p_work_dir" || die "Failed to cd to $p_work_dir"
+rm -f "$pkg_log" || die "Failed to rm $pkg_log"
+mkdir -p "$pkg_work_dir" || die "Failed to mkdir $pkg_work_dir"
+cd "$pkg_work_dir" || die "Failed to cd to $pkg_work_dir"
 
-include "$jagen_build_include_dir/$p_name" "$p_config"
-include "$jagen_lib_dir/pkg/$p_name" 
+include "$jagen_build_include_dir/$pkg_name" "$pkg_config"
+include "$jagen_lib_dir/pkg/$pkg_name" 
 
-p_source_name="$(_jagen src name "$p_source")"
-p_source_dir="${p_source_dir:-$p_work_dir/$p_source_name}"
-p_build_dir="${p_build_dir:-$p_source_dir}"
+pkg_source_name="$(_jagen src name "$pkg_source")"
+pkg_source_dir="${pkg_source_dir:-$pkg_work_dir/$pkg_source_name}"
+pkg_build_dir="${pkg_build_dir:-$pkg_source_dir}"
 
 run_stage() {
     local name="$1"
-    local pkg="$p_name${p_config:+ ($p_config)}"
+    local pkg="$pkg_name${pkg_config:+ ($pkg_config)}"
 
     if is_function "$name"; then
         debug "$pkg: $name"
-        eval "$name" >"$p_log" 2>&1 || die "Failed to run '$name' stage of package $pkg"
+        eval "$name" >"$pkg_log" 2>&1 || die "Failed to run '$name' stage of package $pkg"
     fi
 }
 
-if [ "$p_config" ]; then
-    use_toolchain "$p_config"
+if [ "$pkg_config" ]; then
+    use_toolchain "$pkg_config"
 fi
 
-if [ "$p_config" = 'host' ]; then
-    p_system="$host_system"
-    p_prefix="$jagen_host_prefix"
-    p_dest_dir="$jagen_host_dir"
-elif [ "$p_config" = 'target' ]; then
-    p_system="$target_system"
-    p_prefix="$jagen_target_prefix"
-    p_dest_dir="$jagen_target_dir"
-elif [ "$p_config" = 'tools' ]; then
-    p_system="$host_system"
-    p_prefix=""
-    p_dest_dir="$jagen_tools_dir"
-elif [ "$p_config" = 'rootfs' ]; then
+if [ "$pkg_config" = 'host' ]; then
+    pkg_system="$host_system"
+    pkg_prefix="$jagen_host_prefix"
+    pkg_dest_dir="$jagen_host_dir"
+elif [ "$pkg_config" = 'target' ]; then
+    pkg_system="$target_system"
+    pkg_prefix="$jagen_target_prefix"
+    pkg_dest_dir="$jagen_target_dir"
+elif [ "$pkg_config" = 'tools' ]; then
+    pkg_system="$host_system"
+    pkg_prefix=""
+    pkg_dest_dir="$jagen_tools_dir"
+elif [ "$pkg_config" = 'rootfs' ]; then
     use_toolchain target
-    p_system="$target_system"
-    p_prefix=""
-    p_dest_dir="$sdk_rootfs_prefix"
+    pkg_system="$target_system"
+    pkg_prefix=""
+    pkg_dest_dir="$sdk_rootfs_prefix"
 fi
 
-[ -d "$p_build_dir" ] && cd "$p_build_dir"
+[ -d "$pkg_build_dir" ] && cd "$pkg_build_dir"
 
-run_stage "jagen_pkg_${p_stage}_pre"
+run_stage "jagen_pkg_${pkg_stage}_pre"
 
-if is_function "jagen_pkg_${p_stage}_${p_config}"; then
-    run_stage "jagen_pkg_${p_stage}_${p_config}"
+if is_function "jagen_pkg_${pkg_stage}_${pkg_config}"; then
+    run_stage "jagen_pkg_${pkg_stage}_${pkg_config}"
 else
-    run_stage "jagen_pkg_${p_stage}"
+    run_stage "jagen_pkg_${pkg_stage}"
 fi
 
-run_stage "jagen_pkg_${p_stage}_post"
+run_stage "jagen_pkg_${pkg_stage}_post"

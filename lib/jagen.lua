@@ -744,18 +744,18 @@ function Script:build()
     local o = {}
     if build.type == 'GNU' then
         if build.options then
-            table.insert(o, string.format('p_options=\'%s\'', build.options))
+            table.insert(o, string.format('pkg_options=\'%s\'', build.options))
         end
         if build.libs then
-            table.insert(o, string.format("p_libs='%s'",
+            table.insert(o, string.format("pkg_libs='%s'",
                 table.concat(build.libs, ' ')))
         end
         if build.with_provided_libtool then
-            table.insert(o, 'p_with_provided_libtool="yes"')
+            table.insert(o, 'pkg_with_provided_libtool="yes"')
         end
     end
     if build.dir then
-        table.insert(o, 'p_build_dir="'..build.dir..'"')
+        table.insert(o, 'pkg_build_dir="'..build.dir..'"')
     end
 
     return table.concat(o, '\n')
@@ -771,12 +771,12 @@ function Script:source()
     elseif source.type == 'dist' then
         table.insert(s, system.mkpath('$jagen_dist_dir', source.location))
     end
-    table.insert(o, string.format('p_source="%s"', table.concat(s, ' ')))
+    table.insert(o, string.format('pkg_source="%s"', table.concat(s, ' ')))
     if source.branch then
-        table.insert(o, string.format('p_source_branch="%s"', source.branch))
+        table.insert(o, string.format('pkg_source_branch="%s"', source.branch))
     end
     if pkg:is_source() then
-        table.insert(o, string.format('p_source_dir="%s"', self.pkg:directory()))
+        table.insert(o, string.format('pkg_source_dir="%s"', self.pkg:directory()))
     end
     return table.concat(o, '\n')
 end
