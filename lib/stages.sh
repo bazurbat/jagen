@@ -31,7 +31,7 @@ jagen_pkg_unpack() {
             elif in_list "$pkg_name" $jagen_source_exclude; then
                 message "pkg source '$pkg_name' excluded from pulling"
             elif [ -d "$pkg_source_dir" ]; then
-                if pkg_src_is_dirty "$pkg_source_dir"; then
+                if _jagen src dirty "$pkg_name"; then
                     warning "$pkg_source_dir is dirty, not updating"
                 else
                     _jagen src update "$pkg_name"
