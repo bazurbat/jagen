@@ -137,7 +137,7 @@ pkg_strip() {
             -o -name "types.db" \
             ")" -print -delete
 
-        p_strip "$p_work_dir"
+        pkg_strip_dir "$p_work_dir"
     fi
 
     _jagen src status > "$p_work_dir/heads" || die

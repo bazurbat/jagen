@@ -36,7 +36,7 @@ pkg_clean_dir() {
     fi
 }
 
-p_strip() {
+pkg_strip_dir() {
     local root files
     root="$1"
     files=$(find "$root" -type f -not -name "*.ko" \

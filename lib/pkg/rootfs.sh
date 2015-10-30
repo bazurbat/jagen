@@ -151,5 +151,5 @@ pkg_install() {
     install_utils
     install_files
 
-    p_strip "$sdk_rootfs_root"
+    pkg_strip_dir "$sdk_rootfs_root"
 }
