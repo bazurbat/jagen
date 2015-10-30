@@ -783,7 +783,7 @@ end
 
 function Script:patch()
     local o = {}
-    table.insert(o, 'jagen_patch_pre() {')
+    table.insert(o, 'jagen_pkg_patch_pre() {')
     for _, patch in ipairs(self.pkg.patches or {}) do
         local name = patch[1]
         local strip = patch[2]
