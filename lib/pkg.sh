@@ -162,7 +162,7 @@ default_build() {
 
 jagen_pkg_install_pre() {
     # for packages that do not have build stage
-    pkg_build_pre
+    jagen_pkg_build_pre
 }
 
 default_install() {
