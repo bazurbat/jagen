@@ -1001,12 +1001,8 @@ end
 
 function HgSource:update()
     local args = { 'update' }
-    local bookmark = self.package.source.bookmark
     local branch = self.package.source.branch
-    if bookmark then
-        table.insert(args, '-r')
-        table.insert(args, bookmark)
-    elseif branch then
+    if branch then
         table.insert(args, '-r')
         table.insert(args, branch)
     end
