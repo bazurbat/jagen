@@ -1055,6 +1055,17 @@ function src.name(filename)
     print(Source.name(filename))
 end
 
+function src.dirty(names)
+    for _, pkg in ipairs(src.packages(names)) do
+        local source = Source:create(pkg)
+        if source:dirty() then
+            jagen.debug0(pkg.name, 'is dirty')
+            return true
+        end
+    end
+    return false
+end
+
 function src.status(args)
     local packages = jagen.load_rules()
     local source_packages = filter(Rule.is_source, packages)
@@ -1122,9 +1133,15 @@ elseif command == 'src' then
     local args = table.rest(arg, 3)
 
     if not subcommand then
-        jagen.message('Available src subcommands: name, status, update')
+        jagen.message('Available src subcommands: name, dirty, status, clean, update, clone')
     elseif subcommand == 'name' then
         src.name(unpack(args))
+    elseif subcommand == 'dirty' then
+        if src.dirty(args) then
+            status = 0
+        else
+            status = 1
+        end
     elseif subcommand == 'status' then
         src.status(args)
     elseif subcommand == 'clean' then
