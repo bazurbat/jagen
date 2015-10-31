@@ -173,7 +173,9 @@ function Package:parse(rule)
 
     table.merge(pkg, rule)
 
-    pkg:parse_source()
+    if type(pkg.source) == 'string' then
+        pkg.source = { type = 'dist', location = pkg.source }
+    end
 
     for _, stage in ipairs(self.default_stages) do
         pkg:add_target(Target.new(pkg.name, stage))
@@ -190,30 +192,6 @@ function Package:parse(rule)
     end
 
     return pkg
-end
-
-function Package:parse_name()
-    local function is_string(v)
-        return type(v) == 'string'
-    end
-    local i
-    self.name, i = find(is_string, self)
-    if i then
-        table.remove(self, i)
-        local config, i = find(is_string, self)
-        if i then
-            self.config = config
-            table.remove(self, i)
-        end
-    end
-end
-
-function Package:parse_source()
-    local source = self.source
-    if type(source) == 'string' then
-        self.source = { type = 'dist', location = source }
-    end
-    return self
 end
 
 function Package:add_target(target)
