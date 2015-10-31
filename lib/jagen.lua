@@ -228,25 +228,6 @@ function Package:resolve_dependencies(packages)
     end
 end
 
-function Package:merge(rule)
-    for k, v in pairs(rule) do
-        if type(k) ~= 'number' and k ~= 'stages' then
-            if type(v) == 'table' then
-                self[k] = table.merge(self[k] or {}, v)
-            else
-                self[k] = v
-            end
-        end
-    end
-    for _, s in ipairs(rule.stages or {}) do
-        self:add_target(s)
-    end
-    for _, v in ipairs(rule) do
-        table.insert(self, v)
-    end
-    return self
-end
-
 function Package:add_toolchain_dependency()
     local function is_build_stage(target)
         return target.stage == 'build'
@@ -637,7 +618,9 @@ function jagen.load_rules()
         local name = pkg.name
         local rule = rules[name]
         if rule then
-            rule:merge(pkg)
+            for _, stage in ipairs(pkg.stages or {}) do
+                rule:add_target(stage)
+            end
         else
             rules[name] = pkg
             table.insert(rules, pkg)
