@@ -206,6 +206,28 @@ function Package:add_target(target)
     return self
 end
 
+function Package:resolve_dependencies(packages)
+    local pkg
+    for _, stage in ipairs(self.stages) do
+        for name, _ in pairs(stage.needs) do
+            if packages[name] then
+                pkg = packages[name]
+                pkg:add_target(Target.new(name, 'build', self.config))
+                pkg:add_target(Target.new(name, 'install', self.config))
+                for _, rule in ipairs(self.template or {}) do
+                    pkg:add_target(Target.from_rule(pkg, rule, self.config))
+                end
+            else
+                pkg = Package:parse { name, self.config,
+                    template = self.template
+                }
+                packages[name] = pkg
+                table.insert(packages, pkg)
+            end
+        end
+    end
+end
+
 function Package:merge(rule)
     for k, v in pairs(rule) do
         if type(k) ~= 'number' and k ~= 'stages' then
@@ -605,35 +627,8 @@ function jagen.load_rules()
         rules()
     end
 
-    local function add_unresolved(pkg)
-        local added = {}
-        for _, stage in ipairs(pkg.stages) do
-            for name, _ in pairs(stage.needs) do
-                if packages[name] then
-                    local p = packages[name]
-                    p:add_target(Target.new(name, 'build', pkg.config))
-                    p:add_target(Target.new(name, 'install', pkg.config))
-                    for _, rule in ipairs(pkg.template or {}) do
-                        local t = Target.from_rule(p, rule, pkg.config)
-                        p:add_target(t)
-                    end
-                else
-                    local p = Package:parse { name, pkg.config,
-                        template = pkg.template
-                    }
-                    packages[name] = p
-                    table.insert(packages, p)
-                end
-            end
-        end
-        return added
-    end
-
     for _, pkg in ipairs(packages) do
-        local added = {}
-        repeat
-            added = add_unresolved(pkg)
-        until #added == 0
+        pkg:resolve_dependencies(packages)
     end
 
     rules = {}
