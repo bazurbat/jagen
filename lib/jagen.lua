@@ -42,7 +42,7 @@ function filter(pred, list)
 end
 
 function find(pred, list)
-    for i, v in ipairs(list or {}) do
+    for i, v in ipairs(list) do
         if pred(v) then
             return v, i
         end
@@ -121,21 +121,21 @@ function system.exec(...)
 end
 
 --}}}
---{{{ Rule
+--{{{ Package
 
-Rule = {
+Package = {
     default_stages = { 'clean', 'unpack', 'patch' }
 }
 
-function Rule:new(o)
+function Package:new(o)
     o = o or {}
     setmetatable(o, self)
     self.__index = self
     return o
 end
 
-function Rule:load_pkg(name)
-    local path = system.mkpath(jagen.jagen_dir, name..'.lua')
+function Package:load_pkg(name)
+    local path = system.mkpath(jagen.pkg_dir, name..'.lua')
     local env = {}
     local o
 
@@ -149,18 +149,30 @@ function Rule:load_pkg(name)
         def()
     end
 
-    return Rule:new(o)
+    return Package:new(o)
 end
 
-function Rule:parse(...)
-    local rules = Rule:new()
-    for _, arg in ipairs({...}) do
-        table.merge(rules, arg)
-    end
-    rules:parse_name()
+function Package:parse(rule)
+    local pkg = Package:new()
 
-    local pkg = Rule:load_pkg(rules.name)
-    table.merge(pkg, rules)
+    if type(rule[1]) == 'string' then
+        pkg.name = rule[1]
+    end
+
+    if type(rule[2]) == 'string' then
+        pkg.config = rule[2]
+    end
+
+    if rule.template then
+        table.merge(pkg, rule.template)
+    end
+
+    if pkg.name then
+        table.merge(pkg, Package:load_pkg(pkg.name))
+    end
+
+    table.merge(pkg, rule)
+
     pkg:parse_source()
 
     for _, stage in ipairs(self.default_stages) do
@@ -169,16 +181,18 @@ function Rule:parse(...)
 
     pkg:add_build_dependencies()
 
-    for _, stage in ipairs(pkg) do
-        local target = Target.from_rule(pkg, stage)
-        target.config = pkg.config
-        pkg:add_target(target)
+    for _, v in ipairs(pkg) do
+        if type(v) == 'table' then
+            local target = Target.from_rule(pkg, v)
+            target.config = pkg.config
+            pkg:add_target(target)
+        end
     end
 
     return pkg
 end
 
-function Rule:parse_name()
+function Package:parse_name()
     local function is_string(v)
         return type(v) == 'string'
     end
@@ -194,7 +208,7 @@ function Rule:parse_name()
     end
 end
 
-function Rule:parse_source()
+function Package:parse_source()
     local source = self.source
     if type(source) == 'string' then
         self.source = { type = 'dist', location = source }
@@ -202,7 +216,7 @@ function Rule:parse_source()
     return self
 end
 
-function Rule:add_target(target)
+function Package:add_target(target)
     self.stages = self.stages or {}
     local function equal(t) return t == target end
     local existing = find(equal, self.stages)
@@ -214,7 +228,7 @@ function Rule:add_target(target)
     return self
 end
 
-function Rule:merge(rule)
+function Package:merge(rule)
     for k, v in pairs(rule) do
         if type(k) ~= 'number' and k ~= 'stages' then
             if type(v) == 'table' then
@@ -233,7 +247,7 @@ function Rule:merge(rule)
     return self
 end
 
-function Rule:add_toolchain_dependency()
+function Package:add_toolchain_dependency()
     local function is_build_stage(target)
         return target.stage == 'build'
     end
@@ -242,7 +256,7 @@ function Rule:add_toolchain_dependency()
     end
 end
 
-function Rule:add_build_dependencies()
+function Package:add_build_dependencies()
     local build = self.build
     if build then
         if build.with_provided_libtool then
@@ -257,7 +271,7 @@ function Rule:add_build_dependencies()
     end
 end
 
-function Rule:add_ordering_dependencies()
+function Package:add_ordering_dependencies()
     local prev, common
 
     for _, s in ipairs(self.stages) do
@@ -276,21 +290,21 @@ function Rule:add_ordering_dependencies()
     end
 end
 
-function Rule:type()
+function Package:type()
     local source = self.source
     return source and source.type
 end
 
-function Rule:is_source()
-    local source_type = Rule.type(self)
+function Package:is_source()
+    local source_type = Package.type(self)
     return source_type == 'git' or source_type == 'hg'
 end
 
-function Rule:directory()
+function Package:directory()
     local function basename(location)
         return location and io.popen('basename '..location..' .git'):read()
     end
-    if Rule.is_source(self) then
+    if Package.is_source(self) then
         local location = self.source.location
         local name = self.source.directory or basename(location)
         return system.mkpath(jagen.src_dir, name or self.name)
@@ -503,18 +517,6 @@ function Target:append(target)
 end
 
 --}}}
---{{{ Package
-
-Package = {}
-
-function Package:new(o)
-    o = o or {}
-    setmetatable(o, self)
-    self.__index = self
-    return o
-end
-
---}}}
 --{{{ jagen
 
 jagen =
@@ -538,7 +540,7 @@ jagen =
     output_file = nil,
 }
 
-jagen.jagen_dir = system.mkpath(jagen.lib_dir, 'pkg')
+jagen.pkg_dir = system.mkpath(jagen.lib_dir, 'pkg')
 
 jagen.cmd = system.mkpath(jagen.lib_dir, 'cmd.sh')
 jagen.rules_file = system.mkpath(jagen.lib_dir, 'rules.'..jagen.sdk..'.lua')
@@ -614,7 +616,7 @@ function jagen.load_rules()
     }
 
     function env.package(...)
-        local pkg  = Rule:parse(...)
+        local pkg  = Package:parse(...)
         packages[pkg.name] = pkg
         table.insert(packages, pkg)
     end
@@ -633,17 +635,14 @@ function jagen.load_rules()
                     local p = packages[name]
                     p:add_target(Target.new(name, 'build', pkg.config))
                     p:add_target(Target.new(name, 'install', pkg.config))
-                    for _, rule in ipairs(pkg.inject or {}) do
+                    for _, rule in ipairs(pkg.template or {}) do
                         local t = Target.from_rule(p, rule, pkg.config)
                         p:add_target(t)
                     end
                 else
-                    local p = Rule:parse { name, pkg.config }
-                    p.inject = pkg.inject or {}
-                    for _, rule in ipairs(pkg.inject or {}) do
-                        local t = Target.from_rule(p, rule)
-                        p:add_target(t)
-                    end
+                    local p = Package:parse { name, pkg.config,
+                        template = pkg.template
+                    }
                     packages[name] = p
                     table.insert(packages, p)
                 end
@@ -1041,7 +1040,7 @@ function src.packages(names)
             end
         end
     else
-        packages = filter(Rule.is_source, rules)
+        packages = filter(Package.is_source, rules)
     end
 
     return packages
@@ -1064,7 +1063,7 @@ end
 
 function src.status(args)
     local packages = jagen.load_rules()
-    local source_packages = filter(Rule.is_source, packages)
+    local source_packages = filter(Package.is_source, packages)
 
     for _, p in ipairs(source_packages) do
         local s = Source:create(p)

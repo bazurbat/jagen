@@ -1,11 +1,11 @@
 -- Sigma rules
 
 local function rootfs_package(rule)
-    local pkg = {
+    rule.template = {
         { 'build', { 'rootfs', 'build' } },
         { 'install' }
     }
-    package(pkg, rule)
+    package(rule)
 end
 
 -- base
@@ -74,11 +74,11 @@ package { 'libtool', 'host' }
 -- kernel
 
 local function kernel_package(rule)
-    local pkg = {
+    rule.template = {
         { 'build', { 'kernel', 'build' } },
         { 'install' }
     }
-    package(pkg, rule)
+    package(rule)
 end
 
 package { 'kernel',
@@ -159,15 +159,12 @@ rootfs_package { 'gpgme',
 -- firmare
 
 local function firmware_package(rule)
-    local pkg = {
+    rule.template = {
         config = 'target',
         { 'build' },
         { 'install', { 'firmware', 'unpack' } },
-        inject = {
-            { 'install', { 'firmware', 'unpack' } }
-        }
     }
-    package(pkg, rule)
+    package(rule)
 end
 
 package { 'firmware', 'target',
