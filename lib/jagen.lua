@@ -206,28 +206,6 @@ function Package:add_target(target)
     return self
 end
 
-function Package:resolve_dependencies(packages)
-    local pkg
-    for _, stage in ipairs(self.stages) do
-        for name, _ in pairs(stage.needs) do
-            if packages[name] then
-                pkg = packages[name]
-                pkg:add_target(Target.new(name, 'build', self.config))
-                pkg:add_target(Target.new(name, 'install', self.config))
-                for _, rule in ipairs(self.template or {}) do
-                    pkg:add_target(Target.from_rule(pkg, rule, self.config))
-                end
-            else
-                pkg = Package:parse { name, self.config,
-                    template = self.template
-                }
-                packages[name] = pkg
-                table.insert(packages, pkg)
-            end
-        end
-    end
-end
-
 function Package:add_toolchain_dependency()
     local function is_build_stage(target)
         return target.stage == 'build'
@@ -267,6 +245,28 @@ function Package:add_ordering_dependencies()
         prev = s
         if not s.config then
             common = s
+        end
+    end
+end
+
+function Package:add_needs(packages)
+    local pkg
+    for _, stage in ipairs(self.stages) do
+        for name, _ in pairs(stage.needs) do
+            if packages[name] then
+                pkg = packages[name]
+                pkg:add_target(Target.new(name, 'build', self.config))
+                pkg:add_target(Target.new(name, 'install', self.config))
+                for _, rule in ipairs(self.template or {}) do
+                    pkg:add_target(Target.from_rule(pkg, rule, self.config))
+                end
+            else
+                pkg = Package:parse { name, self.config,
+                    template = self.template
+                }
+                packages[name] = pkg
+                table.insert(packages, pkg)
+            end
         end
     end
 end
@@ -498,10 +498,70 @@ function Target:append(target)
 end
 
 --}}}
+--{{{ Rules
+
+Rules = {}
+
+function Rules.load(filename)
+    local packages = {}
+    local env = { jagen = jagen }
+
+    function env.package(...)
+        local pkg  = Package:parse(...)
+        packages[pkg.name] = pkg
+        table.insert(packages, pkg)
+    end
+
+    local chunk = loadfile(filename)
+    if chunk then
+        setfenv(chunk, env)
+        chunk()
+    end
+
+    return packages
+end
+
+function Rules.resolve(packages)
+    for _, pkg in ipairs(packages) do
+        pkg:add_needs(packages)
+    end
+end
+
+function Rules:new(packages)
+    local o = Rules.merge_stages(packages)
+    setmetatable(o, self)
+    self.__index = self
+    for _, pkg in ipairs(o) do
+        pkg:add_toolchain_dependency()
+        pkg:add_ordering_dependencies()
+    end
+    return o
+end
+
+function Rules.merge_stages(packages)
+    local o = {}
+    for _, pkg in ipairs(packages) do
+        local name = pkg.name
+        local existing = o[name]
+        if existing then
+            for _, stage in ipairs(pkg.stages or {}) do
+                existing:add_target(stage)
+            end
+        else
+            o[name] = pkg
+            table.insert(o, pkg)
+        end
+    end
+    return o
+end
+
+--}}}
 --{{{ jagen
 
 jagen =
 {
+    root = os.getenv('jagen_root'),
+
     shell = os.getenv('jagen_shell'),
 
     debug = os.getenv('jagen_debug'),
@@ -514,8 +574,8 @@ jagen =
     build_dir   = os.getenv('jagen_build_dir'),
     include_dir = os.getenv('jagen_include_dir'),
 
-    patch_dir         = os.getenv('jagen_patch_dir'),
-    private_dir       = os.getenv('jagen_private_dir'),
+    patch_dir   = os.getenv('jagen_patch_dir'),
+    private_dir = os.getenv('jagen_private_dir'),
 
     output = nil,
     output_file = nil,
@@ -591,48 +651,18 @@ function jagen.flag(f)
 end
 
 function jagen.load_rules()
-    local packages = {}
-    local env = {
-        jagen = jagen
-    }
+    local sdk = jagen.sdk
+    local default_path = system.mkpath(jagen.lib_dir, 'rules.'..sdk..'.lua')
+    local local_path = system.mkpath(jagen.root, 'rules.lua')
 
-    function env.package(...)
-        local pkg  = Package:parse(...)
-        packages[pkg.name] = pkg
+    local packages = Rules.load(default_path)
+    for _, pkg in ipairs(Rules.load(local_path)) do
         table.insert(packages, pkg)
     end
 
-    local rules = loadfile(jagen.rules_file)
-    if rules then
-        setfenv(rules, env)
-        rules()
-    end
+    Rules.resolve(packages)
 
-    for _, pkg in ipairs(packages) do
-        pkg:resolve_dependencies(packages)
-    end
-
-    rules = {}
-
-    for _, pkg in ipairs(packages) do
-        local name = pkg.name
-        local rule = rules[name]
-        if rule then
-            for _, stage in ipairs(pkg.stages or {}) do
-                rule:add_target(stage)
-            end
-        else
-            rules[name] = pkg
-            table.insert(rules, pkg)
-        end
-    end
-
-    for _, pkg in ipairs(rules) do
-        pkg:add_toolchain_dependency()
-        pkg:add_ordering_dependencies()
-    end
-
-    return rules
+    return Rules:new(packages)
 end
 
 function jagen.generate_include_script(pkg)
