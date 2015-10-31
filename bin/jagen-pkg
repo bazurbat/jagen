@@ -6,15 +6,15 @@ pkg_name="$1"
 pkg_stage="$2"
 pkg_config="$3"
 
-pkg_log="${jagen_build_dir}/${pkg_name}-${pkg_stage}${pkg_config:+-${pkg_config}}.log"
-pkg_work_dir="$jagen_build_dir/pkg/$pkg_name"
+pkg_log="${jagen_log_dir}/${pkg_name}-${pkg_stage}${pkg_config:+-${pkg_config}}.log"
+pkg_work_dir="$jagen_build_dir/$pkg_name"
 
 rm -f "$pkg_log" || die "Failed to rm $pkg_log"
 mkdir -p "$pkg_work_dir" || die "Failed to mkdir $pkg_work_dir"
 cd "$pkg_work_dir" || die "Failed to cd to $pkg_work_dir"
 
-include "$jagen_build_include_dir/$pkg_name" "$pkg_config"
-include "$jagen_lib_dir/pkg/$pkg_name" 
+include "$jagen_include_dir/$pkg_name" "$pkg_config"
+include "$jagen_lib_dir/pkg/$pkg_name"
 
 pkg_source_name="$(_jagen src name "$pkg_source")"
 pkg_source_dir="${pkg_source_dir:-$pkg_work_dir/$pkg_source_name}"

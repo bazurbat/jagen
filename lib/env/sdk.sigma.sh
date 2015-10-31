@@ -47,7 +47,7 @@ fi
 kernel_release="2.6.32.15-21-sigma"
 cpukeys="CPU_KEYS_SMP86xx_2010-02-12"
 
-xsdk_dir="$jagen_build_dir/pkg/xsdk/$cpukeys"
+xsdk_dir="$jagen_build_dir/xsdk/$cpukeys"
 
 # XSDK
 export XSDK_ROOT="$xsdk_dir/signed_items"

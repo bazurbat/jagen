@@ -525,13 +525,13 @@ jagen =
     flags = os.getenv('jagen_flags'),
     sdk   = os.getenv('jagen_sdk'),
 
-    bin_dir   = os.getenv('jagen_bin_dir'),
-    lib_dir   = os.getenv('jagen_lib_dir'),
-    src_dir   = os.getenv('jagen_src_dir'),
-    build_dir = os.getenv('jagen_build_dir'),
+    bin_dir     = os.getenv('jagen_bin_dir'),
+    lib_dir     = os.getenv('jagen_lib_dir'),
+    src_dir     = os.getenv('jagen_src_dir'),
+    build_dir   = os.getenv('jagen_build_dir'),
+    include_dir = os.getenv('jagen_include_dir'),
 
     patch_dir         = os.getenv('jagen_patch_dir'),
-    build_include_dir = os.getenv('jagen_build_include_dir'),
     private_dir       = os.getenv('jagen_private_dir'),
 
     output = nil,
@@ -683,7 +683,7 @@ end
 function jagen.generate_include_script(pkg)
     local name     = pkg.name
     local filename = name..'.sh'
-    local path     = system.mkpath(jagen.build_include_dir, filename)
+    local path     = system.mkpath(jagen.include_dir, filename)
     local script   = Script:new(pkg)
 
     local f = assert(io.open(path, 'w+'))

@@ -12,7 +12,7 @@ rebuild() {
     local tab="$(printf '\t')"
     local targets_only show_all
     local target targets logs status
-    local rebuild_log="rebuild.log"
+    local rebuild_log="$jagen_log_dir/rebuild.log"
 
     cd "$jagen_build_dir" || exit 1
     : > "$rebuild_log"
@@ -22,7 +22,7 @@ rebuild() {
         [ "$target" = "-a" ] && { show_all=1; continue; }
 
         targets="${targets}${tab}${target}"
-        logs="${logs}${tab}${target}.log"
+        logs="${logs}${tab}${jagen_log_dir}/${target}.log"
     done
 
     rm -f $targets
