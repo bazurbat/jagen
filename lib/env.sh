@@ -26,7 +26,7 @@ if [ "$XDG_CONFIG_HOME" ]; then
 else
     try_include "$HOME/.config/jagen/env" || return
 fi
-try_include "$jagen_root/local.sh" || return
+try_include "$jagen_root/config.sh" || return
 
 export jagen_patch_dir="$jagen_dist_dir/patches"
 export jagen_build_include_dir="$jagen_build_dir/include"

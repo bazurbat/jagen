@@ -1,7 +1,7 @@
 #!/bin/sh
 
 env_file="env.sh"
-config_file="local.sh"
+config_file="config.sh"
 
 show_help() {
     cat <<EOF
@@ -59,22 +59,27 @@ EOF
 
 write_config() {
     cat >"$config_file" <<EOF
-# Current build root configuration type.
+# Current build root configuration.
 jagen_sdk="$sdk"
 
-# Toplevel working directory (for convenience)
-base_dir=\$(real_path "\$jagen_root/..")
+# jagen_root - refers to the current build root (where this file is placed)
+# jagen_dir  - refers to the jagen project directory.
+
+# Toplevel working directory.
+# Note: setting relative path allows to source this environment both from
+# outside and inside the chrooted container.
+jagen_base_dir=\$(real_path "\$jagen_root/..")
 
 # A directory containing software distributions and patches.
-jagen_dist_dir="\$base_dir/dist"
+jagen_dist_dir="\$jagen_base_dir/dist"
 
 # A directory where source packages will be checked out.
-jagen_src_dir="\$base_dir/src"
+jagen_src_dir="\$jagen_base_dir/src"
 
 # A directory where build products will be stored.
 jagen_build_dir="\$jagen_root/build"
 
-# A directory containing SDK (optional).
+# A directory containing SDK.
 jagen_sdk_dir="$sdk_dir"
 
 # A directory containing target toolchain.
@@ -85,8 +90,8 @@ jagen_toolchain_dir="$toolchain_dir"
 #   ccache - wrap compilation commands with ccache
 jagen_flags=""
 
-# Package names excluded from clear and update during rebuilds.
-# Example: jagen_source_exclude='chicken karaoke-player'
+# Space separated list of package names excluded from cleaning and updating.
+# Example: jagen_source_exclude="chicken karaoke-player"
 jagen_source_exclude=""
 
 # Global build type.
@@ -122,15 +127,15 @@ done
 case $sdk in
     sigma)
         sdk_dir='$jagen_src_dir/sigma-mrua'
-        toolchain_dir='$base_dir/toolchain/mips-2012.03'
+        toolchain_dir='$jagen_base_dir/toolchain/mips-2012.03'
         ;;
     hisilicon)
         sdk_dir='$jagen_src_dir/hisilicon'
-        toolchain_dir='$base_dir/toolchain/arm-hisiv200-linux'
+        toolchain_dir='$jagen_base_dir/toolchain/arm-hisiv200-linux'
         ;;
     android)
         sdk_dir='$jagen_src_dir/hisilicon'
-        toolchain_dir='$base_dir/toolchain/android-ndk-r10d'
+        toolchain_dir='$jagen_base_dir/toolchain/android-ndk-r10d'
         ;;
 esac
 

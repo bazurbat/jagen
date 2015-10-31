@@ -66,7 +66,7 @@ TARGETS:
 CONFIGURATION:
 
   User can supply additional configuration in \"\$XDG_CONFIG_HOME/jagen/env\"
-  or \"\$HOME/.config/jagen/env\" and \"<jagen_dir>/local.sh\" files. These
+  or \"\$HOME/.config/jagen/env\" and \"<jagen_dir>/config.sh\" files. These
   are sourced during the build process and should have the form of shell
   variable declarations, for example:
 
