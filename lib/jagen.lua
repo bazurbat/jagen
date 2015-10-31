@@ -256,7 +256,6 @@ function Package:add_needs(packages)
             if packages[name] then
                 pkg = packages[name]
                 pkg:add_target(Target.new(name, 'build', self.config))
-                pkg:add_target(Target.new(name, 'install', self.config))
                 for _, rule in ipairs(self.template or {}) do
                     pkg:add_target(Target.from_rule(pkg, rule, self.config))
                 end
@@ -539,20 +538,20 @@ function Rules:new(packages)
 end
 
 function Rules.merge_stages(packages)
-    local o = {}
-    for _, pkg in ipairs(packages) do
-        local name = pkg.name
-        local existing = o[name]
+    local rules = {}
+    for _, package in ipairs(packages) do
+        local name = package.name
+        local existing = rules[name]
         if existing then
-            for _, stage in ipairs(pkg.stages or {}) do
-                existing:add_target(stage)
+            for _, target in ipairs(package.stages or {}) do
+                existing:add_target(target)
             end
         else
-            o[name] = pkg
-            table.insert(o, pkg)
+            rules[name] = package
+            table.insert(rules, package)
         end
     end
-    return o
+    return rules
 end
 
 --}}}
