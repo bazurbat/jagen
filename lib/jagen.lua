@@ -249,6 +249,21 @@ function Package:add_ordering_dependencies()
     end
 end
 
+function Package:merge(other)
+    for k, v in pairs(other) do
+        if type(k) ~= 'number' and k ~= 'stages' then
+            if type(v) == 'table' then
+                self[k] = table.merge(self[k] or {}, v)
+            else
+                self[k] = v
+            end
+        end
+    end
+    for _, t in ipairs(other.stages or {}) do
+        self:add_target(t)
+    end
+end
+
 function Package:add_needs(packages)
     local pkg
     for _, stage in ipairs(self.stages) do
@@ -543,9 +558,7 @@ function Rules.merge_stages(packages)
         local name = package.name
         local existing = rules[name]
         if existing then
-            for _, target in ipairs(package.stages or {}) do
-                existing:add_target(target)
-            end
+            existing:merge(package)
         else
             rules[name] = package
             table.insert(rules, package)
