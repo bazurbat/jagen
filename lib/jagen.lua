@@ -142,33 +142,15 @@ Package = {
     default_stages = { 'clean', 'unpack', 'patch' }
 }
 
-function Package:new(o)
-    o = o or {}
-    setmetatable(o, self)
+function Package:new(rule, template)
+    local pkg = {}
+
+    setmetatable(pkg, self)
     self.__index = self
-    return o
-end
 
-function Package:load_pkg(name)
-    local path = system.mkpath(jagen.pkg_dir, name..'.lua')
-    local env = {}
-    local o
-
-    function env.package(rule)
-        o = rule
+    if template then
+        pkg.template = template
     end
-
-    local def = loadfile(path)
-    if def then
-        setfenv(def, env)
-        def()
-    end
-
-    return Package:new(o)
-end
-
-function Package:parse(rule)
-    local pkg = Package:new()
 
     if type(rule[1]) == 'string' then
         pkg.name = rule[1]
@@ -179,7 +161,7 @@ function Package:parse(rule)
     end
 
     if pkg.name then
-        table.merge(pkg, Package:load_pkg(pkg.name))
+        table.merge(pkg, Package.load(pkg.name))
     end
 
     table.merge(pkg, rule)
@@ -192,8 +174,8 @@ function Package:parse(rule)
         pkg:add_target(Target.new(pkg.name, stage))
     end
 
-    if rule.template then
-        table.merge(pkg, rule.template)
+    if pkg.template then
+        table.merge(pkg, pkg.template)
     end
 
     pkg:add_build_dependencies()
@@ -207,6 +189,23 @@ function Package:parse(rule)
     end
 
     return pkg
+end
+
+function Package.load(name)
+    local o = {}
+    local env = {}
+    function env.package(rule)
+        o = rule
+    end
+
+    local filename = system.mkpath(jagen.lib_dir, 'pkg', name..'.lua')
+    local chunk = loadfile(filename)
+    if chunk then
+        setfenv(chunk, env)
+        chunk()
+    end
+
+    return o
 end
 
 function Package:add_target(target)
@@ -284,7 +283,7 @@ end
 function Package:add_needs(packages)
     for _, stage in ipairs(self.stages) do
         for name, _ in pairs(stage.needs) do
-            local pkg = Package:parse { name, self.config,
+            local pkg = Package:new { name, self.config,
                 template = self.template
             }
             if packages[name] then
@@ -535,7 +534,7 @@ function Rules.load(filename)
     local env = { jagen = jagen }
 
     function env.package(...)
-        local pkg  = Package:parse(...)
+        local pkg  = Package:new(...)
         packages[pkg.name] = pkg
         table.insert(packages, pkg)
     end
@@ -606,8 +605,6 @@ jagen =
     output = nil,
     output_file = nil,
 }
-
-jagen.pkg_dir = system.mkpath(jagen.lib_dir, 'pkg')
 
 jagen.cmd = system.mkpath(jagen.lib_dir, 'cmd.sh')
 jagen.rules_file = system.mkpath(jagen.lib_dir, 'rules.'..jagen.sdk..'.lua')
