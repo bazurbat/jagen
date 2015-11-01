@@ -80,7 +80,8 @@ pkg_run_depmod() {
 pkg_fix_la() {
     local filename="$1"
     local prefix=${2:-"$sdk_rootfs_prefix"}
-    pkg_run sed -i -e "s|^\(libdir=\)'\(.*\)'$|\1'${prefix}\2'|" "$filename"
+    debug "fix la $filename $prefix"
+    pkg_run sed -i "s|^\(libdir=\)'\(.*\)'$|\1'${prefix}\2'|" "$filename"
 }
 
 pkg_run_autoreconf() {
