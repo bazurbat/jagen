@@ -161,7 +161,7 @@ local function firmware_package(rule)
         })
 end
 
-package { 'firmware', 'target',
+firmware_package { 'firmware', 'target',
     { 'material',
         { 'mrua', 'build' }
     },
