@@ -161,7 +161,6 @@ rootfs_package { 'gpgme',
 local function firmware_package(rule)
     rule.template = {
         config = 'target',
-        { 'build' },
         { 'install', { 'firmware', 'unpack' } },
     }
     package(rule)

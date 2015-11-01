@@ -178,10 +178,6 @@ function Package:parse(rule)
         pkg.config = rule[2]
     end
 
-    if rule.template then
-        table.merge(pkg, rule.template)
-    end
-
     if pkg.name then
         table.merge(pkg, Package:load_pkg(pkg.name))
     end
@@ -194,6 +190,10 @@ function Package:parse(rule)
 
     for _, stage in ipairs(self.default_stages) do
         pkg:add_target(Target.new(pkg.name, stage))
+    end
+
+    if rule.template then
+        table.merge(pkg, rule.template)
     end
 
     pkg:add_build_dependencies()
@@ -211,10 +211,12 @@ end
 
 function Package:add_target(target)
     self.stages = self.stages or {}
-    local function equal(t) return t == target end
-    local existing = find(equal, self.stages)
-    if existing then
-        existing:append(target)
+    local function eq(t)
+        return t == target
+    end
+    local e = find(eq, self.stages)
+    if e then
+        e:append(target)
     else
         table.insert(self.stages, target)
     end
@@ -280,19 +282,14 @@ function Package:merge(other)
 end
 
 function Package:add_needs(packages)
-    local pkg
     for _, stage in ipairs(self.stages) do
         for name, _ in pairs(stage.needs) do
+            local pkg = Package:parse { name, self.config,
+                template = self.template
+            }
             if packages[name] then
-                pkg = packages[name]
-                pkg:add_target(Target.new(name, 'build', self.config))
-                for _, rule in ipairs(self.template or {}) do
-                    pkg:add_target(Target.from_rule(pkg, rule, self.config))
-                end
+                packages[name]:merge(pkg)
             else
-                pkg = Package:parse { name, self.config,
-                    template = self.template
-                }
                 packages[name] = pkg
                 table.insert(packages, pkg)
             end
@@ -516,9 +513,11 @@ function Target:append(target)
     end
 
     for _, i in ipairs(target.inputs or {}) do
-        local k = tostring(i)
-        if not self.inputs[k] then
-            self.inputs[k] = true
+        local function eq(t)
+            return t == i
+        end
+        local e = find(eq, self.inputs)
+        if not e then
             table.insert(self.inputs, i)
         end
     end
