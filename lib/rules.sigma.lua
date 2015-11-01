@@ -195,9 +195,6 @@ firmware_package { 'karaoke-player',
             'libuv',
             'soundtouch'
         }
-    },
-    { 'install',
-        needs = { 'chicken-eggs' }
     }
 }
 
@@ -205,7 +202,7 @@ firmware_package { 'chicken',
     { 'build', { 'chicken',  'install', 'host' } }
 }
 
-package { 'chicken-eggs', 'target',
+firmware_package { 'chicken-eggs',
     { 'install',
         { 'chicken-eggs', 'install', 'host'   },
         needs = {
@@ -215,13 +212,3 @@ package { 'chicken-eggs', 'target',
         }
     }
 }
-
-firmware_package { 'ffmpeg',
-    { 'build', { 'ast-files', 'unpack' } }
-}
-
-firmware_package { 'rsync' }
-
-firmware_package { 'sqlite' }
-
-firmware_package { 'wpa_supplicant' }
