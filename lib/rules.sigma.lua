@@ -3,7 +3,6 @@
 local function rootfs_package(rule)
     package(rule, {
             { 'build', { 'rootfs', 'build' } },
-            { 'install' }
         })
 end
 
@@ -75,7 +74,6 @@ package { 'libtool', 'host' }
 local function kernel_package(rule)
     package(rule, {
             { 'build', { 'kernel', 'build' } },
-            { 'install' }
         })
 end
 
