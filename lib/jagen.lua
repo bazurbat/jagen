@@ -267,7 +267,7 @@ end
 
 function Package:merge(other)
     for k, v in pairs(other) do
-        if type(k) ~= 'number' and k ~= 'stages' and k ~= 'patches' and k ~= 'build' then
+        if type(k) ~= 'number' and k ~= 'stages' then
             if type(v) == 'table' then
                 self[k] = table.merge(self[k] or {}, v)
             else
@@ -281,14 +281,30 @@ function Package:merge(other)
 end
 
 function Package:add_needs(packages)
+    local pkg
+    local function eq_config(t, config)
+        return t.config and t.config == config
+    end
     for _, stage in ipairs(self.stages) do
         for name, _ in pairs(stage.needs) do
-            local pkg = Package:new { name, self.config,
-                template = self.template
-            }
             if packages[name] then
-                packages[name]:merge(pkg)
+                pkg = packages[name]
+                local rule = copy(self.template or {})
+                rule.name = name
+                local similar_stages = filter(function (t)
+                        return eq_config(t, pkg.config)
+                    end, pkg.stages)
+                for _, s in ipairs(similar_stages) do
+                    pkg:add_target(Target.new(name, s.stage, stage.config))
+                end
+                for _, s in ipairs(rule) do
+                    pkg:add_target(Target.from_rule(rule, s, stage.config))
+                end
+                table.merge(pkg, rule)
             else
+                pkg = Package:new { name, self.config,
+                    template = self.template
+                }
                 packages[name] = pkg
                 table.insert(packages, pkg)
             end
@@ -548,12 +564,6 @@ function Rules.load(filename)
     return packages
 end
 
-function Rules.resolve(packages)
-    for _, pkg in ipairs(packages) do
-        pkg:add_needs(packages)
-    end
-end
-
 function Rules:new(packages)
     local o = Rules.merge_stages(packages)
     setmetatable(o, self)
@@ -683,7 +693,9 @@ function jagen.load_rules()
         table.insert(packages, pkg)
     end
 
-    Rules.resolve(packages)
+    for _, pkg in ipairs(packages) do
+        pkg:add_needs(packages)
+    end
 
     return Rules:new(packages)
 end
