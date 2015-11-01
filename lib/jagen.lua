@@ -214,9 +214,9 @@ function Package:add_target(target)
     local function eq(t)
         return t == target
     end
-    local e = find(eq, self.stages)
-    if e then
-        e:append(target)
+    local found = find(eq, self.stages)
+    if found then
+        found:add_inputs(target)
     else
         table.insert(self.stages, target)
     end
@@ -507,7 +507,7 @@ function Target.__tostring(t, sep)
     return table.concat(o, sep)
 end
 
-function Target:append(target)
+function Target:add_inputs(target)
     for name, _ in pairs(target.needs or {}) do
         self.needs[name] = true
     end
@@ -516,8 +516,8 @@ function Target:append(target)
         local function eq(t)
             return t == i
         end
-        local e = find(eq, self.inputs)
-        if not e then
+        local found = find(eq, self.inputs)
+        if not found then
             table.insert(self.inputs, i)
         end
     end
