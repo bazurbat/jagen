@@ -267,7 +267,7 @@ end
 
 function Package:merge(other)
     for k, v in pairs(other) do
-        if type(k) ~= 'number' and k ~= 'stages' then
+        if type(k) ~= 'number' and k ~= 'stages' and k ~= 'patches' then
             if type(v) == 'table' then
                 self[k] = table.merge(self[k] or {}, v)
             else
