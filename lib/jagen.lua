@@ -92,6 +92,21 @@ function table.merge(a, b)
     return a
 end
 
+function table.dump(t, i)
+    local i = i or 0
+    io.write(string.rep(' ', i), tostring(t), ' {\n')
+    for k, v in pairs(t) do
+        io.write(string.rep(' ', i+2), k, ' = ')
+        if type(v) == 'table' then
+            io.write('\n')
+            table.dump(v, i+4)
+        else
+            io.write(tostring(v), '\n')
+        end
+    end
+    io.write(string.rep(' ', i), '}\n')
+end
+
 --}}}
 --{{{ system
 
