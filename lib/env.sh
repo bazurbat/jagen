@@ -7,7 +7,7 @@ fi
 
 export jagen_shell=""
 
-export jagen_debug=""
+export jagen_debug="${jagen_debug}"
 export jagen_flags=""
 export jagen_sdk=""
 
