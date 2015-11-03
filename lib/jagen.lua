@@ -94,6 +94,10 @@ end
 
 function table.dump(t, i)
     local i = i or 0
+    if type(t) ~= 'table' then
+        io.write(tostring(t), '\n')
+        return
+    end
     io.write(string.rep(' ', i), tostring(t), ' {\n')
     for k, v in pairs(t) do
         io.write(string.rep(' ', i+2), k, ' = ')
@@ -142,15 +146,18 @@ Package = {
     default_stages = { 'clean', 'unpack', 'patch' }
 }
 
+function Package:__tostring()
+    local o = {}
+    if self.name then table.insert(o, self.name) end
+    if self.config then table.insert(o, self.config) end
+    return table.concat(o, ':')
+end
+
 function Package:new(rule, template)
     local pkg = {}
 
     setmetatable(pkg, self)
     self.__index = self
-
-    if template then
-        pkg.template = template
-    end
 
     if type(rule[1]) == 'string' then
         pkg.name = rule[1]
@@ -160,33 +167,11 @@ function Package:new(rule, template)
         pkg.config = rule[2]
     end
 
-    if pkg.name then
-        table.merge(pkg, Package.load(pkg.name))
+    if template then
+        pkg.template = template
     end
 
     table.merge(pkg, rule)
-
-    if type(pkg.source) == 'string' then
-        pkg.source = { type = 'dist', location = pkg.source }
-    end
-
-    for _, stage in ipairs(self.default_stages) do
-        pkg:add_target(Target.new(pkg.name, stage))
-    end
-
-    if pkg.template then
-        table.merge(pkg, pkg.template)
-    end
-
-    pkg:add_build_dependencies()
-
-    for _, v in ipairs(pkg) do
-        if type(v) == 'table' then
-            local target = Target.from_rule(pkg, v)
-            target.config = pkg.config
-            pkg:add_target(target)
-        end
-    end
 
     return pkg
 end
@@ -220,6 +205,40 @@ function Package:add_target(target)
         table.insert(self.stages, target)
     end
     return self
+end
+
+function Package:add_default_stages()
+    for _, stage in ipairs(self.default_stages) do
+        self:add_target(Target.new(self.name, stage))
+    end
+end
+
+function Package:add_loaded_stages()
+    if self.name then
+        table.merge(self, Package.load(self.name))
+    end
+end
+
+function Package:convert_source()
+    if type(self.source) == 'string' then
+        self.source = { type = 'dist', location = self.source }
+    end
+end
+
+function Package:add_template_stages()
+    if self.template then
+        table.merge(self, self.template)
+    end
+end
+
+function Package:add_stages()
+    for _, v in ipairs(self) do
+        if type(v) == 'table' then
+            local target = Target.from_rule(self, v)
+            target.config = self.config
+            self:add_target(target)
+        end
+    end
 end
 
 function Package:add_toolchain_dependency()
@@ -305,6 +324,12 @@ function Package:add_needs(packages)
                 pkg = Package:new { name, self.config,
                     template = self.template
                 }
+                pkg:add_loaded_stages()
+                pkg:convert_source()
+                pkg:add_default_stages()
+                pkg:add_template_stages()
+                pkg:add_build_dependencies()
+                pkg:add_stages()
                 packages[name] = pkg
                 table.insert(packages, pkg)
             end
@@ -541,56 +566,6 @@ function Target:add_inputs(target)
 end
 
 --}}}
---{{{ Rules
-
-Rules = {}
-
-function Rules.load(filename)
-    local packages = {}
-    local env = { jagen = jagen }
-
-    function env.package(...)
-        local pkg  = Package:new(...)
-        packages[pkg.name] = pkg
-        table.insert(packages, pkg)
-    end
-
-    local chunk = loadfile(filename)
-    if chunk then
-        setfenv(chunk, env)
-        chunk()
-    end
-
-    return packages
-end
-
-function Rules:new(packages)
-    local o = Rules.merge_stages(packages)
-    setmetatable(o, self)
-    self.__index = self
-    for _, pkg in ipairs(o) do
-        pkg:add_toolchain_dependency()
-        pkg:add_ordering_dependencies()
-    end
-    return o
-end
-
-function Rules.merge_stages(packages)
-    local rules = {}
-    for _, package in ipairs(packages) do
-        local name = package.name
-        local existing = rules[name]
-        if existing then
-            existing:merge(package)
-        else
-            rules[name] = package
-            table.insert(rules, package)
-        end
-    end
-    return rules
-end
-
---}}}
 --{{{ jagen
 
 jagen =
@@ -688,16 +663,63 @@ function jagen.load_rules()
     local default_path = system.mkpath(jagen.lib_dir, 'rules.'..sdk..'.lua')
     local local_path = system.mkpath(jagen.root, 'rules.lua')
 
-    local packages = Rules.load(default_path)
-    for _, pkg in ipairs(Rules.load(local_path)) do
+    local function load_rules(filename)
+        local packages = {}
+        local env = { jagen = jagen }
+        function env.package(...)
+            local pkg  = Package:new(...)
+            packages[pkg.name] = pkg
+            table.insert(packages, pkg)
+        end
+        local chunk = loadfile(filename)
+        if chunk then
+            setfenv(chunk, env)
+            chunk()
+        end
+        return packages
+    end
+
+    local function merge_stages(packages)
+        local rules = {}
+        for _, package in ipairs(packages) do
+            local name = package.name
+            local existing = rules[name]
+            if existing then
+                existing:merge(package)
+            else
+                rules[name] = package
+                table.insert(rules, package)
+            end
+        end
+        return rules
+    end
+
+    local packages = load_rules(default_path)
+    for _, pkg in ipairs(load_rules(local_path)) do
         table.insert(packages, pkg)
+    end
+
+    for _, pkg in ipairs(packages) do
+        pkg:add_loaded_stages()
+        pkg:convert_source()
+        pkg:add_default_stages()
+        pkg:add_template_stages()
+        pkg:add_build_dependencies()
+        pkg:add_stages()
     end
 
     for _, pkg in ipairs(packages) do
         pkg:add_needs(packages)
     end
 
-    return Rules:new(packages)
+    local merged = merge_stages(packages)
+
+    for _, pkg in ipairs(merged) do
+        pkg:add_toolchain_dependency()
+        pkg:add_ordering_dependencies()
+    end
+
+    return merged
 end
 
 function jagen.generate_include_script(pkg)
