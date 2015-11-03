@@ -3,6 +3,10 @@
 --{{{ common
 
 function copy(t)
+    if type(t) ~= 'table' then
+        return t
+    end
+
     local c = {}
     for k, v in pairs(t) do
         if type(v) == 'table' then
@@ -169,9 +173,21 @@ function Package:new(rule, template)
 
     if template then
         pkg.template = template
+    elseif rule.template then
+        pkg.template = rule.template
     end
 
-    table.merge(pkg, rule)
+    for _, i in ipairs(rule) do
+        if type(i) == 'table' then
+            table.insert(pkg, i)
+        end
+    end
+
+    if rule.source then
+        pkg.source = copy(rule.source)
+    end
+
+    -- table.merge(pkg, rule)
 
     return pkg
 end
@@ -200,8 +216,10 @@ function Package:add_target(target)
     end
     local found = find(eq, self.stages)
     if found then
+        jagen.debug2(tostring(self), '=', tostring(target))
         found:add_inputs(target)
     else
+        jagen.debug2(tostring(self), '+', tostring(target))
         table.insert(self.stages, target)
     end
     return self
@@ -284,6 +302,19 @@ function Package:add_ordering_dependencies()
     end
 end
 
+function Package:add_deps()
+    self:add_loaded_stages()
+    self:convert_source()
+    self:add_default_stages()
+    self:add_template_stages()
+    self:add_build_dependencies()
+    for _, s in ipairs(self) do
+        self:add_target(Target.from_rule(self, s))
+    end
+    self:add_stages()
+
+end
+
 function Package:merge(other)
     for k, v in pairs(other) do
         if type(k) ~= 'number' and k ~= 'stages' then
@@ -324,12 +355,8 @@ function Package:add_needs(packages)
                 pkg = Package:new { name, self.config,
                     template = self.template
                 }
-                pkg:add_loaded_stages()
-                pkg:convert_source()
-                pkg:add_default_stages()
-                pkg:add_template_stages()
-                pkg:add_build_dependencies()
-                pkg:add_stages()
+                jagen.debug2(tostring(pkg), 'add')
+                pkg:add_deps()
                 packages[name] = pkg
                 table.insert(packages, pkg)
             end
@@ -668,6 +695,7 @@ function jagen.load_rules()
         local env = { jagen = jagen }
         function env.package(...)
             local pkg  = Package:new(...)
+            jagen.debug2(tostring(pkg), 'load')
             packages[pkg.name] = pkg
             table.insert(packages, pkg)
         end
@@ -700,12 +728,7 @@ function jagen.load_rules()
     end
 
     for _, pkg in ipairs(packages) do
-        pkg:add_loaded_stages()
-        pkg:convert_source()
-        pkg:add_default_stages()
-        pkg:add_template_stages()
-        pkg:add_build_dependencies()
-        pkg:add_stages()
+        pkg:add_deps()
     end
 
     for _, pkg in ipairs(packages) do
