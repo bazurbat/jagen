@@ -144,7 +144,7 @@ end
 --{{{ Package
 
 Package = {
-    default_stages = { 'clean', 'unpack', 'patch' }
+    init_stages = { 'clean', 'unpack', 'patch' }
 }
 
 function Package:__tostring()
@@ -162,19 +162,34 @@ function Package:new(rule)
 
     if type(rule[1]) == 'string' then
         pkg.name = rule[1]
+        table.remove(rule, 1)
     end
 
-    if type(rule[2]) == 'string' then
-        pkg.config = rule[2]
+    if type(rule[1]) == 'string' then
+        pkg.config = rule[1]
+        table.remove(rule, 1)
     end
 
-    pkg.source = rule.source
-    pkg.template = rule.template
+    for _, name in ipairs(self.init_stages) do
+        pkg:add_target(Target.new(pkg.name, name))
+    end
 
-    for _, i in ipairs(rule) do
-        if type(i) == 'table' then
-            table.insert(pkg, i)
-        end
+    table.merge(pkg, Package.load(pkg.name))
+
+    table.merge(pkg, rule)
+
+    if type(pkg.source) == 'string' then
+        pkg.source = { type = 'dist', location = pkg.source }
+    end
+
+    if rule.template then
+        table.merge(pkg, rule.template)
+    end
+
+    pkg:add_build_dependencies()
+
+    for _, stage in ipairs(pkg) do
+        pkg:add_target(Target.from_rule(stage, pkg.name, pkg.config))
     end
 
     return pkg
@@ -264,38 +279,6 @@ function Package:add_ordering_dependencies()
     end
 end
 
-function Package:add_deps()
-    if self.name then
-        table.merge(self, Package.load(self.name))
-    end
-
-    if type(self.source) == 'string' then
-        self.source = { type = 'dist', location = self.source }
-    end
-
-    for _, stage in ipairs(self.default_stages) do
-        self:add_target(Target.new(self.name, stage))
-    end
-
-    if self.template then
-        table.merge(self, self.template)
-    end
-
-    self:add_build_dependencies()
-
-    for _, target in ipairs(self:parse_stages(self, self.config)) do
-        self:add_target(target)
-    end
-
-    for _, v in ipairs(self) do
-        if type(v) == 'table' then
-            local target = Target.from_rule(v, self.name, self.config)
-            target.config = self.config
-            self:add_target(target)
-        end
-    end
-end
-
 function Package:merge(other)
     for k, v in pairs(other) do
         if type(k) ~= 'number' and k ~= 'stages' then
@@ -337,7 +320,6 @@ function Package:add_needs(packages)
                     template = self.template
                 }
                 jagen.debug2(tostring(pkg), 'add')
-                pkg:add_deps()
                 packages[name] = pkg
                 table.insert(packages, pkg)
             end
@@ -706,10 +688,6 @@ function jagen.load_rules()
     local packages = load_rules(default_path)
     for _, pkg in ipairs(load_rules(local_path)) do
         table.insert(packages, pkg)
-    end
-
-    for _, pkg in ipairs(packages) do
-        pkg:add_deps()
     end
 
     for _, pkg in ipairs(packages) do
