@@ -2,6 +2,7 @@
 
 local function rootfs_package(rule)
     rule.template = {
+        config = 'target',
         { 'build', { 'rootfs', 'build' } },
     }
     package(rule)
@@ -19,7 +20,7 @@ package { 'xsdk',
     source = '${cpukeys}.tar.gz'
 }
 
-package { 'ucode',
+package { 'ucode', 'target',
     { 'unpack',  { 'mrua',     'build'  } },
     { 'install', { 'firmware', 'unpack' } }
 }
@@ -74,12 +75,13 @@ package { 'libtool', 'host' }
 
 local function kernel_package(rule)
     rule.template = {
+        config = 'target',
         { 'build', { 'kernel', 'build' } },
     }
     package(rule)
 end
 
-package { 'kernel',
+package { 'kernel', 'target',
     source = { branch = 'sigma-2.6' },
     { 'build',
         { 'ezboot', 'build'  },
@@ -96,7 +98,7 @@ kernel_package { 'ralink' }
 
 -- rootfs
 
-package { 'rootfs',
+package { 'rootfs', 'target',
     { 'build',
         { 'ast-files',  'unpack'            },
         { 'make',       'install', 'tools'  },
@@ -115,7 +117,7 @@ package { 'rootfs',
     }
 }
 
-package { 'mrua',
+package { 'mrua', 'target',
     { 'build',   { 'kernel',   'build'  } },
     { 'modules'  },
     { 'install', { 'firmware', 'unpack' } }

@@ -169,6 +169,9 @@ function Package:new(rule)
         pkg.config = rule[1]
         table.remove(rule, 1)
     end
+    if not pkg.config then
+        pkg.config = 'host'
+    end
 
     for _, name in ipairs(self.init_stages) do
         pkg:add_target(Target.new(pkg.name, name))
@@ -222,17 +225,28 @@ end
 
 function Package:add_target(target)
     self.stages = self.stages or {}
-    local function eq(t)
-        return t == target
+
+    local function default(this)
+        for _, stage in ipairs(self.init_stages) do
+            if stage == target.stage and stage == this.stage then
+                return this
+            end
+        end
     end
+    local function eq(this)
+        return this == target or default(this)
+    end
+
     local found = find(eq, self.stages)
     if found then
         jagen.debug2(tostring(self), '=', tostring(target))
         found:add_inputs(target)
+        return self
     else
         jagen.debug2(tostring(self), '+', tostring(target))
         table.insert(self.stages, target)
     end
+
     return self
 end
 
