@@ -2,19 +2,16 @@
 
 --{{{ common
 
-function copy(t)
-    if type(t) ~= 'table' then
-        return t
-    end
-
-    local c = {}
-    for k, v in pairs(t) do
-        if type(v) == 'table' then
-            v = copy(v)
+function copy(o)
+    if type(o) == 'table' then
+        local c = {}
+        for k, v in pairs(o) do
+            c[k] = copy(v)
         end
-        c[k] = v
+        return c
+    else
+        return o
     end
-    return c
 end
 
 function append(...)
