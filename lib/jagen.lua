@@ -215,14 +215,6 @@ function Package.load(name)
     return o
 end
 
-function Package:parse_stages(rules, config)
-    local o = {}
-    for _, rule in ipairs(rules) do
-        table.insert(o, Target.from_rule(rule, self.name, config))
-    end
-    return o
-end
-
 function Package:add_target(target)
     self.stages = self.stages or {}
 
