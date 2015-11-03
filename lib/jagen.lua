@@ -295,31 +295,16 @@ function Package:merge(other)
 end
 
 function Package:add_needs(packages)
-    local pkg
-    local function eq_config(t, config)
-        return t.config and t.config == config
-    end
     for _, stage in ipairs(self.stages) do
         for name, _ in pairs(stage.needs) do
+            local pkg = Package:new { name, self.config,
+                template = self.template
+            }
             if packages[name] then
-                pkg = packages[name]
-                local rule = copy(self.template or {})
-                rule.name = name
-                local similar_stages = filter(function (t)
-                        return eq_config(t, pkg.config)
-                    end, pkg.stages)
-                for _, s in ipairs(similar_stages) do
-                    pkg:add_target(Target.new(name, s.stage, stage.config))
+                for _, t in ipairs(pkg.stages) do
+                    packages[name]:add_target(t)
                 end
-                for _, s in ipairs(rule) do
-                    pkg:add_target(Target.from_rule(s, pkg.name, stage.config))
-                end
-                table.merge(pkg, rule)
             else
-                pkg = Package:new { name, self.config,
-                    template = self.template
-                }
-                jagen.debug2(tostring(pkg), 'add')
                 packages[name] = pkg
                 table.insert(packages, pkg)
             end
