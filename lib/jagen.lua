@@ -195,6 +195,8 @@ function Package:new(rule)
         pkg:add_target(Target.from_rule(stage, pkg.name, pkg.config))
     end
 
+    pkg:add_toolchain_dependency()
+
     return pkg
 end
 
@@ -673,6 +675,9 @@ function jagen.load_rules()
                 table.insert(rules, package)
             end
         end
+        for _, pkg in ipairs(rules) do
+            pkg:add_ordering_dependencies()
+        end
         return rules
     end
 
@@ -686,11 +691,6 @@ function jagen.load_rules()
     end
 
     local merged = merge_stages(packages)
-
-    for _, pkg in ipairs(merged) do
-        pkg:add_toolchain_dependency()
-        pkg:add_ordering_dependencies()
-    end
 
     return merged
 end
