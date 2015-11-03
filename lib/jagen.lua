@@ -168,21 +168,14 @@ function Package:new(rule)
         pkg.config = rule[2]
     end
 
-    if rule.template then
-        pkg.template = rule.template
-    end
-
-    if rule.source then
-        pkg.source = copy(rule.source)
-    end
+    pkg.source = rule.source
+    pkg.template = rule.template
 
     for _, i in ipairs(rule) do
         if type(i) == 'table' then
             table.insert(pkg, i)
         end
     end
-
-    -- table.merge(pkg, rule)
 
     return pkg
 end
@@ -204,6 +197,14 @@ function Package.load(name)
     return o
 end
 
+function Package:parse_stages(rules, config)
+    local o = {}
+    for _, rule in ipairs(rules) do
+        table.insert(o, Target.from_rule(rule, self.name, config))
+    end
+    return o
+end
+
 function Package:add_target(target)
     self.stages = self.stages or {}
     local function eq(t)
@@ -218,40 +219,6 @@ function Package:add_target(target)
         table.insert(self.stages, target)
     end
     return self
-end
-
-function Package:add_default_stages()
-    for _, stage in ipairs(self.default_stages) do
-        self:add_target(Target.new(self.name, stage))
-    end
-end
-
-function Package:add_loaded_stages()
-    if self.name then
-        table.merge(self, Package.load(self.name))
-    end
-end
-
-function Package:convert_source()
-    if type(self.source) == 'string' then
-        self.source = { type = 'dist', location = self.source }
-    end
-end
-
-function Package:add_template_stages()
-    if self.template then
-        table.merge(self, self.template)
-    end
-end
-
-function Package:add_stages()
-    for _, v in ipairs(self) do
-        if type(v) == 'table' then
-            local target = Target.from_rule(self, v)
-            target.config = self.config
-            self:add_target(target)
-        end
-    end
 end
 
 function Package:add_toolchain_dependency()
@@ -298,16 +265,35 @@ function Package:add_ordering_dependencies()
 end
 
 function Package:add_deps()
-    self:add_loaded_stages()
-    self:convert_source()
-    self:add_default_stages()
-    self:add_template_stages()
-    self:add_build_dependencies()
-    for _, s in ipairs(self) do
-        self:add_target(Target.from_rule(self, s))
+    if self.name then
+        table.merge(self, Package.load(self.name))
     end
-    self:add_stages()
 
+    if type(self.source) == 'string' then
+        self.source = { type = 'dist', location = self.source }
+    end
+
+    for _, stage in ipairs(self.default_stages) do
+        self:add_target(Target.new(self.name, stage))
+    end
+
+    if self.template then
+        table.merge(self, self.template)
+    end
+
+    self:add_build_dependencies()
+
+    for _, target in ipairs(self:parse_stages(self, self.config)) do
+        self:add_target(target)
+    end
+
+    for _, v in ipairs(self) do
+        if type(v) == 'table' then
+            local target = Target.from_rule(v, self.name, self.config)
+            target.config = self.config
+            self:add_target(target)
+        end
+    end
 end
 
 function Package:merge(other)
@@ -343,7 +329,7 @@ function Package:add_needs(packages)
                     pkg:add_target(Target.new(name, s.stage, stage.config))
                 end
                 for _, s in ipairs(rule) do
-                    pkg:add_target(Target.from_rule(rule, s, stage.config))
+                    pkg:add_target(Target.from_rule(s, pkg.name, stage.config))
                 end
                 table.merge(pkg, rule)
             else
@@ -521,9 +507,9 @@ function Target.from_list(list)
     return Target.new(list[1], list[2], list[3])
 end
 
-function Target.from_rule(pkg, rule, config)
+function Target.from_rule(rule, name, config)
     local stage = rule[1]; assert(type(stage) == 'string')
-    local target = Target.new(pkg.name, stage, config or pkg.config)
+    local target = Target.new(name, stage, config)
 
     for i = 2, #rule do
         table.insert(target.inputs, Target.from_list(rule[i]))
@@ -531,7 +517,7 @@ function Target.from_rule(pkg, rule, config)
 
     for _, name in ipairs(rule.needs or {}) do
         target.needs[name] = true
-        table.insert(target.inputs, Target.new(name, 'install', pkg.config))
+        table.insert(target.inputs, Target.new(name, 'install', config))
     end
 
     return target
