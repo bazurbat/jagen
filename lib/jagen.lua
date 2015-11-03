@@ -157,7 +157,7 @@ function Package:__tostring()
     return table.concat(o, ':')
 end
 
-function Package:new(rule, template)
+function Package:new(rule)
     local pkg = {}
 
     setmetatable(pkg, self)
@@ -171,20 +171,18 @@ function Package:new(rule, template)
         pkg.config = rule[2]
     end
 
-    if template then
-        pkg.template = template
-    elseif rule.template then
+    if rule.template then
         pkg.template = rule.template
+    end
+
+    if rule.source then
+        pkg.source = copy(rule.source)
     end
 
     for _, i in ipairs(rule) do
         if type(i) == 'table' then
             table.insert(pkg, i)
         end
-    end
-
-    if rule.source then
-        pkg.source = copy(rule.source)
     end
 
     -- table.merge(pkg, rule)
