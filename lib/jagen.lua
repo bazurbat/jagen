@@ -146,6 +146,7 @@ end
 Package = {
     init_stages = { 'clean', 'unpack', 'patch' }
 }
+Package.__index = Package
 
 function Package:__tostring()
     local o = {}
@@ -154,51 +155,56 @@ function Package:__tostring()
     return table.concat(o, ':')
 end
 
-function Package:new(rule)
+function Package:parse(rule)
+    setmetatable(rule, self)
+
+    if type(rule[1]) == 'string' then
+        rule.name = rule[1]
+        table.remove(rule, 1)
+    end
+
+    if type(rule[1]) == 'string' then
+        rule.config = rule[1]
+        table.remove(rule, 1)
+    end
+
+    if type(rule.source) == 'string' then
+        rule.source = { type = 'dist', location = rule.source }
+    end
+
+    jagen.debug2('parse', tostring(rule))
+
+    return rule
+end
+
+function Package:create(rule)
     local pkg = {}
-
     setmetatable(pkg, self)
-    self.__index = self
 
-    if type(rule[1]) == 'string' then
-        pkg.name = rule[1]
-        table.remove(rule, 1)
-    end
-
-    if type(rule[1]) == 'string' then
-        pkg.config = rule[1]
-        table.remove(rule, 1)
-    end
-    if not pkg.config then
-        pkg.config = 'host'
-    end
+    jagen.debug2('create', tostring(rule))
 
     for _, name in ipairs(self.init_stages) do
-        pkg:add_target(Target.new(pkg.name, name))
+        pkg:add_target(Target.new(rule.name, name))
     end
 
-    table.merge(pkg, Package.load(pkg.name))
-
+    table.merge(pkg, Package.load(rule.name))
     table.merge(pkg, rule)
+    if rule.template then
+        table.merge(pkg, rule.template)
+    end
+    pkg:add_build_dependencies()
 
     if type(pkg.source) == 'string' then
         pkg.source = { type = 'dist', location = pkg.source }
     end
 
-    if rule.template then
-        table.merge(pkg, rule.template)
-    end
-
-    pkg:add_build_dependencies()
-
     for _, stage in ipairs(pkg) do
         pkg:add_target(Target.from_rule(stage, pkg.name, pkg.config))
     end
 
-    pkg:add_toolchain_dependency()
-
     return pkg
 end
+
 
 function Package.load(name)
     local o = {}
@@ -254,6 +260,7 @@ function Package:add_toolchain_dependency()
 end
 
 function Package:add_build_dependencies()
+    jagen.debug2('add_build_dependencies', tostring(self))
     local build = self.build
     if build then
         if build.with_provided_libtool then
@@ -287,35 +294,35 @@ function Package:add_ordering_dependencies()
     end
 end
 
-function Package:merge(other)
-    for k, v in pairs(other) do
-        if type(k) ~= 'number' and k ~= 'stages' then
-            if type(v) == 'table' then
-                self[k] = table.merge(self[k] or {}, v)
-            else
-                self[k] = v
-            end
+function Package.process_rule(rule, packages)
+    if packages[rule.name] then
+        local pkg = packages[rule.name]
+        jagen.debug2('existing', tostring(pkg), rule.template)
+        table.merge(pkg, rule)
+        if rule.template then
+            table.merge(rule, rule.template)
         end
-    end
-    for _, t in ipairs(other.stages or {}) do
-        self:add_target(t)
+        pkg:add_build_dependencies()
+        for _, stage in ipairs(rule) do
+            pkg:add_target(Target.from_rule(stage, rule.name, pkg.config))
+        end
+        pkg:add_needs(packages)
+    else
+        local pkg = Package:create(rule)
+        packages[rule.name] = pkg
+        table.insert(packages, pkg)
+        pkg:add_needs(packages)
     end
 end
 
 function Package:add_needs(packages)
     for _, stage in ipairs(self.stages) do
         for name, _ in pairs(stage.needs) do
-            local pkg = Package:new { name, self.config,
+            jagen.debug2('need', name, self.config, self.template)
+            local pkg = Package:parse { name, self.config,
                 template = self.template
             }
-            if packages[name] then
-                for _, t in ipairs(pkg.stages) do
-                    packages[name]:add_target(t)
-                end
-            else
-                packages[name] = pkg
-                table.insert(packages, pkg)
-            end
+            Package.process_rule(pkg, packages)
         end
     end
 end
@@ -647,52 +654,35 @@ function jagen.load_rules()
     local local_path = system.mkpath(jagen.root, 'rules.lua')
 
     local function load_rules(filename)
-        local packages = {}
-        local env = { jagen = jagen }
-        function env.package(...)
-            local pkg  = Package:new(...)
-            jagen.debug2(tostring(pkg), 'load')
-            packages[pkg.name] = pkg
-            table.insert(packages, pkg)
+        local rules, env = {}, { jagen = jagen }
+        function env.package(rule)
+            table.insert(rules, Package:parse(rule))
         end
         local chunk = loadfile(filename)
         if chunk then
             setfenv(chunk, env)
             chunk()
         end
-        return packages
-    end
-
-    local function merge_stages(packages)
-        local rules = {}
-        for _, package in ipairs(packages) do
-            local name = package.name
-            local existing = rules[name]
-            if existing then
-                existing:merge(package)
-            else
-                rules[name] = package
-                table.insert(rules, package)
-            end
-        end
-        for _, pkg in ipairs(rules) do
-            pkg:add_ordering_dependencies()
-        end
         return rules
     end
 
-    local packages = load_rules(default_path)
-    for _, pkg in ipairs(load_rules(local_path)) do
-        table.insert(packages, pkg)
+    local rules = load_rules(default_path)
+    for _, rule in ipairs(load_rules(local_path)) do
+        table.insert(rules, rule)
+    end
+
+    local packages = {}
+
+    for _, rule in ipairs(rules) do
+        Package.process_rule(rule, packages)
     end
 
     for _, pkg in ipairs(packages) do
-        pkg:add_needs(packages)
+        pkg:add_toolchain_dependency()
+        pkg:add_ordering_dependencies()
     end
 
-    local merged = merge_stages(packages)
-
-    return merged
+    return packages
 end
 
 function jagen.generate_include_script(pkg)
