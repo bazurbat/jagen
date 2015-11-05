@@ -168,10 +168,6 @@ function Package:add(rule, packages)
     end
 
     name = rule.name
-    if not rule.config then
-        rule.config = 'host'
-    end
-
     if packages[name] then
         pkg = packages[name]
         pkg:parse(rule)
