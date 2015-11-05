@@ -155,77 +155,83 @@ function Package:__tostring()
     return table.concat(o, ':')
 end
 
-function Package:parse(rule)
-    setmetatable(rule, self)
+function Package:add(rule, packages)
+    local pkg, name = {}
 
     if type(rule[1]) == 'string' then
         rule.name = rule[1]
         table.remove(rule, 1)
     end
-
     if type(rule[1]) == 'string' then
         rule.config = rule[1]
         table.remove(rule, 1)
     end
 
-    if type(rule.source) == 'string' then
-        rule.source = { type = 'dist', location = rule.source }
+    name = rule.name
+    if not rule.config then
+        rule.config = 'host'
     end
 
-    jagen.debug2('parse', tostring(rule))
-
-    return rule
-end
-
-function Package:create(rule)
-    local pkg = {}
-    setmetatable(pkg, self)
-
-    jagen.debug2('create', tostring(rule))
-
-    for _, name in ipairs(self.init_stages) do
-        pkg:add_target(Target.new(rule.name, name))
+    if packages[name] then
+        pkg = packages[name]
+        pkg:parse(rule)
+    else
+        pkg = Package:new(rule)
+        packages[name] = pkg
+        table.insert(packages, pkg)
     end
-
-    table.merge(pkg, Package.load(rule.name))
-    table.merge(pkg, rule)
-    if rule.template then
-        table.merge(pkg, rule.template)
-    end
-    pkg:add_build_dependencies()
 
     if type(pkg.source) == 'string' then
         pkg.source = { type = 'dist', location = pkg.source }
     end
 
-    for _, stage in ipairs(pkg) do
-        pkg:add_target(Target.from_rule(stage, pkg.name, pkg.config))
+    for _, stage in ipairs(pkg.stages) do
+        for name, _ in pairs(stage.needs) do
+            rule = { name, pkg.config, template = pkg.template }
+            Package:add(rule, packages)
+        end
     end
-
-    return pkg
 end
 
-
-function Package.load(name)
-    local o = {}
-    local env = {}
+function Package:load(name)
+    local filename = system.mkpath(jagen.lib_dir, 'pkg', name..'.lua')
+    local o, env = {}, {}
     function env.package(rule)
         o = rule
     end
-
-    local filename = system.mkpath(jagen.lib_dir, 'pkg', name..'.lua')
     local chunk = loadfile(filename)
     if chunk then
         setfenv(chunk, env)
         chunk()
     end
-
     return o
 end
 
-function Package:add_target(target)
-    self.stages = self.stages or {}
+function Package:parse(rule)
+    table.merge(self, rule)
+    if rule.template then
+        table.merge(rule, rule.template)
+    end
+    self:add_build_targets(rule.config)
+    for _, stage in ipairs(rule) do
+        self:add_target(Target:parse(stage, self.name, rule.config))
+    end
+end
 
+function Package:new(rule)
+    local pkg = { stages = {} }
+    setmetatable(pkg, self)
+
+    for _, name in ipairs(self.init_stages) do
+        pkg:add_target(Target.new(rule.name, name))
+    end
+
+    pkg:parse(table.merge(Package:load(rule.name), rule))
+
+    return pkg
+end
+
+function Package:add_target(target)
     local function default(this)
         for _, stage in ipairs(self.init_stages) do
             if stage == target.stage and stage == this.stage then
@@ -250,17 +256,8 @@ function Package:add_target(target)
     return self
 end
 
-function Package:add_toolchain_dependency()
-    local function is_build_stage(target)
-        return target.stage == 'build'
-    end
-    for _, stage in ipairs(filter(is_build_stage, self.stages)) do
-        table.insert(stage.inputs, 1, Target.new('toolchain'))
-    end
-end
-
-function Package:add_build_dependencies()
-    jagen.debug2('add_build_dependencies', tostring(self))
+function Package:add_build_targets(config)
+    jagen.debug2('add_build_targets', self, config)
     local build = self.build
     if build then
         if build.with_provided_libtool then
@@ -269,8 +266,9 @@ function Package:add_build_dependencies()
             self:add_target(target)
         end
         if build.type then
-            self:add_target(Target.new(self.name, 'build', self.config))
-            self:add_target(Target.new(self.name, 'install', self.config))
+            self:add_target(Target:parse({ 'build', { 'toolchain' } },
+                self.name, config))
+            self:add_target(Target.new(self.name, 'install', config))
         end
     end
 end
@@ -290,39 +288,6 @@ function Package:add_ordering_dependencies()
         prev = s
         if not s.config then
             common = s
-        end
-    end
-end
-
-function Package.process_rule(rule, packages)
-    if packages[rule.name] then
-        local pkg = packages[rule.name]
-        jagen.debug2('existing', tostring(pkg), rule.template)
-        table.merge(pkg, rule)
-        if rule.template then
-            table.merge(rule, rule.template)
-        end
-        pkg:add_build_dependencies()
-        for _, stage in ipairs(rule) do
-            pkg:add_target(Target.from_rule(stage, rule.name, pkg.config))
-        end
-        pkg:add_needs(packages)
-    else
-        local pkg = Package:create(rule)
-        packages[rule.name] = pkg
-        table.insert(packages, pkg)
-        pkg:add_needs(packages)
-    end
-end
-
-function Package:add_needs(packages)
-    for _, stage in ipairs(self.stages) do
-        for name, _ in pairs(stage.needs) do
-            jagen.debug2('need', name, self.config, self.template)
-            local pkg = Package:parse { name, self.config,
-                template = self.template
-            }
-            Package.process_rule(pkg, packages)
         end
     end
 end
@@ -489,7 +454,7 @@ function Target.from_list(list)
     return Target.new(list[1], list[2], list[3])
 end
 
-function Target.from_rule(rule, name, config)
+function Target:parse(rule, name, config)
     local stage = rule[1]; assert(type(stage) == 'string')
     local target = Target.new(name, stage, config)
 
@@ -653,10 +618,12 @@ function jagen.load_rules()
     local default_path = system.mkpath(jagen.lib_dir, 'rules.'..sdk..'.lua')
     local local_path = system.mkpath(jagen.root, 'rules.lua')
 
+    local packages = {}
+
     local function load_rules(filename)
         local rules, env = {}, { jagen = jagen }
         function env.package(rule)
-            table.insert(rules, Package:parse(rule))
+            Package:add(rule, packages)
         end
         local chunk = loadfile(filename)
         if chunk then
@@ -671,14 +638,7 @@ function jagen.load_rules()
         table.insert(rules, rule)
     end
 
-    local packages = {}
-
-    for _, rule in ipairs(rules) do
-        Package.process_rule(rule, packages)
-    end
-
     for _, pkg in ipairs(packages) do
-        pkg:add_toolchain_dependency()
         pkg:add_ordering_dependencies()
     end
 
