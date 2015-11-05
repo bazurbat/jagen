@@ -1,10 +1,6 @@
 #!/bin/sh
 
-pkg_source_dir="$jagen_src_dir/sigma-ezboot"
-pkg_source_branch="sdk4"
-
 use_env tools
-use_toolchain target
 
 export RMCFLAGS="$RMCFLAGS \
 -DRMCHIP_ID=RMCHIP_ID_SMP8652 \
