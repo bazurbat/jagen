@@ -261,7 +261,7 @@ function Package:add_build_targets(config)
             target.inputs = { Target.new('libtool', 'install', 'host') }
             self:add_target(target)
         end
-        if build.type then
+        if build.type ~= 'manual' then
             self:add_target(Target:parse({ 'build', { 'toolchain' } },
                 self.name, config))
             self:add_target(Target.new(self.name, 'install', config))

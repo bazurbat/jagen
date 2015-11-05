@@ -1,7 +1,7 @@
 package {
     name   = 'mrua',
     build  = {
-        type = 'make'
+        type = 'manual'
     },
     source = {
         type     = 'git',

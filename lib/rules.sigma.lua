@@ -119,8 +119,8 @@ package { 'rootfs',
 
 package { 'mrua',
     { 'build',   { 'kernel',   'build'  } },
+    { 'modules'  },
     { 'install', { 'firmware', 'unpack' } },
-    { 'modules'  }
 }
 
 rootfs_package { 'ezboot',
