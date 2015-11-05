@@ -49,12 +49,6 @@ rebuild() {
     return $status
 }
 
-toolchain() {
-    . "${jagen_lib_dir}/env.sh" || return
-    make_toolchain || return
-    touch "$jagen_build_dir/toolchain"
-}
-
 case $1 in
     build)
         shift
@@ -63,10 +57,6 @@ case $1 in
     rebuild)
         shift
         rebuild "$@"
-        ;;
-    toolchain)
-        shift
-        toolchain "$@"
         ;;
     *)
         echo "Unknown wrapper command: $1"

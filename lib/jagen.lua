@@ -262,7 +262,7 @@ function Package:add_build_targets(config)
             self:add_target(target)
         end
         if build.type ~= 'manual' then
-            self:add_target(Target:parse({ 'build', { 'toolchain' } },
+            self:add_target(Target:parse({ 'build', { 'toolchain', 'install' } },
                 self.name, config))
             self:add_target(Target.new(self.name, 'install', config))
         end
@@ -383,14 +383,6 @@ function Ninja:header()
     return table.concat(o)
 end
 
-function Ninja:build_toolchain()
-    return self:build({
-            rule      = 'command',
-            outputs   = { 'toolchain' },
-            variables = { command = jagen.cmd..' toolchain' }
-        })
-end
-
 function Ninja:build_stage(target)
     local shell = jagen.shell
     local script = 'jagen-pkg '..target:__tostring(' ')
@@ -417,8 +409,6 @@ function Ninja:generate(out_file, packages)
     local out = io.open(out_file, 'w')
 
     out:write(self:header())
-    out:write('\n')
-    out:write(self:build_toolchain())
     out:write('\n')
     for _, pkg in ipairs(packages) do
         out:write(self:build_package(pkg))
@@ -633,6 +623,7 @@ function jagen.load_rules()
     for _, rule in ipairs(load_rules(local_path)) do
         table.insert(rules, rule)
     end
+    Package:add({ 'toolchain', { 'install' } }, packages)
 
     for _, pkg in ipairs(packages) do
         pkg:add_ordering_dependencies()
@@ -1017,7 +1008,7 @@ function src.packages(names)
 end
 
 function src.name(filename)
-    print(Source.name(filename))
+    print(Source.name(filename) or '')
 end
 
 function src.dirty(names)
