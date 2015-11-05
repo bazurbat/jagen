@@ -81,10 +81,10 @@ local function kernel_package(rule)
     package(rule)
 end
 
-package { 'kernel', 'target',
+package { 'kernel',
     source = { branch = 'sigma-2.6' },
     { 'build',
-        { 'ezboot', 'build'  },
+        { 'ezboot', 'build', 'target' },
         { 'linux',  'unpack' },
         { 'rootfs', 'build'  },
     },
@@ -98,26 +98,26 @@ kernel_package { 'ralink' }
 
 -- rootfs
 
-package { 'rootfs', 'target',
+package { 'rootfs',
     { 'build',
         { 'ast-files',  'unpack'            },
         { 'make',       'install', 'tools'  },
         { 'xsdk',       'unpack'            },
     },
     { 'install',
-        { 'busybox',    'install'           },
-        { 'gnupg',      'install'           },
+        { 'busybox',    'install', 'target' },
+        { 'gnupg',      'install', 'target' },
         { 'kernel',     'install'           },
-        { 'loop-aes',   'install'           },
-        { 'mrua',       'modules'           },
-        { 'ntpclient',  'install'           },
-        { 'ralink',     'install'           },
-        { 'util-linux', 'install'           },
+        { 'loop-aes',   'install', 'target' },
+        { 'mrua',       'modules',          },
+        { 'ntpclient',  'install', 'target' },
+        { 'ralink',     'install', 'target' },
+        { 'util-linux', 'install', 'target' },
         { 'utils',      'install', 'target' },
     }
 }
 
-package { 'mrua', 'target',
+package { 'mrua',
     { 'build',   { 'kernel',   'build'  } },
     { 'install', { 'firmware', 'unpack' } },
     { 'modules'  }
@@ -141,19 +141,22 @@ rootfs_package { 'util-linux' }
 
 rootfs_package { 'utils', 'target',
     { 'build',
-        { 'dbus',  'install', 'target' },
-        { 'gpgme', 'install' },
+        needs = { 'dbus', 'gpgme' }
     }
 }
 
 rootfs_package { 'libgpg-error' }
 
 rootfs_package { 'libassuan',
-    { 'build', { 'libgpg-error', 'install' } }
+    { 'build',
+        needs = { 'libgpg-error' }
+    }
 }
 
 rootfs_package { 'gpgme',
-    { 'build', { 'libassuan', 'install' } }
+    { 'build',
+        needs = { 'libassuan' }
+    }
 }
 
 -- firmare
@@ -166,15 +169,18 @@ local function firmware_package(rule)
     package(rule)
 end
 
-firmware_package { 'firmware', 'target',
-    { 'material',
-        { 'mrua', 'build' }
+package { 'firmware',
+    template = {
+        config = 'target',
+        { 'install', { 'firmware', 'unpack' } }
     },
+
+    { 'material', { 'mrua',   'build' } },
     { 'install',
-        { 'ezboot', 'install' },
         { 'kernel', 'image'   },
-        { 'mrua',   'install' },
+        { 'mrua', 'install'   },
         needs = {
+            'ezboot',
             'karaoke-player',
             'rsync',
             'wpa_supplicant',
@@ -186,9 +192,9 @@ firmware_package { 'firmware', 'target',
 firmware_package { 'karaoke-player',
     source = { branch = 'master' },
     { 'build',
-        { 'astindex',     'unpack'            },
-        { 'mrua',         'build'             },
-        { 'chicken-eggs', 'install', 'host'   },
+        { 'astindex',     'unpack'          },
+        { 'chicken-eggs', 'install', 'host' },
+        { 'mrua',         'build',          },
         needs = {
             'chicken-eggs',
             'connman',
@@ -209,7 +215,7 @@ firmware_package { 'chicken',
 
 firmware_package { 'chicken-eggs',
     { 'install',
-        { 'chicken-eggs', 'install', 'host'   },
+        { 'chicken-eggs', 'install', 'host' },
         needs = {
             'chicken',
             'dbus',
