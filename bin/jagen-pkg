@@ -13,25 +13,6 @@ rm -f "$pkg_log" || die "Failed to rm $pkg_log"
 mkdir -p "$pkg_work_dir" || die "Failed to mkdir $pkg_work_dir"
 cd "$pkg_work_dir" || die "Failed to cd to $pkg_work_dir"
 
-include "$jagen_include_dir/$pkg_name" "$pkg_config"
-include "$jagen_lib_dir/pkg/$pkg_name"
-
-pkg_source_name="$(_jagen src name "$pkg_source")"
-pkg_source_dir="${pkg_source_dir:-$pkg_work_dir/$pkg_source_name}"
-pkg_build_dir="${pkg_build_dir:-$pkg_source_dir}"
-
-run_stage() {
-    local name="$1"
-    local pkg="$pkg_name${pkg_config:+ ($pkg_config)}"
-
-    if is_function "$name"; then
-        debug "$pkg: $name"
-        eval "$name" >>"$pkg_log" 2>&1 || die "Failed to run '$name' stage of package $pkg"
-    fi
-}
-
-: >"$pkg_log"
-
 if [ "$pkg_config" ]; then
     use_toolchain "$pkg_config"
 fi
@@ -55,7 +36,26 @@ elif [ "$pkg_config" = 'rootfs' ]; then
     pkg_dest_dir="$sdk_rootfs_prefix"
 fi
 
+include "$jagen_include_dir/$pkg_name" "$pkg_config"
+include "$jagen_lib_dir/pkg/$pkg_name"
+
+pkg_source_name="$(_jagen src name "$pkg_source")"
+pkg_source_dir="${pkg_source_dir:-$pkg_work_dir/$pkg_source_name}"
+pkg_build_dir="${pkg_build_dir:-$pkg_source_dir}"
+
+: >"$pkg_log"
+
 [ -d "$pkg_build_dir" ] && cd "$pkg_build_dir"
+
+run_stage() {
+    local stage="$1"
+    local pkg="$pkg_name${pkg_config:+ ($pkg_config)}"
+    if is_function "$stage"; then
+        debug "$pkg: $stage"
+        eval "$stage" >>"$pkg_log" 2>&1 ||
+            die "Failed to run '$stage' stage of package $pkg"
+    fi
+}
 
 run_stage "jagen_pkg_${pkg_stage}_pre"
 
