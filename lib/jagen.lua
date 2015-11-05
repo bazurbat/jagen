@@ -660,6 +660,14 @@ function jagen.generate()
             return a.name < b.name
         end)
 
+    for _, pkg in ipairs(packages) do
+        for _, stage in ipairs(pkg.stages) do
+            table.sort(stage.inputs, function (a, b)
+                    return tostring(a) < tostring(b)
+                end)
+        end
+    end
+
     ninja:generate(jagen.build_file, packages)
 
     for _, package in ipairs(packages) do
