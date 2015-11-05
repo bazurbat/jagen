@@ -24,20 +24,6 @@ jagen_pkg_build() {
     pkg_run make -C MRUA_src/splashscreen/utils
 }
 
-jagen_pkg_modules() {
-    local src_dir="$pkg_source_dir/modules/$kernel_release"
-
-    pkg_run cd "$src_dir"
-    pkg_install_modules em8xxx llad
-
-    if in_flags with_alsa; then
-        pkg_run cp -f \
-            "$pkg_source_dir/MRUA_src/rua/emhwlib_kernel/kernel_src/em8xxxalsa.ko" \
-            "$src_dir"
-        pkg_install_modules em8xxxalsa
-    fi
-}
-
 jagen_pkg_install() {
     local bin_dst="$jagen_install_dir/bin"
     local lib_dst="$jagen_install_dir/lib"
@@ -66,4 +52,18 @@ jagen_pkg_install() {
     for lib in $libs; do
         pkg_run cp -va "$pkg_source_dir/lib/lib${lib}.so" "$lib_dst"
     done
+}
+
+jagen_pkg_modules() {
+    local src_dir="$pkg_source_dir/modules/$kernel_release"
+
+    pkg_run cd "$src_dir"
+    pkg_install_modules em8xxx llad
+
+    if in_flags with_alsa; then
+        pkg_run cp -f \
+            "$pkg_source_dir/MRUA_src/rua/emhwlib_kernel/kernel_src/em8xxxalsa.ko" \
+            "$src_dir"
+        pkg_install_modules em8xxxalsa
+    fi
 }
