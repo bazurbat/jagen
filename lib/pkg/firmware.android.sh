@@ -15,7 +15,11 @@ jagen_pkg_install() {
     [ -d "$pkg_work_dir/lib" ] || mkdir -p "$pkg_work_dir/lib"
 
     for bin in $bins; do
-        pkg_run install -m755 "$pkg_source_dir/bin/$bin" "$jagen_install_dir/bin"
+        if [ -x "$pkg_source_dir/bin/$bin" ]; then
+            pkg_run install -m755 "$pkg_source_dir/bin/$bin" "$jagen_install_dir/bin"
+        else
+            warning "$pkg_source_dir/bin/$bin not found"
+        fi
     done
 
     pkg_run cp -va "$pkg_source_dir/lib/"*.so* "$pkg_work_dir/lib"
