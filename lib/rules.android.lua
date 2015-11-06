@@ -2,7 +2,7 @@
 
 package { 'android-cmake' }
 
-package { 'libtool', 'host' }
+-- package { 'libtool', 'host' }
 
 -- package { 'chicken', 'host',
 --     source = { branch = 'stable-cmake' }
@@ -25,9 +25,9 @@ package { 'firmware',
     { 'install',
         -- { 'chicken',        'install', 'target' },
         -- { 'chicken-eggs',   'install', 'target' },
-        { 'ffmpeg',         'install', 'target' },
+        -- { 'ffmpeg',         'install', 'target' },
         -- { 'karaoke-player', 'install', 'target' },
-        { 'libuv',          'install', 'target' },
+        -- { 'libuv',          'install', 'target' },
     },
     { 'strip'  },
     { 'deploy' }
@@ -50,7 +50,7 @@ firmware_package { 'hi-utils' }
 
 -- firmware_package { 'sqlite' }
 
-firmware_package { 'ffmpeg' }
+-- firmware_package { 'ffmpeg' }
 
 -- firmware_package { 'karaoke-player',
 --     source = { branch = 'newchicken' },
@@ -64,12 +64,12 @@ firmware_package { 'ffmpeg' }
 --     { 'install' }
 -- }
 
-package { 'astindex',
-    { 'unpack', { 'karaoke-player', 'unpack' } }
-}
+-- package { 'astindex',
+--     { 'unpack', { 'karaoke-player', 'unpack' } }
+-- }
 
-firmware_package { 'libuv',
-    build  = {
-        options = '--disable-static'
-    }
-}
+-- firmware_package { 'libuv',
+--     build  = {
+--         options = '--disable-static'
+--     }
+-- }
