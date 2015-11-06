@@ -4,8 +4,5 @@ package {
     build  = {
         type = 'GNU',
         libs = { 'dbus-1' }
-    },
-    { 'build',
-        needs = { 'expat' }
     }
 }

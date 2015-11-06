@@ -167,6 +167,8 @@ function Package:add(rule, packages)
         table.remove(rule, 1)
     end
 
+    jagen.debug2('add', rule.name, rule.config)
+
     name = rule.name
     if packages[name] then
         pkg = packages[name]
@@ -179,13 +181,6 @@ function Package:add(rule, packages)
 
     if type(pkg.source) == 'string' then
         pkg.source = { type = 'dist', location = pkg.source }
-    end
-
-    for _, stage in ipairs(pkg.stages) do
-        for name, _ in pairs(stage.needs) do
-            rule = { name, pkg.config, template = pkg.template }
-            Package:add(rule, packages)
-        end
     end
 end
 
@@ -205,9 +200,6 @@ end
 
 function Package:parse(rule)
     table.merge(self, rule)
-    if rule.template then
-        table.merge(rule, rule.template)
-    end
     self:add_build_targets(rule.config)
     for _, stage in ipairs(rule) do
         self:add_target(Target:parse(stage, self.name, rule.config))
@@ -429,7 +421,6 @@ function Target.new(name, stage, config)
         name   = name,
         stage  = stage,
         config = config,
-        needs  = {},
         inputs = {}
     }
     setmetatable(target, Target)
@@ -446,11 +437,6 @@ function Target:parse(rule, name, config)
 
     for i = 2, #rule do
         table.insert(target.inputs, Target.from_list(rule[i]))
-    end
-
-    for _, name in ipairs(rule.needs or {}) do
-        target.needs[name] = true
-        table.insert(target.inputs, Target.new(name, 'install', config))
     end
 
     return target
@@ -489,10 +475,6 @@ function Target.__tostring(t, sep)
 end
 
 function Target:add_inputs(target)
-    for name, _ in pairs(target.needs or {}) do
-        self.needs[name] = true
-    end
-
     for _, i in ipairs(target.inputs or {}) do
         local function eq(t)
             return t == i
@@ -607,7 +589,11 @@ function jagen.load_rules()
     local packages = {}
 
     local function load_rules(filename)
-        local rules, env = {}, { jagen = jagen }
+        local rules = {}
+        local env = {
+            table = table,
+            jagen = jagen
+        }
         function env.package(rule)
             Package:add(rule, packages)
         end

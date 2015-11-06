@@ -6,8 +6,5 @@ package {
                   '--disable-fontconfig --disable-harfbuzz',
         libs    = { 'ass' }
     },
-    source = 'libass-0.12.2.tar.xz',
-    { 'build',
-        needs = { 'freetype', 'fribidi' }
-    }
+    source = 'libass-0.12.2.tar.xz'
 }

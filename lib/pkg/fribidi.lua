@@ -10,8 +10,5 @@ package {
     patches = {
         { 'fribidi-0.19.2-nodoc',            0 },
         { 'fribidi-0.19.6-page-size-header', 1 }
-    },
-    { 'build',
-        needs = { 'glib' }
     }
 }
