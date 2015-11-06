@@ -1,14 +1,4 @@
-local function firmware_package(rule)
-    local pkg = {
-        config = 'target',
-        { 'build' },
-        { 'install', { 'firmware', 'unpack' } },
-        inject = {
-            { 'install', { 'firmware', 'unpack' } }
-        }
-    }
-    package(pkg, rule)
-end
+-- Android rules
 
 package { 'android-cmake' }
 
@@ -21,63 +11,63 @@ package { 'chicken', 'host',
 package { 'chicken-eggs', 'host',
     source = { branch = 'newchicken' },
     { 'install',
-        needs = { 'chicken' }
+        { 'chicken', 'install', 'host' }
     }
 }
 
-package { 'firmware', 'target',
+local function firmware_package(rule)
+    rule.config = 'target'
+    table.insert(rule, { 'install', { 'firmware', 'unpack' } })
+    package(rule)
+end
+
+package { 'firmware',
     { 'install',
-        needs = {
-            'chicken',
-            'chicken-eggs',
-            'ffmpeg',
-            'karaoke-player',
-            'libuv',
-        }
+        { 'chicken',        'install', 'target' },
+        { 'chicken-eggs',   'install', 'target' },
+        { 'ffmpeg',         'install', 'target' },
+        { 'karaoke-player', 'install', 'target' },
+        { 'libuv',          'install', 'target' },
     },
-    { 'strip' },
+    { 'strip'  },
     { 'deploy' }
 }
 
-firmware_package { 'libuv',
-    build  = {
-        options = '--disable-static'
-    }
-}
-
-firmware_package { 'ffmpeg' }
-
 firmware_package { 'chicken',
-    source = {
-        branch = 'stable-cmake'
-    },
+    source = { branch = 'stable-cmake' },
     { 'build', { 'chicken', 'install', 'host' } }
 }
 
 firmware_package { 'chicken-eggs',
     source = { branch = 'newchicken' },
     { 'install',
-        needs = {
-            'chicken',
-            'sqlite'
-        }
+        { 'chicken', 'install', 'target' },
+        { 'sqlite',  'install', 'target' },
     }
+}
+
+firmware_package { 'sqlite' }
+
+firmware_package { 'ffmpeg' }
+
+firmware_package { 'karaoke-player',
+    source = { branch = 'newchicken' },
+    { 'build',
+        { 'astindex',     'unpack'            },
+        { 'chicken-eggs', 'install', 'host'   },
+        { 'chicken-eggs', 'install', 'target' },
+        { 'ffmpeg',       'install', 'target' },
+        { 'libuv',        'install', 'target' },
+    },
+    { 'install' }
 }
 
 package { 'astindex',
     { 'unpack', { 'karaoke-player', 'unpack' } }
 }
 
-firmware_package { 'karaoke-player',
-    source = { branch = 'newchicken' },
-    { 'build',
-        { 'astindex', 'unpack' },
-        { 'chicken-eggs', 'install', 'host' },
-        needs = {
-            'chicken',
-            'chicken-eggs',
-            'ffmpeg',
-        }
-    },
-    { 'install' }
+firmware_package { 'libuv',
+    build  = {
+        options = '--disable-static'
+    }
 }
