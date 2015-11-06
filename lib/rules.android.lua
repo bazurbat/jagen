@@ -23,6 +23,7 @@ end
 
 package { 'firmware',
     { 'install',
+        { 'hi-utils', 'install', 'target' },
         -- { 'chicken',        'install', 'target' },
         -- { 'chicken-eggs',   'install', 'target' },
         -- { 'ffmpeg',         'install', 'target' },
