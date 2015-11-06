@@ -117,6 +117,8 @@ jagen_pkg_install() {
 }
 
 jagen_pkg_strip() {
+    use_toolchain target
+
     pkg_run cd "$pkg_work_dir"
 
     pkg_run find lib -type f \
