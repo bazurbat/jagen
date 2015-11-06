@@ -22,7 +22,9 @@ jagen_pkg_install() {
         fi
     done
 
-    pkg_run cp -va "$pkg_source_dir/lib/"*.so* "$pkg_work_dir/lib"
+    if [ -d "$pkg_source_dir/lib" ]; then
+        pkg_run cp -va "$pkg_source_dir/lib/"*.so* "$pkg_work_dir/lib"
+    fi
 
     if [ -d "$pkg_source_dir/lib/chicken" ]; then
         pkg_run cp -va "$pkg_source_dir/lib/chicken" "$pkg_work_dir/lib"
