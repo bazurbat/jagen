@@ -1,16 +1,9 @@
 #!/bin/sh
 
-# FIXME: add proper support for other build types to chicken
-case $jagen_cmake_build_type in
-    Debug|Release) ;;
-    *) jagen_cmake_build_type=Release ;;
-esac
-
 jagen_pkg_build_host() {
     pkg_run cmake -G"$jagen_cmake_generator" \
         -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
         -DCMAKE_INSTALL_PREFIX="$jagen_host_dir" \
-        -DCMAKE_FIND_NO_INSTALL_PREFIX=TRUE \
         "$pkg_source_dir"
 
     pkg_run cmake --build . -- $jagen_cmake_build_options
