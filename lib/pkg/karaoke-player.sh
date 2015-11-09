@@ -23,7 +23,6 @@ jagen_pkg_build_target() {
                 -DSIGMA_ROOTFS_DIR="$jagen_src_dir/sigma-rootfs" \
                 -DCHICKEN_COMPILER="$jagen_host_dir/bin/chicken" \
                 -DCHICKEN_INTERPRETER="$jagen_host_dir/bin/csi" \
-                -DCHICKEN_DEPENDS="$jagen_host_dir/bin/chicken-depends" \
                 -DTARGET_BOARD="$target_board" \
                 "$pkg_source_dir"
             ;;

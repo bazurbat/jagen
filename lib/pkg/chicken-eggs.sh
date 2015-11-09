@@ -32,7 +32,6 @@ jagen_pkg_install_target() {
                 -DCMAKE_FIND_ROOT_PATH="$jagen_target_dir$jagen_target_prefix" \
                 -DCHICKEN_COMPILER="$jagen_host_dir/bin/chicken" \
                 -DCHICKEN_INTERPRETER="$jagen_host_dir/bin/csi" \
-                -DCHICKEN_DEPENDS="$jagen_host_dir/bin/chicken-depends" \
                 "$pkg_source_dir"
             ;;
         *)
@@ -44,7 +43,6 @@ jagen_pkg_install_target() {
                 -DCMAKE_INSTALL_PREFIX="${jagen_target_dir}${jagen_target_prefix}" \
                 -DCHICKEN_COMPILER="$jagen_host_dir/bin/chicken" \
                 -DCHICKEN_INTERPRETER="$jagen_host_dir/bin/csi" \
-                -DCHICKEN_DEPENDS="$jagen_host_dir/bin/chicken-depends" \
                 "$pkg_source_dir"
             ;;
     esac
