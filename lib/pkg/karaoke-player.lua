@@ -6,6 +6,7 @@ package {
     },
     source = {
         type     = 'hg',
-        location = 'ssh://hg@bitbucket.org/art-system/karaoke-player'
+        location = 'ssh://hg@bitbucket.org/art-system/karaoke-player',
+        branch   = 'master'
     }
 }

@@ -41,7 +41,6 @@ package { 'libtool', 'host' }
 package { 'utils', 'host' }
 
 package { 'karaoke-player', 'host',
-    source = { branch = 'master' },
     { 'build',
         { 'astindex',     'unpack'          },
         { 'chicken',      'install', 'host' },
@@ -178,7 +177,6 @@ package { 'firmware',
 }
 
 firmware_package { 'karaoke-player',
-    source = { branch = 'master' },
     { 'build',
         { 'astindex',     'unpack'            },
         { 'mrua',         'build',            },
