@@ -12,8 +12,8 @@ jagen_pkg_build_host() {
 }
 
 jagen_pkg_build_target() {
-    case $target_board in
-        ast25|ast50|ast100)
+    case $jagen_sdk in
+        sigma)
             pkg_run cmake -G"$jagen_cmake_generator" \
                 -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
                 -DCMAKE_SYSTEM_NAME="Linux" \
@@ -26,13 +26,13 @@ jagen_pkg_build_target() {
                 -DTARGET_BOARD="$target_board" \
                 "$pkg_source_dir"
             ;;
-        *)
+        android)
             pkg_run cmake -G"$jagen_cmake_generator" \
                 -DCMAKE_TOOLCHAIN_FILE="$jagen_src_dir/android-cmake/android.toolchain.cmake" \
                 -DANDROID_STANDALONE_TOOLCHAIN="${jagen_target_dir}/${target_toolchain}" \
                 -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
-                -DCMAKE_SYSTEM_NAME="Linux" \
                 -DCMAKE_INSTALL_PREFIX="${jagen_target_dir}${jagen_target_prefix}" \
+                -DPKG_CONFIG_EXECUTABLE="${jagen_host_dir}/bin/pkgconf" \
                 -DCHICKEN_COMPILER="$jagen_host_dir/bin/chicken" \
                 -DCHICKEN_INTERPRETER="$jagen_host_dir/bin/csi" \
                 -DHISILICON_ROOT_DIR="$jagen_sdk_dir" \
