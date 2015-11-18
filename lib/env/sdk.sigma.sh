@@ -63,5 +63,5 @@ kernel_dir="$jagen_src_dir/sigma-kernel"
 kernel_modules_dir="$sdk_rootfs_root/lib/modules/$kernel_release"
 kernel_extra_modules_dir="$kernel_modules_dir/extra"
 
-export LINUX_KERNEL="$kernel_dir/linux"
+export LINUX_KERNEL="$jagen_src_dir/linux"
 export UCLINUX_KERNEL="$LINUX_KERNEL"
