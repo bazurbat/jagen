@@ -70,7 +70,7 @@ jagen_pkg_image() {
     local tmpdir="$jagen_target_dir/kernel-image"
     pkg_clean_dir "$tmpdir"
 
-    pkg_run cd linux
+    pkg_run cd "$LINUX_KERNEL"
     pkg_run $CROSS_MAKE vmlinux.bin
     gzip -9cnf arch/mips/boot/vmlinux.bin > "$tmpdir/vmlinux_gz.zbf" || exit
 
