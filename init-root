@@ -129,6 +129,10 @@ case $sdk in
         sdk_dir='$jagen_src_dir/sigma-mrua'
         toolchain_dir='$jagen_base_dir/toolchain/mips-2012.03'
         ;;
+    hi-linux)
+        sdk_dir='$jagen_src_dir/hi-sdk'
+        toolchain_dir='$jagen_base_dir/toolchain/arm-hisiv200-linux'
+        ;;
     hisilicon)
         sdk_dir='$jagen_src_dir/hisilicon'
         toolchain_dir='$jagen_base_dir/toolchain/arm-hisiv200-linux'
