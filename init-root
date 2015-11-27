@@ -68,7 +68,7 @@ jagen_sdk="$sdk"
 # Toplevel working directory.
 # Note: setting relative path allows to source this environment both from
 # outside and inside the chrooted container.
-jagen_base_dir=\$(real_path "\$jagen_root/..")
+jagen_base_dir=\$(real_path "\$jagen_dir/..")
 
 # A directory containing software distributions and patches.
 jagen_dist_dir="\$jagen_base_dir/dist"
