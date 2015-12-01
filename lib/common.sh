@@ -38,12 +38,9 @@ try_include() {
 }
 
 include() {
-    local pathname="${1:?}"
-    local suffix="${2:-$jagen_sdk}"
-    if [ "${suffix}" != "default" -a -f "${pathname}.${suffix}.sh" ]; then
-        try_include "${pathname}.${suffix}.sh"
-    elif [ -f "${pathname}.sh" ]; then
-        try_include "${pathname}.sh"
+    local pathname="${1:?}.sh"
+    if [ -f "${pathname}" ]; then
+        try_include "${pathname}"
     else
         return 2
     fi
@@ -66,7 +63,7 @@ use_env() {
 }
 
 use_toolchain() {
-    include "$jagen_lib_dir/toolchain/$1" "$2"
+    import "toolchain/$1"
 }
 
 require() {

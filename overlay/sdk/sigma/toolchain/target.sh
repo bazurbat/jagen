@@ -1,7 +1,5 @@
 #!/bin/sh
 
-use_toolchain target default
-
 export CFLAGS="-O2 -fomit-frame-pointer -fno-strict-aliasing \
     -Wa,-mips32r2 -march=24kf -mtune=24kf -pipe"
 export CXXFLAGS="$CFLAGS"
