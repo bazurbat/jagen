@@ -293,15 +293,17 @@ function Package:is_source()
 end
 
 function Package:directory()
+    local location = self.source.location
     local function basename(location)
         return location and io.popen('basename '..location..' .git'):read()
     end
-    if Package.is_source(self) then
-        local location = self.source.location
+    if self.source.dir then
+        return self.source.dir
+    elseif Package.is_source(self) then
         local name = self.source.directory or basename(location)
-        return system.mkpath(jagen.src_dir, name or self.name)
+        return system.mkpath('$jagen_src_dir', name or self.name)
     else
-        return system.mkpath(jagen.build_dir, 'pkg', self.name)
+        return system.mkpath('$pkg_work_dir', Source.name(location))
     end
 end
 
@@ -676,11 +678,11 @@ function Script:__tostring()
     local script = {
         self:header()
     }
-    if self.pkg.build then
-        table.insert(script, self:build())
-    end
     if self.pkg.source then
         table.insert(script, self:source())
+    end
+    if self.pkg.build then
+        table.insert(script, self:build())
     end
     if self.pkg.patches then
         table.insert(script, self:patch())
@@ -691,6 +693,24 @@ end
 
 function Script:header()
     return '#!/bin/sh'
+end
+
+function Script:source()
+    local pkg = self.pkg
+    local source = pkg.source
+    local o, s = {}, {}
+    if source.type == 'git' or source.type == 'hg' then
+        table.insert(s, source.type)
+        table.insert(s, source.location)
+    elseif source.type == 'dist' then
+        table.insert(s, system.mkpath('$jagen_dist_dir', source.location))
+    end
+    table.insert(o, string.format('pkg_source="%s"', table.concat(s, ' ')))
+    if source.branch then
+        table.insert(o, string.format('pkg_source_branch="%s"', source.branch))
+    end
+    table.insert(o, string.format('pkg_source_dir="%s"', self.pkg:directory()))
+    return table.concat(o, '\n')
 end
 
 function Script:build()
@@ -708,30 +728,9 @@ function Script:build()
             table.insert(o, 'pkg_with_provided_libtool="yes"')
         end
     end
-    if build.dir then
-        table.insert(o, 'pkg_build_dir="'..build.dir..'"')
-    end
+    local build_dir = build.dir or '$pkg_source_dir'
+    table.insert(o, 'pkg_build_dir="'..build_dir..'"')
 
-    return table.concat(o, '\n')
-end
-
-function Script:source()
-    local pkg = self.pkg
-    local source = pkg.source
-    local o, s = {}, {}
-    if source.type == 'git' or source.type == 'hg' then
-        table.insert(s, source.type)
-        table.insert(s, source.location)
-    elseif source.type == 'dist' then
-        table.insert(s, system.mkpath('$jagen_dist_dir', source.location))
-    end
-    table.insert(o, string.format('pkg_source="%s"', table.concat(s, ' ')))
-    if source.branch then
-        table.insert(o, string.format('pkg_source_branch="%s"', source.branch))
-    end
-    if pkg:is_source() then
-        table.insert(o, string.format('pkg_source_dir="%s"', self.pkg:directory()))
-    end
     return table.concat(o, '\n')
 end
 
