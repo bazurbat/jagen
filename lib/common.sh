@@ -47,6 +47,18 @@ include() {
     fi
 }
 
+import() {
+    : ${jagen_dir:?}
+    local pathname="${1:?}.sh"
+    try_include "$jagen_dir/lib/$pathname"
+    for overlay in $jagen_overlays; do
+        try_include "$jagen_dir/overlay/$pathname"
+    done
+    if [ "$jagen_root" ]; then
+        try_include "$jagen_root/$pathname"
+    fi
+}
+
 use_env() {
     include "$jagen_lib_dir/env/$1" "$2"
 }
