@@ -37,7 +37,7 @@ elif [ "$pkg_config" = 'rootfs' ]; then
 fi
 
 include "$jagen_include_dir/$pkg_name" "$pkg_config"
-include "$jagen_lib_dir/pkg/$pkg_name"
+import "pkg/$pkg_name"
 
 pkg_source_name="$(_jagen src name "$pkg_source")"
 pkg_source_dir="${pkg_source_dir:-$pkg_work_dir/$pkg_source_name}"
