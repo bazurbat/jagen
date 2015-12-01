@@ -1,7 +1,5 @@
 #!/bin/sh
 
-pkg_build_dir="$pkg_work_dir/build${pkg_config:+-$pkg_config}"
-
 encoders="pcm_s16le"
 
 decoders="
