@@ -38,14 +38,16 @@ protocols="file pipe rtp tcp"
 filters="afade aresample volume"
 
 jagen_pkg_patch() {
-    if [ "$jagen_sdk" = "hisilicon" ]; then
-        sed -ri "s/^(SLIBNAME_WITH_MAJOR)='.*'$/\\1='\$(SLIBNAME)'/g" \
-            "$pkg_source_dir/configure"
-        sed -ri "s/^(SLIB_INSTALL_NAME)='.*'$/\\1='\$(SLIBNAME)'/g" \
-            "$pkg_source_dir/configure"
-        sed -ri "s/^(SLIB_INSTALL_LINKS)='.*'$/\\1=''/g" \
-            "$pkg_source_dir/configure"
-    fi
+    # TODO: check if this is required
+    # if [ "$jagen_sdk" = "hisilicon" ]; then
+    #     sed -ri "s/^(SLIBNAME_WITH_MAJOR)='.*'$/\\1='\$(SLIBNAME)'/g" \
+    #         "$pkg_source_dir/configure"
+    #     sed -ri "s/^(SLIB_INSTALL_NAME)='.*'$/\\1='\$(SLIBNAME)'/g" \
+    #         "$pkg_source_dir/configure"
+    #     sed -ri "s/^(SLIB_INSTALL_LINKS)='.*'$/\\1=''/g" \
+    #         "$pkg_source_dir/configure"
+    # fi
+    :
 }
 
 jagen_pkg_build() {
