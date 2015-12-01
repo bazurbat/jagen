@@ -493,13 +493,15 @@ end
 
 jagen =
 {
+    dir  = os.getenv('jagen_dir'),
     root = os.getenv('jagen_root'),
+
+    overlays = os.getenv('jagen_overlays'),
 
     shell = os.getenv('jagen_shell'),
 
     debug = os.getenv('jagen_debug'),
     flags = os.getenv('jagen_flags'),
-    sdk   = os.getenv('jagen_sdk'),
 
     lib_dir     = os.getenv('jagen_lib_dir'),
     src_dir     = os.getenv('jagen_src_dir'),
@@ -514,7 +516,6 @@ jagen =
 }
 
 jagen.cmd = system.mkpath(jagen.lib_dir, 'cmd.sh')
-jagen.rules_file = system.mkpath(jagen.lib_dir, 'rules.'..jagen.sdk..'.lua')
 jagen.build_file = system.mkpath(jagen.build_dir, 'build.ninja')
 
 function jagen.exec(...)
@@ -581,10 +582,7 @@ function jagen.flag(f)
 end
 
 function jagen.load_rules()
-    local sdk = jagen.sdk
-    local default_path = system.mkpath(jagen.lib_dir, 'rules.'..sdk..'.lua')
-    local local_path = system.mkpath(jagen.root, 'rules.lua')
-
+    local rules = 'rules.lua'
     local packages = {}
 
     local function load_rules(filename)
@@ -604,10 +602,14 @@ function jagen.load_rules()
         return rules
     end
 
-    local rules = load_rules(default_path)
-    for _, rule in ipairs(load_rules(local_path)) do
-        table.insert(rules, rule)
+    load_rules(system.mkpath(jagen.dir, 'lib', rules))
+
+    for _, o in ipairs(string.split(jagen.overlays, ' ')) do
+        load_rules(system.mkpath(jagen.dir, 'overlay', o, rules))
     end
+
+    load_rules(system.mkpath(jagen.root, rules))
+
     Package:add({ 'toolchain', { 'install' } }, packages)
 
     for _, pkg in ipairs(packages) do

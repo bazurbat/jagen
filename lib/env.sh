@@ -23,7 +23,10 @@ jagen_build_verbose="no"
 
 . "$jagen_lib_dir/common.sh" || return
 
-import config
+# Avoid import during init-root
+if [ "$jagen_root" ]; then
+    try_include "$jagen_root/config.sh"
+fi
 
 jagen_cmake_generator="${jagen_cmake_generator:-Ninja}"
 jagen_cmake_build_options="${jagen_cmake_build_options}"

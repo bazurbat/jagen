@@ -101,6 +101,8 @@ EOF
 }
 
 jagen_dir=$(dirname $0)
+jagen_root=''
+jagen_overlays=''
 
 use_force=''
 
