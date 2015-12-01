@@ -30,8 +30,10 @@ die() {
 
 try_include() {
     if [ -f "$1" ]; then
-        debug include "$1"
+        debug include "+ $1"
         . "$1"
+    else
+        debug include "- $1"
     fi
 }
 
@@ -52,7 +54,7 @@ import() {
     local pathname="${1:?}.sh"
     try_include "$jagen_dir/lib/$pathname"
     for overlay in $jagen_overlays; do
-        try_include "$jagen_dir/overlay/$pathname"
+        try_include "$jagen_dir/overlay/$overlay/$pathname"
     done
     if [ "$jagen_root" ]; then
         try_include "$jagen_root/$pathname"

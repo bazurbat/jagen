@@ -23,12 +23,7 @@ jagen_build_verbose="no"
 
 . "$jagen_lib_dir/common.sh" || return
 
-if [ "$XDG_CONFIG_HOME" ]; then
-    try_include "$XDG_CONFIG_HOME/jagen/env" || return
-else
-    try_include "$HOME/.config/jagen/env" || return
-fi
-try_include "$jagen_root/config.sh" || return
+import config
 
 jagen_cmake_generator="${jagen_cmake_generator:-Ninja}"
 jagen_cmake_build_options="${jagen_cmake_build_options}"
@@ -56,4 +51,7 @@ export LD_LIBRARY_PATH
 export LINGUAS=""
 
 in_flags ccache && use_env ccache
-use_env sdk || return
+
+for overlay in $jagen_overlays; do
+    try_include "$jagen_dir/overlay/$overlay/env.sh"
+done

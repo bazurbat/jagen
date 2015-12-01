@@ -16,7 +16,7 @@ SYNOPSIS:
   jagen commands. Example:
 
     cd $PWD
-    $curr_root/init-root
+    $jagen_dir/init-root
     . ./$env_file
 
   For subsequent invocations:
@@ -40,7 +40,7 @@ write_env() {
     cat >"$env_file" <<EOF
 #!/bin/sh
 
-jagen_relative_dir="$curr_root"
+jagen_relative_dir="$jagen_dir"
 
 jagen_dir=\$(cd "\$jagen_relative_dir"; pwd -P)
 jagen_root=\$(pwd -P)
@@ -59,11 +59,11 @@ EOF
 
 write_config() {
     cat >"$config_file" <<EOF
-# Current build root configuration.
-jagen_sdk="$sdk"
-
-# jagen_root - refers to the current build root (where this file is placed)
 # jagen_dir  - refers to the jagen project directory.
+# jagen_root - refers to the current build root (where this file is located).
+
+# Environment overlays used by this build root.
+jagen_overlays="$jagen_overlays"
 
 # Toplevel working directory.
 # Note: setting relative path allows to source this environment both from
@@ -100,12 +100,8 @@ jagen_build_type="Release"
 EOF
 }
 
-die() { [ $# = 0 ] || echo "Error: $@"; exit 1; }
+jagen_dir=$(dirname $0)
 
-curr_root=$(dirname $0)
-real_root=$(cd "$curr_root"; pwd -P)
-
-sdk=''
 use_force=''
 
 while [ $# -gt 0 ]; do
@@ -118,30 +114,19 @@ while [ $# -gt 0 ]; do
             use_force=1
             ;;
         *)
-            sdk="$1"
+            if [ "$jagen_overlays" ]; then
+                jagen_overlays="$jagen_overlays $1"
+            else
+                jagen_overlays="$1"
+            fi
             ;;
     esac
     shift
 done
 
-case $sdk in
-    sigma)
-        sdk_dir='$jagen_src_dir/sigma-mrua'
-        toolchain_dir='$jagen_base_dir/toolchain/mips-2012.03'
-        ;;
-    hi-linux)
-        sdk_dir='$jagen_src_dir/hi-sdk'
-        toolchain_dir='$jagen_base_dir/toolchain/arm-hisiv200-linux'
-        ;;
-    hisilicon)
-        sdk_dir='$jagen_src_dir/hisilicon'
-        toolchain_dir='$jagen_base_dir/toolchain/arm-hisiv200-linux'
-        ;;
-    android)
-        sdk_dir='$jagen_src_dir/hisilicon'
-        toolchain_dir='$jagen_base_dir/toolchain/android-ndk-r10d'
-        ;;
-esac
+. "$jagen_dir/lib/env.sh" || return
+
+import init
 
 write_env || die
 
