@@ -1,6 +1,10 @@
 package {
     name   = 'soundtouch',
-    source = 'soundtouch-1.9.2.tar.gz',
+    source = {
+        type     = 'dist',
+        location = 'soundtouch-1.9.2.tar.gz',
+        dir      = '$pkg_work_dir/soundtouch'
+    },
     build  = {
         type = 'GNU',
         options = '--enable-integer-samples=yes --enable-x86-optimizations=no',
