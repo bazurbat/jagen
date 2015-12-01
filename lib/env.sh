@@ -11,7 +11,6 @@ export jagen_debug="${jagen_debug}"
 export jagen_flags=""
 export jagen_sdk=""
 
-export jagen_bin_dir="$jagen_dir/bin"
 export jagen_lib_dir="$jagen_dir/lib"
 export jagen_src_dir="$jagen_root/src"
 export jagen_build_dir="$jagen_root/build"

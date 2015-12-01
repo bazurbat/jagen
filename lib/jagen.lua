@@ -501,7 +501,6 @@ jagen =
     flags = os.getenv('jagen_flags'),
     sdk   = os.getenv('jagen_sdk'),
 
-    bin_dir     = os.getenv('jagen_bin_dir'),
     lib_dir     = os.getenv('jagen_lib_dir'),
     src_dir     = os.getenv('jagen_src_dir'),
     build_dir   = os.getenv('jagen_build_dir'),
