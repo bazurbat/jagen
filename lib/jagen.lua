@@ -184,8 +184,7 @@ function Package:add(rule, packages)
     end
 end
 
-function Package:load(name)
-    local filename = system.mkpath(jagen.lib_dir, 'pkg', name..'.lua')
+function Package:load(filename)
     local o, env = {}, {}
     function env.package(rule)
         o = rule
@@ -214,7 +213,10 @@ function Package:new(rule)
         pkg:add_target(Target.new(rule.name, name))
     end
 
-    pkg:parse(table.merge(Package:load(rule.name), rule))
+    local pathname = system.mkpath('pkg', rule.name..'.lua')
+    for _, filename in ipairs(jagen.import_paths(pathname)) do
+        pkg:parse(table.merge(Package:load(filename), rule))
+    end
 
     return pkg
 end
@@ -581,8 +583,17 @@ function jagen.flag(f)
     return false
 end
 
+function jagen.import_paths(filename)
+    local o = {}
+    table.insert(o, system.mkpath(jagen.dir, 'lib', filename))
+    for _, overlay in ipairs(string.split(jagen.overlays, ' ')) do
+        table.insert(o, system.mkpath(jagen.dir, 'overlay', overlay, filename))
+    end
+    table.insert(o, system.mkpath(jagen.root, filename))
+    return o
+end
+
 function jagen.load_rules()
-    local rules = 'rules.lua'
     local packages = {}
 
     local function load_rules(filename)
@@ -602,13 +613,9 @@ function jagen.load_rules()
         return rules
     end
 
-    load_rules(system.mkpath(jagen.dir, 'lib', rules))
-
-    for _, o in ipairs(string.split(jagen.overlays, ' ')) do
-        load_rules(system.mkpath(jagen.dir, 'overlay', o, rules))
+    for _, path in ipairs(jagen.import_paths('rules.lua')) do
+        load_rules(path)
     end
-
-    load_rules(system.mkpath(jagen.root, rules))
 
     Package:add({ 'toolchain', { 'install' } }, packages)
 
