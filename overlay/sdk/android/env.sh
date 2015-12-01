@@ -1,5 +1,7 @@
 #!/bin/sh
 
+jagen_sdk='android'
+
 # Many Android build and utility scripts assume Bash shell
 jagen_shell="/bin/bash"
 

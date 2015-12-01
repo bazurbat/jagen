@@ -1,5 +1,7 @@
 #!/bin/sh
 
+jagen_sdk='sigma'
+
 target_system="mipsel-linux-gnu"
 jagen_target_prefix="/firmware"
 
