@@ -10,8 +10,12 @@ package { 'hi-sdk', 'target',
     { 'build_linux',
         { 'hi-kernel', 'unpack' }
     },
-    { 'build_common' },
-    { 'build_msp'    },
+    { 'build_common'      },
+    { 'build_msp'         },
+    { 'install_linux'     },
+    { 'install_common'    },
+    { 'install_msp'       },
+    { 'install_component' },
 }
 
 package { 'libuv', 'target' }
@@ -20,7 +24,8 @@ package { 'ffmpeg', 'target' }
 
 package { 'karaoke-player', 'target',
     { 'build',
-        { 'libuv',  'install', 'target' },
-        { 'ffmpeg', 'install', 'target' },
+        { 'ffmpeg', 'install',           'target' },
+        { 'hi-sdk', 'install_component', 'target' },
+        { 'libuv',  'install',           'target' },
     }
 }
