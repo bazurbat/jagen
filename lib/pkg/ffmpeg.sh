@@ -49,28 +49,26 @@ jagen_pkg_patch() {
 }
 
 jagen_pkg_build() {
-    local prefix cross_options
+    local cross_options
 
-    CFLAGS=""
-    CXXFLAGS=""
+    CFLAGS=''
+    CXXFLAGS=''
 
-    if [ "$pkg_config" = "host" ]; then
-        prefix="$jagen_host_dir"
-    else
-        prefix="$jagen_target_prefix"
-
+    if [ "$pkg_config" = "target" ]; then
         cross_options="--target-os=linux --enable-cross-compile"
+        if [ "$toolchain_prefix" ]; then
+            cross_options="$cross_options --cross-prefix=$toolchain_prefix"
+        fi
+        if [ "$toolchain_sysroot" ]; then
+            cross_options="$cross_options --sysroot=$toolchain_sysroot"
+        fi
+
         case $target_board in
             ast25|ast50|ast100)
-                cross_options="$cross_options --cross-prefix=${toolchain_bin_dir}/${target_system}-"
                 cross_options="$cross_options --arch=mipsel --cpu=24kf"
                 ;;
-            *)
-                cross_options="$cross_options \
-                    --cross-prefix=${toolchain_dir}/bin/${target_system}-"
-                cross_options="$cross_options \
-                    --sysroot=${toolchain_dir}/sysroot"
-                cross_options="$cross_options --arch=$target_arch"
+            ast2*)
+                cross_options="$cross_options --arch=arm"
                 ;;
         esac
     fi
@@ -108,8 +106,8 @@ jagen_pkg_build() {
             ;;
     esac
 
-    pkg_run $pkg_source_dir/configure --prefix="$prefix" \
-        --bindir="${prefix}/bin" \
+    pkg_run $pkg_source_dir/configure \
+        --prefix="$pkg_prefix" \
         --enable-gpl --enable-nonfree \
         --disable-static --enable-shared \
         --disable-runtime-cpudetect \
@@ -128,20 +126,4 @@ jagen_pkg_build() {
         $options
 
     pkg_run make
-}
-
-jagen_pkg_build_host() {
-    jagen_pkg_build
-}
-
-jagen_pkg_build_target() {
-    jagen_pkg_build
-}
-
-jagen_pkg_install_host() {
-    pkg_run make install
-}
-
-jagen_pkg_install_target() {
-    pkg_run make DESTDIR="$jagen_target_dir" install
 }
