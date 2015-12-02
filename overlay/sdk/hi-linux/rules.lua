@@ -13,3 +13,5 @@ package { 'hi-sdk', 'target',
     { 'build_common' },
     { 'build_msp'    },
 }
+
+package { 'ffmpeg', 'target' }
