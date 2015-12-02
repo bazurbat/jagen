@@ -14,4 +14,13 @@ package { 'hi-sdk', 'target',
     { 'build_msp'    },
 }
 
+package { 'libuv', 'target' }
+
 package { 'ffmpeg', 'target' }
+
+package { 'karaoke-player', 'target',
+    { 'build',
+        { 'libuv',  'install', 'target' },
+        { 'ffmpeg', 'install', 'target' },
+    }
+}
