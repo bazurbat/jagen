@@ -39,6 +39,10 @@ jagen_pkg_build_target() {
                 -DHISILICON_OUT_DIR="$sdk_out_dir" \
                 "$pkg_source_dir"
             ;;
+        *)
+            pkg_run cmake $A \
+                "$pkg_source_dir"
+            ;;
     esac
 
     pkg_run cmake --build . -- $jagen_cmake_build_options
