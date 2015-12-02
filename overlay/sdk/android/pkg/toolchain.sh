@@ -3,8 +3,8 @@
 jagen_pkg_install() {
     : ${jagen_toolchain_dir:?}
 
-    rm -fr "$toolchain_bin_dir"
-    mkdir -p "$toolchain_bin_dir"
+    rm -fr "$toolchain_dir/bin"
+    mkdir -p "$toolchain_dir/bin"
 
     bash "$jagen_toolchain_dir/build/tools/make-standalone-toolchain.sh" \
         --system="linux-x86_64" \

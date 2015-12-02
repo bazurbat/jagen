@@ -2,7 +2,7 @@
 
 make_tool() {
     local name="$1" pre_opt="$2" post_opt="$3"
-    cat >"${toolchain_bin_dir}/${target_system}-${name}" <<EOF
+    cat >"${toolchain_dir}/bin/${target_system}-${name}" <<EOF
 #!/bin/sh
 exec $ccache $gcc_dir/mips-linux-gnu-${name} $pre_opt "\$@" $post_opt
 EOF
@@ -20,8 +20,8 @@ objcopy objdump ranlib readelf size sprite strings strip"
     local gcc_dir=$(dirname "${gcc_path}")
     local ccache
 
-    rm -fr "$toolchain_bin_dir"
-    mkdir -p "$toolchain_bin_dir"
+    rm -fr "$toolchain_dir/bin"
+    mkdir -p "$toolchain_dir/bin"
 
     make_tool ld -EL
     make_tool as -EL "$inc_opt"
@@ -40,5 +40,5 @@ objcopy objdump ranlib readelf size sprite strings strip"
         make_tool $name
     done
 
-    chmod 755 "$toolchain_bin_dir"/* || return
+    chmod 755 "$toolchain_dir"/bin/* || return
 }
