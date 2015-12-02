@@ -39,6 +39,11 @@ jagen_pkg_build_target() {
                 -DHISILICON_OUT_DIR="$sdk_out_dir" \
                 "$pkg_source_dir"
             ;;
+        hi-linux)
+            pkg_run cmake $A \
+                -DHISILICON_ROOT_DIR="$jagen_sdk_dir" \
+                "$pkg_source_dir"
+            ;;
         *)
             pkg_run cmake $A \
                 "$pkg_source_dir"
