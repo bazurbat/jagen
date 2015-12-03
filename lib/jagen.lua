@@ -256,8 +256,11 @@ function Package:add_build_targets(config)
             self:add_target(target)
         end
         if build.type ~= 'manual' then
-            self:add_target(Target:parse({ 'build', { 'toolchain', 'install' } },
-                self.name, config))
+            local build_rule = { 'build' }
+            if config == 'target' then
+                build_rule = { 'build', { 'toolchain', 'install', 'target' } }
+            end
+            self:add_target(Target:parse(build_rule, self.name, config))
             self:add_target(Target.new(self.name, 'install', config))
         end
     end
@@ -619,7 +622,7 @@ function jagen.load_rules()
         load_rules(path)
     end
 
-    Package:add({ 'toolchain', { 'install' } }, packages)
+    Package:add({ 'toolchain', 'target', { 'install' } }, packages)
 
     for _, pkg in ipairs(packages) do
         pkg:add_ordering_dependencies()
