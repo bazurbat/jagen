@@ -24,33 +24,6 @@ jagen_pkg_build() {
     pkg_run ln -fs setxenv2_mipsel unsetxenv2
 }
 
-install_alsa() {
-    pkg_run mkdir -p "$jagen_sdk_rootfs_root/var/lib/alsa"
-    pkg_run mkdir -p "$jagen_sdk_rootfs_root/share/alsa/ucm"
-
-    pkg_run mkdir -p "$jagen_sdk_rootfs_root/etc/modprobe.d"
-    pkg_run cp -f \
-        "$jagen_private_dir/cfg/alsa.conf" \
-        "$jagen_sdk_rootfs_root/etc/modprobe.d"
-
-    pkg_run cp -a \
-        "$jagen_sdk_rootfs_prefix/bin/alsa"* \
-        "$jagen_sdk_rootfs_prefix/bin/amixer" \
-        "$jagen_sdk_rootfs_prefix/bin/aplay" \
-        "$jagen_sdk_rootfs_prefix/bin/arecord" \
-        "$jagen_sdk_rootfs_root/bin"
-    pkg_run cp -a \
-        "$jagen_sdk_rootfs_prefix/sbin/alsactl" \
-        "$jagen_sdk_rootfs_root/sbin"
-    pkg_run cp -a \
-        "$jagen_sdk_rootfs_prefix/lib/alsa-lib" \
-        "$jagen_sdk_rootfs_prefix/lib/libasound"* \
-        "$jagen_sdk_rootfs_root/lib"
-    pkg_run cp -a \
-        "$jagen_sdk_rootfs_prefix/share/alsa" \
-        "$jagen_sdk_rootfs_root/share"
-}
-
 install_timezone() {
     pkg_run rm -f "$jagen_sdk_rootfs_root/etc/TZ"
     pkg_run install -m644 \
@@ -140,9 +113,6 @@ jagen_pkg_install() {
     pkg_run rm -f libnss_compat* libnss_hesiod* libnss_nis*
     find "$jagen_sdk_rootfs_root/lib" \( -name "*.a" -o -name "*.la" \) -delete
 
-    if in_flags with_alsa; then
-        install_alsa
-    fi
     install_timezone
     install_keys
     install_gpg

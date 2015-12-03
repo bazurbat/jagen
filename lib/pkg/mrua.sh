@@ -29,13 +29,6 @@ jagen_pkg_modules() {
 
     pkg_run cd "$src_dir"
     pkg_install_modules em8xxx llad
-
-    if in_flags with_alsa; then
-        pkg_run cp -f \
-            "$pkg_source_dir/MRUA_src/rua/emhwlib_kernel/kernel_src/em8xxxalsa.ko" \
-            "$src_dir"
-        pkg_install_modules em8xxxalsa
-    fi
 }
 
 jagen_pkg_install() {
