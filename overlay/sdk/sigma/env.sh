@@ -9,7 +9,7 @@ target_arch="mips"
 target_cpu="24kf"
 target_board="${target_board:-ast100}"
 
-toolchain_dir="${jagen_target_dir}"
+jagen_target_toolchain_dir="${jagen_target_dir}"
 
 sdk_ezboot_dir="$jagen_src_dir/sigma-ezboot"
 sdk_kernel_dir="$jagen_src_dir/sigma-kernel"

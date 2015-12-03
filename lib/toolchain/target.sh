@@ -17,6 +17,6 @@ export LDFLAGS=""
 export PKG_CONFIG_SYSROOT_DIR="${jagen_target_dir}"
 export PKG_CONFIG_LIBDIR="${jagen_target_dir}${jagen_target_prefix}/lib/pkgconfig"
 
-: ${toolchain_dir:?}
+: ${jagen_target_toolchain_dir:?}
 
-add_PATH "$toolchain_dir/bin"
+add_PATH "$jagen_target_toolchain_dir/bin"

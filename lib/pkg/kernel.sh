@@ -6,7 +6,7 @@ use_toolchain target
 : ${with_kernel_proprietary_modules:=yes}
 : ${with_kernel_extras:=yes}
 
-export CROSS_COMPILE="${toolchain_dir}/bin/${jagen_target_system}-"
+export CROSS_COMPILE="${jagen_target_toolchain_dir}/bin/${jagen_target_system}-"
 export CROSS_MAKE="make ARCH=${target_arch}"
 export KCFLAGS="-mhard-float -Wa,-mhard-float"
 
@@ -60,7 +60,7 @@ jagen_pkg_install() {
 }
 
 get_start_addr() {
-    local NM="${toolchain_dir}/bin/${jagen_target_system}-nm"
+    local NM="${jagen_target_toolchain_dir}/bin/${jagen_target_system}-nm"
     echo 0x$($NM $1 | awk '/\<kernel_entry\>/ { print $1 }')
 }
 
