@@ -10,7 +10,7 @@ jagen_pkg_build_host() {
 }
 
 jagen_pkg_build_target() {
-    case $target_board in
+    case $jagen_target_board in
         ast25|ast50|ast100)
             pkg_run cmake -G"$jagen_cmake_generator" \
                 -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \

@@ -7,7 +7,7 @@ jagen_target_prefix="/firmware"
 
 jagen_target_arch="mips"
 jagen_target_cpu="24kf"
-target_board="${target_board:-ast100}"
+jagen_target_board="${jagen_target_board:-ast100}"
 
 jagen_target_toolchain_dir="${jagen_target_dir}"
 

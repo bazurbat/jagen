@@ -5,7 +5,7 @@ jagen_pkg_build_host() {
         -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
         -DCMAKE_INSTALL_PREFIX="$jagen_host_dir" \
         -DCMAKE_FIND_ROOT_PATH="$jagen_host_dir" \
-        -DTARGET_BOARD="$target_board" \
+        -DTARGET_BOARD="$jagen_target_board" \
         "$pkg_source_dir"
 
     pkg_run cmake --build . -- $jagen_cmake_build_options
@@ -21,7 +21,7 @@ jagen_pkg_build_target() {
     A="$A$S-DCMAKE_INSTALL_PREFIX=${jagen_target_dir}${jagen_target_prefix}"
     A="$A$S-DCHICKEN_COMPILER=$jagen_host_dir/bin/chicken"
     A="$A$S-DCHICKEN_INTERPRETER=$jagen_host_dir/bin/csi"
-    A="$A$S-DTARGET_BOARD=$target_board"
+    A="$A$S-DTARGET_BOARD=$jagen_target_board"
 
     case $jagen_sdk in
         sigma)

@@ -1,3 +1,3 @@
 #!/bin/sh
 
-target_board='ast25'
+jagen_target_board='ast25'

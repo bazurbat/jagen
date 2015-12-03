@@ -63,7 +63,7 @@ jagen_pkg_build() {
             cross_options="$cross_options --sysroot=$jagen_toolchain_sysroot"
         fi
 
-        case $target_board in
+        case $jagen_target_board in
             ast25|ast50|ast100)
                 cross_options="$cross_options --arch=mipsel --cpu=24kf"
                 ;;
