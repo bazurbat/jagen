@@ -56,11 +56,11 @@ jagen_pkg_build() {
 
     if [ "$pkg_config" = "target" ]; then
         cross_options="--target-os=linux --enable-cross-compile"
-        if [ "$toolchain_prefix" ]; then
-            cross_options="$cross_options --cross-prefix=$toolchain_prefix"
+        if [ "$jagen_toolchain_prefix" ]; then
+            cross_options="$cross_options --cross-prefix=$jagen_toolchain_prefix"
         fi
-        if [ "$toolchain_sysroot" ]; then
-            cross_options="$cross_options --sysroot=$toolchain_sysroot"
+        if [ "$jagen_toolchain_sysroot" ]; then
+            cross_options="$cross_options --sysroot=$jagen_toolchain_sysroot"
         fi
 
         case $target_board in
