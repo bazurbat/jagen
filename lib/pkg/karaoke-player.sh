@@ -15,6 +15,7 @@ jagen_pkg_build_target() {
     local IFS="$(printf '\n\t')"
     local S="$(printf '\t')"
     local A="-G$jagen_cmake_generator"
+    A="$A$S-DCMAKE_MODULE_PATH=$jagen_src_dir/cmake-modules"
     A="$A$S-DCMAKE_SYSTEM_NAME=Linux"
     A="$A$S-DCMAKE_BUILD_TYPE=$jagen_cmake_build_type"
     A="$A$S-DCMAKE_INSTALL_PREFIX=${jagen_target_dir}${jagen_target_prefix}"

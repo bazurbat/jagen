@@ -24,6 +24,12 @@ package { 'libuv', 'target' }
 
 package { 'ffmpeg', 'target' }
 
+package { 'hi-utils', 'target',
+    { 'build',
+        { 'cmake-modules', 'unpack' }
+    }
+}
+
 package { 'karaoke-player', 'target',
     { 'build',
         { 'cmake-modules', 'unpack'                      },
