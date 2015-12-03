@@ -18,22 +18,22 @@ if [ "$pkg_config" ]; then
 fi
 
 if [ "$pkg_config" = 'host' ]; then
-    pkg_system="$host_system"
+    pkg_system="$jagen_host_system"
     pkg_prefix="$jagen_host_prefix"
     pkg_dest_dir="$jagen_host_dir"
 elif [ "$pkg_config" = 'target' ]; then
-    pkg_system="$target_system"
+    pkg_system="$jagen_target_system"
     pkg_prefix="$jagen_target_prefix"
     pkg_dest_dir="$jagen_target_dir"
 elif [ "$pkg_config" = 'tools' ]; then
-    pkg_system="$host_system"
+    pkg_system="$jagen_host_system"
     pkg_prefix=""
     pkg_dest_dir="$jagen_tools_dir"
 elif [ "$pkg_config" = 'rootfs' ]; then
     use_toolchain target
-    pkg_system="$target_system"
+    pkg_system="$jagen_target_system"
     pkg_prefix=""
-    pkg_dest_dir="$sdk_rootfs_prefix"
+    pkg_dest_dir="$jagen_sdk_rootfs_prefix"
 fi
 
 include "$jagen_include_dir/$pkg_name" "$pkg_config"
