@@ -11,6 +11,6 @@ jagen_pkg_install() {
 
     for bin in "$jagen_toolchain_dir"/bin/*; do
         name="$(basename "$bin" | cut -d- -f5-)"
-        ln -sf "$bin" "${toolchain_dir}/bin/${target_system}-${name}"
+        ln -sf "$bin" "${toolchain_dir}/bin/${jagen_target_system}-${name}"
     done
 }

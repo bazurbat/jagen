@@ -5,12 +5,12 @@ jagen_sdk='android'
 # Many Android build and utility scripts assume Bash shell
 jagen_shell="/bin/bash"
 
-target_system="arm-linux-androideabi"
+jagen_target_system="arm-linux-androideabi"
 jagen_target_prefix="/system"
 
 target_arch="arm"
 target_platform="${target_platform:-android-17}"
-target_toolchain="${target_toolchain:-${target_system}-4.6}"
+target_toolchain="${target_toolchain:-${jagen_target_system}-4.6}"
 
 toolchain_dir="${jagen_target_dir}/${target_toolchain}"
 

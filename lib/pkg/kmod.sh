@@ -7,7 +7,7 @@ pkg_dest_dir="$sdk_rootfs_prefix"
 
 jagen_pkg_build() {
     pkg_run ./configure \
-        --host="$target_system" \
+        --host="$jagen_target_system" \
         --prefix="$pkg_prefix" \
         --disable-manpages \
         --disable-gtk-doc-html

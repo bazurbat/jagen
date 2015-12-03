@@ -2,7 +2,7 @@
 
 make_tool() {
     local name="$1" pre_opt="$2" post_opt="$3"
-    cat >"${toolchain_dir}/bin/${target_system}-${name}" <<EOF
+    cat >"${toolchain_dir}/bin/${jagen_target_system}-${name}" <<EOF
 #!/bin/sh
 exec $ccache $gcc_dir/mips-linux-gnu-${name} $pre_opt "\$@" $post_opt
 EOF

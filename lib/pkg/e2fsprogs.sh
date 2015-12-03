@@ -16,7 +16,7 @@ jagen_pkg_build() {
     QUOTA_CMT='#' \
     pkg_run ./configure \
         --prefix="" \
-        --host="$target_system" \
+        --host="$jagen_target_system" \
         --enable-symlink-install \
         --enable-relative-symlinks \
         --disable-compression \

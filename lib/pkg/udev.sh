@@ -14,7 +14,7 @@ jagen_pkg_build() {
     export KMOD_LIBS="-L$lib_dir -lkmod"
 
     pkg_run ./configure \
-        --host="$target_system" \
+        --host="$jagen_target_system" \
         --prefix="" \
         --disable-gtk-doc-html \
         --disable-manpages \

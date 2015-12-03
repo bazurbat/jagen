@@ -1,11 +1,11 @@
 #!/bin/sh
 
-: ${target_system:?}
+: ${jagen_target_system:?}
 
-export AR="${target_system}-ar"
-export CC="${target_system}-gcc"
-export CXX="${target_system}-g++"
-export STRIP="${target_system}-strip"
+export AR="${jagen_target_system}-ar"
+export CC="${jagen_target_system}-gcc"
+export CXX="${jagen_target_system}-g++"
+export STRIP="${jagen_target_system}-strip"
 
 export CFLAGS=""
 export CXXFLAGS="${CFLAGS}"

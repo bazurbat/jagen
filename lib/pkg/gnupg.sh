@@ -4,7 +4,7 @@ use_toolchain target
 
 jagen_pkg_build() {
     pkg_run ./configure \
-        --host="$target_system" \
+        --host="$jagen_target_system" \
         --prefix="" \
         --enable-minimal \
         --disable-card-support \

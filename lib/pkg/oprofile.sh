@@ -5,7 +5,7 @@ use_toolchain target
 jagen_pkg_build() {
     CFLAGS="$CFLAGS -I$jagen_target_dir/$jagen_target_prefix/include" \
     pkg_run ./configure \
-        --host="$target_system" \
+        --host="$jagen_target_system" \
         --prefix="$jagen_target_prefix" \
         --enable-shared \
         --disable-static \

@@ -16,7 +16,7 @@ jagen_pkg_build() {
     export LIBUSB_LIBS="-L$sdk_rootfs_prefix/lib -lusb-1.0"
 
     pkg_run ./configure \
-        --host="$target_system" \
+        --host="$jagen_target_system" \
         --prefix="$pkg_prefix" \
         --disable-zlib \
         --disable-usbids

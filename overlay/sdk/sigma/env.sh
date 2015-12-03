@@ -2,7 +2,7 @@
 
 jagen_sdk='sigma'
 
-target_system="mipsel-linux-gnu"
+jagen_target_system="mipsel-linux-gnu"
 jagen_target_prefix="/firmware"
 
 target_arch="mips"

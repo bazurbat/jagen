@@ -2,7 +2,7 @@
 
 jagen_pkg_build_host() {
     pkg_run ./configure \
-        --target="$target_system" \
+        --target="$jagen_target_system" \
         --prefix="$jagen_tools_dir" \
         --program-transform-name='' \
         --disable-werror \

@@ -6,7 +6,7 @@ jagen_pkg_build() {
 	export je_cv_static_page_shift=12
 
 	pkg_run ./configure \
-		--host="$target_system" \
+		--host="$jagen_target_system" \
 		--prefix="$jagen_target_prefix" \
 		--disable-valgrind \
 		--disable-experimental

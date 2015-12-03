@@ -9,7 +9,7 @@ jagen_pkg_build() {
     export ac_cv_lib_pthread_pthread_create=no
 
     pkg_run ./configure \
-        --host="$target_system" \
+        --host="$jagen_target_system" \
         --prefix="" \
         --includedir="/include" \
         --disable-glibtest \
