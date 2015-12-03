@@ -7,7 +7,7 @@ use_toolchain target
 : ${with_kernel_extras:=yes}
 
 export CROSS_COMPILE="${jagen_target_toolchain_dir}/bin/${jagen_target_system}-"
-export CROSS_MAKE="make ARCH=${target_arch}"
+export CROSS_MAKE="make ARCH=${jagen_target_arch}"
 export KCFLAGS="-mhard-float -Wa,-mhard-float"
 
 protectordir="$sdk_ezboot_dir/protector/"

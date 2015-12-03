@@ -8,7 +8,7 @@ jagen_shell="/bin/bash"
 jagen_target_system="arm-linux-androideabi"
 jagen_target_prefix="/system"
 
-target_arch="arm"
+jagen_target_arch="arm"
 target_platform="${target_platform:-android-17}"
 target_toolchain="${target_toolchain:-${jagen_target_system}-4.6}"
 

@@ -5,7 +5,7 @@ jagen_sdk='sigma'
 jagen_target_system="mipsel-linux-gnu"
 jagen_target_prefix="/firmware"
 
-target_arch="mips"
+jagen_target_arch="mips"
 target_cpu="24kf"
 target_board="${target_board:-ast100}"
 
