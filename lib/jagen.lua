@@ -717,8 +717,11 @@ function Script:source()
 end
 
 function Script:build()
-    local build = self.pkg.build
     local o = {}
+    local build = self.pkg.build
+    if build.dir then
+        table.insert(o, 'pkg_build_dir="'..build.dir..'"')
+    end
     if build.type == 'GNU' then
         if build.options then
             table.insert(o, string.format('pkg_options=\'%s\'', build.options))
@@ -731,8 +734,6 @@ function Script:build()
             table.insert(o, 'pkg_with_provided_libtool="yes"')
         end
     end
-    local build_dir = build.dir or '$pkg_source_dir'
-    table.insert(o, 'pkg_build_dir="'..build_dir..'"')
 
     return table.concat(o, '\n')
 end
