@@ -5,7 +5,7 @@ jagen_pkg_build() {
     CFLAGS="$CFLAGS -I$pkg_dest_dir$pkg_prefix/include"
     LDFLAGS="$LDFLAGS -L$pkg_dest_dir$pkg_prefix/lib"
 
-    pkg_run ./configure \
+    pkg_run "$pkg_source_dir/configure" \
         --host="$pkg_system" \
         --prefix="$pkg_prefix" \
         --with-system-pid-file=/run/dbus.pid \

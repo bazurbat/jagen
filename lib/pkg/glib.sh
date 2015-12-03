@@ -13,7 +13,7 @@ jagen_pkg_build() {
     echo "ac_cv_func_posix_getgrgid_r=yes" >> "$cache"
     echo "glib_cv_uscore=yes" >> "$cache"
 
-    pkg_run ./configure \
+    pkg_run "$pkg_source_dir/configure" \
         --cache-file="$cache" \
         --host="$pkg_system" \
         --prefix="$pkg_prefix" \

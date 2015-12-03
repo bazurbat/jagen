@@ -3,7 +3,7 @@
 jagen_pkg_build() {
     export ac_cv_lib_resolv_ns_initparse=yes
 
-    pkg_run ./configure \
+    pkg_run "$pkg_source_dir/configure" \
         --host="$pkg_system" \
         --prefix="$pkg_prefix" \
         --sysconfdir="/etc" \

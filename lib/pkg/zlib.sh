@@ -1,7 +1,7 @@
 #!/bin/sh
 
 jagen_pkg_build() {
-    pkg_run ./configure \
+    pkg_run "$pkg_source_dir/configure" \
         --prefix="$pkg_prefix" \
         --libdir="$pkg_prefix/lib"
 

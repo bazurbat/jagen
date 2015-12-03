@@ -1,7 +1,7 @@
 #!/bin/sh
 
 jagen_pkg_build_host() {
-    pkg_run ./configure \
+    pkg_run "$pkg_source_dir/configure" \
         --target="$jagen_target_system" \
         --prefix="$jagen_tools_dir" \
         --program-transform-name='' \

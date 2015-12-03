@@ -8,7 +8,7 @@ pkg_dest_dir="$jagen_sdk_rootfs_prefix"
 jagen_pkg_build() {
     export ac_cv_lib_pthread_pthread_create=no
 
-    pkg_run ./configure \
+    pkg_run "$pkg_source_dir/configure" \
         --host="$jagen_target_system" \
         --prefix="" \
         --includedir="/include" \

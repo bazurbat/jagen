@@ -6,7 +6,7 @@ workdir="gdb/gdbserver"
 
 jagen_pkg_build() {
     pkg_run cd "$workdir"
-    pkg_run ./configure \
+    pkg_run "$pkg_source_dir/configure" \
         --host="$jagen_target_system" \
         --prefix="" \
         --program-transform-name='' \

@@ -14,7 +14,7 @@ jagen_pkg_patch() {
 jagen_pkg_build() {
     export CONFIG_SHELL=/bin/bash
 
-    pkg_run ./configure \
+    pkg_run "$pkg_source_dir/configure" \
         --prefix="$jagen_host_dir$jagen_host_prefix" \
         --disable-ltdl-install
 
