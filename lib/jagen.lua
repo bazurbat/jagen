@@ -296,17 +296,17 @@ function Package:is_source()
 end
 
 function Package:directory()
-    local location = self.source.location
+    local location  = self.source.location
+    local directory = self.source.directory
     local function basename(location)
         return location and io.popen('basename '..location..' .git'):read()
     end
-    if self.source.dir then
-        return self.source.dir
-    elseif Package.is_source(self) then
-        local name = self.source.directory or basename(location)
-        return system.mkpath('$jagen_src_dir', name or self.name)
+    if Package.is_source(self) then
+        directory = directory or basename(location) or self.name
+        return system.mkpath('$jagen_src_dir', directory)
     else
-        return system.mkpath('$pkg_work_dir', Source.name(location))
+        directory = directory or Source.name(location) or self.name
+        return system.mkpath('$pkg_work_dir', directory)
     end
 end
 
