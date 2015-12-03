@@ -5,7 +5,7 @@ use_toolchain target
 pkg_prefix=""
 pkg_dest_dir="$jagen_sdk_rootfs_root"
 
-export CROSS_COMPILE="${jagen_target_toolchain_dir}/bin/${jagen_target_system}-"
+export CROSS_COMPILE="${jagen_target_toolchain_dir}/${jagen_target_system}-"
 
 jagen_pkg_patch() {
     pkg_run cp -f "$jagen_private_dir/cfg/busybox.config" ".config"

@@ -19,4 +19,4 @@ export PKG_CONFIG_LIBDIR="${jagen_target_dir}${jagen_target_prefix}/lib/pkgconfi
 
 : ${jagen_target_toolchain_dir:?}
 
-add_PATH "$jagen_target_toolchain_dir/bin"
+add_PATH "$jagen_target_toolchain_dir"

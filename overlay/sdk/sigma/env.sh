@@ -9,7 +9,7 @@ jagen_target_arch="mips"
 jagen_target_cpu="24kf"
 jagen_target_board="${jagen_target_board:-ast100}"
 
-jagen_target_toolchain_dir="${jagen_target_dir}"
+jagen_target_toolchain_dir="${jagen_target_dir}/bin"
 
 jagen_sdk_ezboot_dir="$jagen_src_dir/sigma-ezboot"
 jagen_sdk_kernel_dir="$jagen_src_dir/sigma-kernel"
