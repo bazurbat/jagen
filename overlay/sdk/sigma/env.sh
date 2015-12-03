@@ -6,7 +6,7 @@ jagen_target_system="mipsel-linux-gnu"
 jagen_target_prefix="/firmware"
 
 jagen_target_arch="mips"
-target_cpu="24kf"
+jagen_target_cpu="24kf"
 target_board="${target_board:-ast100}"
 
 jagen_target_toolchain_dir="${jagen_target_dir}"
