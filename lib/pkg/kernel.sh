@@ -10,7 +10,7 @@ export CROSS_COMPILE="${jagen_target_toolchain_dir}/bin/${jagen_target_system}-"
 export CROSS_MAKE="make ARCH=${jagen_target_arch}"
 export KCFLAGS="-mhard-float -Wa,-mhard-float"
 
-protectordir="$sdk_ezboot_dir/protector/"
+protectordir="$jagen_sdk_ezboot_dir/protector/"
 
 jagen_pkg_build() {
     pkg_run ln -sfT "$jagen_src_dir/linux" linux
@@ -45,17 +45,17 @@ jagen_pkg_install() {
     pkg_run $CROSS_MAKE modules_install
 
     if [ $with_kernel_proprietary_modules = yes ]; then
-        pkg_run cd "$kernel_dir/proprietary"
+        pkg_run cd "$jagen_kernel_dir/proprietary"
         pkg_run $CROSS_MAKE -C spinor modules_install
         pkg_run $CROSS_MAKE -C sd_block modules_install
     fi
 
     if [ $with_kernel_extras = yes ]; then
-        pkg_run cd "$kernel_dir/extra"
+        pkg_run cd "$jagen_kernel_dir/extra"
         pkg_run $CROSS_MAKE modules_install
     fi
 
-    pkg_run cd "$kernel_modules_dir"
+    pkg_run cd "$jagen_kernel_modules_dir"
     pkg_run rm -f "build" "source"
 }
 
@@ -65,7 +65,7 @@ get_start_addr() {
 }
 
 jagen_pkg_image() {
-    add_PATH "$sdk_rootfs_prefix/bin"
+    add_PATH "$jagen_sdk_rootfs_prefix/bin"
 
     local tmpdir="$jagen_target_dir/kernel-image"
     pkg_clean_dir "$tmpdir"

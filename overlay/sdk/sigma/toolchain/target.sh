@@ -6,4 +6,4 @@ export CXXFLAGS="$CFLAGS"
 export ASMFLAGS="$CFLAGS"
 export LDFLAGS=""
 
-export PKG_CONFIG_PATH="$sdk_rootfs_prefix/lib/pkgconfig"
+export PKG_CONFIG_PATH="$jagen_sdk_rootfs_prefix/lib/pkgconfig"

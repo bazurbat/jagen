@@ -13,8 +13,8 @@ jagen_pkg_install() {
 
     local common_tools="addr2line ar c++filt elfedit gcov gdb gdbtui gprof nm \
 objcopy objdump ranlib readelf size sprite strings strip"
-    local inc_opt="-isystem \"$sdk_rootfs_prefix/include\""
-    local lib_opt="-L\"$sdk_rootfs_prefix/lib\""
+    local inc_opt="-isystem \"$jagen_sdk_rootfs_prefix/include\""
+    local lib_opt="-L\"$jagen_sdk_rootfs_prefix/lib\""
 
     local gcc_path="$jagen_toolchain_dir/bin/mips-linux-gnu-gcc"
     local gcc_dir=$(dirname "${gcc_path}")

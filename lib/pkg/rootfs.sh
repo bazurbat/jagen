@@ -16,91 +16,91 @@ jagen_pkg_build() {
 
     # cleanup while bin dir is almost empty, doing this in install script
     # confuses the shell for some reason (maybe [ [[ filenames from busybox?)
-    pkg_run rm -f "$sdk_rootfs_root"/bin/*.bash
+    pkg_run rm -f "$jagen_sdk_rootfs_root"/bin/*.bash
 
-    pkg_run cd "$sdk_rootfs_root/bin"
+    pkg_run cd "$jagen_sdk_rootfs_root/bin"
     pkg_run rm -f setxenv unsetxenv
     pkg_run ln -fs setxenv2_mipsel setxenv2
     pkg_run ln -fs setxenv2_mipsel unsetxenv2
 }
 
 install_alsa() {
-    pkg_run mkdir -p "$sdk_rootfs_root/var/lib/alsa"
-    pkg_run mkdir -p "$sdk_rootfs_root/share/alsa/ucm"
+    pkg_run mkdir -p "$jagen_sdk_rootfs_root/var/lib/alsa"
+    pkg_run mkdir -p "$jagen_sdk_rootfs_root/share/alsa/ucm"
 
-    pkg_run mkdir -p "$sdk_rootfs_root/etc/modprobe.d"
+    pkg_run mkdir -p "$jagen_sdk_rootfs_root/etc/modprobe.d"
     pkg_run cp -f \
         "$jagen_private_dir/cfg/alsa.conf" \
-        "$sdk_rootfs_root/etc/modprobe.d"
+        "$jagen_sdk_rootfs_root/etc/modprobe.d"
 
     pkg_run cp -a \
-        "$sdk_rootfs_prefix/bin/alsa"* \
-        "$sdk_rootfs_prefix/bin/amixer" \
-        "$sdk_rootfs_prefix/bin/aplay" \
-        "$sdk_rootfs_prefix/bin/arecord" \
-        "$sdk_rootfs_root/bin"
+        "$jagen_sdk_rootfs_prefix/bin/alsa"* \
+        "$jagen_sdk_rootfs_prefix/bin/amixer" \
+        "$jagen_sdk_rootfs_prefix/bin/aplay" \
+        "$jagen_sdk_rootfs_prefix/bin/arecord" \
+        "$jagen_sdk_rootfs_root/bin"
     pkg_run cp -a \
-        "$sdk_rootfs_prefix/sbin/alsactl" \
-        "$sdk_rootfs_root/sbin"
+        "$jagen_sdk_rootfs_prefix/sbin/alsactl" \
+        "$jagen_sdk_rootfs_root/sbin"
     pkg_run cp -a \
-        "$sdk_rootfs_prefix/lib/alsa-lib" \
-        "$sdk_rootfs_prefix/lib/libasound"* \
-        "$sdk_rootfs_root/lib"
+        "$jagen_sdk_rootfs_prefix/lib/alsa-lib" \
+        "$jagen_sdk_rootfs_prefix/lib/libasound"* \
+        "$jagen_sdk_rootfs_root/lib"
     pkg_run cp -a \
-        "$sdk_rootfs_prefix/share/alsa" \
-        "$sdk_rootfs_root/share"
+        "$jagen_sdk_rootfs_prefix/share/alsa" \
+        "$jagen_sdk_rootfs_root/share"
 }
 
 install_timezone() {
-    pkg_run rm -f "$sdk_rootfs_root/etc/TZ"
+    pkg_run rm -f "$jagen_sdk_rootfs_root/etc/TZ"
     pkg_run install -m644 \
         "$TOOLCHAIN_RUNTIME_PATH/usr/share/zoneinfo/Europe/Moscow" \
-        "$sdk_rootfs_root/etc/localtime"
+        "$jagen_sdk_rootfs_root/etc/localtime"
 }
 
 install_keys() {
-    pkg_run mkdir -p "$sdk_rootfs_root/lib/firmware"
+    pkg_run mkdir -p "$jagen_sdk_rootfs_root/lib/firmware"
     pkg_run cp -a \
         "$jagen_private_dir/keys/keyfile.gpg" \
-        "$sdk_rootfs_root/lib/firmware"
+        "$jagen_sdk_rootfs_root/lib/firmware"
 }
 
 install_gpg() {
     pkg_run cp -a \
-        "$sdk_rootfs_prefix/bin/gpg" \
-        "$sdk_rootfs_root/bin"
+        "$jagen_sdk_rootfs_prefix/bin/gpg" \
+        "$jagen_sdk_rootfs_root/bin"
     pkg_run cp -a \
-        "$sdk_rootfs_prefix"/lib/libgpg*.so* \
-        "$sdk_rootfs_prefix"/lib/libassuan.so* \
-        "$sdk_rootfs_root/lib"
+        "$jagen_sdk_rootfs_prefix"/lib/libgpg*.so* \
+        "$jagen_sdk_rootfs_prefix"/lib/libassuan.so* \
+        "$jagen_sdk_rootfs_root/lib"
 }
 
 install_losetup() {
     pkg_run cp -a \
-        "$sdk_rootfs_prefix/sbin/losetup" \
-        "$sdk_rootfs_root/sbin"
+        "$jagen_sdk_rootfs_prefix/sbin/losetup" \
+        "$jagen_sdk_rootfs_root/sbin"
 }
 
 install_ldconfig() {
     pkg_run cp -a \
         "$TOOLCHAIN_RUNTIME_PATH/usr/lib/bin/ldconfig" \
-        "$sdk_rootfs_root/sbin"
+        "$jagen_sdk_rootfs_root/sbin"
 }
 
 install_utils() {
     pkg_run cp -a \
-        "$sdk_rootfs_prefix"/lib/libblkid.so* \
-        "$sdk_rootfs_prefix"/lib/libmount.so* \
-        "$sdk_rootfs_root/lib"
+        "$jagen_sdk_rootfs_prefix"/lib/libblkid.so* \
+        "$jagen_sdk_rootfs_prefix"/lib/libmount.so* \
+        "$jagen_sdk_rootfs_root/lib"
     pkg_run cp -a \
-        "$sdk_rootfs_prefix/sbin/mkswap" \
-        "$sdk_rootfs_prefix/sbin/swapoff" \
-        "$sdk_rootfs_prefix/sbin/swapon" \
-        "$sdk_rootfs_root/sbin"
+        "$jagen_sdk_rootfs_prefix/sbin/mkswap" \
+        "$jagen_sdk_rootfs_prefix/sbin/swapoff" \
+        "$jagen_sdk_rootfs_prefix/sbin/swapon" \
+        "$jagen_sdk_rootfs_root/sbin"
 }
 
 install_files() {
-    local root_dir="$sdk_rootfs_root"
+    local root_dir="$jagen_sdk_rootfs_root"
     local flags_dir="$root_dir/etc/flags"
 
     pkg_run cp -rf "$jagen_private_dir"/rootfs/* "$root_dir"
@@ -120,14 +120,14 @@ install_files() {
 jagen_pkg_install() {
     use_toolchain target
 
-    pkg_run cd "$sdk_rootfs_root"
+    pkg_run cd "$jagen_sdk_rootfs_root"
 
     pkg_run rm -fr dev opt proc sys root tmp usr var/run
     pkg_run install -m 700 -d root
     pkg_run rm -f init linuxrc
     pkg_run ln -s /bin/busybox init
 
-    pkg_run cd "$sdk_rootfs_root/etc"
+    pkg_run cd "$jagen_sdk_rootfs_root/etc"
 
     pkg_run rm -fr init.d network cs_rootfs_*
     pkg_run rm -f inputrc ld.so.cache mtab
@@ -135,10 +135,10 @@ jagen_pkg_install() {
         pkg_run mkdir -p network/if-${d}.d
     done
 
-    pkg_run cd "$sdk_rootfs_root/lib"
+    pkg_run cd "$jagen_sdk_rootfs_root/lib"
 
     pkg_run rm -f libnss_compat* libnss_hesiod* libnss_nis*
-    find "$sdk_rootfs_root/lib" \( -name "*.a" -o -name "*.la" \) -delete
+    find "$jagen_sdk_rootfs_root/lib" \( -name "*.a" -o -name "*.la" \) -delete
 
     if in_flags with_alsa; then
         install_alsa
@@ -151,5 +151,5 @@ jagen_pkg_install() {
     install_utils
     install_files
 
-    pkg_strip_dir "$sdk_rootfs_root"
+    pkg_strip_dir "$jagen_sdk_rootfs_root"
 }

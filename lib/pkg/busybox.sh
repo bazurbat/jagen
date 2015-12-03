@@ -3,7 +3,7 @@
 use_toolchain target
 
 pkg_prefix=""
-pkg_dest_dir="$sdk_rootfs_root"
+pkg_dest_dir="$jagen_sdk_rootfs_root"
 
 export CROSS_COMPILE="${jagen_target_toolchain_dir}/bin/${jagen_target_system}-"
 

@@ -9,7 +9,7 @@ jagen_pkg_build() {
 }
 
 jagen_pkg_install() {
-    local dest="$sdk_rootfs_root/bin"
+    local dest="$jagen_sdk_rootfs_root/bin"
     pkg_run install -vd "$dest"
     pkg_run install -vm755 ntpclient "$dest"
 }

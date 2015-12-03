@@ -2,11 +2,11 @@
 
 use_toolchain target
 
-pkg_dest_dir="$sdk_rootfs_prefix"
+pkg_dest_dir="$jagen_sdk_rootfs_prefix"
 
 jagen_pkg_build() {
-    local include_dir="$sdk_rootfs_prefix/include"
-    local lib_dir="$sdk_rootfs_prefix/lib"
+    local include_dir="$jagen_sdk_rootfs_prefix/include"
+    local lib_dir="$jagen_sdk_rootfs_prefix/lib"
 
     export BLKID_CFLAGS="-I$include_dir"
     export BLKID_LIBS="-L$lib_dir -lblkid"

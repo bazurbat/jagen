@@ -57,16 +57,16 @@ pkg_run_patch() {
 }
 
 pkg_install_modules() {
-    mkdir -p "$kernel_extra_modules_dir"
-    touch "$kernel_modules_dir/modules.order"
-    touch "$kernel_modules_dir/modules.builtin"
+    mkdir -p "$jagen_kernel_extra_modules_dir"
+    touch "$jagen_kernel_modules_dir/modules.order"
+    touch "$jagen_kernel_modules_dir/modules.builtin"
     for m in "$@"; do
         local f="$PWD/${m}.ko"
-        cp "$f" "$kernel_extra_modules_dir"
+        cp "$f" "$jagen_kernel_extra_modules_dir"
     done &&
         (
-    cd $kernel_dir/linux && \
-        /sbin/depmod -ae -F System.map -b $INSTALL_MOD_PATH $kernel_release
+    cd $jagen_kernel_dir/linux && \
+        /sbin/depmod -ae -F System.map -b $INSTALL_MOD_PATH $jagen_kernel_release
     )
 }
 
@@ -74,12 +74,12 @@ pkg_run_depmod() {
     pkg_run /sbin/depmod -ae \
         -F "$LINUX_KERNEL/System.map" \
         -b "$INSTALL_MOD_PATH" \
-        "$kernel_release"
+        "$jagen_kernel_release"
 }
 
 pkg_fix_la() {
     local filename="$1"
-    local prefix=${2:-"$sdk_rootfs_prefix"}
+    local prefix=${2:-"$jagen_sdk_rootfs_prefix"}
     debug "fix la $filename $prefix"
     pkg_run sed -i "s|^\(libdir=\)'\(.*\)'$|\1'${prefix}\2'|" "$filename"
 }

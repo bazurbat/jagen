@@ -25,7 +25,7 @@ jagen_pkg_build() {
 }
 
 jagen_pkg_modules() {
-    local src_dir="$pkg_source_dir/modules/$kernel_release"
+    local src_dir="$pkg_source_dir/modules/$jagen_kernel_release"
 
     pkg_run cd "$src_dir"
     pkg_install_modules em8xxx llad

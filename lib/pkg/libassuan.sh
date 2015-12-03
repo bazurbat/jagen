@@ -3,7 +3,7 @@
 use_toolchain target
 
 pkg_prefix=""
-pkg_dest_dir="$sdk_rootfs_prefix"
+pkg_dest_dir="$jagen_sdk_rootfs_prefix"
 
 jagen_pkg_build() {
     pkg_run ./configure \

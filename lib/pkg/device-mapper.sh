@@ -33,7 +33,7 @@ jagen_pkg_build() {
 }
 
 jagen_pkg_install() {
-    pkg_run make DESTDIR="$sdk_rootfs_prefix" install_device-mapper
-    pkg_run chmod 755 "$sdk_rootfs_prefix"/lib/libdevmapper*
-    pkg_run chmod 755 "$sdk_rootfs_prefix"/sbin/dmsetup*
+    pkg_run make DESTDIR="$jagen_sdk_rootfs_prefix" install_device-mapper
+    pkg_run chmod 755 "$jagen_sdk_rootfs_prefix"/lib/libdevmapper*
+    pkg_run chmod 755 "$jagen_sdk_rootfs_prefix"/sbin/dmsetup*
 }

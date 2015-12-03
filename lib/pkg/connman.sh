@@ -24,10 +24,10 @@ jagen_pkg_build() {
 install_dbus_conf() {
     local conf_path="/etc/dbus-1/system.d"
 
-    pkg_run install -vd "$sdk_rootfs_root$conf_path"
+    pkg_run install -vd "$jagen_sdk_rootfs_root$conf_path"
     pkg_run install -vm 644 \
         "$jagen_target_dir$conf_path/connman.conf" \
-        "$sdk_rootfs_root$conf_path"
+        "$jagen_sdk_rootfs_root$conf_path"
 }
 
 jagen_pkg_install() {

@@ -15,7 +15,7 @@ package { 'linux',
 }
 
 package { 'xsdk',
-    source = '${cpukeys}.tar.gz'
+    source = '${jagen_sigma_cpukeys}.tar.gz'
 }
 
 package { 'ucode', 'target',

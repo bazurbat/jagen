@@ -13,8 +13,8 @@ jagen_pkg_build() {
 }
 
 jagen_pkg_install() {
-    local dest="$kernel_modules_dir/kernel/drivers/net/wireless"
-    local cfg_dest="$sdk_rootfs_root/etc/Wireless/RT2870STA"
+    local dest="$jagen_kernel_modules_dir/kernel/drivers/net/wireless"
+    local cfg_dest="$jagen_sdk_rootfs_root/etc/Wireless/RT2870STA"
 
     pkg_run mkdir -p "$dest"
 

@@ -19,13 +19,13 @@ jagen_pkg_build() {
         --enable-udev \
         --disable-kernel_crypto \
         --disable-python \
-        --with-sysroot="$sdk_rootfs_prefix" \
+        --with-sysroot="$jagen_sdk_rootfs_prefix" \
         --with-crypto_backend=gcrypt \
-        --with-libgcrypt-prefix="$sdk_rootfs_prefix"
+        --with-libgcrypt-prefix="$jagen_sdk_rootfs_prefix"
 
     pkg_run make
 }
 
 jagen_pkg_install() {
-    pkg_run make DESTDIR="$sdk_rootfs_prefix" install
+    pkg_run make DESTDIR="$jagen_sdk_rootfs_prefix" install
 }

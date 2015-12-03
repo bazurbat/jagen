@@ -18,11 +18,11 @@ jagen_pkg_build() {
         --disable-padlock-support \
         --disable-aesni-support \
         --disable-O-flag-munging \
-        --with-sysroot="$sdk_rootfs_prefix"
+        --with-sysroot="$jagen_sdk_rootfs_prefix"
 
     pkg_run make
 }
 
 jagen_pkg_install() {
-    pkg_run make DESTDIR="$sdk_rootfs_prefix" install
+    pkg_run make DESTDIR="$jagen_sdk_rootfs_prefix" install
 }
