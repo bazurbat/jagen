@@ -719,20 +719,16 @@ end
 function Script:build()
     local o = {}
     local build = self.pkg.build
-    if build.dir then
-        table.insert(o, 'pkg_build_dir="'..build.dir..'"')
+
+    if build.options then
+        table.insert(o, string.format('pkg_options=\'%s\'', build.options))
     end
-    if build.type == 'GNU' then
-        if build.options then
-            table.insert(o, string.format('pkg_options=\'%s\'', build.options))
-        end
-        if build.libs then
-            table.insert(o, string.format("pkg_libs='%s'",
-                table.concat(build.libs, ' ')))
-        end
-        if build.with_provided_libtool then
-            table.insert(o, 'pkg_with_provided_libtool="yes"')
-        end
+    if build.libs then
+        table.insert(o, string.format("pkg_libs='%s'",
+            table.concat(build.libs, ' ')))
+    end
+    if build.with_provided_libtool then
+        table.insert(o, 'pkg_with_provided_libtool="yes"')
     end
 
     return table.concat(o, '\n')
