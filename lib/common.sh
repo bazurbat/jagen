@@ -30,10 +30,8 @@ die() {
 
 try_include() {
     if [ -f "$1" ]; then
-        debug include "+ $1"
+        debug include "$1"
         . "$1"
-    else
-        debug include "- $1"
     fi
 }
 
