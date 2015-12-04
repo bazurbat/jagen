@@ -1,7 +1,5 @@
 package {
     name   = 'libassuan',
-    build  = {
-        type = 'GNU'
-    },
-    source = 'libassuan-2.1.2.tar.bz2'
+    source = 'libassuan-2.1.2.tar.bz2',
+    build  = { type = 'GNU' }
 }

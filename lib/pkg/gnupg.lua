@@ -1,7 +1,5 @@
 package {
     name   = 'gnupg',
-    build  = {
-        type = 'GNU'
-    },
-    source = 'gnupg-1.4.18.tar.bz2'
+    source = 'gnupg-1.4.18.tar.bz2',
+    build  = { type = 'GNU' }
 }

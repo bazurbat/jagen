@@ -1,8 +1,8 @@
 package {
     name   = 'libpng',
-    build = {
+    source = 'libpng-1.6.17.tar.xz',
+    build  = {
         type = 'GNU',
         libs = { 'png16' }
-    },
-    source = 'libpng-1.6.17.tar.xz'
+    }
 }
