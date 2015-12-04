@@ -41,10 +41,6 @@ import "pkg/$pkg_name"
 
 pkg_build_dir="${pkg_build_dir:-$pkg_work_dir/build${pkg_config:+-$pkg_config}}"
 
-: >"$pkg_log"
-
-[ -d "$pkg_build_dir" ] && cd "$pkg_build_dir"
-
 run_stage() {
     local stage="$1"
     local pkg="$pkg_name${pkg_config:+ ($pkg_config)}"
@@ -54,6 +50,15 @@ run_stage() {
             die "Failed to run '$stage' stage of package $pkg"
     fi
 }
+
+: >"$pkg_log"
+
+if [ "$pkg_stage" = "patch" ]; then
+    pkg_run cd "$pkg_source_dir"
+else
+    [ -d "$pkg_build_dir" ] || pkg_run mkdir -p "$pkg_build_dir"
+    pkg_run cd "$pkg_build_dir"
+fi
 
 run_stage "jagen_pkg_${pkg_stage}_pre"
 
