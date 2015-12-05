@@ -4,5 +4,8 @@ package {
     patches = {
         { 'wpa_supplicant-2.2-do-not-call-dbus-functions-with-NULL-path', 1 }
     },
-    build = { type = 'make' }
+    build = {
+        type = 'make',
+        in_source = true
+    }
 }

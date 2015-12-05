@@ -141,14 +141,19 @@ default_patch() {
 }
 
 jagen_pkg_configure() {
+    pkg_run cd "$pkg_source_dir"
     if [ "$pkg_with_provided_libtool" ]; then
         pkg_run_autoreconf
     fi
 }
 
 jagen_pkg_build_pre() {
-    [ -d "$pkg_build_dir" ] || pkg_run mkdir -p "$pkg_build_dir"
-    pkg_run cd "$pkg_build_dir"
+    if [ "$pkg_build_dir" ]; then
+        if ! [ -d "$pkg_build_dir" ]; then
+            pkg_run mkdir -p "$pkg_build_dir"
+        fi
+        pkg_run cd "$pkg_build_dir"
+    fi
 }
 
 default_build() {
@@ -172,6 +177,10 @@ default_install() {
     for name in $pkg_libs; do
         pkg_fix_la "$pkg_dest_dir$pkg_prefix/lib/lib${name}.la" "$pkg_dest_dir"
     done
+}
+
+jagen_pkg_patch_pre() {
+    pkg_run cd "$pkg_source_dir"
 }
 
 jagen_pkg_patch() { default_patch; }

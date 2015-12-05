@@ -1,7 +1,5 @@
 #!/bin/sh
 
-use_toolchain target
-
 jagen_pkg_build() {
     pkg_run sed -i 's|^\(HAS_WPA_SUPPLICANT=\).*$|\1y|' \
         os/linux/config.mk

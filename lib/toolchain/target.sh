@@ -26,6 +26,8 @@ if [ -z "$jagen_toolchain_prefix" ]; then
     jagen_toolchain_prefix="${jagen_target_toolchain_dir}/${jagen_target_system}-"
 fi
 
+export CROSS_COMPILE="$jagen_toolchain_prefix"
+
 if [ -d "$jagen_target_toolchain_dir" ]; then
     add_PATH "$jagen_target_toolchain_dir"
 fi

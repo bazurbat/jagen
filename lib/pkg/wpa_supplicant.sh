@@ -1,10 +1,6 @@
 #!/bin/sh
 
 jagen_pkg_build() {
-    local s="$pkg_build_dir/$pkg_name"
-
-    cd "$pkg_name" || return $?
-
     rm -f .config
 
     echo "BINDIR=$pkg_prefix/bin"              >> .config
@@ -40,7 +36,7 @@ jagen_pkg_build() {
 }
 
 jagen_pkg_install() {
-    local s="$pkg_build_dir/$pkg_name"
+    local s="$pkg_build_dir"
     local d="$pkg_dest_dir$pkg_prefix"
 
     pkg_run install -vd "$d/bin" "$d/sbin" \

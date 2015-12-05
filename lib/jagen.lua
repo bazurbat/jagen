@@ -301,7 +301,7 @@ function Package:directory()
     local function basename(location)
         return location and io.popen('basename '..location..' .git'):read()
     end
-    if Package.is_source(self) then
+    if self:is_source() then
         directory = directory or basename(location) or self.name
         return system.mkpath('$jagen_src_dir', directory)
     else
@@ -684,9 +684,7 @@ function Script:__tostring()
     if self.pkg.source then
         table.insert(script, self:source())
     end
-    if self.pkg.build then
-        table.insert(script, self:build())
-    end
+    table.insert(script, self:build())
     if self.pkg.patches then
         table.insert(script, self:patch())
     end
@@ -718,18 +716,30 @@ end
 
 function Script:build()
     local o = {}
-    local build = self.pkg.build
+    local pkg = self.pkg
+    local build_dir
 
-    if build.options then
-        table.insert(o, string.format('pkg_options=\'%s\'', build.options))
+    if pkg.build then
+        local build = pkg.build
+
+        if build.options then
+            table.insert(o, string.format('pkg_options=\'%s\'', build.options))
+        end
+        if build.libs then
+            table.insert(o, string.format("pkg_libs='%s'",
+                table.concat(build.libs, ' ')))
+        end
+        if build.with_provided_libtool then
+            table.insert(o, 'pkg_with_provided_libtool="yes"')
+        end
+        if build.in_source then
+            build_dir = '$pkg_source_dir'
+        end
     end
-    if build.libs then
-        table.insert(o, string.format("pkg_libs='%s'",
-            table.concat(build.libs, ' ')))
-    end
-    if build.with_provided_libtool then
-        table.insert(o, 'pkg_with_provided_libtool="yes"')
-    end
+
+    build_dir = build_dir or '$pkg_work_dir/build${pkg_config:+-$pkg_config}'
+
+    table.insert(o, string.format('pkg_build_dir="%s"', build_dir))
 
     return table.concat(o, '\n')
 end
@@ -737,6 +747,7 @@ end
 function Script:patch()
     local o = {}
     table.insert(o, 'jagen_pkg_patch_pre() {')
+    table.insert(o, '  pkg_run cd "$pkg_source_dir"')
     for _, patch in ipairs(self.pkg.patches or {}) do
         local name = patch[1]
         local strip = patch[2]

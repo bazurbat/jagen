@@ -14,9 +14,7 @@ package { 'linux',
     source = { branch = 'ast50' }
 }
 
-package { 'xsdk',
-    source = '${jagen_sigma_cpukeys}.tar.gz'
-}
+package { 'xsdk' }
 
 package { 'ucode', 'target',
     { 'unpack',  { 'mrua',     'build'  } },

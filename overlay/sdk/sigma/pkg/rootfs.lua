@@ -4,5 +4,8 @@ package {
         type     = 'git',
         location = 'git@bitbucket.org:art-system/sigma-rootfs.git'
     },
-    build = { type = 'make' }
+    build = {
+        type = 'make',
+        in_source = true
+    }
 }

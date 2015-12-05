@@ -1,7 +1,5 @@
 #!/bin/sh
 
-use_toolchain target
-
 export ARCH=mips
 
 jagen_pkg_build() {

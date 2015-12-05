@@ -1,6 +1,5 @@
 #!/bin/sh
 
-pkg_source_dir="$jagen_src_dir/sigma-rootfs"
 pkg_run_jobs=1
 
 jagen_pkg_build() {

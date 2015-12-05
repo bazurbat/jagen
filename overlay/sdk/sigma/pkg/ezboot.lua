@@ -5,5 +5,8 @@ package {
         location = 'git@bitbucket.org:art-system/sigma-ezboot.git',
         branch   = 'sdk4'
     },
-    build = { type = 'sigma' }
+    build = {
+        type = 'sigma',
+        in_source = true
+    }
 }

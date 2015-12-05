@@ -4,5 +4,8 @@ package {
         type     = 'git',
         location = 'git@bitbucket.org:art-system/sigma-kernel.git'
     },
-    build = { type = 'Kbuild' }
+    build = {
+        type = 'Kbuild',
+        in_source = true
+    }
 }

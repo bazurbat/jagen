@@ -39,8 +39,6 @@ fi
 include "$jagen_include_dir/$pkg_name" "$pkg_config"
 import "pkg/$pkg_name"
 
-pkg_build_dir="${pkg_build_dir:-$pkg_work_dir/build${pkg_config:+-$pkg_config}}"
-
 run_stage() {
     local stage="$1"
     local pkg="$pkg_name${pkg_config:+ ($pkg_config)}"
@@ -52,13 +50,6 @@ run_stage() {
 }
 
 : >"$pkg_log"
-
-if [ "$pkg_stage" = "patch" ]; then
-    pkg_run cd "$pkg_source_dir"
-else
-    [ -d "$pkg_build_dir" ] || pkg_run mkdir -p "$pkg_build_dir"
-    pkg_run cd "$pkg_build_dir"
-fi
 
 run_stage "jagen_pkg_${pkg_stage}_pre"
 
