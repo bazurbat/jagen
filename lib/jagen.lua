@@ -735,6 +735,9 @@ function Script:build()
         if build.in_source then
             build_dir = '$pkg_source_dir'
         end
+        if build.directory then
+            build_dir = build.directory
+        end
     end
 
     build_dir = build_dir or '$pkg_work_dir/build${pkg_config:+-$pkg_config}'
