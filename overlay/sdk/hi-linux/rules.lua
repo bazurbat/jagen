@@ -26,7 +26,8 @@ package { 'ffmpeg', 'target' }
 
 package { 'hi-utils', 'target',
     { 'build',
-        { 'cmake-modules', 'unpack' }
+        { 'cmake-modules', 'unpack'            },
+        { 'hi-sdk',        'install_component' }
     }
 }
 
