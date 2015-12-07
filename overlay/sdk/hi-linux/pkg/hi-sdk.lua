@@ -5,5 +5,8 @@ package {
         location = 'git@bitbucket.org:art-system/hi-sdk.git',
         branch   = 'master'
     },
-    build = { type = 'manual' }
+    build = {
+        type = 'manual',
+        in_source = true
+    }
 }
