@@ -147,15 +147,6 @@ jagen_pkg_configure() {
     fi
 }
 
-jagen_pkg_build_pre() {
-    if [ "$pkg_build_dir" ]; then
-        if ! [ -d "$pkg_build_dir" ]; then
-            pkg_run mkdir -p "$pkg_build_dir"
-        fi
-        pkg_run cd "$pkg_build_dir"
-    fi
-}
-
 default_build() {
     if [ -x "$pkg_source_dir/configure" ]; then
         pkg_run "$pkg_source_dir/configure" \
@@ -164,11 +155,6 @@ default_build() {
             $pkg_options
         pkg_run make
     fi
-}
-
-jagen_pkg_install_pre() {
-    # for packages that do not have build stage
-    jagen_pkg_build_pre
 }
 
 default_install() {
