@@ -6,6 +6,6 @@ package {
     },
     build = {
         type = 'make',
-        in_source = true
+        directory = '$pkg_source_dir/wpa_supplicant'
     }
 }
