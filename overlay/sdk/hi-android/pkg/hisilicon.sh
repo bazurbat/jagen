@@ -10,3 +10,7 @@ jagen_pkg_build() {
 
     pkg_run make bigfish_emmc
 }
+
+jagen_pkg_install() {
+    :
+}
