@@ -7,15 +7,16 @@ package { 'make', 'host',
 package { 'hi-kernel' }
 
 package { 'hi-sdk', 'target',
-    { 'build_linux',
+    { 'tools'     },
+    { 'prepare',
         { 'hi-kernel', 'unpack' }
     },
-    { 'build_common'      },
-    { 'build_msp'         },
-    { 'install_linux'     },
-    { 'install_common'    },
-    { 'install_msp'       },
-    { 'install_component' },
+    { 'hiboot'    },
+    { 'linux'     },
+    { 'rootfs'    },
+    { 'common'    },
+    { 'msp'       },
+    { 'component' }
 }
 
 package { 'cmake-modules' }
@@ -26,8 +27,8 @@ package { 'ffmpeg', 'target' }
 
 package { 'hi-utils', 'target',
     { 'build',
-        { 'cmake-modules', 'unpack'            },
-        { 'hi-sdk',        'install_component' }
+        { 'cmake-modules', 'unpack'                      },
+        { 'hi-sdk',        'install_component', 'target' }
     }
 }
 
