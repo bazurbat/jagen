@@ -13,7 +13,7 @@ package { 'hi-sdk', 'target',
     },
     { 'hiboot'    },
     { 'linux'     },
-    { 'rootfs'    },
+    -- { 'rootfs'    },
     { 'common'    },
     { 'msp'       },
     { 'component' }
