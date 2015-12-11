@@ -27,16 +27,16 @@ package { 'ffmpeg', 'target' }
 
 package { 'hi-utils', 'target',
     { 'build',
-        { 'cmake-modules', 'unpack'                      },
-        { 'hi-sdk',        'install_component', 'target' }
+        { 'cmake-modules', 'unpack'              },
+        { 'hi-sdk',        'component', 'target' }
     }
 }
 
 package { 'karaoke-player', 'target',
     { 'build',
-        { 'cmake-modules', 'unpack'                      },
-        { 'ffmpeg',        'install',           'target' },
-        { 'hi-sdk',        'install_component', 'target' },
-        { 'libuv',         'install',           'target' },
+        { 'cmake-modules', 'unpack'              },
+        { 'ffmpeg',        'install',   'target' },
+        { 'hi-sdk',        'component', 'target' },
+        { 'libuv',         'install',   'target' },
     }
 }
