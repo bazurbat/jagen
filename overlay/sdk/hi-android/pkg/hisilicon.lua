@@ -6,6 +6,7 @@ package {
         branch   = 'master'
     },
     build = {
-        type = 'make'
+        type = 'make',
+        directory = '$pkg_work_dir'
     }
 }
