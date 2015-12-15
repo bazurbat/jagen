@@ -90,7 +90,7 @@ install_files() {
 }
 
 jagen_pkg_install() {
-    use_toolchain target
+    use_env target
 
     pkg_run cd "$jagen_sdk_rootfs_root"
 

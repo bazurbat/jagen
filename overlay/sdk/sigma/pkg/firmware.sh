@@ -117,7 +117,7 @@ jagen_pkg_install() {
 }
 
 jagen_pkg_strip() {
-    use_toolchain target
+    use_env target
 
     pkg_run cd "$pkg_work_dir"
 

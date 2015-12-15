@@ -1,6 +1,6 @@
 #!/bin/sh
 
-use_toolchain target
+use_env target
 
 pkg_prefix=""
 pkg_dest_dir="$jagen_sdk_rootfs_prefix"

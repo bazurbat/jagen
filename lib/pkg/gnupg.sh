@@ -1,6 +1,6 @@
 #!/bin/sh
 
-use_toolchain target
+use_env target
 
 jagen_pkg_build() {
     pkg_run "$pkg_source_dir/configure" \

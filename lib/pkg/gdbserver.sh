@@ -1,6 +1,6 @@
 #!/bin/sh
 
-use_toolchain target
+use_env target
 
 workdir="gdb/gdbserver"
 

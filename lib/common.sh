@@ -57,15 +57,11 @@ import() {
 }
 
 use_env() {
-    include "$jagen_lib_dir/env/$1" "$2"
-}
-
-use_toolchain() {
-    import "toolchain/$1"
+    import "env/$1"
 }
 
 require() {
-    include "$jagen_lib_dir/require/$1" "$2"
+    import "require/$1"
 }
 
 in_list() {

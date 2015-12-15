@@ -1,6 +1,6 @@
 #!/bin/sh
 
-use_toolchain host
+use_env host
 
 jagen_pkg_patch() {
     export LIBTOOLIZE=echo

@@ -6,7 +6,7 @@ require u-boot-tools || return
 
 : ${jagen_target_product:?}
 
-use_toolchain target
+use_env target
 
 message "Changing current directory to: $jagen_sdk_dir"
 cd "$jagen_sdk_dir" || return

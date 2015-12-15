@@ -14,7 +14,7 @@ mkdir -p "$pkg_work_dir" || die "Failed to mkdir $pkg_work_dir"
 cd "$pkg_work_dir" || die "Failed to cd to $pkg_work_dir"
 
 if [ "$pkg_config" ]; then
-    use_toolchain "$pkg_config"
+    use_env "$pkg_config"
 fi
 
 if [ "$pkg_config" = 'host' ]; then
@@ -30,7 +30,7 @@ elif [ "$pkg_config" = 'tools' ]; then
     pkg_prefix=""
     pkg_dest_dir="$jagen_tools_dir"
 elif [ "$pkg_config" = 'rootfs' ]; then
-    use_toolchain target
+    use_env target
     pkg_system="$jagen_target_system"
     pkg_prefix=""
     pkg_dest_dir="$jagen_sdk_rootfs_prefix"
