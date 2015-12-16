@@ -131,13 +131,14 @@ function system.exec(...)
     for _, arg in ipairs({...}) do
         table.insert(command, string.format('%q', tostring(arg)))
     end
-    if jagen.output_file then
-        table.insert(command, string.format('| tee -a %s', jagen.output_file))
-    end
     local line = table.concat(command, ' ')
     jagen.debug1(line)
     local status = os.execute(line)
-    return status == 0, status % 0xFF
+    return status ~= 0, status % 0xFF
+end
+
+function system.exists(pathname)
+    return not system.exec('test', '-e', pathname)
 end
 
 --}}}
@@ -363,14 +364,13 @@ function Package:add_ordering_dependencies()
     end
 end
 
-function Package:type()
-    local source = self.source
-    return source and source.type
-end
-
 function Package:is_source()
-    local source_type = Package.type(self)
-    return source_type == 'git' or source_type == 'hg'
+    local source = self.source
+    if source then
+        return source.type == 'git' or source.type == 'hg'
+    else
+        return false
+    end
 end
 
 function Package:directory()
@@ -393,24 +393,6 @@ end
 
 Source = {}
 
-function Source:new(p)
-    local o = { package = p }
-    setmetatable(o, self)
-    self.__index = self
-    return o
-end
-
-function Source:create(p)
-    local kind = p:type()
-    if kind == 'git' then
-        return GitSource:new(p)
-    elseif kind == 'hg' then
-        return HgSource:new(p)
-    else
-        return Source:new(p)
-    end
-end
-
 function Source.name(filename)
     local name = string.match(filename, '^.*/(.+)') or filename
     local function m(ext)
@@ -419,16 +401,53 @@ function Source.name(filename)
     return m('%.tar') or m('%.tgz') or m('%.tbz2') or m('%.txz') or m('%.zip')
 end
 
+function Source:create(o)
+    local source = {}
+
+    if o then
+        if o.type == 'git' then
+            source = GitSource:new(o)
+        elseif o.type == 'hg' then
+            source = HgSource:new(o)
+        end
+    else
+        source = Source:new(o)
+    end
+
+    local function basename(location)
+        return location and io.popen('basename '..location..' .git'):read()
+    end
+
+    if source.location then
+        if source.type == 'git' or source.type == 'hg' then
+            source.directory = system.mkpath('$jagen_src_dir',
+                source.directory or basename(source.location))
+        else
+            source.directory = system.mkpath('$pkg_work_dir',
+                source.directory or Source.name(source.location))
+        end
+    end
+
+    return source
+end
+
+function Source:new(o)
+    local o = o or {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
 GitSource = Source:new()
 
 function GitSource:exec(...)
-    local dir = self.package:directory()
-    return system.exec('git', '-C', dir, ...)
+    assert(self.directory)
+    return system.exec('git', '-C', self.directory, ...)
 end
 
 function GitSource:popen(...)
-    local dir = self.package:directory()
-    return io.popen('git -C '..dir..' '..concat(...)):read() or ''
+    assert(self.directory)
+    return io.popen('git -C '..self.directory..' '..concat(...)):read()
 end
 
 function GitSource:head()
@@ -436,7 +455,7 @@ function GitSource:head()
 end
 
 function GitSource:dirty()
-    return string.len(self:popen('status', '--porcelain')) > 0
+    return self:popen('status', '--porcelain')
 end
 
 function GitSource:branch_list(branch)
@@ -496,12 +515,12 @@ end
 
 function GitSource:clone()
     local command = { 'git', 'clone', '--progress', '--depth', 1 }
-    if self.package.source.branch then
+    if self.branch then
         table.insert(command, '--branch')
-        table.insert(command, self.package.source.branch)
+        table.insert(command, self.branch)
     end
-    table.insert(command, self.package.source.location)
-    table.insert(command, self.package:directory())
+    table.insert(command, self.location)
+    table.insert(command, self.directory)
 
     return system.exec(unpack(command))
 end
@@ -509,13 +528,13 @@ end
 HgSource = Source:new()
 
 function HgSource:exec(...)
-    local dir = self.package:directory()
-    return system.exec('hg', '-R', dir, ...)
+    assert(self.directory)
+    return system.exec('hg', '-R', self.directory, ...)
 end
 
 function HgSource:popen(...)
-    local dir = self.package:directory()
-    return io.popen('hg -R '..dir..' '..concat(...)):read() or ''
+    assert(self.directory)
+    return io.popen('hg -R '..self.directory..' '..concat(...)):read()
 end
 
 function HgSource:head()
@@ -523,7 +542,7 @@ function HgSource:head()
 end
 
 function HgSource:dirty()
-    return string.len(self:popen('status')) > 0
+    return self:popen('status')
 end
 
 function HgSource:clean()
@@ -676,59 +695,43 @@ jagen =
 
     patch_dir   = os.getenv('jagen_patch_dir'),
     private_dir = os.getenv('jagen_private_dir'),
-
-    output = nil,
-    output_file = nil,
 }
 
 jagen.cmd = system.mkpath(jagen.lib_dir, 'cmd.sh')
 jagen.build_file = system.mkpath(jagen.build_dir, 'build.ninja')
 
-function jagen.exec(...)
-    return system.exec(jagen.cmd, ...)
-end
-
-function jagen.write(...)
-    if jagen.output then
-        local o = jagen.output
-        o:seek('end')
-        o:write(concat(...), '\n')
-        o:flush()
-    end
-end
-
 function jagen.message(...)
-    io.write('(I) ', concat(...), '\n')
+    io.write('(I) ', string.format(...), '\n')
     io.flush()
 end
 
 function jagen.warning(...)
-    io.stderr:write('(W) ', concat(...), '\n')
+    io.stderr:write('(W) ', string.format(...), '\n')
     io.stderr:flush()
 end
 
 function jagen.error(...)
-    io.stderr:write('(E) ', concat(...), '\n')
+    io.stderr:write('(E) ', string.format(...), '\n')
     io.stderr:flush()
 end
 
 function jagen.debug0(...)
     if jagen.debug then
-        io.write('(D) ', concat(...), '\n')
+        io.write('(D) ', string.format(...), '\n')
         io.flush()
     end
 end
 
 function jagen.debug1(...)
     if jagen.debug >= '1' then
-        io.write('(D) ', concat(...), '\n')
+        io.write('(D) ', string.format(...), '\n')
         io.flush()
     end
 end
 
 function jagen.debug2(...)
     if jagen.debug >= '2' then
-        io.write('(D) ', concat(...), '\n')
+        io.write('(D) ', string.format(...), '\n')
         io.flush()
     end
 end
@@ -785,6 +788,7 @@ function jagen.load_rules()
 
     for _, pkg in ipairs(packages) do
         pkg:add_ordering_dependencies()
+        pkg.source = Source:create(pkg.source)
     end
 
     return packages
@@ -988,11 +992,8 @@ end
 
 src = {}
 
-function src.open_output()
-    if not jagen.output then
-        jagen.output_file = system.mkpath(jagen.build_dir, 'src.log')
-        jagen.output = assert(io.open(jagen.output_file, 'w'))
-    end
+function src.name(filename)
+    print(Source.name(filename) or '')
 end
 
 function src.packages(names)
@@ -1014,63 +1015,56 @@ function src.packages(names)
     return packages
 end
 
-function src.name(filename)
-    print(Source.name(filename) or '')
-end
-
 function src.dirty(names)
     for _, pkg in ipairs(src.packages(names)) do
-        local source = Source:create(pkg)
+        local source = Source:create(pkg.source)
         if source:dirty() then
-            jagen.debug0(pkg.name, 'is dirty')
-            return true
+            return 1
         end
     end
-    return false
 end
 
-function src.status(args)
-    local packages = jagen.load_rules()
-    local source_packages = filter(Package.is_source, packages)
-
-    for _, p in ipairs(source_packages) do
-        local s = Source:create(p)
-        local dirty = s:dirty() and 'dirty' or ''
-        local head = s:head()
-        print(string.format("%s: %s %s", p.name, head, dirty))
+function src.status(names)
+    for _, pkg in ipairs(src.packages(names)) do
+        if system.exists(pkg.source.directory) then
+            local dirty = pkg.source:dirty() and 'dirty' or ''
+            local head = pkg.source:head()
+            if not head then
+                jagen.error('failed to get source head for %s in %s',
+                    pkg.name, source.directory)
+                return 2
+            end
+            -- TODO: do actual query instead of using configured location
+            print(string.format("%s: %s %s", pkg.source.location, head, dirty))
+        else
+            print(string.format("%s: not exists", pkg.source.location))
+        end
     end
 end
 
 function src.clean(names)
     for _, pkg in ipairs(src.packages(names)) do
-        jagen.message('clean', pkg.name)
-        local source = Source:create(pkg)
-        if not source:clean() then
-            jagen.die('failed to clean', pkg.name)
+        if pkg.source:clean() then
+            jagen.die('failed to clean %s (%s) in %s',
+                pkg.name, pkg.source.branch, pkg.source.directory)
         end
     end
 end
 
 function src.update(names)
-    local packages = src.packages(names)
-
-    for _, pkg in ipairs(packages) do
-        jagen.message('update', pkg.name)
-        local source = Source:create(pkg)
-        if not source:update() then
-            jagen.die('failed to update', pkg.name)
+    for _, pkg in ipairs(src.packages(names)) do
+        if pkg.source:update() then
+            jagen.die('failed to update %s (%s) in %s',
+                pkg.name, pkg.source.branch, pkg.source.directory)
         end
     end
 end
 
 function src.clone(names)
-    local packages = src.packages(names)
-
-    for _, pkg in ipairs(packages) do
-        jagen.message('clone', pkg.name)
-        local source = Source:create(pkg)
-        if not source:clone() then
-            jagen.die('failed to clone', pkg.name)
+    for _, pkg in ipairs(src.packages(names)) do
+        if pkg.source:clone() then
+            jagen.die('failed to clone %s from %s to %s',
+                pkg.name, pkg.source.location, pkg.source.directory)
         end
     end
 end
@@ -1078,7 +1072,7 @@ end
 --}}}
 
 command = arg[1]
-ok = true
+err = false
 status = 0
 
 if command == 'refresh' then
@@ -1086,42 +1080,24 @@ if command == 'refresh' then
 elseif command == 'build' then
     local args = table.rest(arg, 2)
 
-    ok, status = jagen.build(args)
+    err, status = jagen.build(args)
 elseif command == 'rebuild' then
     local args = table.rest(arg, 2)
 
-    ok, status = jagen.rebuild(args)
+    err, status = jagen.rebuild(args)
 elseif command == 'src' then
     local subcommand = arg[2]
     local args = table.rest(arg, 3)
 
     if not subcommand then
-        jagen.message('Available src subcommands: name, dirty, status, clean, update, clone')
-    elseif subcommand == 'name' then
-        src.name(unpack(args))
-    elseif subcommand == 'dirty' then
-        if src.dirty(args) then
-            status = 0
-        else
-            status = 1
-        end
-    elseif subcommand == 'status' then
-        src.status(args)
-    elseif subcommand == 'clean' then
-        src.clean(args)
-    elseif subcommand == 'update' then
-        src.update(args)
-    elseif subcommand == 'clone' then
-        src.clone(args)
+        jagen.die('no src subcommand specified')
+    elseif src[subcommand] then
+        status = src[subcommand](args)
     else
-        jagen.die('Unknown src subcommand:', subcommand);
+        jagen.die('unknown src subcommand: %s', subcommand)
     end
 else
     jagen.die('Unknown command:', command)
 end
 
-if jagen.output then
-    jagen.output:close()
-end
-
-os.exit(status % 0xFF)
+os.exit((status or 0) % 0xFF)
