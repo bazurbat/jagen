@@ -7,7 +7,9 @@ package { 'make', 'host',
 package { 'hi-kernel' }
 
 package { 'hi-sdk', 'target',
-    { 'tools'     },
+    { 'tools',
+        { 'toolchain', 'install', 'target' }
+    },
     { 'prepare',
         { 'hi-kernel', 'unpack' }
     },
