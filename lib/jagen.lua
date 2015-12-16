@@ -141,6 +141,84 @@ function system.exec(...)
 end
 
 --}}}
+--{{{ Target
+
+Target = {}
+Target.__index = Target
+
+function Target.new(name, stage, config)
+    local target = {
+        name   = name,
+        stage  = stage,
+        config = config,
+        inputs = {}
+    }
+    setmetatable(target, Target)
+    return target
+end
+
+function Target.from_list(list)
+    return Target.new(list[1], list[2], list[3])
+end
+
+function Target:parse(rule, name, config)
+    local stage = rule[1]; assert(type(stage) == 'string')
+    local target = Target.new(name, stage, config)
+
+    for i = 2, #rule do
+        table.insert(target.inputs, Target.from_list(rule[i]))
+    end
+
+    return target
+end
+
+function Target.from_arg(arg)
+    local name, stage, config
+    local c = string.split(arg, ':')
+
+    if c[1] and #c[1] > 0 then
+        name = c[1]
+    end
+    if c[2] and #c[2] > 0 then
+        stage = c[2]
+    end
+    if c[3] and #c[3] > 0 then
+        config = c[3]
+    end
+
+    return Target.new(name, stage, config)
+end
+
+function Target.__eq(a, b)
+    return a.name == b.name and
+    a.stage == b.stage and
+    a.config == b.config
+end
+
+function Target.__tostring(t, sep)
+    local o = {}
+    sep = sep or '-'
+    if t.name then table.insert(o, t.name) end
+    if t.stage then table.insert(o, t.stage) end
+    if t.config then table.insert(o, t.config) end
+    return table.concat(o, sep)
+end
+
+function Target:add_inputs(target)
+    for _, i in ipairs(target.inputs or {}) do
+        local function eq(t)
+            return t == i
+        end
+        local found = find(eq, self.inputs)
+        if not found then
+            table.insert(self.inputs, i)
+        end
+    end
+
+    return self
+end
+
+--}}}
 --{{{ Package
 
 Package = {
@@ -311,6 +389,165 @@ function Package:directory()
 end
 
 --}}}
+--{{{ Source
+
+Source = {}
+
+function Source:new(p)
+    local o = { package = p }
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+function Source:create(p)
+    local kind = p:type()
+    if kind == 'git' then
+        return GitSource:new(p)
+    elseif kind == 'hg' then
+        return HgSource:new(p)
+    else
+        return Source:new(p)
+    end
+end
+
+function Source.name(filename)
+    local name = string.match(filename, '^.*/(.+)') or filename
+    local function m(ext)
+        return string.match(name, '^([%w_.-]+)'..ext)
+    end
+    return m('%.tar') or m('%.tgz') or m('%.tbz2') or m('%.txz') or m('%.zip')
+end
+
+GitSource = Source:new()
+
+function GitSource:exec(...)
+    local dir = self.package:directory()
+    return system.exec('git', '-C', dir, ...)
+end
+
+function GitSource:popen(...)
+    local dir = self.package:directory()
+    return io.popen('git -C '..dir..' '..concat(...)):read() or ''
+end
+
+function GitSource:head()
+    return self:popen('rev-parse', 'HEAD')
+end
+
+function GitSource:dirty()
+    return string.len(self:popen('status', '--porcelain')) > 0
+end
+
+function GitSource:branch_list(branch)
+    assert(branch)
+    return self:popen('branch', '--list', branch)
+end
+
+function GitSource:branch_active(name)
+    assert(name)
+    return string.sub(name, 1, 1) == '*'
+end
+
+function GitSource:branch_remote_add(branch)
+    assert(branch)
+    return self:exec('remote', 'set-branches', '--add', 'origin', branch)
+end
+
+function GitSource:fetch(branch)
+    assert(branch)
+    local args = { 'fetch', '--prune', '--no-tags', 'origin' }
+    if branch then
+        local src = 'refs/heads/'..branch
+        local dst = 'refs/remotes/origin/'..branch
+        table.insert(args, '+'..src..':'..dst)
+    end
+    return self:exec(unpack(args))
+end
+
+function GitSource:checkout(branch)
+    assert(branch)
+    local name = self:branch_list(branch)
+    if #name > 0 then
+        if self:branch_active(name) then
+            return true
+        else
+            return self:exec('checkout', branch)
+        end
+    else
+        return self:branch_remote_add(branch) and
+            self:exec('checkout', '-b', branch, '-t', 'origin/'..branch)
+    end
+end
+
+function GitSource:merge(branch)
+    assert(branch)
+    return self:exec('merge', '--ff-only', 'origin/'..branch)
+end
+
+function GitSource:clean()
+    return self:exec('checkout', 'HEAD', '.') and self:exec('clean', '-fxd')
+end
+
+function GitSource:update()
+    local branch = self.package.source.branch or 'master'
+    return self:fetch(branch) and self:checkout(branch) and self:merge(branch)
+end
+
+function GitSource:clone()
+    local command = { 'git', 'clone', '--progress', '--depth', 1 }
+    if self.package.source.branch then
+        table.insert(command, '--branch')
+        table.insert(command, self.package.source.branch)
+    end
+    table.insert(command, self.package.source.location)
+    table.insert(command, self.package:directory())
+
+    return system.exec(unpack(command))
+end
+
+HgSource = Source:new()
+
+function HgSource:exec(...)
+    local dir = self.package:directory()
+    return system.exec('hg', '-R', dir, ...)
+end
+
+function HgSource:popen(...)
+    local dir = self.package:directory()
+    return io.popen('hg -R '..dir..' '..concat(...)):read() or ''
+end
+
+function HgSource:head()
+    return self:popen('id', '-i')
+end
+
+function HgSource:dirty()
+    return string.len(self:popen('status')) > 0
+end
+
+function HgSource:clean()
+    return self:exec('update', '-C') and self:exec('purge', '--all')
+end
+
+function HgSource:update()
+    local args = { 'update' }
+    local branch = self.package.source.branch
+    if branch then
+        table.insert(args, '-r')
+        table.insert(args, branch)
+    end
+    return self:exec('pull') and self:exec(unpack(args))
+end
+
+function HgSource:clone()
+    local command = { 'hg', 'clone', '-r', 'tip' }
+    table.insert(command, self.package.source.location)
+    table.insert(command, self.package:directory())
+    return system.exec(unpack(command))
+end
+
+--}}}
 --{{{ Ninja
 
 Ninja = {
@@ -415,84 +652,6 @@ function Ninja:generate(out_file, packages)
     end
 
     out:close()
-end
-
---}}}
---{{{ Target
-
-Target = {}
-Target.__index = Target
-
-function Target.new(name, stage, config)
-    local target = {
-        name   = name,
-        stage  = stage,
-        config = config,
-        inputs = {}
-    }
-    setmetatable(target, Target)
-    return target
-end
-
-function Target.from_list(list)
-    return Target.new(list[1], list[2], list[3])
-end
-
-function Target:parse(rule, name, config)
-    local stage = rule[1]; assert(type(stage) == 'string')
-    local target = Target.new(name, stage, config)
-
-    for i = 2, #rule do
-        table.insert(target.inputs, Target.from_list(rule[i]))
-    end
-
-    return target
-end
-
-function Target.from_arg(arg)
-    local name, stage, config
-    local c = string.split(arg, ':')
-
-    if c[1] and #c[1] > 0 then
-        name = c[1]
-    end
-    if c[2] and #c[2] > 0 then
-        stage = c[2]
-    end
-    if c[3] and #c[3] > 0 then
-        config = c[3]
-    end
-
-    return Target.new(name, stage, config)
-end
-
-function Target.__eq(a, b)
-    return a.name == b.name and
-    a.stage == b.stage and
-    a.config == b.config
-end
-
-function Target.__tostring(t, sep)
-    local o = {}
-    sep = sep or '-'
-    if t.name then table.insert(o, t.name) end
-    if t.stage then table.insert(o, t.stage) end
-    if t.config then table.insert(o, t.config) end
-    return table.concat(o, sep)
-end
-
-function Target:add_inputs(target)
-    for _, i in ipairs(target.inputs or {}) do
-        local function eq(t)
-            return t == i
-        end
-        local found = find(eq, self.inputs)
-        if not found then
-            table.insert(self.inputs, i)
-        end
-    end
-
-    return self
 end
 
 --}}}
@@ -825,165 +984,6 @@ function jagen.rebuild(args)
 end
 
 ---}}}
---{{{ Source
-
-Source = {}
-
-function Source:new(p)
-    local o = { package = p }
-    setmetatable(o, self)
-    self.__index = self
-    return o
-end
-
-function Source:create(p)
-    local kind = p:type()
-    if kind == 'git' then
-        return GitSource:new(p)
-    elseif kind == 'hg' then
-        return HgSource:new(p)
-    else
-        return Source:new(p)
-    end
-end
-
-function Source.name(filename)
-    local name = string.match(filename, '^.*/(.+)') or filename
-    local function m(ext)
-        return string.match(name, '^([%w_.-]+)'..ext)
-    end
-    return m('%.tar') or m('%.tgz') or m('%.tbz2') or m('%.txz') or m('%.zip')
-end
-
-GitSource = Source:new()
-
-function GitSource:exec(...)
-    local dir = self.package:directory()
-    return system.exec('git', '-C', dir, ...)
-end
-
-function GitSource:popen(...)
-    local dir = self.package:directory()
-    return io.popen('git -C '..dir..' '..concat(...)):read() or ''
-end
-
-function GitSource:head()
-    return self:popen('rev-parse', 'HEAD')
-end
-
-function GitSource:dirty()
-    return string.len(self:popen('status', '--porcelain')) > 0
-end
-
-function GitSource:branch_list(branch)
-    assert(branch)
-    return self:popen('branch', '--list', branch)
-end
-
-function GitSource:branch_active(name)
-    assert(name)
-    return string.sub(name, 1, 1) == '*'
-end
-
-function GitSource:branch_remote_add(branch)
-    assert(branch)
-    return self:exec('remote', 'set-branches', '--add', 'origin', branch)
-end
-
-function GitSource:fetch(branch)
-    assert(branch)
-    local args = { 'fetch', '--prune', '--no-tags', 'origin' }
-    if branch then
-        local src = 'refs/heads/'..branch
-        local dst = 'refs/remotes/origin/'..branch
-        table.insert(args, '+'..src..':'..dst)
-    end
-    return self:exec(unpack(args))
-end
-
-function GitSource:checkout(branch)
-    assert(branch)
-    local name = self:branch_list(branch)
-    if #name > 0 then
-        if self:branch_active(name) then
-            return true
-        else
-            return self:exec('checkout', branch)
-        end
-    else
-        return self:branch_remote_add(branch) and
-            self:exec('checkout', '-b', branch, '-t', 'origin/'..branch)
-    end
-end
-
-function GitSource:merge(branch)
-    assert(branch)
-    return self:exec('merge', '--ff-only', 'origin/'..branch)
-end
-
-function GitSource:clean()
-    return self:exec('checkout', 'HEAD', '.') and self:exec('clean', '-fxd')
-end
-
-function GitSource:update()
-    local branch = self.package.source.branch or 'master'
-    return self:fetch(branch) and self:checkout(branch) and self:merge(branch)
-end
-
-function GitSource:clone()
-    local command = { 'git', 'clone', '--progress', '--depth', 1 }
-    if self.package.source.branch then
-        table.insert(command, '--branch')
-        table.insert(command, self.package.source.branch)
-    end
-    table.insert(command, self.package.source.location)
-    table.insert(command, self.package:directory())
-
-    return system.exec(unpack(command))
-end
-
-HgSource = Source:new()
-
-function HgSource:exec(...)
-    local dir = self.package:directory()
-    return system.exec('hg', '-R', dir, ...)
-end
-
-function HgSource:popen(...)
-    local dir = self.package:directory()
-    return io.popen('hg -R '..dir..' '..concat(...)):read() or ''
-end
-
-function HgSource:head()
-    return self:popen('id', '-i')
-end
-
-function HgSource:dirty()
-    return string.len(self:popen('status')) > 0
-end
-
-function HgSource:clean()
-    return self:exec('update', '-C') and self:exec('purge', '--all')
-end
-
-function HgSource:update()
-    local args = { 'update' }
-    local branch = self.package.source.branch
-    if branch then
-        table.insert(args, '-r')
-        table.insert(args, branch)
-    end
-    return self:exec('pull') and self:exec(unpack(args))
-end
-
-function HgSource:clone()
-    local command = { 'hg', 'clone', '-r', 'tip' }
-    table.insert(command, self.package.source.location)
-    table.insert(command, self.package:directory())
-    return system.exec(unpack(command))
-end
-
---}}}
 --{{{ src
 
 src = {}
