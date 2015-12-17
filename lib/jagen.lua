@@ -364,41 +364,26 @@ function Package:add_ordering_dependencies()
     end
 end
 
-function Package:is_source()
-    local source = self.source
-    if source then
-        return source.type == 'git' or source.type == 'hg'
-    else
-        return false
-    end
-end
-
-function Package:directory()
-    local location  = self.source.location
-    local directory = self.source.directory
-    local function basename(location)
-        return location and io.popen('basename '..location..' .git'):read()
-    end
-    if self:is_source() then
-        directory = directory or basename(location) or self.name
-        return system.mkpath('$jagen_src_dir', directory)
-    else
-        directory = directory or Source.name(location) or self.name
-        return system.mkpath('$pkg_work_dir', directory)
-    end
-end
-
 --}}}
 --{{{ Source
 
 Source = {}
 
-function Source.name(filename)
+function Source:is_scm()
+    return self.type == 'git' or self.type == 'hg'
+end
+
+function Source:basename(filename)
     local name = string.match(filename, '^.*/(.+)') or filename
-    local function m(ext)
-        return string.match(name, '^([%w_.-]+)'..ext)
+    local exts = { '%.git', '%.tar', '%.tgz', '%.txz', '%.tbz2',
+        '%.zip', '%.rar', ''
+    }
+    for _, ext in ipairs(exts) do
+        local match = string.match(name, '^([%w_.-]+)'..ext)
+        if match then
+            return match
+        end
     end
-    return m('%.tar') or m('%.tgz') or m('%.tbz2') or m('%.txz') or m('%.zip')
 end
 
 function Source:create(source)
@@ -410,23 +395,15 @@ function Source:create(source)
         source = HgSource:new(source)
     elseif source.type == 'dist' then
         source.location = '$jagen_dist_dir/'..source.location
-        source = Source.new(source)
+        source = Source:new(source)
     else
         source = Source:new(source)
     end
 
-    local function basename(location)
-        return location and io.popen('basename '..location..' .git'):read()
-    end
-
     if source.location then
-        if source.type == 'git' or source.type == 'hg' then
-            source.directory = system.mkpath('$jagen_src_dir',
-                source.directory or basename(source.location))
-        else
-            source.directory = system.mkpath('$pkg_work_dir',
-                source.directory or Source.name(source.location))
-        end
+        local dir = source:is_scm() and '$jagen_src_dir' or '$pkg_work_dir'
+        local basename = source:basename(source.location)
+        source.directory = system.mkpath(dir, source.directory or basename)
     end
 
     return source
@@ -552,7 +529,7 @@ end
 
 function HgSource:update()
     local args = { 'update' }
-    local branch = self.package.source.branch
+    local branch = self.branch
     if branch then
         table.insert(args, '-r')
         table.insert(args, branch)
@@ -562,8 +539,8 @@ end
 
 function HgSource:clone()
     local command = { 'hg', 'clone', '-r', 'tip' }
-    table.insert(command, self.package.source.location)
-    table.insert(command, self.package:directory())
+    table.insert(command, self.location)
+    table.insert(command, self.directory)
     return system.exec(unpack(command))
 end
 
@@ -992,27 +969,29 @@ end
 
 src = {}
 
-function src.name(filename)
-    print(Source.name(filename) or '')
-end
-
 function src.packages(names)
-    local rules = jagen.load_rules()
-    local packages = {}
+    local packages = jagen.load_rules()
+    local scm_packages = {}
 
-    if #names > 0 then
+    if names and #names > 0 then
         for _, name in ipairs(names) do
-            if rules[name] then
-                table.insert(packages, rules[name])
-            else
+            if not packages[name] then
                 jagen.die('no such package: %s', name)
             end
+            if not packages[name].source:is_scm() then
+                jagen.die('not scm package: %s', name)
+            end
+            table.insert(scm_packages, packages[name])
         end
     else
-        packages = filter(Package.is_source, rules)
+        for _, pkg in ipairs(packages) do
+            if pkg.source:is_scm() then
+                table.insert(scm_packages, pkg)
+            end
+        end
     end
 
-    return packages
+    return scm_packages
 end
 
 function src.dirty(names)
