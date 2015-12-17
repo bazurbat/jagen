@@ -32,16 +32,6 @@ function map(f, t)
     return r
 end
 
-function filter(pred, list)
-    local o = {}
-    for _, v in ipairs(list or {}) do
-        if pred(v) then
-            table.insert(o, v)
-        end
-    end
-    return o
-end
-
 function find(pred, list)
     for i, v in ipairs(list) do
         if pred(v) then
