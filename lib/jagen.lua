@@ -1069,6 +1069,17 @@ function src.clone(names)
     end
 end
 
+function src.delete(names)
+    for _, pkg in ipairs(src.packages(names)) do
+        if system.exists(pkg.source.directory) then
+            if system.exec('rm', '-rf', pkg.source.directory) then
+                jagen.die('failed to delete %s source directory %s',
+                    pkg.name, pkg.source.directory)
+            end
+        end
+    end
+end
+
 --}}}
 
 command = arg[1]
