@@ -41,10 +41,6 @@ function find(pred, list)
     return nil, nil
 end
 
-function concat(...)
-    return table.concat(map(tostring, {...}), ' ')
-end
-
 function string.split(s, sep)
     local o, b, e = {}
     local init = 1
@@ -415,7 +411,8 @@ end
 
 function GitSource:popen(...)
     assert(self.directory)
-    return io.popen('git -C '..self.directory..' '..concat(...)):read()
+    local cmd = { 'git', '-C', '"'..self.directory..'"', ... }
+    return io.popen(table.concat(cmd, ' ')):read()
 end
 
 function GitSource:head()
@@ -502,7 +499,8 @@ end
 
 function HgSource:popen(...)
     assert(self.directory)
-    return io.popen('hg -R '..self.directory..' '..concat(...)):read()
+    local cmd = { 'hg', '-R', '"'..self.directory..'"', ... }
+    return io.popen(table.concat(cmd, ' ')):read()
 end
 
 function HgSource:head()
@@ -577,7 +575,7 @@ end
 function Ninja:build(build)
     local header = {
         string.format('build %s: %s',
-            concat(unpack(build.outputs)), build.rule),
+            table.concat(build.outputs, ' '), build.rule),
         unpack(map(tostring, build.inputs))
     }
     local o = {
