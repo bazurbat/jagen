@@ -1005,7 +1005,7 @@ function src.packages(names)
             if rules[name] then
                 table.insert(packages, rules[name])
             else
-                jagen.die('no such package:', name)
+                jagen.die('no such package: %s', name)
             end
         end
     else
@@ -1108,7 +1108,7 @@ elseif command == 'src' then
         jagen.die('unknown src subcommand: %s', subcommand)
     end
 else
-    jagen.die('Unknown command:', command)
+    jagen.die('Unknown command: %s', command)
 end
 
 os.exit((status or 0) % 0xFF)
