@@ -401,17 +401,18 @@ function Source.name(filename)
     return m('%.tar') or m('%.tgz') or m('%.tbz2') or m('%.txz') or m('%.zip')
 end
 
-function Source:create(o)
-    local source = {}
+function Source:create(source)
+    local source = source or {}
 
-    if o then
-        if o.type == 'git' then
-            source = GitSource:new(o)
-        elseif o.type == 'hg' then
-            source = HgSource:new(o)
-        end
+    if source.type == 'git' then
+        source = GitSource:new(source)
+    elseif source.type == 'hg' then
+        source = HgSource:new(source)
+    elseif source.type == 'dist' then
+        source.location = '$jagen_dist_dir/'..source.location
+        source = Source.new(source)
     else
-        source = Source:new(o)
+        source = Source:new(source)
     end
 
     local function basename(location)
@@ -862,18 +863,17 @@ end
 function Script:source()
     local pkg = self.pkg
     local source = pkg.source
-    local o, s = {}, {}
-    if source.type == 'git' or source.type == 'hg' then
-        table.insert(s, source.type)
-        table.insert(s, source.location)
-    elseif source.type == 'dist' then
-        table.insert(s, system.mkpath('$jagen_dist_dir', source.location))
+    local o = {}
+    if source.type and source.location then
+        table.insert(o, string.format(
+            'pkg_source="%s %s"', source.type, source.location))
     end
-    table.insert(o, string.format('pkg_source="%s"', table.concat(s, ' ')))
     if source.branch then
         table.insert(o, string.format('pkg_source_branch="%s"', source.branch))
     end
-    table.insert(o, string.format('pkg_source_dir="%s"', self.pkg:directory()))
+    if source.directory then
+        table.insert(o, string.format('pkg_source_dir="%s"', source.directory))
+    end
     return table.concat(o, '\n')
 end
 
