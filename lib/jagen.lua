@@ -134,11 +134,11 @@ function system.exec(...)
     local line = table.concat(command, ' ')
     jagen.debug1(line)
     local status = os.execute(line)
-    return status ~= 0, status % 0xFF
+    return status == 0, status % 0xFF
 end
 
 function system.exists(pathname)
-    return not system.exec('test', '-e', pathname)
+    return system.exec('test', '-e', pathname)
 end
 
 --}}}
@@ -1017,8 +1017,7 @@ end
 
 function src.dirty(names)
     for _, pkg in ipairs(src.packages(names)) do
-        local source = Source:create(pkg.source)
-        if source:dirty() then
+        if pkg.source:dirty() then
             return 1
         end
     end
@@ -1044,7 +1043,7 @@ end
 
 function src.clean(names)
     for _, pkg in ipairs(src.packages(names)) do
-        if pkg.source:clean() then
+        if not pkg.source:clean() then
             jagen.die('failed to clean %s (%s) in %s',
                 pkg.name, pkg.source.branch, pkg.source.directory)
         end
@@ -1053,7 +1052,7 @@ end
 
 function src.update(names)
     for _, pkg in ipairs(src.packages(names)) do
-        if pkg.source:update() then
+        if not pkg.source:update() then
             jagen.die('failed to update %s (%s) in %s',
                 pkg.name, pkg.source.branch, pkg.source.directory)
         end
@@ -1062,7 +1061,7 @@ end
 
 function src.clone(names)
     for _, pkg in ipairs(src.packages(names)) do
-        if pkg.source:clone() then
+        if not pkg.source:clone() then
             jagen.die('failed to clone %s from %s to %s',
                 pkg.name, pkg.source.location, pkg.source.directory)
         end
@@ -1072,7 +1071,7 @@ end
 function src.delete(names)
     for _, pkg in ipairs(src.packages(names)) do
         if system.exists(pkg.source.directory) then
-            if system.exec('rm', '-rf', pkg.source.directory) then
+            if not system.exec('rm', '-rf', pkg.source.directory) then
                 jagen.die('failed to delete %s source directory %s',
                     pkg.name, pkg.source.directory)
             end
@@ -1083,7 +1082,6 @@ end
 --}}}
 
 command = arg[1]
-err = false
 status = 0
 
 if command == 'refresh' then
@@ -1091,11 +1089,11 @@ if command == 'refresh' then
 elseif command == 'build' then
     local args = table.rest(arg, 2)
 
-    err, status = jagen.build(args)
+    _, status = jagen.build(args)
 elseif command == 'rebuild' then
     local args = table.rest(arg, 2)
 
-    err, status = jagen.rebuild(args)
+    _, status = jagen.rebuild(args)
 elseif command == 'src' then
     local subcommand = arg[2]
     local args = table.rest(arg, 3)
