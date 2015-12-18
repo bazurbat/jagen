@@ -506,6 +506,12 @@ end
 
 HgSource = Source:new()
 
+function HgSource:new(o)
+    local source = Source.new(HgSource, o)
+    source.branch = source.branch or 'default'
+    return source
+end
+
 function HgSource:exec(...)
     assert(self.directory)
     return system.exec('hg', '-R', self.directory, ...)
@@ -529,20 +535,17 @@ function HgSource:clean()
 end
 
 function HgSource:update()
-    local args = { 'update' }
-    local branch = self.branch
-    if branch then
-        table.insert(args, '-r')
-        table.insert(args, branch)
-    end
-    return self:exec('pull') and self:exec(unpack(args))
+    assert(self.branch)
+    local pull_cmd = { 'pull', '-r', self.branch }
+    local update_cmd = { 'update', '-r', self.branch }
+    return self:exec(unpack(pull_cmd)) and self:exec(unpack(update_cmd))
 end
 
 function HgSource:clone()
-    local command = { 'hg', 'clone', '-r', 'tip' }
-    table.insert(command, self.location)
-    table.insert(command, self.directory)
-    return system.exec(unpack(command))
+    local cmd = { 'hg', 'clone', '-r', assert(self.branch) }
+    table.insert(cmd, assert(self.location))
+    table.insert(cmd, assert(self.directory))
+    return system.exec(unpack(cmd))
 end
 
 --}}}
@@ -971,9 +974,7 @@ end
 src = {}
 
 function src.packages(names)
-    local packages = jagen.load_rules()
-    local scm_packages = {}
-
+    local packages, scm_packages = jagen.load_rules(), {}
     if names and #names > 0 then
         for _, name in ipairs(names) do
             if not packages[name] then
@@ -991,7 +992,6 @@ function src.packages(names)
             end
         end
     end
-
     return scm_packages
 end
 
@@ -1034,7 +1034,7 @@ end
 function src.update_command(names)
     for _, pkg in ipairs(src.packages(names)) do
         if not pkg.source:update() then
-            jagen.die('failed to update %s (%s) in %s',
+            jagen.die('failed to update %s to the latest %s in %s',
                 pkg.name, pkg.source.branch, pkg.source.directory)
         end
     end
