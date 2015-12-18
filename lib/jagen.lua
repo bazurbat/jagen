@@ -996,7 +996,7 @@ function src.packages(names)
 end
 
 -- Should return 0 if true, 1 if false, for shell scripting.
-function src.dirty(names)
+function src.dirty_command(names)
     for _, pkg in ipairs(src.packages(names)) do
         if pkg.source:dirty() then
             return 0
@@ -1005,7 +1005,7 @@ function src.dirty(names)
     return 1
 end
 
-function src.status(names)
+function src.status_command(names)
     for _, pkg in ipairs(src.packages(names)) do
         local source = pkg.source
         if system.exists(source.directory) then
@@ -1022,7 +1022,7 @@ function src.status(names)
     end
 end
 
-function src.clean(names)
+function src.clean_command(names)
     for _, pkg in ipairs(src.packages(names)) do
         if not pkg.source:clean() then
             jagen.die('failed to clean %s (%s) in %s',
@@ -1031,7 +1031,7 @@ function src.clean(names)
     end
 end
 
-function src.update(names)
+function src.update_command(names)
     for _, pkg in ipairs(src.packages(names)) do
         if not pkg.source:update() then
             jagen.die('failed to update %s (%s) in %s',
@@ -1040,7 +1040,7 @@ function src.update(names)
     end
 end
 
-function src.clone(names)
+function src.clone_command(names)
     for _, pkg in ipairs(src.packages(names)) do
         if not pkg.source:clone() then
             jagen.die('failed to clone %s from %s to %s',
@@ -1049,7 +1049,7 @@ function src.clone(names)
     end
 end
 
-function src.delete(names)
+function src.delete_command(names)
     for _, pkg in ipairs(src.packages(names)) do
         if system.exists(pkg.source.directory) then
             if not system.exec('rm', '-rf', pkg.source.directory) then
@@ -1081,8 +1081,8 @@ elseif command == 'src' then
 
     if not subcommand then
         jagen.die('no src subcommand specified')
-    elseif src[subcommand] then
-        status = src[subcommand](args)
+    elseif src[subcommand..'_command'] then
+        status = src[subcommand..'_command'](args)
     else
         jagen.die('unknown src subcommand: %s', subcommand)
     end
