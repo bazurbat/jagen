@@ -12,6 +12,7 @@ Commands:
   refresh	Regenerate the build system
   build		Build the specified targets
   rebuild	Rebuild the specified targets showing the output
+  src		Manage SCM package sources
 
   The 'help' command shows this help message.
 
@@ -45,8 +46,6 @@ Commands:
   not specified targets. The output is saved alongside the target stamp file in
   the build directory with the '.log' extension appended.
 
-TARGETS:
-
   The targets are specified as: <name>[:<stage>][:<config>]. The available
   package stages are filtered with the given expression. Omitted component
   means 'all'. For example:
@@ -62,6 +61,38 @@ TARGETS:
   determine if the target is up to date. Deleting it will cause the
   corresponding target to be rebuilt unconditionally on the next 'build' or
   'rebuild' command.
+
+SRC COMMAND:
+
+  Usage: jagen src <subcommand> [PACKAGES...]
+
+  The optional PACKAGES argument should be the list of SCM packages defined in
+  the current environment. If none are specified, all are assumed.
+
+  Available subcommands:
+
+    dirty   Check if packages source directories have any changes
+    status  Show packages location, head commit and dirty status
+    clean   Clean up packages source directories
+    update  Update the sources to the latest upstream version
+    clone   Clone the specified packages
+    delete  Delete packages source directories
+
+  The 'dirty' subcommand exits with 0 (true) status if any of the specified
+  packages source directories have changes. It exits with 1 (false) status if
+  all sources are clean. Intended for usage by shell scripts.
+
+  The 'status' subcommand prints SCM packages status in human readable form.
+
+  The 'clean' subcommand resets modifications to the HEAD state and deletes
+  all extra files in packages source directories.
+
+  The 'update' subcommand fetches the latest sources from upstream and tries
+  to merge them with the current source directories.
+
+  The 'clone' subcommand clones the specified packages.
+
+  The 'delete' subcommand deletes packages source directories.
 
 CONFIGURATION:
 
