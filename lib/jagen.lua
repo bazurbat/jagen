@@ -1,5 +1,3 @@
--- require 'pl'
-
 --{{{ common
 
 function copy(o)
@@ -112,19 +110,30 @@ function system.mkpath(...)
     return table.concat(path, sep)
 end
 
-function system.exec(...)
+function system.tocommand(...)
     local command = {}
     for _, arg in ipairs({...}) do
         table.insert(command, string.format('%q', tostring(arg)))
     end
-    local line = table.concat(command, ' ')
-    jagen.debug1(line)
+    return table.concat(command, ' ')
+end
+
+function system.exec(...)
+    local command = system.tocommand(...)
+    jagen.debug1(command)
     local status = os.execute(line)
     return status == 0, status % 0xFF
 end
 
+function system.popen(...)
+    local command = system.tocommand(...)
+    jagen.debug1(command)
+    return io.popen(command)
+end
+
 function system.exists(pathname)
-    return system.exec('test', '-e', pathname)
+    assert(type(pathname) == 'string')
+    return os.execute(string.format('test -e "%s"', pathname)) == 0
 end
 
 --}}}
@@ -404,6 +413,12 @@ end
 
 GitSource = Source:new()
 
+function GitSource:new(o)
+    local source = Source.new(GitSource, o)
+    source.branch = source.branch or 'master'
+    return source
+end
+
 function GitSource:exec(...)
     assert(self.directory)
     return system.exec('git', '-C', self.directory, ...)
@@ -411,8 +426,7 @@ end
 
 function GitSource:popen(...)
     assert(self.directory)
-    local cmd = { 'git', '-C', '"'..self.directory..'"', ... }
-    return io.popen(table.concat(cmd, ' ')):read()
+    return system.popen('git', '-C', self.directory, ...):read()
 end
 
 function GitSource:head()
@@ -474,7 +488,7 @@ function GitSource:clean()
 end
 
 function GitSource:update()
-    local branch = self.package.source.branch or 'master'
+    local branch = self.branch
     return self:fetch(branch) and self:checkout(branch) and self:merge(branch)
 end
 
@@ -499,8 +513,7 @@ end
 
 function HgSource:popen(...)
     assert(self.directory)
-    local cmd = { 'hg', '-R', '"'..self.directory..'"', ... }
-    return io.popen(table.concat(cmd, ' ')):read()
+    return system.popen('hg', '-R', self.directory, ...):read()
 end
 
 function HgSource:head()
@@ -982,28 +995,29 @@ function src.packages(names)
     return scm_packages
 end
 
+-- Should return 0 if true, 1 if false, for shell scripting.
 function src.dirty(names)
     for _, pkg in ipairs(src.packages(names)) do
         if pkg.source:dirty() then
-            return 1
+            return 0
         end
     end
+    return 1
 end
 
 function src.status(names)
     for _, pkg in ipairs(src.packages(names)) do
-        if system.exists(pkg.source.directory) then
-            local dirty = pkg.source:dirty() and 'dirty' or ''
-            local head = pkg.source:head()
+        local source = pkg.source
+        if system.exists(source.directory) then
+            local dirty = source:dirty() and 'dirty' or ''
+            local head = source:head()
             if not head then
-                jagen.error('failed to get source head for %s in %s',
+                jagen.die('failed to get source head for %s in %s',
                     pkg.name, source.directory)
-                return 2
             end
-            -- TODO: do actual query instead of using configured location
-            print(string.format("%s: %s %s", pkg.source.location, head, dirty))
+            print(string.format("%s: %s %s", source.location, head, dirty))
         else
-            print(string.format("%s: not exists", pkg.source.location))
+            print(string.format("%s: not exists", source.location))
         end
     end
 end
