@@ -121,7 +121,7 @@ end
 function system.exec(...)
     local command = system.tocommand(...)
     jagen.debug1(command)
-    local status = os.execute(line)
+    local status = os.execute(command)
     return status == 0, status % 0xFF
 end
 
