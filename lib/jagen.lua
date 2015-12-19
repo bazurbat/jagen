@@ -113,7 +113,7 @@ end
 function system.tocommand(...)
     local command = {}
     for _, arg in ipairs({...}) do
-        table.insert(command, string.format('%q', tostring(arg)))
+        table.insert(command, string.format('%s', tostring(arg)))
     end
     return table.concat(command, ' ')
 end
@@ -647,6 +647,8 @@ jagen =
 
     patch_dir   = os.getenv('jagen_patch_dir'),
     private_dir = os.getenv('jagen_private_dir'),
+
+    src_manager = os.getenv('jagen_src_manager')
 }
 
 jagen.cmd = system.mkpath(jagen.lib_dir, 'cmd.sh')
@@ -939,11 +941,18 @@ function jagen.rebuild(args)
 end
 
 ---}}}
---{{{ src
+--{{{ SourceManager
 
-src = {}
+SourceManager = {}
 
-function src.packages(names)
+function SourceManager:new(o)
+    local o = o or {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+function SourceManager:packages(names)
     local packages, scm_packages = jagen.load_rules(), {}
     if names and #names > 0 then
         for _, name in ipairs(names) do
@@ -966,8 +975,8 @@ function src.packages(names)
 end
 
 -- Should return 0 if true, 1 if false, for shell scripting.
-function src.dirty_command(names)
-    for _, pkg in ipairs(src.packages(names)) do
+function SourceManager:dirty_command(names)
+    for _, pkg in ipairs(self:packages(names)) do
         if pkg.source:dirty() then
             return 0
         end
@@ -975,8 +984,8 @@ function src.dirty_command(names)
     return 1
 end
 
-function src.status_command(names)
-    for _, pkg in ipairs(src.packages(names)) do
+function SourceManager:status_command(names)
+    for _, pkg in ipairs(self:packages(names)) do
         local source = pkg.source
         if system.exists(source.path) then
             local dirty = source:dirty() and 'dirty' or ''
@@ -992,8 +1001,8 @@ function src.status_command(names)
     end
 end
 
-function src.clean_command(names)
-    for _, pkg in ipairs(src.packages(names)) do
+function SourceManager:clean_command(names)
+    for _, pkg in ipairs(self:packages(names)) do
         if not pkg.source:clean() then
             jagen.die('failed to clean %s (%s) in %s',
                 pkg.name, pkg.source.branch, pkg.source.path)
@@ -1001,8 +1010,8 @@ function src.clean_command(names)
     end
 end
 
-function src.update_command(names)
-    for _, pkg in ipairs(src.packages(names)) do
+function SourceManager:update_command(names)
+    for _, pkg in ipairs(self:packages(names)) do
         if not pkg.source:update() then
             jagen.die('failed to update %s to the latest %s in %s',
                 pkg.name, pkg.source.branch, pkg.source.path)
@@ -1010,8 +1019,8 @@ function src.update_command(names)
     end
 end
 
-function src.clone_command(names)
-    for _, pkg in ipairs(src.packages(names)) do
+function SourceManager:clone_command(names)
+    for _, pkg in ipairs(self:packages(names)) do
         if not pkg.source:clone() then
             jagen.die('failed to clone %s from %s to %s',
                 pkg.name, pkg.source.location, pkg.source.path)
@@ -1019,8 +1028,8 @@ function src.clone_command(names)
     end
 end
 
-function src.delete_command(names)
-    for _, pkg in ipairs(src.packages(names)) do
+function SourceManager:delete_command(names)
+    for _, pkg in ipairs(self:packages(names)) do
         if system.exists(pkg.source.path) then
             if not system.exec('rm', '-rf', pkg.source.path) then
                 jagen.die('failed to delete %s source directory %s',
@@ -1028,6 +1037,72 @@ function src.delete_command(names)
             end
         end
     end
+end
+
+RepoSourceManager = SourceManager:new()
+
+RepoSourceManager.command = { 'cd', '$jagen_src_dir/android', '&&', 'repo' }
+
+function RepoSourceManager:new(o)
+    local o = SourceManager.new(RepoSourceManager, o)
+    o.jobs = assert(tonumber(system.popen('nproc'):read())) * 2
+    return o
+end
+
+function RepoSourceManager:exec(...)
+    local cmd = { 'cd', '$jagen_src_dir/android', '&&',
+        'repo', ...
+    }
+    system.exec(unpack(cmd))
+end
+
+function RepoSourceManager:popen(...)
+    local cmd = { 'cd', '$jagen_src_dir/android', '&&',
+        'repo', ...
+    }
+    return system.popen(unpack(cmd))
+end
+
+function RepoSourceManager:load_projects(...)
+    local o = {}
+    local list = self:popen('list', ...)
+    while true do
+        local line = list:read()
+        if not line then break end
+        local name, path = string.match(line, "(.+)%s:%s(.+)")
+        if name then
+            o[name] = path
+        end
+    end
+    return o
+end
+
+function RepoSourceManager:dirty_command(names)
+    error('not implemented')
+end
+
+function RepoSourceManager:status_command(names)
+    return self:exec('status', '-j', self.jobs, '--orphans', unpack(names))
+end
+
+function RepoSourceManager:clean_command(names)
+    local projects = self:load_projects()
+    for n, p in pairs(projects) do
+        print(n, p)
+    end
+end
+
+function SourceManager:update_command(names)
+    return self:exec('sync', '-j', self.jobs,
+        '--current-branch', '--no-tags', '--optimized-fetch', unpack(names))
+end
+
+function SourceManager:clone_command(names)
+    error('not implemented')
+end
+
+function SourceManager:delete_command(names)
+    error('not implemented')
 end
 
 --}}}
@@ -1048,11 +1123,20 @@ elseif command == 'rebuild' then
 elseif command == 'src' then
     local subcommand = arg[2]
     local args = table.rest(arg, 3)
+    local src
 
     if not subcommand then
         jagen.die('no src subcommand specified')
-    elseif src[subcommand..'_command'] then
-        status = src[subcommand..'_command'](args)
+    end
+
+    if jagen.src_manager == 'repo' then
+        src = RepoSourceManager:new()
+    else
+        src = SourceManager:new()
+    end
+
+    if src[subcommand..'_command'] then
+        status = src[subcommand..'_command'](src, args)
     else
         jagen.die('unknown src subcommand: %s', subcommand)
     end

@@ -1,6 +1,7 @@
 #!/bin/sh
 
 jagen_sdk='android'
+export jagen_src_manager='repo'
 
 # Many Android build and utility scripts assume Bash shell
 jagen_shell="/bin/bash"
