@@ -420,13 +420,11 @@ function GitSource:new(o)
 end
 
 function GitSource:exec(...)
-    assert(self.directory)
-    return system.exec('git', '-C', self.directory, ...)
+    return system.exec('git', '-C', assert(self.directory), ...)
 end
 
 function GitSource:popen(...)
-    assert(self.directory)
-    return system.popen('git', '-C', self.directory, ...):read()
+    return system.popen('git', '-C', assert(self.directory), ...):read()
 end
 
 function GitSource:head()
@@ -437,71 +435,48 @@ function GitSource:dirty()
     return self:popen('status', '--porcelain')
 end
 
-function GitSource:branch_list(branch)
-    assert(branch)
-    return self:popen('branch', '--list', branch)
-end
-
-function GitSource:branch_active(name)
-    assert(name)
-    return string.sub(name, 1, 1) == '*'
-end
-
-function GitSource:branch_remote_add(branch)
-    assert(branch)
-    return self:exec('remote', 'set-branches', '--add', 'origin', branch)
+function GitSource:clean()
+    return self:exec('checkout', 'HEAD', '.') and self:exec('clean', '-fxd')
 end
 
 function GitSource:fetch(branch)
-    assert(branch)
-    local args = { 'fetch', '--prune', '--no-tags', 'origin' }
+    local cmd = { 'fetch', '--prune', '--no-tags', 'origin' }
     if branch then
         local src = 'refs/heads/'..branch
         local dst = 'refs/remotes/origin/'..branch
-        table.insert(args, '+'..src..':'..dst)
+        table.insert(cmd, '+'..src..':'..dst)
     end
-    return self:exec(unpack(args))
+    return self:exec(unpack(cmd))
 end
 
 function GitSource:checkout(branch)
     assert(branch)
-    local name = self:branch_list(branch)
-    if #name > 0 then
-        if self:branch_active(name) then
+    local name = self:popen('branch', '--list', branch)
+    if name and #name > 0 then
+        if string.sub(name, 1, 1) == '*' then
             return true
         else
             return self:exec('checkout', branch)
         end
     else
-        return self:branch_remote_add(branch) and
-            self:exec('checkout', '-b', branch, '-t', 'origin/'..branch)
+        local add = { 'remote', 'set-branches', '--add', 'origin', branch }
+        local checkout = { 'checkout', '-b', branch, '-t', 'origin/'..branch }
+        return self:exec(unpack(add)) and self:exec(unpack(checkout))
     end
 end
 
 function GitSource:merge(branch)
-    assert(branch)
-    return self:exec('merge', '--ff-only', 'origin/'..branch)
-end
-
-function GitSource:clean()
-    return self:exec('checkout', 'HEAD', '.') and self:exec('clean', '-fxd')
+    return self:exec('merge', '--ff-only', 'origin/'..assert(branch))
 end
 
 function GitSource:update()
-    local branch = self.branch
+    local branch = assert(self.branch)
     return self:fetch(branch) and self:checkout(branch) and self:merge(branch)
 end
 
 function GitSource:clone()
-    local command = { 'git', 'clone', '--progress', '--depth', 1 }
-    if self.branch then
-        table.insert(command, '--branch')
-        table.insert(command, self.branch)
-    end
-    table.insert(command, self.location)
-    table.insert(command, self.directory)
-
-    return system.exec(unpack(command))
+    return system.exec('git', 'clone', '--branch', assert(self.branch),
+        '--depth', 1, assert(self.location), assert(self.directory))
 end
 
 HgSource = Source:new()
@@ -513,13 +488,11 @@ function HgSource:new(o)
 end
 
 function HgSource:exec(...)
-    assert(self.directory)
-    return system.exec('hg', '-R', self.directory, ...)
+    return system.exec('hg', '-R', assert(self.directory), ...)
 end
 
 function HgSource:popen(...)
-    assert(self.directory)
-    return system.popen('hg', '-R', self.directory, ...):read()
+    return system.popen('hg', '-R', assert(self.directory), ...):read()
 end
 
 function HgSource:head()
@@ -535,17 +508,14 @@ function HgSource:clean()
 end
 
 function HgSource:update()
-    assert(self.branch)
-    local pull_cmd = { 'pull', '-r', self.branch }
-    local update_cmd = { 'update', '-r', self.branch }
-    return self:exec(unpack(pull_cmd)) and self:exec(unpack(update_cmd))
+    local pull = { 'pull', '-r', assert(self.branch) }
+    local update = { 'update', '-r', assert(self.branch) }
+    return self:exec(unpack(pull)) and self:exec(unpack(update))
 end
 
 function HgSource:clone()
-    local cmd = { 'hg', 'clone', '-r', assert(self.branch) }
-    table.insert(cmd, assert(self.location))
-    table.insert(cmd, assert(self.directory))
-    return system.exec(unpack(cmd))
+    return system.exec('hg', 'clone', '-r', assert(self.branch),
+        assert(self.location), assert(self.directory))
 end
 
 --}}}
