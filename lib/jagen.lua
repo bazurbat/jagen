@@ -398,7 +398,7 @@ function Source:create(source)
     if source.location then
         local dir = source:is_scm() and '$jagen_src_dir' or '$pkg_work_dir'
         local basename = source:basename(source.location)
-        source.directory = system.mkpath(dir, source.directory or basename)
+        source.path = system.mkpath(dir, source.path or basename)
     end
 
     return source
@@ -420,11 +420,11 @@ function GitSource:new(o)
 end
 
 function GitSource:exec(...)
-    return system.exec('git', '-C', assert(self.directory), ...)
+    return system.exec('git', '-C', assert(self.path), ...)
 end
 
 function GitSource:popen(...)
-    return system.popen('git', '-C', assert(self.directory), ...):read()
+    return system.popen('git', '-C', assert(self.path), ...):read()
 end
 
 function GitSource:head()
@@ -476,7 +476,7 @@ end
 
 function GitSource:clone()
     return system.exec('git', 'clone', '--branch', assert(self.branch),
-        '--depth', 1, assert(self.location), assert(self.directory))
+        '--depth', 1, assert(self.location), assert(self.path))
 end
 
 HgSource = Source:new()
@@ -488,11 +488,11 @@ function HgSource:new(o)
 end
 
 function HgSource:exec(...)
-    return system.exec('hg', '-R', assert(self.directory), ...)
+    return system.exec('hg', '-R', assert(self.path), ...)
 end
 
 function HgSource:popen(...)
-    return system.popen('hg', '-R', assert(self.directory), ...):read()
+    return system.popen('hg', '-R', assert(self.path), ...):read()
 end
 
 function HgSource:head()
@@ -515,7 +515,7 @@ end
 
 function HgSource:clone()
     return system.exec('hg', 'clone', '-r', assert(self.branch),
-        assert(self.location), assert(self.directory))
+        assert(self.location), assert(self.path))
 end
 
 --}}}
@@ -822,8 +822,8 @@ function Script:source()
     if source.branch then
         table.insert(o, string.format('pkg_source_branch="%s"', source.branch))
     end
-    if source.directory then
-        table.insert(o, string.format('pkg_source_dir="%s"', source.directory))
+    if source.path then
+        table.insert(o, string.format('pkg_source_dir="%s"', source.path))
     end
     return table.concat(o, '\n')
 end
@@ -978,12 +978,12 @@ end
 function src.status_command(names)
     for _, pkg in ipairs(src.packages(names)) do
         local source = pkg.source
-        if system.exists(source.directory) then
+        if system.exists(source.path) then
             local dirty = source:dirty() and 'dirty' or ''
             local head = source:head()
             if not head then
                 jagen.die('failed to get source head for %s in %s',
-                    pkg.name, source.directory)
+                    pkg.name, source.path)
             end
             print(string.format("%s: %s %s", source.location, head, dirty))
         else
@@ -996,7 +996,7 @@ function src.clean_command(names)
     for _, pkg in ipairs(src.packages(names)) do
         if not pkg.source:clean() then
             jagen.die('failed to clean %s (%s) in %s',
-                pkg.name, pkg.source.branch, pkg.source.directory)
+                pkg.name, pkg.source.branch, pkg.source.path)
         end
     end
 end
@@ -1005,7 +1005,7 @@ function src.update_command(names)
     for _, pkg in ipairs(src.packages(names)) do
         if not pkg.source:update() then
             jagen.die('failed to update %s to the latest %s in %s',
-                pkg.name, pkg.source.branch, pkg.source.directory)
+                pkg.name, pkg.source.branch, pkg.source.path)
         end
     end
 end
@@ -1014,17 +1014,17 @@ function src.clone_command(names)
     for _, pkg in ipairs(src.packages(names)) do
         if not pkg.source:clone() then
             jagen.die('failed to clone %s from %s to %s',
-                pkg.name, pkg.source.location, pkg.source.directory)
+                pkg.name, pkg.source.location, pkg.source.path)
         end
     end
 end
 
 function src.delete_command(names)
     for _, pkg in ipairs(src.packages(names)) do
-        if system.exists(pkg.source.directory) then
-            if not system.exec('rm', '-rf', pkg.source.directory) then
+        if system.exists(pkg.source.path) then
+            if not system.exec('rm', '-rf', pkg.source.path) then
                 jagen.die('failed to delete %s source directory %s',
-                    pkg.name, pkg.source.directory)
+                    pkg.name, pkg.source.path)
             end
         end
     end
