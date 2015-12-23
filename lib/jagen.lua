@@ -365,7 +365,7 @@ end
 Source = {}
 
 function Source:is_scm()
-    return self.type == 'git' or self.type == 'hg'
+    return self.type == 'git' or self.type == 'hg' or self.type == 'repo'
 end
 
 function Source:basename(filename)
@@ -388,6 +388,8 @@ function Source:create(source)
         source = GitSource:new(source)
     elseif source.type == 'hg' then
         source = HgSource:new(source)
+    elseif source.type == 'repo' then
+        source = RepoSource:new(source)
     elseif source.type == 'dist' then
         source.location = '$jagen_dist_dir/'..source.location
         source = Source:new(source)
@@ -516,6 +518,79 @@ end
 function HgSource:clone()
     return system.exec('hg', 'clone', '-r', assert(self.branch),
         assert(self.location), assert(self.path))
+end
+
+RepoSource = Source:new()
+
+function RepoSource:new(o)
+    local source = Source.new(RepoSource, o)
+    source.jobs = jagen.nproc * 2
+    return source
+end
+
+function RepoSource:exec(...)
+    local cmd = { 'cd', '"'..assert(self.path)..'"', '&&', 'repo', ... }
+    return system.exec(unpack(cmd))
+end
+
+function RepoSource:popen(...)
+    local cmd = { 'cd', '"'..assert(self.path)..'"', '&&', 'repo', ... }
+    return system.popen(unpack(cmd))
+end
+
+function RepoSource:load_projects(...)
+    local o = {}
+    local list = self:popen('list', ...)
+    while true do
+        local line = list:read()
+        if not line then break end
+        local path, name = string.match(line, "(.+)%s:%s(.+)")
+        if name then
+            o[name] = path
+        end
+    end
+    return o
+end
+
+function RepoSource:head()
+    return self:popen('status', '-j', self.jobs, '--orphans'):read('*all')
+end
+
+function RepoSource:dirty()
+    return false
+end
+
+function RepoSource:clean()
+    local projects = self:load_projects()
+    local function is_empty(path)
+        return system.popen('cd', '"'..path..'"', '&&', 'echo', '*'):read() == '*'
+    end
+    for n, p in pairs(projects) do
+        local path = system.mkpath(self.path, p)
+        if not is_empty(path) then
+            if not system.exec('git', '-C', path, 'checkout', 'HEAD', '.') then
+                return false
+            end
+            if not system.exec('git', '-C', path, 'clean', '-fxd') then
+                return false
+            end
+        end
+    end
+    return true
+end
+
+function RepoSource:update()
+    local cmd = { 'sync', '-j', self.jobs, '--current-branch', '--no-tags',
+        '--optimized-fetch'
+    }
+    return self:exec(unpack(cmd))
+end
+
+function RepoSource:clone()
+    local init = { 'init', '-u', assert(self.location),
+        '-b', assert(self.branch), '-p', 'linux', '--depth', 1
+    }
+    return self:exec(unpack(init)) and self:update()
 end
 
 --}}}
@@ -648,7 +723,7 @@ jagen =
     patch_dir   = os.getenv('jagen_patch_dir'),
     private_dir = os.getenv('jagen_private_dir'),
 
-    src_manager = os.getenv('jagen_src_manager')
+    nproc = assert(tonumber(io.popen('nproc'):read()))
 }
 
 jagen.cmd = system.mkpath(jagen.lib_dir, 'cmd.sh')
@@ -1039,72 +1114,6 @@ function SourceManager:delete_command(names)
     end
 end
 
-RepoSourceManager = SourceManager:new()
-
-RepoSourceManager.command = { 'cd', '$jagen_src_dir/android', '&&', 'repo' }
-
-function RepoSourceManager:new(o)
-    local o = SourceManager.new(RepoSourceManager, o)
-    o.jobs = assert(tonumber(system.popen('nproc'):read())) * 2
-    return o
-end
-
-function RepoSourceManager:exec(...)
-    local cmd = { 'cd', '$jagen_src_dir/android', '&&',
-        'repo', ...
-    }
-    system.exec(unpack(cmd))
-end
-
-function RepoSourceManager:popen(...)
-    local cmd = { 'cd', '$jagen_src_dir/android', '&&',
-        'repo', ...
-    }
-    return system.popen(unpack(cmd))
-end
-
-function RepoSourceManager:load_projects(...)
-    local o = {}
-    local list = self:popen('list', ...)
-    while true do
-        local line = list:read()
-        if not line then break end
-        local name, path = string.match(line, "(.+)%s:%s(.+)")
-        if name then
-            o[name] = path
-        end
-    end
-    return o
-end
-
-function RepoSourceManager:dirty_command(names)
-    error('not implemented')
-end
-
-function RepoSourceManager:status_command(names)
-    return self:exec('status', '-j', self.jobs, '--orphans', unpack(names))
-end
-
-function RepoSourceManager:clean_command(names)
-    local projects = self:load_projects()
-    for n, p in pairs(projects) do
-        print(n, p)
-    end
-end
-
-function SourceManager:update_command(names)
-    return self:exec('sync', '-j', self.jobs,
-        '--current-branch', '--no-tags', '--optimized-fetch', unpack(names))
-end
-
-function SourceManager:clone_command(names)
-    error('not implemented')
-end
-
-function SourceManager:delete_command(names)
-    error('not implemented')
-end
-
 --}}}
 
 command = arg[1]
@@ -1123,16 +1132,10 @@ elseif command == 'rebuild' then
 elseif command == 'src' then
     local subcommand = arg[2]
     local args = table.rest(arg, 3)
-    local src
+    local src = SourceManager:new()
 
     if not subcommand then
         jagen.die('no src subcommand specified')
-    end
-
-    if jagen.src_manager == 'repo' then
-        src = RepoSourceManager:new()
-    else
-        src = SourceManager:new()
     end
 
     if src[subcommand..'_command'] then
