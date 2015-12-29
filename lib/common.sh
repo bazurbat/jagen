@@ -20,6 +20,7 @@ debug() {
 
 die() {
     local ret=$?
+    [ $ret = 0 ] && ret=1
     if [ $# = 0 ]; then
         error "The command exited with status: $ret"
     else
