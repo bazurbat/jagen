@@ -29,15 +29,11 @@ case $1 in
         exec jagen refresh
         ;;
     update)
-        if in_flags offline; then
-            warning "offline mode, skipping jagen update"
+        cd "$jagen_dir" || exit
+        if [ "$(git status --porcelain)" ]; then
+            warning "$jagen_dir is dirty, not updating"
         else
-            cd "$jagen_dir" || exit
-            if [ "$(git status --porcelain)" ]; then
-                warning "$jagen_dir is dirty, not updating"
-            else
-                git pull --ff-only
-            fi
+            git pull --ff-only
         fi
         exec jagen refresh
         ;;
