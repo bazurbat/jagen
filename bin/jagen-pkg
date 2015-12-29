@@ -29,11 +29,6 @@ elif [ "$pkg_config" = 'tools' ]; then
     pkg_system="$jagen_host_system"
     pkg_prefix=""
     pkg_dest_dir="$jagen_tools_dir"
-elif [ "$pkg_config" = 'rootfs' ]; then
-    use_env target
-    pkg_system="$jagen_target_system"
-    pkg_prefix=""
-    pkg_dest_dir="$jagen_sdk_rootfs_prefix"
 fi
 
 include "$jagen_include_dir/$pkg_name" "$pkg_config"

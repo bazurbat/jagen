@@ -28,8 +28,6 @@ package { 'make', 'tools' }
 if jagen.flag('debug') then
     package        { 'gdb', 'host' }
     rootfs_package { 'gdbserver' }
-    package        { 'valgrind', 'rootfs' }
-    rootfs_package { 'strace',   'rootfs' }
 end
 
 -- host
