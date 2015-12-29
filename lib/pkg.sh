@@ -107,30 +107,34 @@ jagen_pkg_clean() {
 
 jagen_pkg_unpack() {
     set -- $pkg_source
-    local kind="$1"
-    local src="${2:-$1}"
+    local src_type="$1"
+    local src_path="$2"
 
     [ "$pkg_source" ] || return 0
 
-    case $kind in
-        git|hg)
-            if in_flags "offline"; then
-                message "Offline mode, not checking $pkg_name"
-            elif in_list "$pkg_name" $jagen_source_exclude; then
-                message "pkg source '$pkg_name' excluded from pulling"
-            elif [ -d "$pkg_source_dir" ]; then
-                if _jagen src dirty "$pkg_name"; then
-                    warning "$pkg_source_dir is dirty, not updating"
+    case $src_type in
+        git|hg|repo)
+            if [ -d "$pkg_source_dir" ]; then
+                if in_flags offline; then
+                    message "not updating $pkg_name: offline mode"
+                elif _jagen src dirty "$pkg_name"; then
+                    warning "not updating $pkg_name: $pkg_source_dir is not clean"
                 else
                     _jagen src update "$pkg_name"
                 fi
             else
-                _jagen src clone "$pkg_name"
+                if in_flags offline; then
+                    die "could not clone $pkg_name in offline mode"
+                else
+                    _jagen src clone "$pkg_name"
+                fi
             fi
             ;;
-        *)
-            pkg_run tar -C "$pkg_work_dir" -xf "$src"
+        dist)
+            pkg_run tar -C "$pkg_work_dir" -xf "$src_path"
             ;;
+        *)
+            die "unknown source type: $src_type"
     esac
 }
 
