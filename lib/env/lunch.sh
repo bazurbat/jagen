@@ -4,7 +4,7 @@ require bash || return
 require sdk_dir || return
 require u-boot-tools || return
 
-: ${jagen_target_product:?}
+: ${jagen_android_product:?}
 
 use_env target
 
@@ -14,5 +14,5 @@ cd "$jagen_sdk_dir" || return
 message "Preparing the environment"
 . ./build/envsetup.sh || return
 
-message "Preparing product: $jagen_target_product"
-lunch "${jagen_target_product}-eng" || return
+message "Preparing product: $jagen_android_product"
+lunch "${jagen_android_product}-eng" || return
