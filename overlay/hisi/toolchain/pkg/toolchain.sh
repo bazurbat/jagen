@@ -3,7 +3,7 @@
 jagen_pkg_install() {
     : ${jagen_target_toolchain_dir:?}
     : ${jagen_toolchain_dir:?}
-    : ${jagen_target_toolchain_dir:?}
+    : ${jagen_toolchain_prefix:?}
 
     local bin name
 
@@ -12,6 +12,6 @@ jagen_pkg_install() {
 
     for bin in "$jagen_toolchain_dir"/bin/*; do
         name="$(basename "$bin" | cut -d- -f5-)"
-        ln -sf "$bin" "${jagen_toolchain_prefix}${name}"
+        ln -fsr "$bin" "${jagen_toolchain_prefix}${name}"
     done
 }

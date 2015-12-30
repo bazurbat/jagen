@@ -1,9 +1,6 @@
 #!/bin/sh
 
-jagen_sdk='hisilicon'
-
 jagen_target_system="arm-hisiv200-linux"
-jagen_target_prefix="/system"
 
 jagen_target_product="Hi3719CV100"
 
