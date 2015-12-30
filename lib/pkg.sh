@@ -88,6 +88,14 @@ pkg_run_autoreconf() {
     pkg_run autoreconf -if -I "$jagen_host_dir/share/aclocal"
 }
 
+pkg_link() {
+    local dst="${1:?}" src="${2:?}"
+
+    pkg_run cd $(dirname "$dst")
+    pkg_run rm -rf "$src"
+    pkg_run ln -rs $(basename "$dst") "$src"
+}
+
 jagen_pkg_clean() {
     set -- $pkg_source
     local kind="$1"
@@ -105,7 +113,7 @@ jagen_pkg_clean() {
     pkg_clean_dir "$pkg_work_dir"
 }
 
-jagen_pkg_unpack() {
+default_unpack() {
     set -- $pkg_source
     local src_type="$1"
     local src_path="$2"
@@ -137,6 +145,8 @@ jagen_pkg_unpack() {
             die "unknown source type: $src_type"
     esac
 }
+
+jagen_pkg_unpack() { default_unpack; }
 
 default_patch() {
     if [ ! -x "$pkg_source_dir/configure" -a -x "$pkg_source_dir/autogen.sh" ]; then
