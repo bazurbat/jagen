@@ -553,7 +553,7 @@ function RepoSource:load_projects(...)
 end
 
 function RepoSource:head()
-    return self:popen('status', '-j', self.jobs, '--orphans'):read('*all')
+    return self:popen('status', '-j', 1, '--orphans'):read('*all')
 end
 
 function RepoSource:dirty()
