@@ -5,15 +5,17 @@ config_file="config.sh"
 
 show_help() {
     cat <<EOF
-Usage: init-root [-h] [-f] [SDK]
+Usage: init-root [-h] [OVERLAYS...]
 
   Initializes current directory as jagen build root.
 
 SYNOPSIS:
 
-  The script will put environment file '$env_file' in the current directory.
-  This file should be sourced in the current shell before issuing any other
-  jagen commands. Example:
+  The script will put environment file '$env_file' and configuration file
+  '$config_file' in the current directory. The environment file should be
+  sourced in the current directory before issuing any other jagen commands.
+
+  Example:
 
     cd $PWD
     $jagen_dir/init-root
@@ -24,14 +26,7 @@ SYNOPSIS:
     cd $PWD
     . ./$env_file
 
-  Note that '$env_file' should be sourced with working directory set to the
-  build root.
-
-  The template configuration file '$config_file' will be added to the build
-  root. The existing file will not be overwritten unless the '-f' flag is
-  given.
-  
-  If SDK is specified it will be set in the config.
+  The specified overlays will be set in the configuration file.
 
 EOF
 }
@@ -104,16 +99,11 @@ jagen_dir=$(dirname $0)
 jagen_root=''
 jagen_overlays=''
 
-use_force=''
-
 while [ $# -gt 0 ]; do
     case $1 in
         -h|--help)
             show_help
             exit 0
-            ;;
-        -f|--force)
-            use_force=1
             ;;
         *)
             if [ "$jagen_overlays" ]; then
@@ -131,9 +121,6 @@ done
 import init
 
 write_env || die
-
-if [ -f "$config_file" -a ! "$use_force" ]; then
-    echo "Not overwriting '$config_file'"
-else
-    write_config "$config_file" || die
-fi
+write_config "$config_file" || die
+. ./env.sh || die
+jagen refresh
