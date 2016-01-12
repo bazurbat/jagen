@@ -804,9 +804,6 @@ function jagen.load_rules()
 
     for _, pkg in ipairs(packages) do
         pkg:add_ordering_dependencies()
-        if type(pkg.source) == 'string' then
-            pkg.source = { type = 'dist', location = pkg.source }
-        end
         pkg.source = Source:create(pkg.source)
     end
 
