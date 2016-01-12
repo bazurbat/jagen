@@ -229,9 +229,7 @@ function Package:__tostring()
     return table.concat(o, ':')
 end
 
-function Package:add(rule, packages)
-    local pkg, name = {}
-
+function Package:parse(rule)
     if type(rule[1]) == 'string' then
         rule.name = rule[1]
         table.remove(rule, 1)
@@ -240,22 +238,10 @@ function Package:add(rule, packages)
         rule.config = rule[1]
         table.remove(rule, 1)
     end
-
-    jagen.debug2('add', rule.name, rule.config)
-
-    name = rule.name
-    if packages[name] then
-        pkg = packages[name]
-        pkg:parse(rule)
-    else
-        pkg = Package:new(rule)
-        packages[name] = pkg
-        table.insert(packages, pkg)
+    if type(rule.source) == 'string' then
+        rule.source = { type = 'dist', location = rule.source }
     end
-
-    if type(pkg.source) == 'string' then
-        pkg.source = { type = 'dist', location = pkg.source }
-    end
+    return rule
 end
 
 function Package:load(filename)
@@ -271,7 +257,7 @@ function Package:load(filename)
     return o
 end
 
-function Package:parse(rule)
+function Package:merge(rule)
     table.merge(self, rule)
     self:add_build_targets(rule.config)
     for _, stage in ipairs(rule) do
@@ -289,7 +275,7 @@ function Package:new(rule)
 
     local pathname = system.mkpath('pkg', rule.name..'.lua')
     for _, filename in ipairs(jagen.import_paths(pathname)) do
-        pkg:parse(table.merge(Package:load(filename), rule))
+        pkg:merge(table.merge(Package:load(filename), rule))
     end
 
     return pkg
@@ -799,7 +785,15 @@ function jagen.load_rules()
             jagen = jagen
         }
         function env.package(rule)
-            Package:add(rule, packages)
+            local rule = Package:parse(rule)
+            local name = rule.name
+            if packages[name] then
+                packages[name]:merge(rule)
+            else
+                pkg = Package:new(rule)
+                packages[name] = pkg
+                table.insert(packages, pkg)
+            end
         end
         local chunk = loadfile(filename)
         if chunk then
@@ -813,10 +807,13 @@ function jagen.load_rules()
         load_rules(path)
     end
 
-    Package:add({ 'toolchain', 'target', { 'install' } }, packages)
+    table.insert(packages, Package:new(Package:parse({ 'toolchain', 'target', { 'install' } })))
 
     for _, pkg in ipairs(packages) do
         pkg:add_ordering_dependencies()
+        if type(pkg.source) == 'string' then
+            pkg.source = { type = 'dist', location = pkg.source }
+        end
         pkg.source = Source:create(pkg.source)
     end
 
