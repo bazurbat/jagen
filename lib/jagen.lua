@@ -245,9 +245,13 @@ function Package:parse(rule)
 end
 
 function Package:load(filename)
-    local o, env = {}, {}
+    local o = {}
+    local env = {
+        table = table,
+        jagen = jagen
+    }
     function env.package(rule)
-        o = rule
+        table.insert(o, Package:parse(rule))
     end
     local chunk = loadfile(filename)
     if chunk then
@@ -275,7 +279,12 @@ function Package:new(rule)
 
     local pathname = system.mkpath('pkg', rule.name..'.lua')
     for _, filename in ipairs(jagen.import_paths(pathname)) do
-        pkg:merge(table.merge(Package:load(filename), rule))
+        local r = Package:load(filename)
+        if r[1] then
+            pkg:merge(table.merge(r[1], rule))
+        else
+            pkg:merge(table.merge({}, rule))
+        end
     end
 
     return pkg
@@ -778,14 +787,8 @@ end
 function jagen.load_rules()
     local packages = {}
 
-    local function load_rules(filename)
-        local rules = {}
-        local env = {
-            table = table,
-            jagen = jagen
-        }
-        function env.package(rule)
-            local rule = Package:parse(rule)
+    for _, path in ipairs(jagen.import_paths('rules.lua')) do
+        for _, rule in ipairs(Package:load(path)) do
             local name = rule.name
             if packages[name] then
                 packages[name]:merge(rule)
@@ -795,16 +798,6 @@ function jagen.load_rules()
                 table.insert(packages, pkg)
             end
         end
-        local chunk = loadfile(filename)
-        if chunk then
-            setfenv(chunk, env)
-            chunk()
-        end
-        return rules
-    end
-
-    for _, path in ipairs(jagen.import_paths('rules.lua')) do
-        load_rules(path)
     end
 
     table.insert(packages, Package:new(Package:parse({ 'toolchain', 'target', { 'install' } })))
