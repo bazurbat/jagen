@@ -789,20 +789,15 @@ function jagen.import_paths(filename)
     return o
 end
 
-function jagen.rules_g(path)
-    for _, f in ipairs(jagen.import_paths(path..'.lua')) do
-        for _, r in ipairs(Rule:load(f)) do
-            coroutine.yield(r)
+function jagen.rules(path)
+    local function genrules(suffix)
+        for _, file in ipairs(jagen.import_paths(suffix)) do
+            for _, rule in ipairs(Rule:load(file)) do
+                coroutine.yield(rule)
+            end
         end
     end
-end
-
-function jagen.rules(path)
-    local co = coroutine.create(function () jagen.rules_g(path) end)
-    return function ()
-        local status, res = coroutine.resume(co)
-        return res
-    end
+    return coroutine.wrap(genrules), path..'.lua'
 end
 
 function jagen.load_rules()
