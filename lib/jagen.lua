@@ -53,14 +53,6 @@ function string.split(s, sep)
     return o
 end
 
-function table.append(a, b)
-    assert(a and b)
-    for _, i in ipairs(b) do
-        table.insert(a, i)
-    end
-    return a
-end
-
 function table.rest(t, start)
     local o = {}
     for i = start, #t do
@@ -220,6 +212,50 @@ function Target:add_inputs(target)
     end
 
     return self
+end
+
+--}}}
+--{{{ Rule
+
+Rule = {}
+
+function Rule:new(o)
+    o = o or {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+function Rule:read(rule)
+    if type(rule[1]) == 'string' then
+        rule.name = rule[1]
+        table.remove(rule, 1)
+    end
+    if type(rule[1]) == 'string' then
+        rule.config = rule[1]
+        table.remove(rule, 1)
+    end
+    if type(rule.source) == 'string' then
+        rule.source = { type = 'dist', location = rule.source }
+    end
+    return rule
+end
+
+function Rule:load(filename)
+    local o = {}
+    local env = {
+        table = table,
+        jagen = jagen
+    }
+    function env.package(rule)
+        table.insert(o, Rule:new(Rule:read(rule)))
+    end
+    local chunk = loadfile(filename)
+    if chunk then
+        setfenv(chunk, env)
+        chunk()
+    end
+    return o
 end
 
 --}}}
@@ -753,60 +789,34 @@ function jagen.import_paths(filename)
     return o
 end
 
-function jagen.parse_rule(rule)
-    if type(rule[1]) == 'string' then
-        rule.name = rule[1]
-        table.remove(rule, 1)
-    end
-    if type(rule[1]) == 'string' then
-        rule.config = rule[1]
-        table.remove(rule, 1)
-    end
-    if type(rule.source) == 'string' then
-        rule.source = { type = 'dist', location = rule.source }
-    end
-    return rule
-end
-
-function jagen.load(filename)
-    local o = {}
-    local env = {
-        table = table,
-        jagen = jagen
-    }
-    function env.package(rule)
-        table.insert(o, jagen.parse_rule(rule))
-    end
-    local chunk = loadfile(filename)
-    if chunk then
-        setfenv(chunk, env)
-        chunk()
-    end
-    return o
-end
-
-function jagen.load_pkg(name)
-    local o, path = {}, system.mkpath('pkg', name..'.lua')
-    for _, filename in ipairs(jagen.import_paths(path)) do
-        for _, rule in ipairs(jagen.load(filename)) do
-            table.insert(o, rule)
+function jagen.rules_g(path)
+    for _, f in ipairs(jagen.import_paths(path..'.lua')) do
+        for _, r in ipairs(Rule:load(f)) do
+            coroutine.yield(r)
         end
     end
-    return o
+end
+
+function jagen.rules(path)
+    local co = coroutine.create(function () jagen.rules_g(path) end)
+    return function ()
+        local status, res = coroutine.resume(co)
+        return res
+    end
 end
 
 function jagen.load_rules()
     local rules, loaded, packages = {}, {}, {}
 
-    for _, rules_file in ipairs(jagen.import_paths('rules.lua')) do
-        for _, rule in ipairs(jagen.load(rules_file)) do
-            local name = assert(rule.name)
-            if not loaded[name] then
-                table.append(rules, jagen.load_pkg(name))
-                loaded[name] = true
+    for rule in jagen.rules('rules') do
+        local name = assert(rule.name)
+        if not loaded[name] then
+            for pkg_rule in jagen.rules('pkg/'..name) do
+                table.insert(rules, pkg_rule)
             end
-            table.insert(rules, rule)
+            loaded[name] = true
         end
+        table.insert(rules, rule)
     end
 
     table.insert(rules, { name = 'toolchain', config = 'target',
