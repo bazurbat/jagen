@@ -1,6 +1,7 @@
 #!/bin/sh
 
 if [ -z "$jagen_target_toolchain_dir" ]; then
+    : ${jagen_toolchain_dir:?}
     jagen_target_toolchain_dir="$jagen_toolchain_dir/bin"
 fi
 
