@@ -805,6 +805,9 @@ function jagen.load_rules()
         local name = assert(rule.name)
         if not loaded[name] then
             for pkg_rule in jagen.rules('pkg/'..name) do
+                if not pkg_rule.name then
+                    pkg_rule.name = name
+                end
                 table.insert(rules, pkg_rule)
             end
             loaded[name] = true
