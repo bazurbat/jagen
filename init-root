@@ -10,9 +10,7 @@ die() {
 
 show_help() {
     cat <<EOF
-Usage: init-root <CONFIG>
-       init-root [-l|--list]
-       init-root [-h|--help]
+Usage: init-root [OPTIONS...]
 
   Initializes current directory as jagen build root.
 
@@ -25,7 +23,7 @@ SYNOPSIS:
   Example:
 
     cd $PWD
-    $jagen_dir/init-root ast100
+    $jagen_dir/init-root -c ast100
     . ./$env_file
 
   For subsequent invocations:
@@ -33,12 +31,14 @@ SYNOPSIS:
     cd $PWD
     . ./$env_file
 
-  Use the <CONFIG> parameter to select the configuration template.
+  The '--config' option is mandatory.
 
-ARGUMENTS:
+OPTIONS:
 
-  -h, --help  Print this help message.
-  -l, --list  List available configuration templates.
+  -h, --help    Print this help message.
+  -l, --list    List available configuration templates.
+  -c, --config  Specify the configuration template.
+  -a, --flags   Set a space-separated list of default flags.
 
 EOF
 }
@@ -102,7 +102,7 @@ jagen_toolchain_dir="$jagen_toolchain_dir"
 # Space separated list of optional features.
 #   debug  - build debugging tools
 #   ccache - wrap compilation commands with ccache
-jagen_flags=""
+jagen_flags="$jagen_flags"
 
 # Space separated list of package names excluded from cleaning and updating.
 # Example: jagen_source_exclude="chicken karaoke-player"
@@ -117,6 +117,8 @@ EOF
 jagen_dir=$(dirname $0)
 jagen_root=''
 jagen_config=''
+jagen_flags=''
+arg_flags=''
 
 if [ $# = 0 ]; then
     show_help
@@ -133,11 +135,26 @@ while [ $# -gt 0 ]; do
             list_configs
             exit 0
             ;;
+        -c|--config)
+            jagen_config="$2"
+            shift
+            ;;
+        -a|--flags)
+            arg_flags=1
+            ;;
         -*)
-            die "invalid argument: $1"
+            die "invalid option: $1"
             ;;
         *)
-            jagen_config="$1"
+            if [ "$arg_flags" ]; then
+                if [ "$jagen_flags" ]; then
+                    jagen_flags="$jagen_flags $1"
+                else
+                    jagen_flags="$1"
+                fi
+            else
+                die "unexpected argument: $1"
+            fi
             ;;
     esac
     shift
