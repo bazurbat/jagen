@@ -3,9 +3,16 @@
 env_file="env.sh"
 config_file="config.sh"
 
+die() {
+    echo "init-root: Error: $*"
+    exit 1
+}
+
 show_help() {
     cat <<EOF
-Usage: init-root [-h] [OVERLAYS...]
+Usage: init-root <CONFIG>
+       init-root [-l|--list]
+       init-root [-h|--help]
 
   Initializes current directory as jagen build root.
 
@@ -13,12 +20,12 @@ SYNOPSIS:
 
   The script will put environment file '$env_file' and configuration file
   '$config_file' in the current directory. The environment file should be
-  sourced in the current directory before issuing any other jagen commands.
+  sourced into working environment before issuing any other jagen commands.
 
   Example:
 
     cd $PWD
-    $jagen_dir/init-root
+    $jagen_dir/init-root ast100
     . ./$env_file
 
   For subsequent invocations:
@@ -26,9 +33,21 @@ SYNOPSIS:
     cd $PWD
     . ./$env_file
 
-  The specified overlays will be set in the configuration file.
+  Use the <CONFIG> parameter to select the configuration template.
+
+ARGUMENTS:
+
+  -h, --help  Print this help message.
+  -l, --list  List available configuration templates.
 
 EOF
+}
+
+list_configs() {
+    cd "$jagen_dir/lib/config"
+    for cfg_dir in *; do
+        echo $cfg_dir
+    done
 }
 
 write_env() {
@@ -75,10 +94,10 @@ jagen_src_dir="\$jagen_base_dir/src"
 jagen_build_dir="\$jagen_root/build"
 
 # A directory containing SDK.
-jagen_sdk_dir="$sdk_dir"
+jagen_sdk_dir="$jagen_sdk_dir"
 
 # A directory containing target toolchain.
-jagen_toolchain_dir="$toolchain_dir"
+jagen_toolchain_dir="$jagen_toolchain_dir"
 
 # Space separated list of optional features.
 #   debug  - build debugging tools
@@ -97,7 +116,12 @@ EOF
 
 jagen_dir=$(dirname $0)
 jagen_root=''
-jagen_overlays=''
+jagen_config=''
+
+if [ $# = 0 ]; then
+    show_help
+    exit 0
+fi
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -105,22 +129,33 @@ while [ $# -gt 0 ]; do
             show_help
             exit 0
             ;;
+        -l|--list)
+            list_configs
+            exit 0
+            ;;
+        -*)
+            die "invalid argument: $1"
+            ;;
         *)
-            if [ "$jagen_overlays" ]; then
-                jagen_overlays="$jagen_overlays $1"
-            else
-                jagen_overlays="$1"
-            fi
+            jagen_config="$1"
             ;;
     esac
     shift
 done
 
-. "$jagen_dir/lib/env.sh" || return
+if ! [ "$jagen_config" ]; then
+    die "no configuration template specified"
+fi
 
-import init
+jagen_config_dir="$jagen_dir/lib/config/$jagen_config"
 
-write_env || die
-write_config "$config_file" || die
-. ./env.sh || die
+if ! [ -d "$jagen_config_dir" ]; then
+    die "no such configuration template: $jagen_config"
+fi
+
+. "$jagen_config_dir/env.sh" || exit
+
+write_env || exit
+write_config "$config_file" || exit
+. ./env.sh || exit
 jagen refresh
