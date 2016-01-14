@@ -12,6 +12,14 @@ function copy(o)
     end
 end
 
+function each(a)
+    local i, n = 0, #a
+    return function (t)
+        i = i + 1
+        if i <= n then return t[i] end
+    end, a
+end
+
 function append(...)
     local o = {}
     for _, arg in ipairs({...}) do
