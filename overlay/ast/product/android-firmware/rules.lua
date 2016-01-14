@@ -2,11 +2,17 @@
 
 package { 'android-cmake' }
 
+package { 'cmake-modules' }
+
 package { 'pkgconf', 'host' }
 
 package { 'libtool', 'host' }
 
-package { 'chicken', 'host' }
+package { 'chicken', 'host',
+    { 'build',
+        { 'android-cmake', 'unpack' }
+    }
+}
 
 package { 'chicken-eggs', 'host',
     { 'install',
@@ -33,7 +39,12 @@ package { 'firmware',
     { 'deploy' }
 }
 
-firmware_package { 'hi-utils' }
+firmware_package { 'hi-utils',
+    { 'build',
+        { 'android-cmake', 'unpack' },
+        { 'cmake-modules', 'unpack' },
+    }
+}
 
 firmware_package { 'chicken',
     { 'build',
@@ -55,12 +66,13 @@ firmware_package { 'ffmpeg' }
 
 firmware_package { 'karaoke-player',
     { 'build',
-        { 'astindex',     'unpack'            },
-        { 'pkgconf',      'install', 'host'   },
-        { 'chicken-eggs', 'install', 'host'   },
-        { 'chicken-eggs', 'install', 'target' },
-        { 'ffmpeg',       'install', 'target' },
-        { 'libuv',        'install', 'target' },
+        { 'astindex',      'unpack'            },
+        { 'cmake-modules', 'unpack'            },
+        { 'pkgconf',       'install', 'host'   },
+        { 'chicken-eggs',  'install', 'host'   },
+        { 'chicken-eggs',  'install', 'target' },
+        { 'ffmpeg',        'install', 'target' },
+        { 'libuv',         'install', 'target' },
     },
     { 'install' }
 }
