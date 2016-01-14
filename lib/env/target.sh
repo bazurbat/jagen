@@ -14,4 +14,8 @@ if [ -z "$jagen_toolchain_prefix" ]; then
     jagen_toolchain_prefix="${jagen_target_toolchain_dir}/${jagen_target_system}-"
 fi
 
+export PKG_CONFIG_SYSROOT_DIR="${jagen_target_dir}"
+export PKG_CONFIG_LIBDIR="${jagen_target_dir}${jagen_target_prefix}/lib/pkgconfig"
+export PKG_CONFIG_DIR=""
+
 export CROSS_COMPILE="$jagen_toolchain_prefix"
