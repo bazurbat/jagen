@@ -4,8 +4,6 @@ package { 'android-cmake' }
 
 package { 'cmake-modules' }
 
-package { 'pkgconf', 'tools' }
-
 package { 'libtool', 'host' }
 
 package { 'chicken', 'host',
@@ -68,7 +66,6 @@ firmware_package { 'karaoke-player',
     { 'build',
         { 'astindex',      'unpack'            },
         { 'cmake-modules', 'unpack'            },
-        { 'pkgconf',       'install', 'tools'  },
         { 'chicken-eggs',  'install', 'host'   },
         { 'chicken-eggs',  'install', 'target' },
         { 'ffmpeg',        'install', 'target' },
