@@ -1,14 +1,14 @@
 #!/bin/sh
 
 jagen_pkg_install() {
-    : ${jagen_target_toolchain_dir:?}
+    : ${jagen_toolchain_bin_dir:?}
     : ${jagen_toolchain_dir:?}
     : ${jagen_toolchain_prefix:?}
 
     local bin name
 
-    rm -fr "$jagen_target_toolchain_dir"
-    mkdir -p "$jagen_target_toolchain_dir"
+    rm -fr "$jagen_toolchain_bin_dir"
+    mkdir -p "$jagen_toolchain_bin_dir"
 
     for bin in "$jagen_toolchain_dir"/bin/*; do
         name="$(basename "$bin" | cut -d- -f5-)"
