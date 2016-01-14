@@ -6,7 +6,7 @@ jagen_pkg_build() {
     pkg_run sed -i 's|^\(HAS_NATIVE_WPA_SUPPLICANT_SUPPORT=\).*$|\1y|' \
         os/linux/config.mk
 
-    pkg_run make CROSS_COMPILE="${jagen_target_toolchain_dir}/${jagen_target_system}-" \
+    pkg_run make \
         CHIPSET=5370 LINUX_SRC="$LINUX_KERNEL"
 }
 
