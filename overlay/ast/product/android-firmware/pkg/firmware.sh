@@ -40,8 +40,8 @@ jagen_pkg_strip() {
 }
 
 jagen_pkg_deploy() {
-    : ${sdk_out_dir:?}
-    local out_dir="$sdk_out_dir/system"
+    : ${jagen_android_out_dir:?}
+    local out_dir="$jagen_android_out_dir/system"
 
     if [ ! -d "$out_dir" ]; then
         message "out_dir '$out_dir' is not exists, skipping deploy"

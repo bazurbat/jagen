@@ -35,9 +35,8 @@ jagen_pkg_build_target() {
             pkg_run cmake $A \
                 -DCMAKE_TOOLCHAIN_FILE="$jagen_src_dir/android-cmake/android.toolchain.cmake" \
                 -DANDROID_STANDALONE_TOOLCHAIN="${jagen_target_dir}/${jagen_target_toolchain}" \
-                -DPKG_CONFIG_EXECUTABLE="${jagen_host_dir}/bin/pkgconf" \
                 -DHISILICON_ROOT_DIR="$jagen_sdk_dir" \
-                -DHISILICON_OUT_DIR="$sdk_out_dir" \
+                -DHISILICON_OUT_DIR="$jagen_android_out_dir" \
                 "$pkg_source_dir"
             ;;
         hi-linux)
