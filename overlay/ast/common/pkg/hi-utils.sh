@@ -12,10 +12,11 @@ jagen_pkg_build_target() {
     case $jagen_sdk in
         android)
             pkg_run cmake $A \
+                -DCMAKE_MODULE_PATH="$jagen_src_dir/cmake-modules" \
                 -DCMAKE_TOOLCHAIN_FILE="$jagen_src_dir/android-cmake/android.toolchain.cmake" \
-                -DANDROID_STANDALONE_TOOLCHAIN="${jagen_target_dir}/${target_toolchain}" \
+                -DANDROID_STANDALONE_TOOLCHAIN="${jagen_target_dir}/${jagen_target_toolchain}" \
                 -DHISILICON_ROOT_DIR="$jagen_sdk_dir" \
-                -DHISILICON_OUT_DIR="$sdk_out_dir" \
+                -DHISILICON_OUT_DIR="$jagen_android_out_dir" \
                 "$pkg_source_dir"
             ;;
         hi-linux)
