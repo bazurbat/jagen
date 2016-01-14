@@ -1,11 +1,5 @@
 #!/bin/sh
 
-# FIXME: add proper support for other build types to chicken
-case $jagen_cmake_build_type in
-    Debug|Release) ;;
-    *) jagen_cmake_build_type=Release ;;
-esac
-
 delete_install_targets() {
     pkg_run find "$pkg_build_dir" -name "*-install" -delete
 }
