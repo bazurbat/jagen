@@ -281,16 +281,6 @@ function Package:__tostring()
     return table.concat(o, ':')
 end
 
-function Package:merge(rule)
-    table.merge(self, rule)
-    if rule.config then
-        self:add_build_targets(rule.config)
-    end
-    for _, stage in ipairs(rule) do
-        self:add_target(Target:parse(stage, self.name, rule.config))
-    end
-end
-
 function Package:create(name)
     local o = { name = name, stages = {} }
     setmetatable(o, self)
@@ -833,7 +823,13 @@ function jagen.load_rules()
             packages[name] = pkg
             table.insert(packages, pkg)
         end
-        pkg:merge(rule)
+        table.merge(pkg, rule)
+        if rule.config then
+            pkg:add_build_targets(rule.config)
+        end
+        for stage in each(rule) do
+            pkg:add_target(Target:parse(stage, pkg.name, rule.config))
+        end
     end
 
     for _, pkg in ipairs(packages) do
