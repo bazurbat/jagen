@@ -1,17 +1,15 @@
 #!/bin/sh
 
-if [ -z "$jagen_target_toolchain_dir" ]; then
-    : ${jagen_toolchain_dir:?}
-    jagen_target_toolchain_dir="$jagen_toolchain_dir/bin"
-fi
-
-if [ -d "$jagen_target_toolchain_dir" ]; then
-    add_PATH "$jagen_target_toolchain_dir"
+if [ -z "$jagen_toolchain_bin_dir" ]; then
+    jagen_toolchain_bin_dir="${jagen_toolchain_dir:?}/bin"
 fi
 
 if [ -z "$jagen_toolchain_prefix" ]; then
-    : ${jagen_target_system:?}
-    jagen_toolchain_prefix="${jagen_target_toolchain_dir}/${jagen_target_system}-"
+    jagen_toolchain_prefix="${jagen_toolchain_bin_dir}/${jagen_target_system:?}-"
+fi
+
+if [ -d "$jagen_toolchain_bin_dir" ]; then
+    add_PATH "$jagen_toolchain_bin_dir"
 fi
 
 export PKG_CONFIG_SYSROOT_DIR="${jagen_target_dir}"
