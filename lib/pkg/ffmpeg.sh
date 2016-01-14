@@ -62,15 +62,12 @@ jagen_pkg_build() {
         if [ "$jagen_toolchain_sysroot" ]; then
             cross_options="$cross_options --sysroot=$jagen_toolchain_sysroot"
         fi
-
-        case $jagen_target_board in
-            ast25|ast50|ast100)
-                cross_options="$cross_options --arch=mipsel --cpu=24kf"
-                ;;
-            ast2*)
-                cross_options="$cross_options --arch=arm"
-                ;;
-        esac
+        if [ "$jagen_target_arch" ]; then
+            cross_options="$cross_options --arch=$jagen_target_arch"
+        fi
+        if [ "$jagen_target_cpu" ]; then
+            cross_options="$cross_options --cpu=$jagen_target_cpu"
+        fi
     fi
 
     local components=""
