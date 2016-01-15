@@ -585,10 +585,11 @@ function RepoSource:update()
 end
 
 function RepoSource:clone()
+    local mkdir = { 'mkdir -p "'..self.path..'"' }
     local init = { 'init', '-u', assert(self.location),
         '-b', assert(self.branch), '-p', 'linux', '--depth', 1
     }
-    return self:exec(unpack(init)) and self:update()
+    return system.exec(unpack(mkdir)) and self:exec(unpack(init)) and self:update()
 end
 
 --}}}
