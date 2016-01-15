@@ -10,7 +10,9 @@ die() {
 
 show_help() {
     cat <<EOF
-Usage: init-root [OPTIONS...]
+Usage: init-root <CONFIG> [OPTIONS...]
+       init-root [-l|--list]
+       init-root [-h|--help]
 
   Initializes current directory as jagen build root.
 
@@ -18,12 +20,12 @@ SYNOPSIS:
 
   The script will put environment file '$env_file' and configuration file
   '$config_file' in the current directory. The environment file should be
-  sourced into working environment before issuing any other jagen commands.
+  sourced into the working shell before issuing any other jagen commands.
 
   Example:
 
     cd $PWD
-    $jagen_dir/init-root -c ast100
+    $jagen_dir/init-root ast100 -a ccache
     . ./$env_file
 
   For subsequent invocations:
@@ -31,14 +33,11 @@ SYNOPSIS:
     cd $PWD
     . ./$env_file
 
-  The '--config' option is mandatory.
-
 OPTIONS:
 
-  -h, --help    Print this help message.
-  -l, --list    List available configuration templates.
-  -c, --config  Specify the configuration template.
   -a, --flags   Set a space-separated list of default flags.
+  -l, --list    List available configuration templates.
+  -h, --help    Print this help message.
 
 EOF
 }
@@ -93,15 +92,16 @@ jagen_src_dir="\$jagen_base_dir/src"
 # A directory where build products will be stored.
 jagen_build_dir="\$jagen_root/build"
 
-# A directory containing SDK.
-jagen_sdk_dir="$jagen_sdk_dir"
-
 # A directory containing target toolchain.
 jagen_toolchain_dir="$jagen_toolchain_dir"
 
+# A directory containing SDK.
+jagen_sdk_dir="$jagen_sdk_dir"
+
 # Space separated list of optional features.
-#   debug  - build debugging tools
-#   ccache - wrap compilation commands with ccache
+#   debug   - build debugging tools
+#   ccache  - wrap compilation commands with ccache
+#   offline - skip network operations
 jagen_flags="$jagen_flags"
 
 # Space separated list of package names excluded from cleaning and updating.
@@ -114,51 +114,49 @@ jagen_build_type="Release"
 EOF
 }
 
+parse_command_line() {
+    local arg='config'
+
+    while [ $# -gt 0 ]; do
+        case $1 in
+            -a|--flags)
+                arg='flags' ;;
+            -l|--list)
+                list_configs; exit 0 ;;
+            -h|--help)
+                show_help; exit 0 ;;
+            -*)
+                die "invalid argument: $1" ;;
+            *)
+                case $arg in
+                    config)
+                        jagen_config="$1"; arg='' ;;
+                    flags)
+                        if [ "$jagen_flags" ]; then
+                            jagen_flags="$jagen_flags $1"
+                        else
+                            jagen_flags="$1"
+                        fi ;;
+                    *)
+                        die "unexpected argument: $1"
+                        ;;
+                esac ;;
+        esac
+        shift
+    done
+}
+
 jagen_dir=$(dirname $0)
 jagen_root=''
 jagen_config=''
 jagen_flags=''
-arg_flags=''
 
 if [ $# = 0 ]; then
     show_help
     exit 0
 fi
 
-while [ $# -gt 0 ]; do
-    case $1 in
-        -h|--help)
-            show_help
-            exit 0
-            ;;
-        -l|--list)
-            list_configs
-            exit 0
-            ;;
-        -c|--config)
-            jagen_config="$2"
-            shift
-            ;;
-        -a|--flags)
-            arg_flags=1
-            ;;
-        -*)
-            die "invalid option: $1"
-            ;;
-        *)
-            if [ "$arg_flags" ]; then
-                if [ "$jagen_flags" ]; then
-                    jagen_flags="$jagen_flags $1"
-                else
-                    jagen_flags="$1"
-                fi
-            else
-                die "unexpected argument: $1"
-            fi
-            ;;
-    esac
-    shift
-done
+parse_command_line "$@"
 
 if ! [ "$jagen_config" ]; then
     die "no configuration template specified"
