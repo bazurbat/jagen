@@ -1090,9 +1090,9 @@ function SourceManager:status_command(names)
                 jagen.die('failed to get source head for %s in %s',
                     pkg.name, source.path)
             end
-            print(string.format("%s: %s %s", source.location, head, dirty))
+            print(string.format("%s (%s): %s %s", pkg.name, source.location, head, dirty))
         else
-            print(string.format("%s: not exists", source.location))
+            print(string.format("%s (%s): not exists", pkg.name, source.location))
         end
     end
 end
