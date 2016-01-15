@@ -12,5 +12,5 @@ if in_flags ccache; then
 fi
 
 if [ "$jagen_android_product" ]; then
-    jagen_android_out_dir="$jagen_sdk_dir/out/target/product/$jagen_android_product"
+    export jagen_android_out_dir="$jagen_sdk_dir/out/target/product/$jagen_android_product"
 fi
