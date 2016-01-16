@@ -305,21 +305,24 @@ function Package:add_target(target)
 end
 
 function Package:add_build_targets(config)
-    jagen.debug2('add_build_targets', self, config)
     local build = self.build
     if build then
         if build.with_provided_libtool then
-            local target = Target:new(self.name, 'configure')
-            target.inputs = { Target:new('libtool', 'install', 'host') }
-            self:add_target(target)
+            self:add_target(Target:from_rule({ 'configure',
+                        { 'libtool', 'install', 'host' }
+                }, self.name))
         end
         if build.type ~= 'manual' then
-            local build_rule = { 'build' }
             if config == 'target' then
-                build_rule = { 'build', { 'toolchain', 'install', 'target' } }
+                self:add_target(Target:from_rule({ 'build',
+                            { 'toolchain', 'install', 'target' }
+                    }, self.name, config))
+            else
+                self:add_target(Target:from_rule({ 'build',
+                    }, self.name, config))
             end
-            self:add_target(Target:from_rule(build_rule, self.name, config))
-            self:add_target(Target:new(self.name, 'install', config))
+            self:add_target(Target:from_rule({ 'install'
+                }, self.name, config))
         end
     end
 end
