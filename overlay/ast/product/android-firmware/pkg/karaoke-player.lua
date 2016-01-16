@@ -1,0 +1,5 @@
+package {
+    source = {
+        branch = 'master'
+    }
+}
