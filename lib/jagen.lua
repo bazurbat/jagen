@@ -150,7 +150,7 @@ end
 Target = {}
 Target.__index = Target
 
-function Target.new(name, stage, config)
+function Target:new(name, stage, config)
     local target = {
         name   = name,
         stage  = stage,
@@ -161,22 +161,22 @@ function Target.new(name, stage, config)
     return target
 end
 
-function Target.from_list(list)
-    return Target.new(list[1], list[2], list[3])
+function Target:from_list(list)
+    return Target:new(list[1], list[2], list[3])
 end
 
 function Target:parse(rule, name, config)
     local stage = rule[1]; assert(type(stage) == 'string')
-    local target = Target.new(name, stage, config)
+    local target = Target:new(name, stage, config)
 
     for i = 2, #rule do
-        table.insert(target.inputs, Target.from_list(rule[i]))
+        table.insert(target.inputs, Target:from_list(rule[i]))
     end
 
     return target
 end
 
-function Target.from_arg(arg)
+function Target:from_arg(arg)
     local name, stage, config
     local c = string.split(arg, ':')
 
@@ -190,21 +190,21 @@ function Target.from_arg(arg)
         config = c[3]
     end
 
-    return Target.new(name, stage, config)
+    return Target:new(name, stage, config)
 end
 
-function Target.__eq(a, b)
-    return a.name == b.name and
-    a.stage == b.stage and
-    a.config == b.config
+function Target:__eq(other)
+    return self.name == other.name and
+    self.stage == other.stage and
+    self.config == other.config
 end
 
-function Target.__tostring(t, sep)
+function Target:__tostring(sep)
     local o = {}
     sep = sep or '-'
-    if t.name then table.insert(o, t.name) end
-    if t.stage then table.insert(o, t.stage) end
-    if t.config then table.insert(o, t.config) end
+    if self.name then table.insert(o, self.name) end
+    if self.stage then table.insert(o, self.stage) end
+    if self.config then table.insert(o, self.config) end
     return table.concat(o, sep)
 end
 
@@ -272,7 +272,7 @@ function Package:create(name)
     self.__index = self
 
     for _, s in ipairs(self.init_stages) do
-        pkg:add_target(Target.new(name, s))
+        pkg:add_target(Target:new(name, s))
     end
 
     for filename in each(jagen.import_paths('pkg/'..name..'.lua')) do
@@ -312,8 +312,8 @@ function Package:add_build_targets(config)
     local build = self.build
     if build then
         if build.with_provided_libtool then
-            local target = Target.new(self.name, 'configure')
-            target.inputs = { Target.new('libtool', 'install', 'host') }
+            local target = Target:new(self.name, 'configure')
+            target.inputs = { Target:new('libtool', 'install', 'host') }
             self:add_target(target)
         end
         if build.type ~= 'manual' then
@@ -322,7 +322,7 @@ function Package:add_build_targets(config)
                 build_rule = { 'build', { 'toolchain', 'install', 'target' } }
             end
             self:add_target(Target:parse(build_rule, self.name, config))
-            self:add_target(Target.new(self.name, 'install', config))
+            self:add_target(Target:new(self.name, 'install', config))
         end
     end
 end
@@ -824,7 +824,7 @@ function jagen.load_rules()
     end
 
     local tc = Package:create('toolchain')
-    tc:add_target(Target.new(tc.name, 'install', 'target'))
+    tc:add_target(Target:new(tc.name, 'install', 'target'))
     table.insert(packages, tc)
 
     for _, pkg in ipairs(packages) do
@@ -988,7 +988,7 @@ function build.find_targets(packages, arg)
     if is_param(arg) then
         table.insert(args, arg)
     else
-        local target = Target.from_arg(arg)
+        local target = Target:from_arg(arg)
         local packages = target.name and { packages[target.name] } or packages
         for _, pkg in ipairs(packages) do
             for _, stage in ipairs(pkg.stages) do
