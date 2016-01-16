@@ -223,50 +223,6 @@ function Target:add_inputs(target)
 end
 
 --}}}
---{{{ Rule
-
-Rule = {}
-
-function Rule:new(o)
-    o = o or {}
-    setmetatable(o, self)
-    self.__index = self
-    return o
-end
-
-function Rule:read(rule)
-    if type(rule[1]) == 'string' then
-        rule.name = rule[1]
-        table.remove(rule, 1)
-    end
-    if type(rule[1]) == 'string' then
-        rule.config = rule[1]
-        table.remove(rule, 1)
-    end
-    if type(rule.source) == 'string' then
-        rule.source = { type = 'dist', location = rule.source }
-    end
-    return rule
-end
-
-function Rule:load(filename)
-    local o = {}
-    local env = {
-        table = table,
-        jagen = jagen
-    }
-    function env.package(rule)
-        table.insert(o, Rule:new(Rule:read(rule)))
-    end
-    local chunk = loadfile(filename)
-    if chunk then
-        setfenv(chunk, env)
-        chunk()
-    end
-    return o
-end
-
---}}}
 --{{{ Package
 
 Package = {
@@ -281,16 +237,49 @@ function Package:__tostring()
     return table.concat(o, ':')
 end
 
+function Package:read(rule)
+    if type(rule[1]) == 'string' then
+        rule.name = rule[1]
+        table.remove(rule, 1)
+    end
+    if type(rule[1]) == 'string' then
+        rule.config = rule[1]
+        table.remove(rule, 1)
+    end
+    if type(rule.source) == 'string' then
+        rule.source = { type = 'dist', location = rule.source }
+    end
+    return rule
+end
+
+function Package:load(filename)
+    local pkg = {}
+    local env = {}
+    function env.package(rule)
+        pkg = Package:read(rule)
+    end
+    local chunk = loadfile(filename)
+    if chunk then
+        setfenv(chunk, env)
+        chunk()
+    end
+    return pkg
+end
+
 function Package:create(name)
-    local o = { name = name, stages = {} }
-    setmetatable(o, self)
+    local pkg = { name = name, stages = {} }
+    setmetatable(pkg, self)
     self.__index = self
 
     for _, s in ipairs(self.init_stages) do
-        o:add_target(Target.new(name, s))
+        pkg:add_target(Target.new(name, s))
     end
 
-    return o
+    for filename in each(jagen.import_paths('pkg/'..name..'.lua')) do
+        table.merge(pkg, pkg:load(filename))
+    end
+
+    return pkg
 end
 
 function Package:add_target(target)
@@ -788,10 +777,27 @@ function jagen.import_paths(filename)
     return o
 end
 
+function jagen.load(filename)
+    local rules = {}
+    local env = {
+        table = table,
+        jagen = jagen
+    }
+    function env.package(rule)
+        table.insert(rules, Package:read(rule))
+    end
+    local chunk = loadfile(filename)
+    if chunk then
+        setfenv(chunk, env)
+        chunk()
+    end
+    return rules
+end
+
 function jagen.rules(path)
     local function genrules(suffix)
         for _, file in ipairs(jagen.import_paths(suffix)) do
-            for _, rule in ipairs(Rule:load(file)) do
+            for _, rule in ipairs(jagen.load(file)) do
                 coroutine.yield(rule)
             end
         end
@@ -800,26 +806,9 @@ function jagen.rules(path)
 end
 
 function jagen.load_rules()
-    local rules, loaded, packages = {}, {}, {}
+    local packages = {}
 
     for rule in jagen.rules('rules') do
-        local name = assert(rule.name)
-        if not loaded[name] then
-            for pkg_rule in jagen.rules('pkg/'..name) do
-                if not pkg_rule.name then
-                    pkg_rule.name = name
-                end
-                table.insert(rules, pkg_rule)
-            end
-            loaded[name] = true
-        end
-        table.insert(rules, rule)
-    end
-
-    table.insert(rules, { name = 'toolchain', config = 'target',
-            { 'install' } })
-
-    for _, rule in ipairs(rules) do
         local name = assert(rule.name)
         local pkg = packages[name]
         if not pkg then
@@ -835,6 +824,10 @@ function jagen.load_rules()
             pkg:add_target(Target:parse(stage, pkg.name, rule.config))
         end
     end
+
+    local tc = Package:create('toolchain')
+    tc:add_target(Target.new(tc.name, 'install', 'target'))
+    table.insert(packages, tc)
 
     for _, pkg in ipairs(packages) do
         pkg:add_ordering_dependencies()
