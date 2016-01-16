@@ -157,20 +157,17 @@ function Target:new(name, stage, config)
         config = config,
         inputs = {}
     }
-    setmetatable(target, Target)
+    setmetatable(target, self)
     return target
 end
 
-function Target:from_list(list)
-    return Target:new(list[1], list[2], list[3])
-end
-
-function Target:parse(rule, name, config)
+function Target:from_rule(rule, name, config)
     local stage = rule[1]; assert(type(stage) == 'string')
     local target = Target:new(name, stage, config)
 
     for i = 2, #rule do
-        table.insert(target.inputs, Target:from_list(rule[i]))
+        local input = rule[i]
+        table.insert(target.inputs, Target:new(input[1], input[2], input[3]))
     end
 
     return target
@@ -194,22 +191,22 @@ function Target:from_arg(arg)
 end
 
 function Target:__eq(other)
-    return self.name == other.name and
-    self.stage == other.stage and
-    self.config == other.config
+    return self.name   == other.name   and
+           self.stage  == other.stage  and
+           self.config == other.config
 end
 
 function Target:__tostring(sep)
     local o = {}
     sep = sep or '-'
-    if self.name then table.insert(o, self.name) end
-    if self.stage then table.insert(o, self.stage) end
+    if self.name   then table.insert(o, self.name)   end
+    if self.stage  then table.insert(o, self.stage)  end
     if self.config then table.insert(o, self.config) end
     return table.concat(o, sep)
 end
 
 function Target:add_inputs(target)
-    for _, i in ipairs(target.inputs or {}) do
+    for _, i in ipairs(target.inputs) do
         local function eq(t)
             return t == i
         end
@@ -321,7 +318,7 @@ function Package:add_build_targets(config)
             if config == 'target' then
                 build_rule = { 'build', { 'toolchain', 'install', 'target' } }
             end
-            self:add_target(Target:parse(build_rule, self.name, config))
+            self:add_target(Target:from_rule(build_rule, self.name, config))
             self:add_target(Target:new(self.name, 'install', config))
         end
     end
@@ -819,7 +816,7 @@ function jagen.load_rules()
         table.merge(pkg, rule)
         pkg:add_build_targets(rule.config)
         for stage in each(rule) do
-            pkg:add_target(Target:parse(stage, pkg.name, rule.config))
+            pkg:add_target(Target:from_rule(stage, pkg.name, rule.config))
         end
     end
 
