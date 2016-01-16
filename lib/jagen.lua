@@ -817,9 +817,7 @@ function jagen.load_rules()
             table.insert(packages, pkg)
         end
         table.merge(pkg, rule)
-        if rule.config then
-            pkg:add_build_targets(rule.config)
-        end
+        pkg:add_build_targets(rule.config)
         for stage in each(rule) do
             pkg:add_target(Target:parse(stage, pkg.name, rule.config))
         end
