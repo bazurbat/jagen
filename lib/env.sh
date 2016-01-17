@@ -45,7 +45,7 @@ jagen_target_prefix="/usr"
 jagen_tools_dir="$jagen_root/tools"
 jagen_tools_prefix=""
 
-export jagen_install_dir="$jagen_root/firmware"
+jagen_install_dir="$jagen_root/firmware"
 
 add_PATH "$jagen_host_dir/bin"
 add_LD_LIBRARY_PATH "$jagen_host_dir/lib"
