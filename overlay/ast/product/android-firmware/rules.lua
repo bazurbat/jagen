@@ -4,8 +4,6 @@ package { 'android-cmake' }
 
 package { 'cmake-modules' }
 
-package { 'libtool', 'host' }
-
 package { 'chicken', 'host',
     { 'build',
         { 'android-cmake', 'unpack' }

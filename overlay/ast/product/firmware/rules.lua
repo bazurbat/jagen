@@ -32,8 +32,6 @@ end
 
 -- host
 
-package { 'libtool', 'host' }
-
 package { 'utils', 'host' }
 
 package { 'karaoke-player', 'host',
