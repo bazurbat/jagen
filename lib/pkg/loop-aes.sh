@@ -1,10 +1,6 @@
 #!/bin/sh
 
-export ARCH=mips
-
 jagen_pkg_build() {
-    PATH="$jagen_toolchain_dir/bin:$PATH"
-
     pkg_run make \
         LINUX_SOURCE="$LINUX_KERNEL" \
         KBUILD_OUTPUT="$LINUX_KERNEL" \
