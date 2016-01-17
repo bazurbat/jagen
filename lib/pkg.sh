@@ -133,11 +133,16 @@ default_unpack() {
     esac
 }
 
-jagen_pkg_unpack() { default_unpack; }
-
 default_patch() {
+    pkg_run cd "$pkg_source_dir"
+    jagen_pkg_apply_patches
+
     if [ ! -x "$pkg_source_dir/configure" -a -x "$pkg_source_dir/autogen.sh" ]; then
         "$pkg_source_dir/autogen.sh"
+    fi
+
+    if [ "$pkg_autoreconf" = "yes" ]; then
+        pkg_run autoreconf -if
     fi
 }
 
@@ -159,9 +164,7 @@ default_install() {
     done
 }
 
-jagen_pkg_patch_pre() {
-    pkg_run cd "$pkg_source_dir"
-}
+jagen_pkg_unpack() { default_unpack; }
 
 jagen_pkg_patch() { default_patch; }
 

@@ -927,6 +927,9 @@ function Script:build()
             table.insert(o, string.format("pkg_libs='%s'",
                 table.concat(build.libs, ' ')))
         end
+        if build.autoreconf then
+            table.insert(o, 'pkg_autoreconf="yes"')
+        end
         if build.in_source then
             build_dir = '$pkg_source_dir'
         end
@@ -944,7 +947,7 @@ end
 
 function Script:patch()
     local o = {}
-    table.insert(o, 'jagen_pkg_patch_pre() {')
+    table.insert(o, 'jagen_pkg_apply_patches() {')
     table.insert(o, '  pkg_run cd "$pkg_source_dir"')
     for _, patch in ipairs(self.pkg.patches or {}) do
         local name = patch[1]
