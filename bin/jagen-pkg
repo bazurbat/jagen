@@ -44,13 +44,6 @@ run_stage() {
     fi
 }
 
-if [ "$pkg_build_dir" ]; then
-    if ! [ -d "$pkg_build_dir" ]; then
-        pkg_run mkdir -p "$pkg_build_dir"
-    fi
-    pkg_run cd "$pkg_build_dir"
-fi
-
 run_stage "jagen_pkg_${pkg_stage}_pre"
 
 if is_function "jagen_pkg_${pkg_stage}_${pkg_config}"; then

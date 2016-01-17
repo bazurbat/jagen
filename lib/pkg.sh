@@ -96,13 +96,21 @@ pkg_link() {
     pkg_run ln -rs $(basename "$dst") "$src"
 }
 
+pkg_ensure_build_dir() {
+    if [ "$pkg_build_dir" ]; then
+        if ! [ -d "$pkg_build_dir" ]; then
+            pkg_run mkdir -p "$pkg_build_dir"
+        fi
+        pkg_run cd "$pkg_build_dir"
+    fi
+}
+
 default_unpack() {
     set -- $pkg_source
     local src_type="$1"
     local src_path="$2"
 
-    pkg_clean_dir "$pkg_work_dir"
-    cd "$pkg_work_dir"
+    pkg_run rm -rf "$pkg_work_dir"
 
     [ "$pkg_source" ] || return 0
 
@@ -126,6 +134,7 @@ default_unpack() {
             fi
             ;;
         dist)
+            pkg_run mkdir -p "$pkg_work_dir"
             pkg_run tar -C "$pkg_work_dir" -xf "$src_path"
             ;;
         *)
@@ -134,8 +143,9 @@ default_unpack() {
 }
 
 default_patch() {
-    pkg_run cd "$pkg_source_dir"
-    jagen_pkg_apply_patches
+    if is_function jagen_pkg_apply_patches; then
+        jagen_pkg_apply_patches
+    fi
 
     if [ ! -x "$pkg_source_dir/configure" -a -x "$pkg_source_dir/autogen.sh" ]; then
         "$pkg_source_dir/autogen.sh"
@@ -164,10 +174,30 @@ default_install() {
     done
 }
 
-jagen_pkg_unpack() { default_unpack; }
+jagen_pkg_unpack() {
+    default_unpack
+}
 
-jagen_pkg_patch() { default_patch; }
+jagen_pkg_patch_pre() {
+    pkg_run cd "$pkg_source_dir"
+}
 
-jagen_pkg_build() { default_build; }
+jagen_pkg_patch() {
+    default_patch
+}
 
-jagen_pkg_install() { default_install; }
+jagen_pkg_build_pre() {
+    pkg_ensure_build_dir
+}
+
+jagen_pkg_build() {
+    default_build
+}
+
+jagen_pkg_install_pre() {
+    pkg_ensure_build_dir
+}
+
+jagen_pkg_install() {
+    default_install
+}
