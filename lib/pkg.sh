@@ -141,13 +141,6 @@ default_patch() {
     fi
 }
 
-jagen_pkg_configure() {
-    pkg_run cd "$pkg_source_dir"
-    if [ "$pkg_with_provided_libtool" ]; then
-        pkg_run_autoreconf
-    fi
-}
-
 default_build() {
     if [ -x "$pkg_source_dir/configure" ]; then
         pkg_run "$pkg_source_dir/configure" \

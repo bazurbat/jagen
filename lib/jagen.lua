@@ -927,9 +927,6 @@ function Script:build()
             table.insert(o, string.format("pkg_libs='%s'",
                 table.concat(build.libs, ' ')))
         end
-        if build.with_provided_libtool then
-            table.insert(o, 'pkg_with_provided_libtool="yes"')
-        end
         if build.in_source then
             build_dir = '$pkg_source_dir'
         end
