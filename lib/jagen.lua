@@ -796,7 +796,7 @@ function jagen.load(filename)
         jagen = jagen
     }
     function env.package(rule)
-        table.insert(rules, Package:read(rule))
+        table.insert(rules, rule)
     end
     local chunk = loadfile(filename)
     if chunk then
@@ -820,7 +820,8 @@ end
 function jagen.load_rules()
     local packages = {}
 
-    for rule in jagen.rules('rules') do
+    local function add(rule)
+        rule = Package:read(rule)
         local name = assert(rule.name)
         local pkg = packages[name]
         if not pkg then
@@ -835,23 +836,18 @@ function jagen.load_rules()
         end
     end
 
-    local toolchain = Package:create('toolchain')
-    toolchain:add_target(Target:new(toolchain.name, 'install', 'target'))
-    packages[toolchain.name] = toolchain
-    table.insert(packages, toolchain)
+    for rule in jagen.rules('rules') do
+        add(rule)
+    end
+
+    add { 'toolchain', 'target', { 'install' } }
 
     if jagen.need_libtool then
-        local libtool = Package:create('libtool')
-        libtool:add_target(Target:new(libtool.name, 'build', 'host'))
-        libtool:add_target(Target:new(libtool.name, 'install', 'host'))
-        packages[libtool.name] = libtool
-        table.insert(packages, libtool)
+        add { 'libtool', 'host' }
     end
 
     if jagen.need_repo then
-        local repo = Package:create('repo')
-        packages[repo.name] = repo
-        table.insert(packages, repo)
+        add { 'repo' }
     end
 
     for _, pkg in ipairs(packages) do
