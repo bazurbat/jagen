@@ -112,8 +112,6 @@ default_unpack() {
 
     pkg_run rm -rf "$pkg_work_dir"
 
-    [ "$pkg_source" ] || return 0
-
     case $src_type in
         git|hg|repo)
             if [ -d "$pkg_source_dir" ]; then
@@ -141,7 +139,10 @@ default_unpack() {
             pkg_run tar -C "$pkg_work_dir" -xf "$src_path"
             ;;
         *)
-            die "unknown source type: $src_type"
+            if [ "$pkg_source_dir" ]; then
+                pkg_run mkdir -p "$pkg_source_dir"
+            fi
+            ;;
     esac
 }
 
