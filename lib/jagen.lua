@@ -935,7 +935,7 @@ function Script:build()
         end
     end
 
-    build_dir = build_dir or '$pkg_work_dir/build${pkg_config:+-$pkg_config}'
+    build_dir = build_dir or '$pkg_work_dir${pkg_config:+/$pkg_config}'
 
     table.insert(o, string.format('pkg_build_dir="%s"', build_dir))
 

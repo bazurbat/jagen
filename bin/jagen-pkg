@@ -9,9 +9,9 @@ pkg_config="$3"
 pkg_log="${jagen_log_dir}/${pkg_name}-${pkg_stage}${pkg_config:+-${pkg_config}}.log"
 pkg_work_dir="$jagen_build_dir/$pkg_name"
 
-rm -f "$pkg_log" || die "Failed to rm $pkg_log"
-mkdir -p "$pkg_work_dir" || die "Failed to mkdir $pkg_work_dir"
-cd "$pkg_work_dir" || die "Failed to cd to $pkg_work_dir"
+: >"$pkg_log"
+
+cd "$jagen_build_dir" || die "failed to cd to $jagen_build_dir"
 
 if [ "$pkg_config" ]; then
     use_env "$pkg_config"
@@ -31,7 +31,7 @@ elif [ "$pkg_config" = 'tools' ]; then
     pkg_dest_dir="$jagen_tools_dir"
 fi
 
-include "$jagen_include_dir/$pkg_name" "$pkg_config"
+include "$jagen_include_dir/$pkg_name"
 import "pkg/$pkg_name"
 
 run_stage() {
@@ -43,8 +43,6 @@ run_stage() {
             die "Failed to run '$stage' stage of package $pkg"
     fi
 }
-
-: >"$pkg_log"
 
 if [ "$pkg_build_dir" ]; then
     if ! [ -d "$pkg_build_dir" ]; then
