@@ -1,21 +1,18 @@
 #!/bin/sh
 
-use_env target
-
-pkg_prefix=""
 pkg_dest_dir="$jagen_sdk_rootfs_prefix"
 
 jagen_pkg_build() {
     pkg_run "$pkg_source_dir/configure" \
-        --host="$jagen_target_system" \
-        --prefix="$pkg_prefix" \
+        --host="$pkg_system" \
+        --prefix="" \
         --enable-shared \
         --disable-static \
         --disable-rpath \
         --disable-most-builds \
         --disable-libuuid \
         --enable-libblkid \
-        --disable-libmount \
+        --enable-libmount \
         --disable-mount \
         --enable-losetup \
         --disable-cytune \
