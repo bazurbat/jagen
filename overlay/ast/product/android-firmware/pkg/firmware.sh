@@ -1,8 +1,5 @@
 #!/bin/sh
 
-pkg_work_dir="$jagen_install_dir"
-pkg_source_dir="${jagen_target_dir}${jagen_target_prefix}"
-
 jagen_pkg_install() {
     local bins="csi smplayer"
 
