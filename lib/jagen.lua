@@ -307,11 +307,6 @@ end
 function Package:add_build_targets(config)
     local build = self.build
     if build then
-        if build.with_provided_libtool then
-            self:add_target(Target:from_rule({ 'configure',
-                        { 'libtool', 'install', 'host' }
-                }, self.name))
-        end
         if build.type ~= 'manual' then
             if config == 'target' then
                 self:add_target(Target:from_rule({ 'build',
