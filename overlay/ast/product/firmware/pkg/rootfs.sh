@@ -7,6 +7,8 @@ jagen_pkg_build() {
 
     PATH="$SMP86XX_TOOLCHAIN_PATH/bin:$PATH"
 
+    pkg_run rm -f "$jagen_sdk_rootfs_root/init"
+
     pkg_run cp -f config.release .config
     pkg_run make
 
