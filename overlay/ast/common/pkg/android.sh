@@ -9,8 +9,6 @@ jagen_pkg_unpack() {
 }
 
 jagen_pkg_build() {
-    pkg_link "$pkg_build_dir" "$pkg_source_dir/out"
-
     use_env lunch || return
 
     pkg_run make bigfish_emmc
