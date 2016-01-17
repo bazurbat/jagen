@@ -307,10 +307,12 @@ end
 function Package:add_build_targets(config)
     local build = self.build
     if build then
-        if build.type == 'GNU' and build.autoreconf then
-            self:add_target(Target:from_rule({ 'autoreconf',
-                        { 'libtool', 'install', 'host' }
-                }, self.name))
+        if build.type == 'GNU' then
+            if build.generate or build.autoreconf then
+                self:add_target(Target:from_rule({ 'autoreconf',
+                            { 'libtool', 'install', 'host' }
+                    }, self.name))
+            end
         end
         if build.type ~= 'manual' then
             if config == 'target' then
@@ -936,6 +938,9 @@ function Script:build()
         if build.libs then
             table.insert(o, string.format("pkg_libs='%s'",
                 table.concat(build.libs, ' ')))
+        end
+        if build.generate then
+            table.insert(o, "pkg_build_generate='yes'")
         end
         if build.in_source then
             build_dir = '$pkg_source_dir'

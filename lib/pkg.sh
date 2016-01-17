@@ -165,8 +165,12 @@ jagen_pkg_patch() {
 
 jagen_pkg_autoreconf() {
     pkg_run cd "$pkg_source_dir"
-    if [ -x ./autogen.sh ]; then
-        ./autogen.sh
+    if [ "$pkg_build_generate" ]; then
+        if [ -x ./autogen.sh ]; then
+            pkg_run ./autogen.sh
+        fi
+    else
+        pkg_run_autoreconf
     fi
 }
 

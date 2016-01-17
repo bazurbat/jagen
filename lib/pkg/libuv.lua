@@ -4,6 +4,7 @@ package {
     build  = {
         type    = 'GNU',
         options = '--disable-static',
-        libs    = { 'uv' }
+        libs    = { 'uv' },
+        generate = true
     }
 }
