@@ -145,18 +145,33 @@ default_unpack() {
     esac
 }
 
+jagen_pkg_unpack() {
+    default_unpack
+}
+
+jagen_pkg_patch_pre() {
+    pkg_run cd "$pkg_source_dir"
+}
+
 default_patch() {
     if is_function jagen_pkg_apply_patches; then
         jagen_pkg_apply_patches
     fi
+}
 
-    if [ ! -x "$pkg_source_dir/configure" -a -x "$pkg_source_dir/autogen.sh" ]; then
-        "$pkg_source_dir/autogen.sh"
-    fi
+jagen_pkg_patch() {
+    default_patch
+}
 
-    if [ "$pkg_autoreconf" = "yes" ]; then
-        pkg_run autoreconf -if
+jagen_pkg_autoreconf() {
+    pkg_run cd "$pkg_source_dir"
+    if [ -x ./autogen.sh ]; then
+        ./autogen.sh
     fi
+}
+
+jagen_pkg_build_pre() {
+    pkg_ensure_build_dir
 }
 
 default_build() {
@@ -169,36 +184,20 @@ default_build() {
     fi
 }
 
-default_install() {
-    pkg_run make DESTDIR="$pkg_dest_dir" install
-
-    for name in $pkg_libs; do
-        pkg_fix_la "$pkg_dest_dir$pkg_prefix/lib/lib${name}.la" "$pkg_dest_dir"
-    done
-}
-
-jagen_pkg_unpack() {
-    default_unpack
-}
-
-jagen_pkg_patch_pre() {
-    pkg_run cd "$pkg_source_dir"
-}
-
-jagen_pkg_patch() {
-    default_patch
-}
-
-jagen_pkg_build_pre() {
-    pkg_ensure_build_dir
-}
-
 jagen_pkg_build() {
     default_build
 }
 
 jagen_pkg_install_pre() {
     pkg_ensure_build_dir
+}
+
+default_install() {
+    pkg_run make DESTDIR="$pkg_dest_dir" install
+
+    for name in $pkg_libs; do
+        pkg_fix_la "$pkg_dest_dir$pkg_prefix/lib/lib${name}.la" "$pkg_dest_dir"
+    done
 }
 
 jagen_pkg_install() {

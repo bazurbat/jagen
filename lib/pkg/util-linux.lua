@@ -6,6 +6,6 @@ package {
     },
     build = {
         type = 'GNU',
-        with_provided_libtool = true
+        autoreconf = true
     }
 }

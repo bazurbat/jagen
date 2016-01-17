@@ -307,6 +307,11 @@ end
 function Package:add_build_targets(config)
     local build = self.build
     if build then
+        if build.type == 'GNU' and build.autoreconf then
+            self:add_target(Target:from_rule({ 'autoreconf',
+                        { 'libtool', 'install', 'host' }
+                }, self.name))
+        end
         if build.type ~= 'manual' then
             if config == 'target' then
                 self:add_target(Target:from_rule({ 'build',
@@ -818,6 +823,11 @@ function jagen.load_rules()
         end
     end
 
+    local libtool = Package:create('libtool')
+    libtool:add_target(Target:new(libtool.name, 'build', 'host'))
+    libtool:add_target(Target:new(libtool.name, 'install', 'host'))
+    table.insert(packages, libtool)
+
     local tc = Package:create('toolchain')
     tc:add_target(Target:new(tc.name, 'install', 'target'))
     table.insert(packages, tc)
@@ -926,9 +936,6 @@ function Script:build()
         if build.libs then
             table.insert(o, string.format("pkg_libs='%s'",
                 table.concat(build.libs, ' ')))
-        end
-        if build.autoreconf then
-            table.insert(o, 'pkg_autoreconf="yes"')
         end
         if build.in_source then
             build_dir = '$pkg_source_dir'

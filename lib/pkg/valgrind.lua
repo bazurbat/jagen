@@ -13,6 +13,6 @@ package {
         type    = 'GNU',
         options = '--enable-only32bit --disable-tls '..
                   '--with-pagesize=16 --without-mpicc',
-        with_provided_libtool = true,
+        autoreconf = true,
     }
 }

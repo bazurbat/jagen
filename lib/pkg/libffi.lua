@@ -9,6 +9,6 @@ package {
         type    = 'GNU',
         options = '--disable-builddir',
         libs    = { 'ffi' },
-        with_provided_libtool = true
+        autoreconf = true
     }
 }

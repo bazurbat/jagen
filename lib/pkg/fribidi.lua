@@ -9,7 +9,6 @@ package {
         type    = 'GNU',
         options = '--with-glib=yes',
         libs    = { 'fribidi' },
-        with_provided_libtool = true,
         autoreconf = true
     }
 }

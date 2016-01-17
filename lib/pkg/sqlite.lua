@@ -8,6 +8,6 @@ package {
         type    = 'GNU',
         options = '--disable-static',
         libs    = { 'sqlite3' },
-        with_provided_libtool = true,
+        autoreconf = true,
     },
 }
