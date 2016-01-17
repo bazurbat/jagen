@@ -15,7 +15,7 @@ jagen_pkg_build() {
         --disable-most-builds \
         --disable-libuuid \
         --enable-libblkid \
-        --enable-libmount \
+        --disable-libmount \
         --disable-mount \
         --enable-losetup \
         --disable-cytune \
