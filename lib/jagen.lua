@@ -305,10 +305,20 @@ function Package:add_target(target)
 end
 
 function Package:add_build_targets(config)
+    local source = self.source
     local build = self.build
+    if source then
+        if source.type == 'repo' then
+            jagen.need_repo = true
+            self:add_target(Target:from_rule({ 'unpack',
+                        { 'repo', 'unpack' }
+                }, self.name))
+        end
+    end
     if build then
         if build.type == 'GNU' then
             if build.generate or build.autoreconf then
+                jagen.need_libtool = true
                 self:add_target(Target:from_rule({ 'autoreconf',
                             { 'libtool', 'install', 'host' }
                     }, self.name))
@@ -386,7 +396,7 @@ function Source:create(source)
         source = Source:new(source)
     end
 
-    if source.location then
+    if source.location and source.type ~= 'curl' then
         local dir = source:is_scm() and '$jagen_src_dir' or '$pkg_work_dir'
         local basename = source:basename(source.location)
         source.path = system.mkpath(dir, source.path or basename)
@@ -825,14 +835,24 @@ function jagen.load_rules()
         end
     end
 
-    local libtool = Package:create('libtool')
-    libtool:add_target(Target:new(libtool.name, 'build', 'host'))
-    libtool:add_target(Target:new(libtool.name, 'install', 'host'))
-    table.insert(packages, libtool)
+    local toolchain = Package:create('toolchain')
+    toolchain:add_target(Target:new(toolchain.name, 'install', 'target'))
+    packages[toolchain.name] = toolchain
+    table.insert(packages, toolchain)
 
-    local tc = Package:create('toolchain')
-    tc:add_target(Target:new(tc.name, 'install', 'target'))
-    table.insert(packages, tc)
+    if jagen.need_libtool then
+        local libtool = Package:create('libtool')
+        libtool:add_target(Target:new(libtool.name, 'build', 'host'))
+        libtool:add_target(Target:new(libtool.name, 'install', 'host'))
+        packages[libtool.name] = libtool
+        table.insert(packages, libtool)
+    end
+
+    if jagen.need_repo then
+        local repo = Package:create('repo')
+        packages[repo.name] = repo
+        table.insert(packages, repo)
+    end
 
     for _, pkg in ipairs(packages) do
         pkg:add_ordering_dependencies()
