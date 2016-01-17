@@ -3,12 +3,10 @@
 pkg_work_dir="$jagen_install_dir"
 pkg_source_dir="${jagen_target_dir}${jagen_target_prefix}"
 
-jagen_pkg_clean() {
+jagen_pkg_unpack() {
     pkg_clean_dir "$pkg_work_dir"
     pkg_clean_dir "$pkg_source_dir"
-}
 
-jagen_pkg_unpack() {
     pkg_run cd "$pkg_work_dir"
 
     pkg_run install -d -m 755 bin dev etc home lib libexec mnt proc run sbin share sys usr var

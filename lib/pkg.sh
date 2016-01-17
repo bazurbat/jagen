@@ -96,27 +96,13 @@ pkg_link() {
     pkg_run ln -rs $(basename "$dst") "$src"
 }
 
-jagen_pkg_clean() {
-    set -- $pkg_source
-    local kind="$1"
-
-    case $kind in
-        git|hg)
-            if in_list "$pkg_name" $jagen_source_exclude; then
-                message "pkg source '$pkg_name' excluded from cleaning"
-            elif [ -d "$pkg_source_dir" ]; then
-                _jagen src clean "$pkg_name"
-            fi
-            ;;
-    esac
-
-    pkg_clean_dir "$pkg_work_dir"
-}
-
 default_unpack() {
     set -- $pkg_source
     local src_type="$1"
     local src_path="$2"
+
+    pkg_clean_dir "$pkg_work_dir"
+    cd "$pkg_work_dir"
 
     [ "$pkg_source" ] || return 0
 
@@ -125,10 +111,11 @@ default_unpack() {
             if [ -d "$pkg_source_dir" ]; then
                 if in_flags offline; then
                     message "not updating $pkg_name: offline mode"
-                elif _jagen src dirty "$pkg_name"; then
-                    warning "not updating $pkg_name: $pkg_source_dir is not clean"
+                elif in_list "$pkg_name" $jagen_source_exclude; then
+                    message "not updating $pkg_name: excluded"
                 else
-                    _jagen src update "$pkg_name"
+                    _jagen src clean "$pkg_name"  || return
+                    _jagen src update "$pkg_name" || return
                 fi
             else
                 if in_flags offline; then

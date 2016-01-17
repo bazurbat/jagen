@@ -223,7 +223,7 @@ end
 --{{{ Package
 
 Package = {
-    init_stages = { 'clean', 'unpack', 'patch' }
+    init_stages = { 'unpack', 'patch' }
 }
 Package.__index = Package
 

@@ -3,13 +3,11 @@
 pkg_work_dir="$jagen_install_dir"
 pkg_source_dir="${jagen_target_dir}${jagen_target_prefix}"
 
-jagen_pkg_clean() {
-    pkg_clean_dir "$pkg_work_dir"
-    pkg_clean_dir "$pkg_source_dir"
-}
-
 jagen_pkg_install() {
     local bins="csi smplayer"
+
+    pkg_clean_dir "$pkg_work_dir"
+    pkg_clean_dir "$pkg_source_dir"
 
     [ -d "$pkg_work_dir/bin" ] || mkdir -p "$pkg_work_dir/bin"
     [ -d "$pkg_work_dir/lib" ] || mkdir -p "$pkg_work_dir/lib"
