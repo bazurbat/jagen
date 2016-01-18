@@ -1,3 +1,4 @@
+require "common"
 
 local function import_paths(filename)
     local o = {}
