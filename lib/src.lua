@@ -247,7 +247,7 @@ function SourceManager:new(o)
 end
 
 function SourceManager:packages(names)
-    local packages, scm_packages = jagen.load_rules(), {}
+    local packages, scm_packages = Rules.load(), {}
     if names and #names > 0 then
         for _, name in ipairs(names) do
             if not packages[name] then

@@ -145,9 +145,6 @@ function system.exists(pathname)
 end
 
 --}}}
-
-require "pkg"
-
 --{{{ jagen
 
 jagen =
@@ -226,85 +223,6 @@ function jagen.flag(f)
     return false
 end
 
-function jagen.import_paths(filename)
-    local o = {}
-    table.insert(o, system.mkpath(jagen.dir, 'lib', filename))
-    for _, overlay in ipairs(string.split(jagen.overlays, ' ')) do
-        table.insert(o, system.mkpath(jagen.dir, 'overlay', overlay, filename))
-    end
-    table.insert(o, system.mkpath(jagen.root, filename))
-    return o
-end
-
-function jagen.load(filename)
-    local rules = {}
-    local env = {
-        table = table,
-        jagen = jagen
-    }
-    function env.package(rule)
-        table.insert(rules, rule)
-    end
-    local chunk = loadfile(filename)
-    if chunk then
-        setfenv(chunk, env)
-        chunk()
-    end
-    return rules
-end
-
-function jagen.rules(path)
-    local function genrules(suffix)
-        for _, file in ipairs(jagen.import_paths(suffix)) do
-            for _, rule in ipairs(jagen.load(file)) do
-                coroutine.yield(rule)
-            end
-        end
-    end
-    return coroutine.wrap(genrules), path..'.lua'
-end
-
-function jagen.load_rules()
-    local packages = {}
-
-    local function add(rule)
-        rule = Package:read(rule)
-        local name = assert(rule.name)
-        local pkg = packages[name]
-        if not pkg then
-            pkg = Package:create(name)
-            packages[name] = pkg
-            table.insert(packages, pkg)
-        end
-        table.merge(pkg, rule)
-        pkg:add_build_targets(rule.config)
-        for stage in each(rule) do
-            pkg:add_target(Target:from_rule(stage, pkg.name, rule.config))
-        end
-    end
-
-    for rule in jagen.rules('rules') do
-        add(rule)
-    end
-
-    add { 'toolchain', 'target', { 'install' } }
-
-    if jagen.need_libtool then
-        add { 'libtool', 'host' }
-    end
-
-    if jagen.need_repo then
-        add { 'repo' }
-    end
-
-    for _, pkg in ipairs(packages) do
-        pkg:add_ordering_dependencies()
-        pkg.source = Source:create(pkg.source)
-    end
-
-    return packages
-end
-
 function jagen.generate_include_script(pkg)
     local name     = pkg.name
     local filename = name..'.sh'
@@ -317,7 +235,7 @@ function jagen.generate_include_script(pkg)
 end
 
 function jagen.generate()
-    local packages = jagen.load_rules()
+    local packages = Rules.load()
     local ninja = Ninja:new()
 
     table.sort(packages, function (a, b)
@@ -382,7 +300,7 @@ function build.find_targets(packages, arg)
 end
 
 function jagen.build(args)
-    local packages = jagen.load_rules()
+    local packages = Rules.load()
     local targets = {}
 
     for _, arg in ipairs(args) do
@@ -393,7 +311,7 @@ function jagen.build(args)
 end
 
 function jagen.rebuild(args)
-    local packages = jagen.load_rules()
+    local packages = Rules.load()
     local targets = {}
 
     for _, arg in ipairs(args) do
@@ -405,6 +323,7 @@ end
 
 ---}}}
 
+require 'pkg'
 require 'src'
 require 'gen'
 
