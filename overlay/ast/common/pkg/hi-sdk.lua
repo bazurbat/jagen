@@ -6,7 +6,6 @@ package {
         branch   = 'master'
     },
     build = {
-        type = 'manual',
         in_source = true
     }
 }

@@ -324,7 +324,7 @@ function Package:add_build_targets(config)
                     }, self.name))
             end
         end
-        if build.type and build.type ~= 'manual' then
+        if build.type then
             if config == 'target' then
                 self:add_target(Target:from_rule({ 'build',
                             { 'toolchain', 'install', 'target' }
