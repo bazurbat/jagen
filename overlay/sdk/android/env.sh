@@ -12,6 +12,8 @@ jagen_target_prefix="/system"
 
 jagen_sdk_staging_dir="$jagen_sdk_dir/out/target/product/$jagen_android_product"
 
+export KDIR="$jagen_sdk_staging_dir/obj/KERNEL_OBJ"
+
 if in_flags ccache; then
     export USE_CCACHE=1
 fi
