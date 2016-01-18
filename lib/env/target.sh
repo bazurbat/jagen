@@ -16,4 +16,5 @@ export PKG_CONFIG_SYSROOT_DIR="${jagen_target_dir}"
 export PKG_CONFIG_LIBDIR="${jagen_target_dir}${jagen_target_prefix}/lib/pkgconfig"
 export PKG_CONFIG_DIR=""
 
+export ARCH="$jagen_target_arch"
 export CROSS_COMPILE="$jagen_toolchain_prefix"
