@@ -1,43 +1,8 @@
---{{{ system
+require "common"
+require 'pkg'
+require 'src'
+require 'gen'
 
-system = {}
-
-function system.mkpath(...)
-    local sep = '/'
-    local path = {}
-    for _, c in ipairs({...}) do
-        table.insert(path, c)
-    end
-    return table.concat(path, sep)
-end
-
-function system.tocommand(...)
-    local command = {}
-    for _, arg in ipairs({...}) do
-        table.insert(command, string.format('%s', tostring(arg)))
-    end
-    return table.concat(command, ' ')
-end
-
-function system.exec(...)
-    local command = system.tocommand(...)
-    jagen.debug1(command)
-    local status = os.execute(command)
-    return status == 0, status % 0xFF
-end
-
-function system.popen(...)
-    local command = system.tocommand(...)
-    jagen.debug1(command)
-    return io.popen(command)
-end
-
-function system.exists(pathname)
-    assert(type(pathname) == 'string')
-    return os.execute(string.format('test -e "%s"', pathname)) == 0
-end
-
---}}}
 --{{{ jagen
 
 jagen =
@@ -215,10 +180,6 @@ function jagen.rebuild(args)
 end
 
 ---}}}
-
-require 'pkg'
-require 'src'
-require 'gen'
 
 command = arg[1]
 status = 0
