@@ -505,7 +505,8 @@ function HgSource:dirty()
 end
 
 function HgSource:clean()
-    return self:exec('update', '-C') and self:exec('purge', '--all')
+    return self:exec('update', '-C', assert(self.branch)) and
+           self:exec('purge', '--all')
 end
 
 function HgSource:update()
