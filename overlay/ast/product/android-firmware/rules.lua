@@ -23,7 +23,7 @@ local function firmware_package(rule)
 end
 
 package { 'firmware',
-    { 'install',
+    { 'build',
         { 'hi-utils', 'install', 'target' },
         { 'chicken',        'install', 'target' },
         { 'chicken-eggs',   'install', 'target' },
@@ -31,8 +31,7 @@ package { 'firmware',
         { 'karaoke-player', 'install', 'target' },
         { 'libuv',          'install', 'target' },
     },
-    { 'strip'  },
-    { 'deploy' }
+    { 'install' }
 }
 
 firmware_package { 'hi-utils',
