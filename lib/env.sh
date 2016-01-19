@@ -45,8 +45,6 @@ jagen_target_prefix="/usr"
 jagen_tools_dir="$jagen_root/tools"
 jagen_tools_prefix=""
 
-jagen_install_dir="$jagen_root/firmware"
-
 export LUA_PATH="$jagen_lib_dir/?.lua;;"
 
 add_PATH "$jagen_host_dir/bin"

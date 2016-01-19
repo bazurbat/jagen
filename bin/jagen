@@ -25,7 +25,6 @@ case $1 in
         rm -rf "$jagen_host_dir"
         rm -rf "$jagen_target_dir"
         rm -rf "$jagen_tools_dir"
-        rm -rf "$jagen_install_dir"
         exec jagen refresh
         ;;
     update)

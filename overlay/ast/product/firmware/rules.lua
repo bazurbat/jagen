@@ -16,9 +16,8 @@ package { 'linux',
 
 package { 'xsdk' }
 
-package { 'ucode', 'target',
-    { 'unpack',  { 'mrua',     'build'  } },
-    { 'install', { 'firmware', 'unpack' } }
+package { 'ucode',
+    { 'install' }
 }
 
 -- tools
@@ -105,9 +104,9 @@ package { 'rootfs',
 }
 
 package { 'mrua',
-    { 'build',   { 'kernel',   'build'  } },
-    { 'modules'  },
-    { 'install', { 'firmware', 'unpack' } },
+    { 'build',  { 'kernel',   'build'  } },
+    { 'modules' },
+    { 'install' },
 }
 
 rootfs_package { 'ezboot',
@@ -156,7 +155,7 @@ local function firmware_package(rule)
 end
 
 package { 'firmware',
-    { 'material',
+    { 'build',
         { 'mrua', 'build' }
     },
     { 'install',
@@ -165,6 +164,7 @@ package { 'firmware',
         { 'kernel',         'image'             },
         { 'mrua',           'install'           },
         { 'rsync',          'install', 'target' },
+        { 'ucode',          'install'           },
         { 'wpa_supplicant', 'install', 'target' },
     },
     { 'strip' }

@@ -32,31 +32,37 @@ jagen_pkg_modules() {
 }
 
 jagen_pkg_install() {
-    local bin_dst="$jagen_install_dir/bin"
-    local lib_dst="$jagen_install_dir/lib"
+    local bin_dir="$jagen_target_dir$jagen_target_prefix/bin"
+    local lib_dir="$jagen_target_dir$jagen_target_prefix/lib"
+
+    pkg_run mkdir -p "$bin_dir" "$lib_dir"
 
     for bin in ikc xkc; do
-        pkg_run cp -va "$pkg_source_dir/bin/$bin" "$bin_dst"
+        pkg_run cp -va "$pkg_source_dir/bin/$bin" "$bin_dir"
     done
 
     for bin in gbus_read_bin_to_file gbus_read_uint32; do
-        pkg_run cp -va "$pkg_source_dir/MRUA_src/llad_smallapps/$bin" "$bin_dst"
+        pkg_run cp -va "$pkg_source_dir/MRUA_src/llad_smallapps/$bin" \
+            "$bin_dir"
     done
 
     for bin in rmfree rmmalloc; do
-        pkg_run cp -va "$pkg_source_dir/MRUA_src/llad_xtest/$bin" "$bin_dst"
+        pkg_run cp -va "$pkg_source_dir/MRUA_src/llad_xtest/$bin" "$bin_dir"
     done
 
     for lib in $build_libs; do
-        pkg_run cp -va "$pkg_source_dir/MRUA_src/$lib/src/lib${lib}.so" "$lib_dst"
+        pkg_run cp -va "$pkg_source_dir/MRUA_src/$lib/src/lib${lib}.so" \
+            "$lib_dir"
     done
 
-    pkg_run cp -va "$pkg_source_dir/MRUA_src/gbuslib/src/libgbus.so" "$lib_dst"
-    pkg_run cp -va "$pkg_source_dir/MRUA_src/rmoutput/rua/src/libruaoutput.so" "$lib_dst"
+    pkg_run cp -va \
+        "$pkg_source_dir/MRUA_src/gbuslib/src/libgbus.so" \
+        "$pkg_source_dir/MRUA_src/rmoutput/rua/src/libruaoutput.so" \
+        "$lib_dir"
 
     local libs="llad rmchannel rmcw rmmm rmmm_g rmmm_t rua"
 
     for lib in $libs; do
-        pkg_run cp -va "$pkg_source_dir/lib/lib${lib}.so" "$lib_dst"
+        pkg_run cp -va "$pkg_source_dir/lib/lib${lib}.so" "$lib_dir"
     done
 }
