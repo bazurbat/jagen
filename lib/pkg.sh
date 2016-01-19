@@ -96,13 +96,8 @@ pkg_link() {
     pkg_run ln -rs $(basename "$dst") "$src"
 }
 
-pkg_ensure_build_dir() {
-    if [ "$pkg_build_dir" ]; then
-        if ! [ -d "$pkg_build_dir" ]; then
-            pkg_run mkdir -p "$pkg_build_dir"
-        fi
-        pkg_run cd "$pkg_build_dir"
-    fi
+jagen_pkg_unpack_pre() {
+    cd "$jagen_build_dir"
 }
 
 default_unpack() {
@@ -151,6 +146,7 @@ jagen_pkg_unpack() {
 }
 
 jagen_pkg_patch_pre() {
+    [ "$pkg_source_dir" ] || return 0
     pkg_run cd "$pkg_source_dir"
 }
 
@@ -165,6 +161,7 @@ jagen_pkg_patch() {
 }
 
 jagen_pkg_autoreconf() {
+    [ "$pkg_source_dir" ] || return 0
     pkg_run cd "$pkg_source_dir"
     if [ "$pkg_build_generate" ]; then
         if [ -x ./autogen.sh ]; then
@@ -175,11 +172,8 @@ jagen_pkg_autoreconf() {
     fi
 }
 
-jagen_pkg_build_pre() {
-    pkg_ensure_build_dir
-}
-
 default_build() {
+    [ "$pkg_source_dir" ] || return 0
     if [ -x "$pkg_source_dir/configure" ]; then
         pkg_run "$pkg_source_dir/configure" \
             --host="$pkg_system" \
@@ -193,12 +187,8 @@ jagen_pkg_build() {
     default_build
 }
 
-jagen_pkg_install_pre() {
-    pkg_ensure_build_dir
-}
-
 default_install() {
-    pkg_run make DESTDIR="$pkg_dest_dir" install
+    pkg_run make DESTDIR="${pkg_dest_dir:?}" install
 
     for name in $pkg_libs; do
         pkg_fix_la "$pkg_dest_dir$pkg_prefix/lib/lib${name}.la" "$pkg_dest_dir"

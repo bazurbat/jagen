@@ -34,6 +34,11 @@ fi
 include "$jagen_include_dir/$pkg_name"
 import "pkg/$pkg_name"
 
+if [ "$pkg_build_dir" ]; then
+    pkg_run mkdir -p "$pkg_build_dir"
+    pkg_run cd "$pkg_build_dir"
+fi
+
 run_stage() {
     local stage="$1"
     local pkg="$pkg_name${pkg_config:+ ($pkg_config)}"
