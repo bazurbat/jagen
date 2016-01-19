@@ -81,17 +81,6 @@ function jagen.flag(f)
     return false
 end
 
-function jagen.generate_include_script(pkg)
-    local name     = pkg.name
-    local filename = name..'.sh'
-    local path     = system.mkpath(jagen.include_dir, filename)
-    local script   = Script:new(pkg)
-
-    local f = assert(io.open(path, 'w+'))
-    f:write(tostring(script))
-    f:close()
-end
-
 function jagen.generate()
     local packages = Rules.load()
     local ninja = Ninja:new()
@@ -111,7 +100,8 @@ function jagen.generate()
     ninja:generate(jagen.build_file, packages)
 
     for _, package in ipairs(packages) do
-        jagen.generate_include_script(package)
+        local script = Script:new(package)
+        script:write()
     end
 end
 

@@ -116,86 +116,64 @@ function Script:new(pkg)
     return script
 end
 
-function Script:__tostring()
-    local script = {
-        self:header()
-    }
-    if self.pkg.source then
-        table.insert(script, self:source())
+function Script:write()
+    local pkg  = self.pkg
+    local path = system.mkpath(jagen.include_dir, pkg.name..'.sh')
+    local file = assert(io.open(path, 'w+'))
+    local function w(format, ...)
+        file:write(string.format(format, ...))
     end
-    table.insert(script, self:build())
-    if self.pkg.patches then
-        table.insert(script, self:patch())
-    end
-
-    return table.concat(script, '\n\n')
-end
-
-function Script:header()
-    return '#!/bin/sh'
-end
-
-function Script:source()
-    local pkg = self.pkg
-    local source = pkg.source
-    local o = {}
-    if source.type and source.location then
-        table.insert(o, string.format(
-            'pkg_source="%s %s"', source.type, source.location))
-    end
-    if source.branch then
-        table.insert(o, string.format('pkg_source_branch="%s"', source.branch))
-    end
-    if source.path then
-        table.insert(o, string.format('pkg_source_dir="%s"', source.path))
-    end
-    return table.concat(o, '\n')
-end
-
-function Script:build()
-    local o = {}
-    local pkg = self.pkg
-    local build_dir
-
-    if pkg.build then
-        local build = pkg.build
-
-        if build.options then
-            table.insert(o, string.format('pkg_options=\'%s\'', build.options))
+    w('#!/bin/sh\n')
+    do
+        local source = pkg.source
+        if source.type and source.location then
+            w('\npkg_source="%s %s"', source.type, source.location)
         end
-        if build.libs then
-            table.insert(o, string.format("pkg_libs='%s'",
-                table.concat(build.libs, ' ')))
+        if source.branch then
+            w('\npkg_source_branch="%s"', source.branch)
         end
-        if build.generate then
-            table.insert(o, "pkg_build_generate='yes'")
-        end
-        if build.in_source then
-            build_dir = '$pkg_source_dir'
-        end
-        if build.directory then
-            build_dir = build.directory
+        if source.path then
+            w('\npkg_source_dir="%s"', source.path)
         end
     end
+    do
+        local build_dir
 
-    build_dir = build_dir or '$pkg_work_dir${pkg_config:+/$pkg_config}'
+        if pkg.build then
+            local build = pkg.build
 
-    table.insert(o, string.format('pkg_build_dir="%s"', build_dir))
+            if build.options then
+                w('\npkg_options=\'%s\'', build.options)
+            end
+            if build.libs then
+                w("\npkg_libs='%s'", table.concat(build.libs, ' '))
+            end
+            if build.generate then
+                w("\npkg_build_generate='yes'")
+            end
+            if build.in_source then
+                build_dir = '$pkg_source_dir'
+            end
+            if build.directory then
+                build_dir = build.directory
+            end
+        end
 
-    return table.concat(o, '\n')
-end
+        build_dir = build_dir or '$pkg_work_dir${pkg_config:+/$pkg_config}'
 
-function Script:patch()
-    local o = {}
-    table.insert(o, 'jagen_pkg_apply_patches() {')
-    table.insert(o, '  pkg_run cd "$pkg_source_dir"')
-    for _, patch in ipairs(self.pkg.patches or {}) do
-        local name = patch[1]
-        local strip = patch[2]
-        table.insert(o, string.format('  pkg_run_patch %d "%s"', strip, name))
+        w('\npkg_build_dir="%s"', build_dir)
     end
-    table.insert(o, '}')
-    return table.concat(o, '\n')
+    if pkg.patches then
+        w('\njagen_pkg_apply_patches() {')
+        w('\n  pkg_run cd "$pkg_source_dir"')
+        for _, patch in ipairs(self.pkg.patches or {}) do
+            local name = patch[1]
+            local strip = patch[2]
+            w('\n  pkg_run_patch %d "%s"', strip, name)
+        end
+        w('\n}')
+    end
+    file:close()
 end
 
 --}}}
