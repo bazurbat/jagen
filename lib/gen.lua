@@ -142,6 +142,9 @@ function Script:write()
         if pkg.build then
             local build = pkg.build
 
+            if build.install then
+                w('\npkg_dest_dir="%s"', build.install)
+            end
             if build.options then
                 local o = build.options
                 if type(build.options) == 'string' then
@@ -157,9 +160,6 @@ function Script:write()
             end
             if build.prefix then
                 w('\npkg_prefix="%s"', build.prefix)
-            end
-            if build.install then
-                w('\npkg_dest_dir="%s"', build.install)
             end
             if build.in_source then
                 build_dir = '$pkg_source_dir'
