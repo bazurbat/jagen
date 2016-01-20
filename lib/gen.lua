@@ -143,13 +143,23 @@ function Script:write()
             local build = pkg.build
 
             if build.options then
-                w('\npkg_options=\'%s\'', build.options)
+                local o = build.options
+                if type(build.options) == 'string' then
+                    o = { build.options }
+                end
+                w('\npkg_options="%s"', table.concat(o, '\n'))
             end
             if build.libs then
                 w("\npkg_libs='%s'", table.concat(build.libs, ' '))
             end
             if build.generate then
                 w("\npkg_build_generate='yes'")
+            end
+            if build.prefix then
+                w('\npkg_prefix="%s"', build.prefix)
+            end
+            if build.install then
+                w('\npkg_dest_dir="%s"', build.install)
             end
             if build.in_source then
                 build_dir = '$pkg_source_dir'
