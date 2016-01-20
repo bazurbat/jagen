@@ -3,6 +3,9 @@
 local function rootfs_package(rule)
     rule.config = 'target'
     table.insert(rule, { 'build', { 'rootfs', 'build' } })
+    rule.build = rule.build or {}
+    rule.build.prefix = ''
+    rule.build.install = '$jagen_sdk_staging_dir'
     package(rule)
 end
 

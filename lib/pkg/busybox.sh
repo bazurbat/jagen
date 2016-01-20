@@ -1,8 +1,5 @@
 #!/bin/sh
 
-pkg_prefix=""
-pkg_dest_dir="$jagen_sdk_rootfs_root"
-
 jagen_pkg_patch() {
     pkg_run cp -f "$jagen_private_dir/cfg/busybox.config" ".config"
 }

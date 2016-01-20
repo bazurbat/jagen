@@ -9,7 +9,7 @@ export RMCFLAGS="$RMCFLAGS \
 
 jagen_pkg_build() {
     add_PATH "$SMP86XX_TOOLCHAIN_PATH/bin"
-    add_PATH "$jagen_sdk_rootfs_prefix/bin"
+    add_PATH "$pkg_dest_dir/bin"
 
     pkg_run cd "xos/xboot2/xmasboot/nand_st2"
     pkg_run ./build_phyblock0.bash
