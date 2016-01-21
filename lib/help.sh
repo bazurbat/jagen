@@ -11,7 +11,7 @@ Commands:
   update	Update jagen and regenerate the build system
   refresh	Regenerate the build system
   build		Build the specified targets
-  rebuild	Rebuild the specified targets showing the output
+  run   	Run the build system for the specified targets
   src		Manage SCM package sources
 
   The 'help' command shows this help message.
@@ -36,15 +36,14 @@ Commands:
   the build directory alongside the target stamp file with the '.log' extension
   appended. See below for TARGETS syntax.
 
-  The 'rebuild' command have the form:
+  The 'run' command have the form:
 
-    jagen rebuild [-t] [-a] [TARGETS...]
+    jagen run [-t] [-o] [-a] [TARGETS...]
 
-  and rebuilds the specified targets including their dependencies showing the
-  output on the console. With the '-t' option only the specified targets will
-  be rebuilt. With the '-a' option the console output will include logs from
-  not specified targets. The output is saved alongside the target stamp file in
-  the build directory with the '.log' extension appended.
+  and runs the the build system starting from the specified targets. Add the
+  '-t' option to stop after given targets are completed. With the '-o' option
+  the command output will be shown for the specified targets. With the '-a'
+  option all build output will be shown.
 
   The targets are specified as: <name>[:<stage>][:<config>]. The available
   package stages are filtered with the given expression. Omitted component
@@ -59,8 +58,8 @@ Commands:
   When a target is succesfully built the stamp file is created in the build
   directory with the name: <name>-<stage>-<config>. This file is used to
   determine if the target is up to date. Deleting it will cause the
-  corresponding target to be rebuilt unconditionally on the next 'build' or
-  'rebuild' command.
+  corresponding target to be rebuilt unconditionally next time the build system
+  runs.
 
 SRC COMMAND:
 

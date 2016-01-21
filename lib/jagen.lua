@@ -166,7 +166,7 @@ function jagen.rebuild(args)
         targets = append(targets, build.find_targets(packages, arg))
     end
 
-    return system.exec(jagen.cmd, 'rebuild', unpack(targets))
+    return system.exec(jagen.cmd, 'run', unpack(targets))
 end
 
 ---}}}
@@ -180,7 +180,7 @@ elseif command == 'build' then
     local args = table.rest(arg, 2)
 
     _, status = jagen.build(args)
-elseif command == 'rebuild' then
+elseif command == 'run' then
     local args = table.rest(arg, 2)
 
     _, status = jagen.rebuild(args)

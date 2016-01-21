@@ -1,28 +1,30 @@
 #!/bin/sh
 
+S=$(printf '\t')
+
+on_interrupt() { :; }
+
 build() {
     cd "$jagen_build_dir" || exit 1
     ninja "$@"
 }
 
-on_rebuild_interrupt() { :; }
-
-rebuild() {
+cmd_run() {
     local IFS="$(printf '\n\t')"
-    local tab="$(printf '\t')"
-    local targets_only show_all
-    local target targets logs status
-    local rebuild_log="$jagen_log_dir/rebuild.log"
+    local arg targets_only show_output show_all
+    local targets logs sts
+    local cmd_log="$jagen_log_dir/build.log"
 
     cd "$jagen_build_dir" || exit 1
-    : > "$rebuild_log"
+    : > "$cmd_log"
 
-    for target in "$@"; do
-        [ "$target" = "-t" ] && { targets_only=1; continue; }
-        [ "$target" = "-a" ] && { show_all=1; continue; }
+    for arg; do
+        [ "$arg" = '-t' ] && { targets_only=1; continue; }
+        [ "$arg" = '-o' ] && { show_output=1; continue; }
+        [ "$arg" = "-a" ] && { show_all=1; continue; }
 
-        targets="${targets}${tab}${target}"
-        logs="${logs}${tab}${jagen_log_dir}/${target}.log"
+        targets="${targets}${S}${arg}"
+        logs="${logs}${S}${jagen_log_dir}/${arg}.log"
     done
 
     rm -f $targets
@@ -30,23 +32,26 @@ rebuild() {
         : > "$log"
     done
 
-    if [ "$show_all" ]; then
+    if [ "$show_output" ]; then
+        tail -qFn+1 "$cmd_log" $logs 2>/dev/null &
+    elif [ "$show_all" ]; then
         tail -qFn0 *.log 2>/dev/null &
     else
-        tail -qFn+1 $logs $rebuild_log 2>/dev/null &
+        tail -qFn+1 "$cmd_log" &
     fi
 
-    # just plainly ignoring it seems to not work well in all cases
-    trap on_rebuild_interrupt INT
+    # catch SIGINT to kill background tail process and exit cleanly
+    trap on_interrupt INT
 
     if [ "$targets_only" ]; then
-        ninja $targets >$rebuild_log; status=$?
+        ninja $targets > "$cmd_log"; sts=$?
     else
-        ninja >$rebuild_log; status=$?
+        ninja > "$cmd_log"; sts=$?
     fi
 
     kill $!
-    return $status
+
+    return $sts
 }
 
 case $1 in
@@ -54,9 +59,9 @@ case $1 in
         shift
         build "$@"
         ;;
-    rebuild)
+    run)
         shift
-        rebuild "$@"
+        cmd_run "$@"
         ;;
     *)
         echo "Unknown wrapper command: $1"
