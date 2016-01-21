@@ -3,6 +3,8 @@
 use_env host
 
 jagen_pkg_patch() {
+    default_patch
+
     export LIBTOOLIZE=echo
 
     pkg_run cd libltdl

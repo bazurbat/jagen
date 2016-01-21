@@ -1,6 +1,8 @@
 #!/bin/sh
 
 jagen_pkg_patch() {
+    default_patch
+
     # leave python shebang alone
     pkg_run sed -ie '/${PYTHON}/d' \
         glib/Makefile.am glib/Makefile.in
