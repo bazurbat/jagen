@@ -3,12 +3,12 @@ package {
     build = {
         type    = 'GNU',
         options = {
-			'--disable-dependency-tracking',
-			'--disable-static',
-			'--disable-mips-dspr2',
-			'--disable-gtk',
-			'--disable-libpng'
+            '--disable-dependency-tracking',
+            '--disable-static',
+            '--disable-mips-dspr2',
+            '--disable-gtk',
+            '--disable-libpng'
         },
-		libs = { 'pixman-1' }
+        libs = { 'pixman-1' }
     }
 }
