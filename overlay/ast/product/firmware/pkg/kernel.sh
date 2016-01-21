@@ -9,7 +9,7 @@ use_env target
 export CROSS_MAKE="make ARCH=${jagen_target_arch}"
 export KCFLAGS="-mhard-float -Wa,-mhard-float"
 
-protectordir="$jagen_sdk_ezboot_dir/protector/"
+protectordir="$jagen_sdk_ezboot_dir/protector"
 
 jagen_pkg_build() {
     pkg_run ln -sfT "$jagen_src_dir/linux" linux
@@ -59,35 +59,33 @@ jagen_pkg_install() {
 }
 
 get_start_addr() {
-    local NM="${jagen_toolchain_prefix}-nm"
+    local NM="${jagen_toolchain_prefix}nm"
     echo 0x$($NM $1 | awk '/\<kernel_entry\>/ { print $1 }')
 }
 
 jagen_pkg_image() {
-    add_PATH "$jagen_sdk_rootfs_prefix/bin"
+    local genzbf="$jagen_sdk_staging_dir/bin/genzbf"
+    local image_dir="$jagen_target_dir/kernel-image"
+    local image="$jagen_target_dir/zbimage-linux-xload"
 
-    local tmpdir="$jagen_target_dir/kernel-image"
-    pkg_clean_dir "$tmpdir"
+    pkg_run rm -rf "$image_dir"
+    pkg_run mkdir -p "$image_dir" "$image_dir/romfs"
 
     pkg_run cd "$LINUX_KERNEL"
     pkg_run $CROSS_MAKE vmlinux.bin
-    gzip -9cnf arch/mips/boot/vmlinux.bin > "$tmpdir/vmlinux_gz.zbf" || exit
+    gzip -9c arch/mips/boot/vmlinux.bin > "$image_dir/vmlinux_gz.zbf" || return
 
-    pkg_run cd "$tmpdir"
+    pkg_run cd "$image_dir"
     pkg_run bash "$jagen_private_dir/scripts/build_cpu_xload.bash" \
         vmlinux_gz $XSDK_DEFAULT_CPU_CERTID $XSDK_DEFAULT_KEY_DOMAIN
-    pkg_run genzbf \
+    pkg_run "$genzbf" \
         -l 0x84000000 \
         -s $(get_start_addr "$LINUX_KERNEL/vmlinux") \
-        -a lzef -o vmlinux_xload.zbf \
+        -a lzef -o romfs/vmlinux_xload.zbf \
         vmlinux_gz_${XSDK_DEFAULT_KEY_DOMAIN}.xload
 
-    pkg_clean_dir romfs
-    pkg_run cp vmlinux_xload.zbf romfs
-    pkg_run genromfs -V MIPSLINUX_XLOAD -d romfs \
-        -f "$jagen_target_dir/zbimage-linux-xload"
+    pkg_run genromfs -V MIPSLINUX_XLOAD -d romfs -f "$image"
 
-    pkg_run "$protectordir/zbprotector" \
-        "$jagen_target_dir/zbimage-linux-xload" \
-        "$jagen_target_dir/zbimage-linux-xload.zbc"
+    pkg_run "$protectordir/zbprotector" "$image" "${image}.zbc"
+    pkg_run chmod 644 "${image}.zbc"
 }

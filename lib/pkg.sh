@@ -25,17 +25,6 @@ pkg_run() {
     $cmd "$@" || $pkg_run_on_error
 }
 
-pkg_clean_dir() {
-    local dir="$1"
-    if [ -d "$dir" ]; then
-        rm -rf "$dir"/* ||
-            die "Failed to clean directory: $dir"
-    else
-        mkdir -p "$dir" ||
-            die "Failed to create directory: $dir"
-    fi
-}
-
 pkg_strip_dir() {
     local root files
     root="$1"
