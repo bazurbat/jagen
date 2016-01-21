@@ -34,6 +34,8 @@ fi
 include "$jagen_include_dir/$pkg_name"
 import "pkg/$pkg_name"
 
+pkg_install_dir="$pkg_dest_dir$pkg_prefix"
+
 if [ "$pkg_build_dir" ]; then
     pkg_run mkdir -p "$pkg_build_dir"
     pkg_run cd "$pkg_build_dir"
