@@ -3,7 +3,6 @@ package {
     build = {
         type    = 'GNU',
         options = {
-            '--disable-dependency-tracking',
             '--disable-static',
             '--disable-gtk-doc',
             '--disable-gtk-doc-html',
