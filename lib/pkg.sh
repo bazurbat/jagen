@@ -169,7 +169,7 @@ default_build() {
         pkg_run "$pkg_source_dir/configure" \
             --host="$pkg_system" \
             --prefix="$pkg_prefix" \
-            $pkg_options
+            $pkg_options "$@"
         IFS=$OLDIFS
         pkg_run make
     fi
