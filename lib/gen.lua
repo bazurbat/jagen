@@ -142,6 +142,9 @@ function Script:write()
         if pkg.build then
             local build = pkg.build
 
+            if build.type then
+                w("\npkg_build_type='%s'", build.type)
+            end
             if build.install then
                 w('\npkg_dest_dir="%s"', build.install)
             end

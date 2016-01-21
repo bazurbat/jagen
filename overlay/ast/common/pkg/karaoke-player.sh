@@ -52,11 +52,3 @@ jagen_pkg_build_target() {
 
     pkg_run cmake --build . -- $jagen_cmake_build_options
 }
-
-jagen_pkg_install_host() {
-    pkg_run cmake --build . --target install
-}
-
-jagen_pkg_install_target() {
-    pkg_run cmake --build . --target install
-}

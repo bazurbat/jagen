@@ -191,11 +191,18 @@ jagen_pkg_build() {
 }
 
 default_install() {
-    pkg_run make DESTDIR="${pkg_dest_dir:?}" install
+    case $pkg_build_type in
+        CMake)
+            pkg_run cmake --build . --target install
+            ;;
+        GNU)
+            pkg_run make DESTDIR="${pkg_dest_dir:?}" install
 
-    for name in $pkg_libs; do
-        pkg_fix_la "$pkg_dest_dir$pkg_prefix/lib/lib${name}.la" "$pkg_dest_dir"
-    done
+            for name in $pkg_libs; do
+                pkg_fix_la "$pkg_dest_dir$pkg_prefix/lib/lib${name}.la" "$pkg_dest_dir"
+            done
+            ;;
+    esac
 }
 
 jagen_pkg_install() {
