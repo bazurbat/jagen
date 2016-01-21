@@ -25,6 +25,11 @@ pkg_run() {
     $cmd "$@" || $pkg_run_on_error
 }
 
+pkg_patch() {
+    local num="${1:?}" name="${2:?}"
+    pkg_run patch -p$num -i "$jagen_patch_dir/${name}.patch"
+}
+
 pkg_strip_dir() {
     local root files
     root="$1"
@@ -39,10 +44,6 @@ pkg_strip_dir() {
             -R .note.gnu.gold-version \
             "$f"
     done
-}
-
-pkg_run_patch() {
-    pkg_run patch -p${1} -i "$jagen_patch_dir/${2}.patch"
 }
 
 pkg_install_modules() {

@@ -178,11 +178,10 @@ function Script:write()
     end
     if pkg.patches then
         w('\njagen_pkg_apply_patches() {')
-        w('\n  pkg_run cd "$pkg_source_dir"')
         for _, patch in ipairs(self.pkg.patches or {}) do
             local name = patch[1]
             local strip = patch[2]
-            w('\n  pkg_run_patch %d "%s"', strip, name)
+            w('\n  pkg_patch %d "%s"', strip, name)
         end
         w('\n}')
     end
