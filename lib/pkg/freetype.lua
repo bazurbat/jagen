@@ -8,15 +8,17 @@ package {
     },
     build = {
         type    = 'GNU',
-        options = '--disable-static '..
-                  '--without-bzip2 '..
-                  '--without-png '..
-                  '--without-old-mac-fonts '..
-                  '--without-fsspec '..
-                  '--without-fsref '..
-                  '--without-quickdraw-toolbox '..
-                  '--without-quickdraw-carbon '..
-                  '--without-ats',
+        options = {
+            '--disable-static',
+            '--without-bzip2',
+            '--without-png',
+            '--without-old-mac-fonts',
+            '--without-fsspec',
+            '--without-fsref',
+            '--without-quickdraw-toolbox',
+            '--without-quickdraw-carbon',
+            '--without-ats'
+        },
         libs = { 'freetype' }
     }
 }

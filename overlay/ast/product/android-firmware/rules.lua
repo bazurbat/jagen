@@ -77,6 +77,6 @@ package { 'astindex',
 
 firmware_package { 'libuv',
     build  = {
-        options = '--disable-static'
+        options = { '--disable-static' }
     }
 }

@@ -7,7 +7,10 @@ package {
     },
     build = {
         type = 'GNU',
-        options = '--enable-integer-samples=yes --enable-x86-optimizations=no',
+        options = {
+            '--enable-integer-samples=yes',
+            '--enable-x86-optimizations=no'
+        },
         libs = { 'SoundTouch' }
     }
 }

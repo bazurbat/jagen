@@ -3,7 +3,7 @@ package {
     source = 'xtables-addons-1.47.1.tar.xz',
     build  = {
         type    = 'GNU',
-        options = '--without-kbuild',
+        options = { '--without-kbuild' },
         libs    = { 'xt_ACCOUNT_cl' }
     }
 }

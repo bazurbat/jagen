@@ -7,7 +7,7 @@ package {
     },
     build = {
         type    = 'GNU',
-        options = '--disable-builddir',
+        options = { '--disable-builddir' },
         libs    = { 'ffi' },
         autoreconf = true
     }

@@ -11,8 +11,12 @@ package {
     },
     build = {
         type    = 'GNU',
-        options = '--enable-only32bit --disable-tls '..
-                  '--with-pagesize=16 --without-mpicc',
+        options = {
+            '--enable-only32bit',
+            '--disable-tls',
+            '--with-pagesize=16',
+            '--without-mpicc'
+        },
         autoreconf = true,
     }
 }

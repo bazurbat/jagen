@@ -7,7 +7,7 @@ package {
     },
     build = {
         type    = 'GNU',
-        options = '--with-glib=yes',
+        options = { '--with-glib=yes' },
         libs    = { 'fribidi' },
         autoreconf = true
     }

@@ -6,7 +6,7 @@ package {
     },
     build = {
         type    = 'GNU',
-        options = '--disable-static',
+        options = { '--disable-static' },
         libs    = { 'sqlite3' },
         autoreconf = true,
     },
