@@ -169,6 +169,7 @@ default_build() {
         pkg_run "$pkg_source_dir/configure" \
             --host="$pkg_system" \
             --prefix="$pkg_prefix" \
+            --disable-dependency-tracking \
             $pkg_options "$@"
         IFS=$OLDIFS
         pkg_run make
