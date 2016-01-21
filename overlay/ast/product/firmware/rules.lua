@@ -177,6 +177,7 @@ firmware_package { 'karaoke-player',
     { 'build',
         { 'astindex',     'unpack'            },
         { 'mrua',         'build',            },
+		{ 'cairo',        'install', 'target' },
         { 'chicken-eggs', 'install', 'host'   },
         { 'chicken-eggs', 'install', 'target' },
         { 'connman',      'install', 'target' },
@@ -188,6 +189,15 @@ firmware_package { 'karaoke-player',
         { 'libuv',        'install', 'target' },
         { 'soundtouch',   'install', 'target' },
     }
+}
+
+firmware_package { 'pixman' }
+
+firmware_package { 'cairo',
+	{ 'build',
+		{ 'freetype', 'install', 'target' },
+		{ 'pixman',   'install', 'target' },
+	}
 }
 
 firmware_package { 'chicken',
