@@ -136,6 +136,19 @@ function Script:write()
             w('\npkg_source_dir="%s"', source.path)
         end
     end
+    -- put install variables before build to allow referencing them from
+    -- configure options
+    do
+        if pkg.install then
+            local i = pkg.install
+            if i.path then
+                w('\npkg_dest_dir="%s"', i.path)
+            end
+            if i.prefix then
+                w('\npkg_prefix="%s"', i.prefix)
+            end
+        end
+    end
     do
         local build_dir
 
@@ -144,9 +157,6 @@ function Script:write()
 
             if build.type then
                 w("\npkg_build_type='%s'", build.type)
-            end
-            if build.install then
-                w('\npkg_dest_dir="%s"', build.install)
             end
             if build.options then
                 local o = build.options
@@ -160,9 +170,6 @@ function Script:write()
             end
             if build.generate then
                 w("\npkg_build_generate='yes'")
-            end
-            if build.prefix then
-                w('\npkg_prefix="%s"', build.prefix)
             end
             if build.in_source then
                 build_dir = '$pkg_source_dir'
