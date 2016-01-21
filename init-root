@@ -18,26 +18,38 @@ Usage: init-root <CONFIG> [OPTIONS...]
 
 SYNOPSIS:
 
-  The script will put environment file '$env_file' and configuration file
+  The script will put an environment file '$env_file' and a configuration file
   '$config_file' in the current directory. The environment file should be
-  sourced into the working shell before issuing any other jagen commands.
+  sourced into the working shell before issuing any other jagen commands. The
+  configuration file is sourced by a generator and a build system.
 
-  Example:
-
-    cd $PWD
-    $jagen_dir/init-root ast100 -a ccache
-    . ./$env_file
-
-  For subsequent invocations:
-
-    cd $PWD
-    . ./$env_file
+  Jagen will create and remove few directories inside the build root depending
+  on the selected configuration and commands given, so it is not safe to store
+  important data there. Also initializing jagen's own project directory as
+  build root is not supported. It is recommended to use separate directory for
+  every configuration and do not mix shell environments from different build
+  roots.
 
 OPTIONS:
 
   -a, --flags   Set a space-separated list of default flags.
   -l, --list    List available configuration templates.
   -h, --help    Print this help message.
+
+EXAMPLES:
+
+    mkdir -p ~/work/root-ast100
+    cd ~/work/root-ast100
+    "<jagen_dir>/init-root" ast100 -a flag1 flag2
+    . ./$env_file
+    jagen run target1 target2
+    exit
+
+  For subsequent invocations:
+
+    cd ~/work/root-ast100
+    . ./$env_file
+    jagen run target3 target4
 
 EOF
 }
