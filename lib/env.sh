@@ -5,6 +5,8 @@ if [ "$ZSH_VERSION" ]; then
     setopt shwordsplit
 fi
 
+S=$(printf '\t')
+
 export jagen_shell=""
 
 export jagen_debug="${jagen_debug}"
