@@ -78,8 +78,7 @@ pkg_run_depmod() {
 }
 
 pkg_fix_la() {
-    local filename="$1"
-    local prefix=${2:-"$jagen_sdk_rootfs_prefix"}
+    local filename="${1:?}" prefix="${2:?}"
     debug "fix la $filename $prefix"
     pkg_run sed -i "s|^\(libdir=\)'\(.*\)'$|\1'${prefix}\2'|" "$filename"
 }
