@@ -234,8 +234,9 @@ function RepoSource:clone()
 end
 
 --}}}
-
 --{{{ SourceManager
+
+require 'Rules'
 
 SourceManager = {}
 

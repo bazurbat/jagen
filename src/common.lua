@@ -138,3 +138,13 @@ function system.exists(pathname)
     assert(type(pathname) == 'string')
     return os.execute(string.format('test -e "%s"', pathname)) == 0
 end
+
+function import_paths(filename)
+    local o = {}
+    table.insert(o, system.mkpath(jagen.dir, 'lib', filename))
+    for _, overlay in ipairs(string.split(jagen.overlays, ' ')) do
+        table.insert(o, system.mkpath(jagen.dir, 'overlay', overlay, filename))
+    end
+    table.insert(o, system.mkpath(jagen.root, filename))
+    return o
+end

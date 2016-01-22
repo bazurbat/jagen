@@ -1,5 +1,4 @@
-require "common"
-require 'pkg'
+require 'common'
 require 'src'
 require 'gen'
 
