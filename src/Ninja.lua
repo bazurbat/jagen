@@ -90,8 +90,26 @@ function Ninja:build_package(pkg)
     return table.concat(o)
 end
 
-function Ninja:generate(out_file, packages)
+function Ninja:generate(out_file, rules)
     local out = io.open(out_file, 'w')
+    local packages = {}
+
+    for rule in each(rules) do
+        table.insert(packages, rule)
+    end
+
+    table.sort(packages, function (a, b)
+            return a.name < b.name
+        end)
+
+    for _, pkg in ipairs(packages) do
+        for _, stage in ipairs(pkg.stages) do
+            table.sort(stage.inputs, function (a, b)
+                    return tostring(a) < tostring(b)
+                end)
+        end
+    end
+
 
     out:write(self:header())
     out:write('\n')

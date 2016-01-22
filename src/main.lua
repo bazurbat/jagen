@@ -86,36 +86,30 @@ function jagen.generate()
     local rules = Rules.load()
     local packages = {}
 
-    for rule in each(rules) do
-        local name = rule.name
+    for qname, rule in pairs(rules) do
+        local name = assert(rule.name)
         local pkg = packages[name]
         if pkg then
             for target in each(rule.stages) do
                 pkg:add_target(target)
             end
         else
-            packages[name] = rule
+            packages[rule.name] = rule
             table.insert(packages, rule)
         end
 
-        local script = Script:new(rule)
-        script:write()
+        local filename = system.mkpath(jagen.include_dir, rule:qname()..'.sh')
+        local file = assert(io.open(filename, 'w+'))
+        Script:write(rule, file)
+        file:close()
     end
 
     for pkg in each(packages) do
         pkg:add_ordering_dependencies()
-    end
 
-    table.sort(packages, function (a, b)
-            return a.name < b.name
-        end)
-
-    for _, pkg in ipairs(packages) do
-        for _, stage in ipairs(pkg.stages) do
-            table.sort(stage.inputs, function (a, b)
-                    return tostring(a) < tostring(b)
-                end)
-        end
+        local filename = system.mkpath(jagen.include_dir, pkg.name..'-shared.sh')
+        local file = assert(io.open(filename, 'w+'))
+        Script:write_shared(pkg, file)
     end
 
     local ninja = Ninja:new()
@@ -154,7 +148,7 @@ function build.find_targets(packages, arg)
             end
         end
         if #targets == 0 then
-            table.insert(args, arg)
+            jagen.die('could not find targets matching the argument: %s', arg)
         end
     end
 
@@ -162,7 +156,7 @@ function build.find_targets(packages, arg)
 end
 
 function jagen.build(args)
-    local packages = Rules.load()
+    local packages = Rules.merge(Rules.load())
     local targets = {}
 
     for _, arg in ipairs(args) do
@@ -173,7 +167,7 @@ function jagen.build(args)
 end
 
 function jagen.rebuild(args)
-    local packages = Rules.load()
+    local packages = Rules.merge(Rules.load())
     local targets = {}
 
     for _, arg in ipairs(args) do
