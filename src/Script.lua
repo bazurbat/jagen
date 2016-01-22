@@ -39,6 +39,9 @@ function Script:write_shared(pkg, file)
 
     if pkg.build then
         local build = pkg.build
+        if build.type then
+            w("\npkg_build_type='%s'", build.type)
+        end
         if build.generate then
             w("\npkg_build_generate='yes'")
         end
@@ -69,9 +72,6 @@ function Script:write(pkg, file)
     if pkg.build then
         local build = pkg.build
 
-        if build.type then
-            w("\npkg_build_type='%s'", build.type)
-        end
         if build.options then
             local o = build.options
             if type(build.options) == 'string' then
@@ -90,7 +90,7 @@ function Script:write(pkg, file)
         end
     end
 
-    build_dir = build_dir or '$pkg_work_dir${pkg_config:+/$pkg_config}'
-
-    w('\npkg_build_dir="%s"', build_dir)
+    if build_dir then
+        w('\npkg_build_dir="%s"', build_dir)
+    end
 end

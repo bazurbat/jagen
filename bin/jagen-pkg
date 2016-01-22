@@ -33,6 +33,8 @@ elif [ "$pkg_config" = 'tools' ]; then
     pkg_dest_dir="$jagen_tools_dir"
 fi
 
+pkg_build_dir="$pkg_work_dir${pkg_config:+/$pkg_config}"
+
 try_include "$jagen_include_dir/${pkg_name}-shared.sh"
 try_include "$jagen_include_dir/${pkg_qname}.sh"
 import "pkg/$pkg_name"
