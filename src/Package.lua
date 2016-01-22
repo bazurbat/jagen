@@ -1,4 +1,5 @@
 require 'Target'
+local system = require 'system'
 
 Package = {
     init_stages = { 'unpack', 'patch' }
@@ -62,7 +63,7 @@ function Package:create(name)
         pkg:add_target(Target:new(name, s))
     end
 
-    for filename in each(import_paths('pkg/'..name..'.lua')) do
+    for filename in each(system.import_paths('pkg/'..name..'.lua')) do
         table.merge(pkg, pkg:load(filename))
     end
 

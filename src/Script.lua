@@ -1,3 +1,4 @@
+local system = require 'system'
 
 Script = {}
 

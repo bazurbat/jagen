@@ -1,4 +1,5 @@
 require 'Package'
+local system = require 'system'
 
 Rules = {}
 
@@ -39,7 +40,7 @@ function Rules.load()
         end
     end
 
-    for filename in each(import_paths('rules.lua')) do
+    for filename in each(system.import_paths('rules.lua')) do
         for rule in each(Rules.loadfile(filename)) do
             add(rule)
         end

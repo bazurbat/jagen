@@ -4,7 +4,7 @@ require 'SourceManager'
 require 'Ninja'
 require 'Script'
 
---{{{ jagen
+local system = require 'system'
 
 jagen =
 {
@@ -122,9 +122,6 @@ function jagen.generate()
     ninja:generate(jagen.build_file, packages)
 end
 
---}}}
---{{{ build
-
 local build = {}
 
 function build.find_targets(packages, arg)
@@ -185,8 +182,6 @@ function jagen.rebuild(args)
 
     return system.exec(jagen.cmd, 'run', unpack(targets))
 end
-
----}}}
 
 command = arg[1]
 status = 0
