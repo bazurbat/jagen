@@ -48,7 +48,7 @@ jagen_sdk_staging_dir="$jagen_target_dir"
 jagen_tools_dir="$jagen_root/tools"
 jagen_tools_prefix=""
 
-export LUA_PATH="$jagen_lib_dir/?.lua;;"
+export LUA_PATH="$jagen_dir/src/?.lua;;"
 
 add_PATH "$jagen_host_dir/bin"
 add_LD_LIBRARY_PATH "$jagen_host_dir/lib"

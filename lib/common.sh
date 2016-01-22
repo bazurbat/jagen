@@ -105,5 +105,5 @@ add_LD_LIBRARY_PATH() {
 }
 
 _jagen() {
-    ${jagen_lua:-lua} "$jagen_lib_dir/jagen.lua" "$@"
+    ${jagen_lua:-lua} "$jagen_dir/src/main.lua" "$@"
 }
