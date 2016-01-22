@@ -36,6 +36,13 @@ function Script:write_shared(pkg, file)
         end
         w('\n}')
     end
+
+    if pkg.build then
+        local build = pkg.build
+        if build.generate then
+            w("\npkg_build_generate='yes'")
+        end
+    end
 end
 
 function Script:write(pkg, file)
@@ -74,9 +81,6 @@ function Script:write(pkg, file)
         end
         if build.libs then
             w("\npkg_libs='%s'", table.concat(build.libs, ' '))
-        end
-        if build.generate then
-            w("\npkg_build_generate='yes'")
         end
         if build.in_source then
             build_dir = '$pkg_source_dir'
