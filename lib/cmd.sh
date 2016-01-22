@@ -11,14 +11,12 @@ build() {
 
 cmd_run() {
     local IFS="$(printf '\n\t')"
-    local arg targets_only show_output show_all
+    local arg print_targets targets_only show_output show_all
     local targets logs sts
     local cmd_log="$jagen_log_dir/build.log"
 
-    cd "$jagen_build_dir" || exit 1
-    : > "$cmd_log"
-
     for arg; do
+        [ "$arg" = '-p' ] && { print_targets=1; continue; }
         [ "$arg" = '-t' ] && { targets_only=1; continue; }
         [ "$arg" = '-o' ] && { show_output=1; continue; }
         [ "$arg" = "-a" ] && { show_all=1; continue; }
@@ -26,6 +24,15 @@ cmd_run() {
         targets="${targets}${S}${arg}"
         logs="${logs}${S}${jagen_log_dir}/${arg}.log"
     done
+
+    if [ "$print_targets" ]; then
+        set -- $targets
+        echo "$*"
+        return 0
+    fi
+
+    cd "$jagen_build_dir" || exit 1
+    : > "$cmd_log"
 
     rm -f $targets
     for log in $logs; do
