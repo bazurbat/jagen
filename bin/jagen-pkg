@@ -6,6 +6,8 @@ pkg_name="$1"
 pkg_stage="$2"
 pkg_config="$3"
 
+pkg_qname=${pkg_name}${pkg_config:+-${pkg_config}}
+
 pkg_log="${jagen_log_dir}/${pkg_name}-${pkg_stage}${pkg_config:+-${pkg_config}}.log"
 pkg_work_dir="$jagen_build_dir/$pkg_name"
 
@@ -31,7 +33,7 @@ elif [ "$pkg_config" = 'tools' ]; then
     pkg_dest_dir="$jagen_tools_dir"
 fi
 
-include "$jagen_include_dir/$pkg_name"
+include "$jagen_include_dir/$pkg_qname"
 import "pkg/$pkg_name"
 
 pkg_install_dir="$pkg_dest_dir$pkg_prefix"

@@ -98,6 +98,16 @@ function Package:__tostring()
     return table.concat(o, ':')
 end
 
+function Package:qname()
+    local name = assert(self.name)
+    local config = self.config
+    if config then
+        return name..'-'..config
+    else
+        return name
+    end
+end
+
 function Package:read(rule)
     if type(rule[1]) == 'string' then
         rule.name = rule[1]
@@ -110,6 +120,8 @@ function Package:read(rule)
     if type(rule.source) == 'string' then
         rule.source = { type = 'dist', location = rule.source }
     end
+    setmetatable(rule, self)
+    self.__index = self
     return rule
 end
 
@@ -250,10 +262,11 @@ function Rules.load()
     local function add(rule)
         rule = Package:read(rule)
         local name = assert(rule.name)
-        local pkg = packages[name]
+        local qname = rule:qname()
+        local pkg = packages[qname]
         if not pkg then
             pkg = Package:create(name)
-            packages[name] = pkg
+            packages[qname] = pkg
             table.insert(packages, pkg)
         end
         table.merge(pkg, rule)
@@ -280,7 +293,6 @@ function Rules.load()
     end
 
     for _, pkg in ipairs(packages) do
-        pkg:add_ordering_dependencies()
         pkg.source = Source:create(pkg.source)
     end
 

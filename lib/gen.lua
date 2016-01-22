@@ -118,7 +118,7 @@ end
 
 function Script:write()
     local pkg  = self.pkg
-    local path = system.mkpath(jagen.include_dir, pkg.name..'.sh')
+    local path = system.mkpath(jagen.include_dir, pkg:qname()..'.sh')
     local file = assert(io.open(path, 'w+'))
     local function w(format, ...)
         file:write(string.format(format, ...))

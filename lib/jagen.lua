@@ -82,8 +82,28 @@ function jagen.flag(f)
 end
 
 function jagen.generate()
-    local packages = Rules.load()
-    local ninja = Ninja:new()
+    local rules = Rules.load()
+    local packages = {}
+
+    for rule in each(rules) do
+        local name = rule.name
+        local pkg = packages[name]
+        if pkg then
+            for target in each(rule.stages) do
+                pkg:add_target(target)
+            end
+        else
+            packages[name] = rule
+            table.insert(packages, rule)
+        end
+
+        local script = Script:new(rule)
+        script:write()
+    end
+
+    for pkg in each(packages) do
+        pkg:add_ordering_dependencies()
+    end
 
     table.sort(packages, function (a, b)
             return a.name < b.name
@@ -97,12 +117,8 @@ function jagen.generate()
         end
     end
 
+    local ninja = Ninja:new()
     ninja:generate(jagen.build_file, packages)
-
-    for _, package in ipairs(packages) do
-        local script = Script:new(package)
-        script:write()
-    end
 end
 
 --}}}
