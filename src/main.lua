@@ -1,5 +1,6 @@
 require 'common'
-require 'src'
+require 'Source'
+require 'SourceManager'
 require 'Ninja'
 require 'Script'
 
