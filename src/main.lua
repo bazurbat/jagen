@@ -1,6 +1,7 @@
 require 'common'
 require 'src'
-require 'gen'
+require 'Ninja'
+require 'Script'
 
 --{{{ jagen
 
