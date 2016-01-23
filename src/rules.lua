@@ -262,8 +262,7 @@ function P.merge(rules)
                 pkg:add_target(target)
             end
         else
-            packages[rule.name] = rule
-            table.insert(packages, rule)
+            packages[name] = rule
         end
     end
 

@@ -30,9 +30,4 @@ function P.popen(...)
     return io.popen(command)
 end
 
-function P.exists(pathname)
-    assert(type(pathname) == 'string')
-    return os.execute(string.format('test -e "%s"', pathname)) == 0
-end
-
 return P

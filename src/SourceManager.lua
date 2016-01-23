@@ -1,17 +1,24 @@
 local system = require 'system'
-local rules = require 'rules'
+local rules  = require 'rules'
 
-SourceManager = {}
+local function exists(pathname)
+    assert(type(pathname) == 'string')
+    return os.execute(string.format('test -e "%s"', pathname)) == 0
+end
 
-function SourceManager:new(o)
+local P = {}
+
+function P:new(o)
     local o = o or {}
     setmetatable(o, self)
     self.__index = self
     return o
 end
 
-function SourceManager:packages(names)
-    local packages, scm_packages = rules.loadrules(), {}
+function P:packages(names)
+    local packages = rules.merge(rules.load())
+    local scm_packages = {}
+
     if names and #names > 0 then
         for _, name in ipairs(names) do
             if not packages[name] then
@@ -23,17 +30,22 @@ function SourceManager:packages(names)
             table.insert(scm_packages, packages[name])
         end
     else
-        for _, pkg in ipairs(packages) do
+        for _, pkg in pairs(packages) do
             if pkg.source:is_scm() then
                 table.insert(scm_packages, pkg)
             end
         end
     end
+
+    table.sort(scm_packages, function (a, b)
+            return a.name < b.name
+        end)
+
     return scm_packages
 end
 
 -- Should return 0 if true, 1 if false, for shell scripting.
-function SourceManager:dirty_command(names)
+function P:dirty_command(names)
     for _, pkg in ipairs(self:packages(names)) do
         if pkg.source:dirty() then
             return 0
@@ -42,10 +54,10 @@ function SourceManager:dirty_command(names)
     return 1
 end
 
-function SourceManager:status_command(names)
+function P:status_command(names)
     for _, pkg in ipairs(self:packages(names)) do
         local source = pkg.source
-        if system.exists(source.path) then
+        if exists(source.path) then
             local dirty = source:dirty() and 'dirty' or ''
             local head = source:head()
             if not head then
@@ -59,7 +71,7 @@ function SourceManager:status_command(names)
     end
 end
 
-function SourceManager:clean_command(names)
+function P:clean_command(names)
     for _, pkg in ipairs(self:packages(names)) do
         if not pkg.source:clean() then
             jagen.die('failed to clean %s (%s) in %s',
@@ -68,7 +80,7 @@ function SourceManager:clean_command(names)
     end
 end
 
-function SourceManager:update_command(names)
+function P:update_command(names)
     for _, pkg in ipairs(self:packages(names)) do
         if not pkg.source:update() then
             jagen.die('failed to update %s to the latest %s in %s',
@@ -77,7 +89,7 @@ function SourceManager:update_command(names)
     end
 end
 
-function SourceManager:clone_command(names)
+function P:clone_command(names)
     for _, pkg in ipairs(self:packages(names)) do
         if not pkg.source:clone() then
             jagen.die('failed to clone %s from %s to %s',
@@ -86,9 +98,9 @@ function SourceManager:clone_command(names)
     end
 end
 
-function SourceManager:delete_command(names)
+function P:delete_command(names)
     for _, pkg in ipairs(self:packages(names)) do
-        if system.exists(pkg.source.path) then
+        if exists(pkg.source.path) then
             if not system.exec('rm', '-rf', pkg.source.path) then
                 jagen.die('failed to delete %s source directory %s',
                     pkg.name, pkg.source.path)
@@ -96,3 +108,5 @@ function SourceManager:delete_command(names)
         end
     end
 end
+
+return P

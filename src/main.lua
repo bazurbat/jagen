@@ -1,11 +1,11 @@
 require 'common'
 require 'Source'
-require 'SourceManager'
 require 'Ninja'
 require 'Script'
 
 local system = require 'system'
 local rules = require 'rules'
+local SourceManager = require 'SourceManager'
 
 jagen =
 {
