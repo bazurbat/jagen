@@ -1,48 +1,13 @@
 #!/bin/sh
 
-[ "$jagen_root" ] ||
-    { echo "jagen_root is not set, please source env.sh in the project root.";
-      exit 1; }
-
-. "$jagen_dir/lib/pkg.sh" ||
-    { echo "Failed to load pkg environment"; exit 1; }
-. "$jagen_dir/lib/help.sh" ||
-    { echo "Failed to load help"; exit 1; }
-
-if [ $# = 0 ]; then
-    print_help
-    exit
+if ! [ "$jagen_dir" ]; then
+    echo "Error: jagen_dir is not set, please source env.sh inside jagen build root"
+    exit 1
 fi
 
-case $1 in
-    help)
-        print_help
-        ;;
-    clean)
-        rm -rf "$jagen_build_dir"
-        rm -rf "$jagen_include_dir"
-        rm -rf "$jagen_log_dir"
-        rm -rf "$jagen_host_dir"
-        rm -rf "$jagen_target_dir"
-        rm -rf "$jagen_tools_dir"
-        exec jagen refresh
-        ;;
-    update)
-        cd "$jagen_dir" || exit
-        if [ "$(git status --porcelain)" ]; then
-            warning "$jagen_dir is dirty, not updating"
-        else
-            git pull --ff-only
-        fi
-        exec jagen refresh
-        ;;
-    refresh)
-        mkdir -p "$jagen_build_dir"
-        mkdir -p "$jagen_include_dir"
-        mkdir -p "$jagen_log_dir"
-        _jagen refresh || die "Refresh failed"
-        ;;
-    *)
-        _jagen "$@"
-        ;;
-esac
+if ! . "$jagen_dir/lib/env.sh"; then
+    echo "Error: failed to load jagen environment"
+    exit 1
+fi
+
+_jagen "$@"

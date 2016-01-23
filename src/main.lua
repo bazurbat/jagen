@@ -83,7 +83,15 @@ function jagen.flag(f)
     return false
 end
 
-function jagen.generate()
+local command = {}
+
+function command.clean()
+end
+
+function command.update()
+end
+
+function command.refresh()
     local packages = rules.load()
 
     for _, rule in pairs(packages) do
@@ -107,15 +115,9 @@ function jagen.generate()
     ninja:generate(jagen.build_file, packages)
 end
 
-local build = {}
-
-function build.find_targets(packages, arg)
+local function find_targets(packages, arg)
     local targets = {}
-    local args = {}
 
-    local function is_param(arg)
-        return string.sub(arg, 1, 1) == '-'
-    end
     local function match_config(a, b)
         return not a.config or a.config == b.config
     end
@@ -126,48 +128,40 @@ function build.find_targets(packages, arg)
         return match_stage(target, stage) and match_config(target, stage)
     end
 
-    if is_param(arg) then
-        table.insert(args, arg)
-    else
-        local target = Target:from_arg(arg)
-        local packages = target.name and { packages[target.name] } or packages
-        for _, pkg in ipairs(packages) do
-            for _, stage in ipairs(pkg.stages) do
-                if match_target(target, stage) then
-                    table.insert(targets, stage)
-                end
+    local target = Target:from_arg(arg)
+    local packages = target.name and { packages[target.name] } or packages
+
+    for _, pkg in ipairs(packages) do
+        for _, stage in ipairs(pkg.stages) do
+            if match_target(target, stage) then
+                table.insert(targets, stage)
             end
         end
-        if #targets == 0 then
-            jagen.die('could not find targets matching the argument: %s', arg)
+    end
+
+    if #targets == 0 then
+        jagen.die('could not find targets matching the argument: %s', arg)
+    end
+
+    return targets
+end
+
+function command.run(options, rest)
+    local packages = rules.merge(rules.load())
+    local args = options or {}
+
+    for _, arg in ipairs(rest) do
+        for _, tgt in ipairs(find_targets(packages, arg)) do
+            table.insert(args, tgt)
         end
     end
 
-    return targets, args
+    return system.exec(jagen.cmd, 'run', unpack(args))
 end
 
-local function command_run(args)
-    local packages = rules.merge(rules.load())
-    local targets = {}
-
-    for _, arg in ipairs(args) do
-        targets = append(targets, build.find_targets(packages, arg))
-    end
-
-    return system.exec(jagen.cmd, 'run', unpack(targets))
-end
-
-command = arg[1]
-status = 0
-
-if command == 'refresh' then
-    jagen.generate()
-elseif command == 'run' then
-    local args = table.rest(arg, 2)
-    _, status = command_run(args)
-elseif command == 'src' then
-    local subcommand = arg[2]
-    local args = table.rest(arg, 3)
+function command.src(options, rest)
+    local subcommand = rest[1]
+    local args = table.rest(rest, 3)
     local src = SourceManager:new()
 
     if not subcommand then
@@ -179,8 +173,50 @@ elseif command == 'src' then
     else
         jagen.die('unknown src subcommand: %s', subcommand)
     end
+end
+
+local function print_help(command)
+    return system.exec(jagen.cmd, 'help', command)
+end
+
+local function is_option(arg)
+    return string.sub(arg, 1, 1) == '-'
+end
+
+local function process_arguments(args)
+    local options, rest, need_help, command = {}, {}, false
+
+    for _, arg in ipairs(args) do
+        if is_option(arg) then
+            if arg == '-h' or arg == '--help' then
+                need_help = true
+            else
+                table.insert(options, arg)
+            end
+        elseif command then
+            table.insert(rest, arg)
+        else
+            command = arg
+        end
+    end
+
+    if need_help then
+        print_help(command)
+        os.exit(0)
+    end
+
+    return command, options, rest
+end
+
+name, options, rest = process_arguments(arg)
+
+if not name then
+    print_help()
+    os.exit(0)
+elseif command[name] then
+    command[name](options, rest)
 else
-    jagen.die('Unknown command: %s', command)
+    jagen.die('unknown command: %s', name)
 end
 
 os.exit((status or 0) % 0xFF)
