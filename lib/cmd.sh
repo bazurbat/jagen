@@ -27,7 +27,11 @@ cmd_run() {
 
     if [ "$print_targets" ]; then
         set -- $targets
-        echo "$*"
+        if [ $# = 0 ]; then
+            printf "default\n"
+        else
+            printf "$*\n"
+        fi
         return 0
     fi
 
