@@ -3,7 +3,7 @@ local system = require 'system'
 
 local mkpath = system.mkpath
 
-function import_paths(filename)
+local function import_paths(filename)
     local o = {}
     table.insert(o, mkpath(jagen.dir, 'lib', filename))
     for _, overlay in ipairs(string.split(jagen.overlays, ' ')) do
@@ -13,19 +13,12 @@ function import_paths(filename)
     return o
 end
 
-Package = {
+local Rule = {
     init_stages = { 'unpack', 'patch' }
 }
-Package.__index = Package
+Rule.__index = Rule
 
-function Package:__tostring()
-    local o = {}
-    if self.name then table.insert(o, self.name) end
-    if self.config then table.insert(o, self.config) end
-    return table.concat(o, ':')
-end
-
-function Package:qname()
+function Rule:qname()
     local name = assert(self.name)
     local config = self.config
     if config then
@@ -35,7 +28,7 @@ function Package:qname()
     end
 end
 
-function Package:read(rule)
+function Rule:read(rule)
     if type(rule[1]) == 'string' then
         rule.name = rule[1]
         table.remove(rule, 1)
@@ -47,16 +40,14 @@ function Package:read(rule)
     if type(rule.source) == 'string' then
         rule.source = { type = 'dist', location = rule.source }
     end
-    setmetatable(rule, self)
-    self.__index = self
     return rule
 end
 
-function Package:load(filename)
+function Rule:load2(filename)
     local pkg = {}
     local env = {}
     function env.package(rule)
-        pkg = Package:read(rule)
+        pkg = Rule:read(rule)
     end
     local chunk = loadfile(filename)
     if chunk then
@@ -66,24 +57,7 @@ function Package:load(filename)
     return pkg
 end
 
-function Package.loadfile(filename)
-    local rules = {}
-    local env = {
-        table = table,
-        jagen = jagen
-    }
-    function env.package(rule)
-        table.insert(rules, rule)
-    end
-    local chunk = loadfile(filename)
-    if chunk then
-        setfenv(chunk, env)
-        chunk()
-    end
-    return rules
-end
-
-function Package:create(name)
+function Rule:create(name)
     local pkg = { name = name, stages = {} }
     setmetatable(pkg, self)
     self.__index = self
@@ -93,13 +67,13 @@ function Package:create(name)
     end
 
     for filename in each(import_paths('pkg/'..name..'.lua')) do
-        table.merge(pkg, pkg:load(filename))
+        table.merge(pkg, pkg:load2(filename))
     end
 
     return pkg
 end
 
-function Package:add_target(target)
+function Rule:add_target(target)
     local function default(this)
         for _, stage in ipairs(self.init_stages) do
             if stage == target.stage and stage == this.stage then
@@ -124,7 +98,7 @@ function Package:add_target(target)
     return self
 end
 
-function Package:add_build_targets(config)
+function Rule:add_build_targets(config)
     local source = self.source
     local build = self.build
     if source then
@@ -159,7 +133,7 @@ function Package:add_build_targets(config)
     end
 end
 
-function Package:add_ordering_dependencies()
+function Rule:add_ordering_dependencies()
     local prev, common
 
     for _, s in ipairs(self.stages) do
@@ -178,16 +152,35 @@ function Package:add_ordering_dependencies()
     end
 end
 
-function Package.loadrules()
+local P = {}
+
+local function loadall(filename)
+    local rules = {}
+    local env = {
+        table = table,
+        jagen = jagen
+    }
+    function env.package(rule)
+        table.insert(rules, rule)
+    end
+    local chunk = loadfile(filename)
+    if chunk then
+        setfenv(chunk, env)
+        chunk()
+    end
+    return rules
+end
+
+function P.load()
     local rules = {}
 
     local function add(rule)
-        rule = Package:read(rule)
+        rule = Rule:read(rule)
         local name = assert(rule.name)
-        local qname = rule:qname()
+        local qname = Rule.qname(rule)
         local pkg = rules[qname]
         if not pkg then
-            pkg = Package:create(name)
+            pkg = Rule:create(name)
             rules[qname] = pkg
         end
         table.merge(pkg, rule)
@@ -198,7 +191,7 @@ function Package.loadrules()
     end
 
     for filename in each(import_paths('rules.lua')) do
-        for rule in each(Package.loadfile(filename)) do
+        for rule in each(loadall(filename)) do
             add(rule)
         end
     end
@@ -220,7 +213,7 @@ function Package.loadrules()
     return rules
 end
 
-function Package.merge(rules)
+function P.merge(rules)
     local packages = {}
     for qname, rule in pairs(rules) do
         local name = assert(rule.name)
@@ -241,3 +234,5 @@ function Package.merge(rules)
     end
     return packages
 end
+
+return P

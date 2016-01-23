@@ -5,6 +5,7 @@ require 'Ninja'
 require 'Script'
 
 local system = require 'system'
+local rules = require 'rules'
 
 jagen =
 {
@@ -83,26 +84,16 @@ function jagen.flag(f)
 end
 
 function jagen.generate()
-    local rules = Package.loadrules()
-    local packages = {}
+    local packages = rules.load()
 
-    for qname, rule in pairs(rules) do
-        local name = assert(rule.name)
-        local pkg = packages[name]
-        if pkg then
-            for target in each(rule.stages) do
-                pkg:add_target(target)
-            end
-        else
-            packages[rule.name] = rule
-            table.insert(packages, rule)
-        end
-
+    for _, rule in pairs(packages) do
         local filename = system.mkpath(jagen.include_dir, rule:qname()..'.sh')
         local file = assert(io.open(filename, 'w+'))
         Script:write(rule, file)
         file:close()
     end
+
+    packages = rules.merge(packages)
 
     for pkg in each(packages) do
         pkg:add_ordering_dependencies()
@@ -156,7 +147,7 @@ function build.find_targets(packages, arg)
 end
 
 function jagen.build(args)
-    local packages = Package.merge(Package.loadrules())
+    local packages = rules.merge(rules.loadrules())
     local targets = {}
 
     for _, arg in ipairs(args) do
@@ -167,7 +158,7 @@ function jagen.build(args)
 end
 
 function jagen.rebuild(args)
-    local packages = Package.merge(Package.loadrules())
+    local packages = rules.merge(rules.loadrules())
     local targets = {}
 
     for _, arg in ipairs(args) do
