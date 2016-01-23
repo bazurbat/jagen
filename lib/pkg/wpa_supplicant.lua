@@ -8,7 +8,5 @@ package {
         type = 'make',
         directory = '$pkg_source_dir/wpa_supplicant'
     },
-    { 'build',
-        requires = { 'dbus' }
-    }
+    requires = { 'dbus' }
 }

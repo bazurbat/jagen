@@ -11,10 +11,5 @@ package {
         },
         libs    = { 'ass' }
     },
-    { 'build',
-        requires = {
-            'freetype',
-            'fribidi'
-        }
-    }
+    requires = { 'freetype', 'fribidi' }
 }

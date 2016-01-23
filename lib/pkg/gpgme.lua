@@ -16,7 +16,5 @@ package {
         },
         libs = { 'gpgme' }
     },
-    { 'build',
-        requires = { 'libassuan' }
-    }
+    requires = { 'libassuan' }
 }

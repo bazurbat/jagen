@@ -18,11 +18,5 @@ package {
             '--disable-client'
         }
     },
-    { 'build',
-        requires = {
-            'dbus',
-            'glib',
-            'xtables-addons'
-        }
-    }
+    requires = { 'dbus', 'glib', 'xtables-addons' }
 }

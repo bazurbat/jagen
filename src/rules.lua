@@ -164,6 +164,7 @@ function Rule:add_default_targets()
     local source = self.source
     local build = self.build
     local config = self.config
+
     if source then
         if source.type == 'repo' then
             P.need_repo = true
@@ -172,6 +173,11 @@ function Rule:add_default_targets()
                 }, self.name))
         end
     end
+
+    if self.requires then
+        table.insert(self, { 'build', requires = self.requires })
+    end
+
     if build then
         if build.type == 'GNU' then
             if build.generate or build.autoreconf then

@@ -38,7 +38,5 @@ package {
             '--without-x'
         }
     },
-    { 'build',
-        requires = { 'expat' }
-    }
+    requires = { 'expat' }
 }

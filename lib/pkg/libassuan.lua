@@ -5,7 +5,5 @@ package {
         type = 'GNU',
         libs = { 'assuan' }
     },
-    { 'build',
-        requires = { 'libgpg-error' }
-    }
+    requires = { 'libgpg-error' }
 }

@@ -11,7 +11,5 @@ package {
         libs    = { 'fribidi' },
         autoreconf = true
     },
-    { 'build',
-        requires = { 'glib' }
-    }
+    requires = { 'glib' }
 }

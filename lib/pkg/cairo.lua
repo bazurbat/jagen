@@ -50,7 +50,5 @@ package {
         },
         libs = { 'cairo' }
     },
-    { 'build',
-        requires = { 'pixman', 'freetype' }
-    }
+    requires = { 'pixman', 'freetype' }
 }
