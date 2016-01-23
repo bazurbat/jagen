@@ -1,7 +1,6 @@
 require 'common'
 require 'Source'
 require 'Ninja'
-require 'Script'
 
 local system = require 'system'
 local rules = require 'rules'
@@ -128,6 +127,7 @@ function command.refresh()
     prepare_root()
 
     local packages = rules.load()
+    local script = require 'script'
 
     for _, rule in pairs(packages) do
         local filename = system.mkpath(jagen.include_dir, tostring(rule)..'.sh')
@@ -141,7 +141,7 @@ function command.refresh()
     for _, pkg in pairs(packages) do
         pkg:add_ordering_dependencies()
 
-        local filename = system.mkpath(jagen.include_dir, pkg.name..'-shared.sh')
+        local filename = system.mkpath(jagen.include_dir, pkg.name..'-shared_.sh')
         local file = assert(io.open(filename, 'w+'))
         Script:write_shared(pkg, file)
     end

@@ -1,13 +1,19 @@
-Script = {}
+local system = require 'system'
 
-function Script:new(pkg, file)
+local mkpath = system.mkpath
+
+local P = {}
+
+function P:new(pkg, file)
     local script = { pkg = pkg }
     setmetatable(script, self)
     self.__index = self
     return script
 end
 
-function Script:write_shared(pkg, file)
+function P:write_shared(pkg, file)
+    local filename = system.mkpath(jagen.include_dir, pkg.name..'-shared_.sh')
+    local file = assert(io.open(filename, 'w+'))
     assert(pkg and file)
     local function w(format, ...)
         file:write(string.format(format, ...))
@@ -48,7 +54,10 @@ function Script:write_shared(pkg, file)
     end
 end
 
-function Script:write(pkg, file)
+function P:write(pkg, file)
+    local filename = system.mkpath(jagen.include_dir, tostring(rule)..'.sh')
+    local file = assert(io.open(filename, 'w+'))
+
     local function w(format, ...)
         file:write(string.format(format, ...))
     end
