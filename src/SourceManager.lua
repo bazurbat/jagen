@@ -1,4 +1,4 @@
-require 'Rules'
+require 'Package'
 local system = require 'system'
 
 SourceManager = {}
@@ -11,7 +11,7 @@ function SourceManager:new(o)
 end
 
 function SourceManager:packages(names)
-    local packages, scm_packages = Rules.load(), {}
+    local packages, scm_packages = Package.loadrules(), {}
     if names and #names > 0 then
         for _, name in ipairs(names) do
             if not packages[name] then

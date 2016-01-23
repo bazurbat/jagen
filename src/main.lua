@@ -83,7 +83,7 @@ function jagen.flag(f)
 end
 
 function jagen.generate()
-    local rules = Rules.load()
+    local rules = Package.loadrules()
     local packages = {}
 
     for qname, rule in pairs(rules) do
@@ -156,7 +156,7 @@ function build.find_targets(packages, arg)
 end
 
 function jagen.build(args)
-    local packages = Rules.merge(Rules.load())
+    local packages = Package.merge(Package.loadrules())
     local targets = {}
 
     for _, arg in ipairs(args) do
@@ -167,7 +167,7 @@ function jagen.build(args)
 end
 
 function jagen.rebuild(args)
-    local packages = Rules.merge(Rules.load())
+    local packages = Package.merge(Package.loadrules())
     local targets = {}
 
     for _, arg in ipairs(args) do
