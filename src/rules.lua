@@ -95,6 +95,9 @@ end
 function Rule:add_package(rule, list)
     rule = Rule:parse(rule)
 
+    local template = Rule:parse(rule.template or {})
+    table.merge(rule, template)
+
     local key = tostring(rule)
     local pkg = list[key]
 
@@ -102,13 +105,33 @@ function Rule:add_package(rule, list)
         pkg = Rule:new_package { rule.name, rule.config }
 
         table.merge(pkg, rule)
+
         pkg:add_default_targets()
-        pkg:add_targets(rule)
+        pkg:add_targets(pkg, list)
 
         list[key] = pkg
     else
         table.merge(pkg, rule)
-        pkg:add_targets(rule)
+    end
+
+    pkg:add_targets(rule, list)
+end
+
+function Rule:add_targets(rule, list)
+    for stage in each(rule) do
+        local target = Target:from_rule(stage, self.name, self.config)
+
+        for name in each(stage.requires or {}) do
+            local req_target = Target:new(name, 'install', self.config)
+            table.insert(target.inputs, req_target)
+
+            Rule:add_package({
+                    name, self.config,
+                    template = rule.template
+                }, list)
+        end
+
+        self:add_target(target)
     end
 end
 
@@ -135,12 +158,6 @@ function Rule:add_target(target)
     end
 
     return self
-end
-
-function Rule:add_targets(rule)
-    for stage in each(rule) do
-        self:add_target(Target:from_rule(stage, self.name, self.config))
-    end
 end
 
 function Rule:add_default_targets()

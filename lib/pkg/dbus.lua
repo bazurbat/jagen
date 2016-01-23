@@ -37,5 +37,8 @@ package {
             '--without-valgrind',
             '--without-x'
         }
+    },
+    { 'build',
+        requires = { 'expat' }
     }
 }

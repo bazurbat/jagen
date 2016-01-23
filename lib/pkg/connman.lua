@@ -17,5 +17,12 @@ package {
             '--disable-wispr',
             '--disable-client'
         }
+    },
+    { 'build',
+        requires = {
+            'dbus',
+            'glib',
+            'xtables-addons'
+        }
     }
 }

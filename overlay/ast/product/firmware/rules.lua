@@ -1,11 +1,26 @@
 -- Sigma rules
 
 local function rootfs_package(rule)
-    rule.config = 'target'
-    table.insert(rule, { 'build', { 'rootfs', 'build' } })
-    rule.install = {
-        path = '$jagen_sdk_staging_dir',
-        prefix = ''
+    rule.template = { config = 'target',
+        { 'build', { 'rootfs', 'build' } },
+        install = {
+            path = '$jagen_sdk_staging_dir',
+            prefix = ''
+        }
+    }
+    package(rule)
+end
+
+local function kernel_package(rule)
+    rule.template = { config = 'target',
+        { 'build', { 'kernel', 'build' } }
+    }
+    package(rule)
+end
+
+local function firmware_package(rule)
+    rule.template = { config = 'target',
+        { 'install', { 'firmware', 'unpack' } }
     }
     package(rule)
 end
@@ -64,12 +79,6 @@ package { 'ffmpeg', 'host' }
 package { 'libuv', 'host' }
 
 -- kernel
-
-local function kernel_package(rule)
-    rule.config = 'target'
-    table.insert(rule, { 'build', { 'kernel', 'build' } })
-    package(rule)
-end
 
 package { 'kernel',
     source = { branch = 'sigma-2.6' },
@@ -131,44 +140,24 @@ rootfs_package { 'util-linux' }
 
 rootfs_package { 'utils',
     { 'build',
-        { 'dbus',  'install', 'target' },
-        { 'gpgme', 'install', 'target' }
-    }
-}
-
-rootfs_package { 'libgpg-error' }
-
-rootfs_package { 'libassuan',
-    { 'build',
-        { 'libgpg-error', 'install', 'target' }
-    }
-}
-
-rootfs_package { 'gpgme',
-    { 'build',
-        { 'libassuan', 'install', 'target' }
+        requires = { 'gpgme' },
+        { 'dbus', 'install', 'target' }
     }
 }
 
 -- firmware
-
-local function firmware_package(rule)
-    rule.config = 'target'
-    table.insert(rule, { 'install', { 'firmware', 'unpack' } })
-    package(rule)
-end
 
 package { 'firmware',
     { 'build',
         { 'mrua', 'build' }
     },
     { 'install',
-        { 'ezboot',         'install', 'target' },
-        { 'karaoke-player', 'install', 'target' },
         { 'kernel',         'image'             },
         { 'mrua',           'install'           },
-        { 'rsync',          'install', 'target' },
         { 'ucode',          'install'           },
+        { 'ezboot',         'install', 'target' },
+        { 'karaoke-player', 'install', 'target' },
+        { 'rsync',          'install', 'target' },
         { 'wpa_supplicant', 'install', 'target' },
     },
     { 'strip' }
@@ -176,29 +165,22 @@ package { 'firmware',
 
 firmware_package { 'karaoke-player',
     { 'build',
-        { 'astindex',     'unpack'            },
-        { 'mrua',         'build',            },
-		{ 'cairo',        'install', 'target' },
-        { 'chicken-eggs', 'install', 'host'   },
-        { 'chicken-eggs', 'install', 'target' },
-        { 'connman',      'install', 'target' },
-        { 'dbus',         'install', 'target' },
-        { 'ffmpeg',       'install', 'target' },
-        { 'freetype',     'install', 'target' },
-        { 'libass',       'install', 'target' },
-        { 'libpng',       'install', 'target' },
-        { 'libuv',        'install', 'target' },
-        { 'soundtouch',   'install', 'target' },
+        requires = {
+            'cairo',
+            'chicken-eggs',
+            'connman',
+            'dbus',
+            'ffmpeg',
+            'freetype',
+            'libass',
+            'libpng',
+            'libuv',
+            'soundtouch',
+        },
+        { 'astindex',     'unpack'          },
+        { 'mrua',         'build',          },
+        { 'chicken-eggs', 'install', 'host' },
     }
-}
-
-firmware_package { 'pixman' }
-
-firmware_package { 'cairo',
-	{ 'build',
-		{ 'freetype', 'install', 'target' },
-		{ 'pixman',   'install', 'target' },
-	}
 }
 
 firmware_package { 'chicken',
@@ -207,81 +189,15 @@ firmware_package { 'chicken',
 
 firmware_package { 'chicken-eggs',
     { 'install',
-        { 'chicken',      'install', 'target' },
-        { 'chicken-eggs', 'install', 'host'   },
-        { 'dbus',         'install', 'target' },
-        { 'sqlite',       'install', 'target' },
+        requires = {
+            'chicken',
+            'dbus',
+            'sqlite',
+        },
+        { 'chicken-eggs', 'install', 'host' },
     }
 }
-
-firmware_package { 'dbus',
-    { 'build',
-        { 'expat', 'install', 'target' }
-    }
-}
-
-firmware_package { 'expat' }
-
-firmware_package { 'sqlite' }
-
-firmware_package { 'connman',
-    { 'build',
-        { 'dbus',           'install', 'target' },
-        { 'glib',           'install', 'target' },
-        { 'xtables-addons', 'install', 'target' },
-    }
-}
-
-firmware_package { 'glib',
-    { 'build',
-        { 'libffi', 'install', 'target' },
-        { 'zlib',   'install', 'target' },
-    }
-}
-
-firmware_package { 'libffi' }
-
-firmware_package { 'zlib' }
-
-firmware_package { 'xtables-addons',
-    { 'build',
-        { 'xtables', 'install', 'target' }
-    }
-}
-
-firmware_package { 'xtables' }
-
-firmware_package { 'ffmpeg' }
-
-firmware_package { 'freetype' }
-
-firmware_package { 'libass',
-    { 'build',
-        { 'freetype', 'install', 'target' },
-        { 'fribidi',  'install', 'target' },
-    }
-}
-
-firmware_package { 'fribidi',
-    { 'build',
-        { 'glib', 'install', 'target' }
-    }
-}
-
-firmware_package { 'libpng',
-    { 'build',
-        { 'zlib', 'install', 'target' }
-    }
-}
-
-firmware_package { 'libuv' }
-
-firmware_package { 'soundtouch' }
 
 firmware_package { 'rsync' }
 
-firmware_package { 'wpa_supplicant',
-    { 'build',
-        { 'dbus', 'install', 'target' }
-    }
-}
+firmware_package { 'wpa_supplicant' }

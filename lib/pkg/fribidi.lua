@@ -10,5 +10,8 @@ package {
         options = { '--with-glib=yes' },
         libs    = { 'fribidi' },
         autoreconf = true
+    },
+    { 'build',
+        requires = { 'glib' }
     }
 }

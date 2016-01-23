@@ -5,5 +5,8 @@ package {
         type    = 'GNU',
         options = { '--without-kbuild' },
         libs    = { 'xt_ACCOUNT_cl' }
+    },
+    { 'build',
+        requires = { 'xtables' }
     }
 }

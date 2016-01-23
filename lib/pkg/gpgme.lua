@@ -15,5 +15,8 @@ package {
             '--with-libassuan-prefix=$pkg_dest_dir'
         },
         libs = { 'gpgme' }
+    },
+    { 'build',
+        requires = { 'libassuan' }
     }
 }

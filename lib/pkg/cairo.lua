@@ -49,5 +49,8 @@ package {
             '--without-x'
         },
         libs = { 'cairo' }
+    },
+    { 'build',
+        requires = { 'pixman', 'freetype' }
     }
 }

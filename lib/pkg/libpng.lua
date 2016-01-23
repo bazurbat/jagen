@@ -4,5 +4,8 @@ package {
     build  = {
         type = 'GNU',
         libs = { 'png16' }
+    },
+    { 'build',
+        requires = { 'zlib' }
     }
 }

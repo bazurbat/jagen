@@ -10,5 +10,11 @@ package {
             '--disable-harfbuzz'
         },
         libs    = { 'ass' }
+    },
+    { 'build',
+        requires = {
+            'freetype',
+            'fribidi'
+        }
     }
 }
