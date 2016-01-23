@@ -66,15 +66,6 @@ case $1 in
         . "$jagen_dir/lib/help.sh"
         print_help
         ;;
-    clean)
-        rm -rf "$jagen_build_dir"
-        rm -rf "$jagen_include_dir"
-        rm -rf "$jagen_log_dir"
-        rm -rf "$jagen_host_dir"
-        rm -rf "$jagen_target_dir"
-        rm -rf "$jagen_tools_dir"
-        exec jagen refresh
-        ;;
     update)
         cd "$jagen_dir" || exit
         if [ "$(git status --porcelain)" ]; then

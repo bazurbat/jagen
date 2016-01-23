@@ -86,12 +86,38 @@ end
 local command = {}
 
 function command.clean()
+    local vars = {
+        'jagen_build_dir',
+        'jagen_include_dir',
+        'jagen_log_dir',
+        'jagen_host_dir',
+        'jagen_target_dir',
+        'jagen_tools_dir'
+    }
+    local dirs = system.getenv(vars)
+
+    assert(system.rmrf(unpack(dirs)))
+
+    return command.refresh()
 end
 
 function command.update()
 end
 
+local function prepare_root()
+    local vars = {
+        'jagen_build_dir',
+        'jagen_include_dir',
+        'jagen_log_dir'
+    }
+    local dirs = system.getenv(vars)
+
+    assert(system.mkdir(unpack(dirs)))
+end
+
 function command.refresh()
+    prepare_root()
+
     local packages = rules.load()
 
     for _, rule in pairs(packages) do
@@ -103,7 +129,7 @@ function command.refresh()
 
     packages = rules.merge(packages)
 
-    for pkg in each(packages) do
+    for _, pkg in pairs(packages) do
         pkg:add_ordering_dependencies()
 
         local filename = system.mkpath(jagen.include_dir, pkg.name..'-shared.sh')

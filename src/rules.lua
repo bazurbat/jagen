@@ -50,12 +50,12 @@ local Rule = {
 Rule.__index = Rule
 
 function Rule:__tostring()
-    local name = assert(self.name)
+    local name = self.name
     local config = self.config
-    if config then
+    if name and config then
         return name..'-'..config
     else
-        return name
+        return name or config or 'rule'
     end
 end
 

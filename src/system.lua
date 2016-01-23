@@ -30,4 +30,22 @@ function P.popen(...)
     return io.popen(command)
 end
 
+function P.getenv(vars)
+    local o = {}
+    for _, v in ipairs(vars) do
+        local value = os.getenv(v)
+        assert(value, string.format('the environment variable is not set: %s', v))
+        table.insert(o, value)
+    end
+    return o
+end
+
+function P.rmrf(...)
+    return P.exec('rm', '-rf', ...)
+end
+
+function P.mkdir(...)
+    return P.exec('mkdir', '-p', ...)
+end
+
 return P

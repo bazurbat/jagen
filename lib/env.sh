@@ -38,14 +38,14 @@ jagen_cmake_build_type="$jagen_build_type"
 export jagen_patch_dir="$jagen_dist_dir/patches"
 export jagen_private_dir="$jagen_src_dir/files"
 
-jagen_host_dir="$jagen_root/host"
+export jagen_host_dir="$jagen_root/host"
 jagen_host_prefix=""
 
-jagen_target_dir="$jagen_root/target"
+export jagen_target_dir="$jagen_root/target"
 jagen_target_prefix="/usr"
 jagen_sdk_staging_dir="$jagen_target_dir"
 
-jagen_tools_dir="$jagen_root/tools"
+export jagen_tools_dir="$jagen_root/tools"
 jagen_tools_prefix=""
 
 export LUA_PATH="$jagen_dir/src/?.lua;;"

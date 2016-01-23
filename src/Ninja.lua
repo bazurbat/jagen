@@ -94,7 +94,7 @@ function Ninja:generate(out_file, rules)
     local out = io.open(out_file, 'w')
     local packages = {}
 
-    for rule in each(rules) do
+    for _, rule in pairs(rules) do
         table.insert(packages, rule)
     end
 
