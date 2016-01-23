@@ -190,7 +190,7 @@ end
 
 function command.src(options, rest)
     local subcommand = rest[1]
-    local args = table.rest(rest, 3)
+    local args = table.rest(rest, 2)
     local src = SourceManager:new()
 
     if not subcommand then
