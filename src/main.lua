@@ -146,19 +146,8 @@ function build.find_targets(packages, arg)
     return targets, args
 end
 
-function jagen.build(args)
-    local packages = rules.merge(rules.loadrules())
-    local targets = {}
-
-    for _, arg in ipairs(args) do
-        targets = append(targets, build.find_targets(packages, arg))
-    end
-
-    return system.exec(jagen.cmd, 'build', unpack(targets))
-end
-
-function jagen.rebuild(args)
-    local packages = rules.merge(rules.loadrules())
+local function command_run(args)
+    local packages = rules.merge(rules.load())
     local targets = {}
 
     for _, arg in ipairs(args) do
@@ -173,14 +162,9 @@ status = 0
 
 if command == 'refresh' then
     jagen.generate()
-elseif command == 'build' then
-    local args = table.rest(arg, 2)
-
-    _, status = jagen.build(args)
 elseif command == 'run' then
     local args = table.rest(arg, 2)
-
-    _, status = jagen.rebuild(args)
+    _, status = command_run(args)
 elseif command == 'src' then
     local subcommand = arg[2]
     local args = table.rest(arg, 3)
