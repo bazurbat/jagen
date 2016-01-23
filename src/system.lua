@@ -9,7 +9,7 @@ function P.mkpath(...)
     return table.concat(path, sep)
 end
 
-function P.tocommand(...)
+local function tocommand(...)
     local command = {}
     for _, arg in ipairs({...}) do
         table.insert(command, string.format('%s', tostring(arg)))
@@ -18,14 +18,14 @@ function P.tocommand(...)
 end
 
 function P.exec(...)
-    local command = P.tocommand(...)
+    local command = tocommand(...)
     jagen.debug1(command)
     local status = os.execute(command)
     return status == 0, status % 0xFF
 end
 
 function P.popen(...)
-    local command = P.tocommand(...)
+    local command = tocommand(...)
     jagen.debug1(command)
     return io.popen(command)
 end
