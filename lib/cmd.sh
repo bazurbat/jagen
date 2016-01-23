@@ -66,15 +66,6 @@ case $1 in
         . "$jagen_dir/lib/help.sh"
         print_help
         ;;
-    update)
-        cd "$jagen_dir" || exit
-        if [ "$(git status --porcelain)" ]; then
-            warning "$jagen_dir is dirty, not updating"
-        else
-            git pull --ff-only
-        fi
-        exec jagen refresh
-        ;;
     run)
         shift
         cmd_run "$@"

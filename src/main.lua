@@ -102,6 +102,15 @@ function command.clean()
 end
 
 function command.update()
+    local source = GitSource:new({
+            path = jagen.dir
+        })
+    if source:dirty() then
+        jagen.die('%s is dirty, not updating', jagen.dir)
+    else
+        assert(source:exec('pull', '--ff-only'))
+    end
+    return command.refresh()
 end
 
 local function prepare_root()
