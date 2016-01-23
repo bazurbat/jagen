@@ -13,6 +13,35 @@ local function import_paths(filename)
     return o
 end
 
+local function loadsingle(filename)
+    local o, env = {}, {}
+    function env.package(rule)
+        o = rule
+    end
+    local chunk = loadfile(filename)
+    if chunk then
+        setfenv(chunk, env)
+        chunk()
+    end
+    return o
+end
+
+local function loadall(filename)
+    local o, env = {}, {
+        table = table,
+        jagen = jagen
+    }
+    function env.package(rule)
+        table.insert(o, rule)
+    end
+    local chunk = loadfile(filename)
+    if chunk then
+        setfenv(chunk, env)
+        chunk()
+    end
+    return o
+end
+
 local Rule = {
     init_stages = { 'unpack', 'patch' }
 }
@@ -43,20 +72,6 @@ function Rule:read(rule)
     return rule
 end
 
-function Rule:load2(filename)
-    local pkg = {}
-    local env = {}
-    function env.package(rule)
-        pkg = Rule:read(rule)
-    end
-    local chunk = loadfile(filename)
-    if chunk then
-        setfenv(chunk, env)
-        chunk()
-    end
-    return pkg
-end
-
 function Rule:create(name)
     local pkg = { name = name, stages = {} }
     setmetatable(pkg, self)
@@ -67,7 +82,7 @@ function Rule:create(name)
     end
 
     for filename in each(import_paths('pkg/'..name..'.lua')) do
-        table.merge(pkg, pkg:load2(filename))
+        table.merge(pkg, Rule:read(loadsingle(filename)))
     end
 
     return pkg
@@ -153,23 +168,6 @@ function Rule:add_ordering_dependencies()
 end
 
 local P = {}
-
-local function loadall(filename)
-    local rules = {}
-    local env = {
-        table = table,
-        jagen = jagen
-    }
-    function env.package(rule)
-        table.insert(rules, rule)
-    end
-    local chunk = loadfile(filename)
-    if chunk then
-        setfenv(chunk, env)
-        chunk()
-    end
-    return rules
-end
 
 function P.load()
     local rules = {}
