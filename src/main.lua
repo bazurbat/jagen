@@ -87,7 +87,7 @@ function jagen.generate()
     local packages = rules.load()
 
     for _, rule in pairs(packages) do
-        local filename = system.mkpath(jagen.include_dir, rule:qname()..'.sh')
+        local filename = system.mkpath(jagen.include_dir, tostring(rule)..'.sh')
         local file = assert(io.open(filename, 'w+'))
         Script:write(rule, file)
         file:close()

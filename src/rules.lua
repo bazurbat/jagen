@@ -3,6 +3,8 @@ local system = require 'system'
 
 local mkpath = system.mkpath
 
+local P = {}
+
 local function import_paths(filename)
     local o = {}
     table.insert(o, mkpath(jagen.dir, 'lib', filename))
@@ -47,7 +49,7 @@ local Rule = {
 }
 Rule.__index = Rule
 
-function Rule:qname()
+function Rule:__tostring()
     local name = assert(self.name)
     local config = self.config
     if config then
@@ -57,7 +59,8 @@ function Rule:qname()
     end
 end
 
-function Rule:read(rule)
+function Rule:parse(rule)
+    setmetatable(rule, self)
     if type(rule[1]) == 'string' then
         rule.name = rule[1]
         table.remove(rule, 1)
@@ -72,20 +75,41 @@ function Rule:read(rule)
     return rule
 end
 
-function Rule:create(name)
-    local pkg = { name = name, stages = {} }
-    setmetatable(pkg, self)
-    self.__index = self
+function Rule:new_package(rule)
+    local pkg  = Rule:parse(rule)
+    local name = pkg.name
 
-    for _, s in ipairs(self.init_stages) do
-        pkg:add_target(Target:new(name, s))
+    pkg.stages = pkg.stages or {}
+
+    for stage in each(self.init_stages) do
+        pkg:add_target(Target:new(name, stage))
     end
 
     for filename in each(import_paths('pkg/'..name..'.lua')) do
-        table.merge(pkg, Rule:read(loadsingle(filename)))
+        table.merge(pkg, Rule:parse(loadsingle(filename)))
     end
 
     return pkg
+end
+
+function Rule:add_package(rule, list)
+    rule = Rule:parse(rule)
+
+    local key = tostring(rule)
+    local pkg = list[key]
+
+    if not pkg then
+        pkg = Rule:new_package { rule.name, rule.config }
+
+        table.merge(pkg, rule)
+        pkg:add_default_targets()
+        pkg:add_targets(rule)
+
+        list[key] = pkg
+    else
+        table.merge(pkg, rule)
+        pkg:add_targets(rule)
+    end
 end
 
 function Rule:add_target(target)
@@ -113,12 +137,19 @@ function Rule:add_target(target)
     return self
 end
 
-function Rule:add_build_targets(config)
+function Rule:add_targets(rule)
+    for stage in each(rule) do
+        self:add_target(Target:from_rule(stage, self.name, self.config))
+    end
+end
+
+function Rule:add_default_targets()
     local source = self.source
     local build = self.build
+    local config = self.config
     if source then
         if source.type == 'repo' then
-            jagen.need_repo = true
+            P.need_repo = true
             self:add_target(Target:from_rule({ 'unpack',
                         { 'repo', 'unpack' }
                 }, self.name))
@@ -127,7 +158,7 @@ function Rule:add_build_targets(config)
     if build then
         if build.type == 'GNU' then
             if build.generate or build.autoreconf then
-                jagen.need_libtool = true
+                P.need_libtool = true
                 self:add_target(Target:from_rule({ 'autoreconf',
                             { 'libtool', 'install', 'host' }
                     }, self.name))
@@ -167,25 +198,11 @@ function Rule:add_ordering_dependencies()
     end
 end
 
-local P = {}
-
 function P.load()
-    local rules = {}
+    local packages = {}
 
     local function add(rule)
-        rule = Rule:read(rule)
-        local name = assert(rule.name)
-        local qname = Rule.qname(rule)
-        local pkg = rules[qname]
-        if not pkg then
-            pkg = Rule:create(name)
-            rules[qname] = pkg
-        end
-        table.merge(pkg, rule)
-        pkg:add_build_targets(rule.config)
-        for stage in each(rule) do
-            pkg:add_target(Target:from_rule(stage, pkg.name, rule.config))
-        end
+        Rule:add_package(rule, packages)
     end
 
     for filename in each(import_paths('rules.lua')) do
@@ -196,24 +213,25 @@ function P.load()
 
     add { 'toolchain', 'target', { 'install' } }
 
-    if jagen.need_libtool then
+    if P.need_libtool then
         add { 'libtool', 'host' }
     end
 
-    if jagen.need_repo then
+    if P.need_repo then
         add { 'repo' }
     end
 
-    for _, pkg in pairs(rules) do
+    for _, pkg in pairs(packages) do
         pkg.source = Source:create(pkg.source)
     end
 
-    return rules
+    return packages
 end
 
 function P.merge(rules)
     local packages = {}
-    for qname, rule in pairs(rules) do
+
+    for _, rule in pairs(rules) do
         local name = assert(rule.name)
         local pkg = packages[name]
         if pkg then
@@ -224,12 +242,8 @@ function P.merge(rules)
             packages[rule.name] = rule
             table.insert(packages, rule)
         end
-
-        local filename = mkpath(jagen.include_dir, rule:qname()..'.sh')
-        local file = assert(io.open(filename, 'w+'))
-        Script:write(rule, file)
-        file:close()
     end
+
     return packages
 end
 
