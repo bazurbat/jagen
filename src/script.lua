@@ -4,17 +4,20 @@ local mkpath = system.mkpath
 
 local P = {}
 
-function P:new(pkg, file)
-    local script = { pkg = pkg }
-    setmetatable(script, self)
-    self.__index = self
-    return script
+local function open_shared(pkg)
+    assert(pkg)
+    local filename = mkpath(jagen.include_dir, pkg.name..'-shared_.sh')
+    return assert(io.open(filename, 'w+'))
 end
 
-function P:write_shared(pkg, file)
-    local filename = system.mkpath(jagen.include_dir, pkg.name..'-shared_.sh')
-    local file = assert(io.open(filename, 'w+'))
-    assert(pkg and file)
+local function open(pkg)
+    assert(pkg)
+    local filename = mkpath(jagen.include_dir, tostring(pkg)..'.sh')
+    return assert(io.open(filename, 'w+'))
+end
+
+function P:write_shared(pkg)
+    local file = open_shared(pkg)
     local function w(format, ...)
         file:write(string.format(format, ...))
     end
@@ -52,12 +55,12 @@ function P:write_shared(pkg, file)
             w("\npkg_build_generate='yes'")
         end
     end
+
+    file:close()
 end
 
-function P:write(pkg, file)
-    local filename = system.mkpath(jagen.include_dir, tostring(rule)..'.sh')
-    local file = assert(io.open(filename, 'w+'))
-
+function P:write(pkg)
+    local file = open(pkg)
     local function w(format, ...)
         file:write(string.format(format, ...))
     end
@@ -102,4 +105,8 @@ function P:write(pkg, file)
     if build_dir then
         w('\npkg_build_dir="%s"', build_dir)
     end
+
+    file:close()
 end
+
+return P

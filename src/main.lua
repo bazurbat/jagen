@@ -129,21 +129,15 @@ function command.refresh()
     local packages = rules.load()
     local script = require 'script'
 
-    for _, rule in pairs(packages) do
-        local filename = system.mkpath(jagen.include_dir, tostring(rule)..'.sh')
-        local file = assert(io.open(filename, 'w+'))
-        Script:write(rule, file)
-        file:close()
+    for _, pkg in pairs(packages) do
+        script:write(pkg)
     end
 
     packages = rules.merge(packages)
 
     for _, pkg in pairs(packages) do
         pkg:add_ordering_dependencies()
-
-        local filename = system.mkpath(jagen.include_dir, pkg.name..'-shared_.sh')
-        local file = assert(io.open(filename, 'w+'))
-        Script:write_shared(pkg, file)
+        script:write_shared(pkg)
     end
 
     local ninja = Ninja:new()
