@@ -35,14 +35,4 @@ function P.exists(pathname)
     return os.execute(string.format('test -e "%s"', pathname)) == 0
 end
 
-function P.import_paths(filename)
-    local o = {}
-    table.insert(o, P.mkpath(jagen.dir, 'lib', filename))
-    for _, overlay in ipairs(string.split(jagen.overlays, ' ')) do
-        table.insert(o, P.mkpath(jagen.dir, 'overlay', overlay, filename))
-    end
-    table.insert(o, P.mkpath(jagen.root, filename))
-    return o
-end
-
 return P

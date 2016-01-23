@@ -1,6 +1,18 @@
 require 'Target'
 local system = require 'system'
 
+local mkpath = system.mkpath
+
+function import_paths(filename)
+    local o = {}
+    table.insert(o, mkpath(jagen.dir, 'lib', filename))
+    for _, overlay in ipairs(string.split(jagen.overlays, ' ')) do
+        table.insert(o, mkpath(jagen.dir, 'overlay', overlay, filename))
+    end
+    table.insert(o, mkpath(jagen.root, filename))
+    return o
+end
+
 Package = {
     init_stages = { 'unpack', 'patch' }
 }
@@ -80,7 +92,7 @@ function Package:create(name)
         pkg:add_target(Target:new(name, s))
     end
 
-    for filename in each(system.import_paths('pkg/'..name..'.lua')) do
+    for filename in each(import_paths('pkg/'..name..'.lua')) do
         table.merge(pkg, pkg:load(filename))
     end
 
@@ -185,7 +197,7 @@ function Package.loadrules()
         end
     end
 
-    for filename in each(system.import_paths('rules.lua')) do
+    for filename in each(import_paths('rules.lua')) do
         for rule in each(Package.loadfile(filename)) do
             add(rule)
         end
@@ -222,7 +234,7 @@ function Package.merge(rules)
             table.insert(packages, rule)
         end
 
-        local filename = system.mkpath(jagen.include_dir, rule:qname()..'.sh')
+        local filename = mkpath(jagen.include_dir, rule:qname()..'.sh')
         local file = assert(io.open(filename, 'w+'))
         Script:write(rule, file)
         file:close()
