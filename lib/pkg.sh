@@ -94,11 +94,14 @@ default_unpack() {
     local src_type="$1"
     local src_path="$2"
 
+    : ${pkg_name:?}
+    : ${pkg_work_dir:?}
+
     pkg_run rm -rf "$pkg_work_dir"
 
     case $src_type in
         git|hg|repo)
-            if [ -d "$pkg_source_dir" ]; then
+            if [ -d "${pkg_source_dir:?}" ]; then
                 if in_list "$pkg_name" $jagen_source_exclude; then
                     message "not cleaning $pkg_name: excluded"
                 else
