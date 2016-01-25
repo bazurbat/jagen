@@ -1,30 +1,5 @@
 -- Sigma rules
 
-local function rootfs_package(rule)
-    rule.template = { config = 'target',
-        { 'build', { 'rootfs', 'build' } },
-        install = {
-            path = '$jagen_sdk_staging_dir',
-            prefix = ''
-        }
-    }
-    package(rule)
-end
-
-local function kernel_package(rule)
-    rule.template = { config = 'target',
-        { 'build', { 'kernel', 'build' } }
-    }
-    package(rule)
-end
-
-local function firmware_package(rule)
-    rule.template = { config = 'target',
-        { 'install', { 'firmware', 'unpack' } }
-    }
-    package(rule)
-end
-
 -- base
 
 package { 'ast-files' }
@@ -43,10 +18,11 @@ package { 'ucode',
 
 package { 'make', 'tools' }
 
-if jagen.flag('debug') then
-    package        { 'gdb', 'host' }
-    rootfs_package { 'gdbserver' }
-end
+-- FIXME: pkg scripts need review
+-- if jagen.flag('debug') then
+--     package        { 'gdb', 'host' }
+--     rootfs_package { 'gdbserver' }
+-- end
 
 -- host
 
@@ -54,11 +30,13 @@ package { 'utils', 'host' }
 
 package { 'karaoke-player', 'host',
     { 'build',
-        { 'astindex',     'unpack'          },
-        { 'chicken',      'install', 'host' },
-        { 'chicken-eggs', 'install', 'host' },
-        { 'ffmpeg',       'install', 'host' },
-        { 'libuv',        'install', 'host' }
+        requires = {
+            'chicken',
+            'chicken-eggs',
+            'ffmpeg',
+            'libuv',
+        },
+        { 'astindex', 'unpack' },
     }
 }
 
@@ -66,26 +44,23 @@ package { 'astindex',
     { 'unpack', { 'karaoke-player', 'unpack' } }
 }
 
-package { 'chicken', 'host' }
+-- kernel
 
-package { 'chicken-eggs', 'host',
-    { 'install',
-        { 'chicken', 'install', 'host' }
-    }
+local kernel_package_template = {
+    config = 'target',
+    { 'build', { 'kernel', 'build' } }
 }
 
-package { 'ffmpeg', 'host' }
-
-package { 'libuv', 'host' }
-
--- kernel
+local function kernel_package(rule)
+    package(rule, kernel_package_template)
+end
 
 package { 'kernel',
     source = { branch = 'sigma-2.6' },
     { 'build',
-        { 'ezboot', 'build', 'target' },
         { 'linux',  'unpack' },
         { 'rootfs', 'build'  },
+        { 'ezboot', 'build', 'target' },
     },
     { 'install' },
     { 'image',  { 'rootfs', 'install' } }
@@ -97,27 +72,43 @@ kernel_package { 'ralink' }
 
 -- rootfs
 
+local rootfs_package_template = {
+    config  = 'target',
+    install = {
+        path = '$jagen_sdk_staging_dir',
+        prefix = ''
+    },
+    { 'build', { 'rootfs', 'build' } }
+}
+
+local function rootfs_package(rule)
+    package(rule, rootfs_package_template)
+end
+
 package { 'rootfs',
+    template = rootfs_package_template,
     { 'build',
-        { 'ast-files',  'unpack'            },
-        { 'make',       'install', 'tools'  },
-        { 'xsdk',       'unpack'            },
+        { 'ast-files', 'unpack'           },
+        { 'xsdk',      'unpack'           },
+        { 'make',      'install', 'tools' },
     },
     { 'install',
-        { 'busybox',    'install', 'target' },
-        { 'gnupg',      'install', 'target' },
-        { 'kernel',     'install'           },
-        { 'loop-aes',   'install', 'target' },
-        { 'mrua',       'modules',          },
-        { 'ntpclient',  'install', 'target' },
-        { 'ralink',     'install', 'target' },
-        { 'util-linux', 'install', 'target' },
-        { 'utils',      'install', 'target' },
+        requires = {
+            'busybox',
+            'gnupg',
+            'ntpclient',
+            'util-linux',
+            'utils',
+        },
+        { 'kernel',   'install'           },
+        { 'mrua',     'modules',          },
+        { 'loop-aes', 'install', 'target' },
+        { 'ralink',   'install', 'target' },
     }
 }
 
 package { 'mrua',
-    { 'build',  { 'kernel',   'build'  } },
+    { 'build',  { 'kernel', 'build' } },
     { 'modules' },
     { 'install' },
 }
@@ -132,12 +123,6 @@ rootfs_package { 'busybox',
     { 'patch', { 'ast-files', 'unpack' } }
 }
 
-rootfs_package { 'gnupg' }
-
-rootfs_package { 'ntpclient' }
-
-rootfs_package { 'util-linux' }
-
 rootfs_package { 'utils',
     { 'build',
         requires = { 'gpgme' },
@@ -147,18 +132,30 @@ rootfs_package { 'utils',
 
 -- firmware
 
+local firmware_package_template = {
+    config = 'target',
+    { 'install', { 'firmware', 'unpack' } }
+}
+
+local function firmware_package(rule)
+    package(rule, firmware_package_template)
+end
+
 package { 'firmware',
+    template = firmware_package_template,
     { 'build',
         { 'mrua', 'build' }
     },
     { 'install',
-        { 'kernel',         'image'             },
-        { 'mrua',           'install'           },
-        { 'ucode',          'install'           },
-        { 'ezboot',         'install', 'target' },
-        { 'karaoke-player', 'install', 'target' },
-        { 'rsync',          'install', 'target' },
-        { 'wpa_supplicant', 'install', 'target' },
+        requires = {
+            'karaoke-player',
+            'rsync',
+            'wpa_supplicant',
+        },
+        { 'kernel', 'image'             },
+        { 'mrua',   'install'           },
+        { 'ucode',  'install'           },
+        { 'ezboot', 'install', 'target' },
     },
     { 'strip' }
 }
@@ -166,7 +163,6 @@ package { 'firmware',
 firmware_package { 'karaoke-player',
     { 'build',
         requires = {
-            'cairo',
             'chicken-eggs',
             'connman',
             'dbus',
@@ -197,7 +193,3 @@ firmware_package { 'chicken-eggs',
         { 'chicken-eggs', 'install', 'host' },
     }
 }
-
-firmware_package { 'rsync' }
-
-firmware_package { 'wpa_supplicant' }

@@ -33,7 +33,11 @@ local function loadall(filename)
         table = table,
         jagen = jagen
     }
-    function env.package(rule)
+    function env.package(rule, template)
+        if template then
+            table.merge(rule, template)
+            rule.template = template
+        end
         table.insert(o, rule)
     end
     local chunk = loadfile(filename)
@@ -95,9 +99,6 @@ end
 function Rule:add_package(rule, list)
     rule = Rule:parse(rule)
 
-    local template = Rule:parse(rule.template or {})
-    table.merge(rule, template)
-
     local key = tostring(rule)
     local pkg = list[key]
 
@@ -118,17 +119,24 @@ function Rule:add_package(rule, list)
 end
 
 function Rule:add_targets(rule, list)
-    for stage in each(rule) do
+    local template = rule.template or {}
+    local config = template.config or self.config
+
+    for _, stage in ipairs(rule) do
         local target = Target:from_rule(stage, self.name, self.config)
 
-        for name in each(stage.requires or {}) do
-            local req_target = Target:new(name, 'install', self.config)
-            table.insert(target.inputs, req_target)
+        for _, name in ipairs(stage.requires or {}) do
+            local req_input = Target:new(name, 'install', config)
+            table.insert(target.inputs, req_input)
 
-            Rule:add_package({
-                    name, self.config,
-                    template = rule.template
-                }, list)
+            local req_rule = {
+                name = name,
+                config = config,
+            }
+            table.merge(req_rule, template)
+            req_rule.template = template
+
+            Rule:add_package(req_rule, list)
         end
 
         self:add_target(target)
