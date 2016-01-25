@@ -6,6 +6,8 @@ local system = require 'system'
 local rules = require 'rules'
 local SourceManager = require 'SourceManager'
 
+local main = {}
+
 jagen =
 {
     dir  = os.getenv('jagen_dir'),
@@ -83,6 +85,11 @@ function jagen.flag(f)
 end
 
 local command = {}
+
+function command.help(options, rest)
+    local command = rest[1]
+    return system.exec(jagen.cmd, 'help', command)
+end
 
 function command.clean()
     local vars = {
@@ -177,7 +184,7 @@ end
 
 function command.run(options, rest)
     local packages = rules.merge(rules.load())
-    local args = options or {}
+    local args = assert(options)
 
     for _, arg in ipairs(rest) do
         for _, tgt in ipairs(find_targets(packages, arg)) do
@@ -204,48 +211,46 @@ function command.src(options, rest)
     end
 end
 
-local function print_help(command)
-    return system.exec(jagen.cmd, 'help', command)
-end
-
-local function is_option(arg)
+function main.is_option(arg)
     return string.sub(arg, 1, 1) == '-'
 end
 
-local function process_arguments(args)
-    local options, rest, need_help, command = {}, {}, false
-
-    for _, arg in ipairs(args) do
-        if is_option(arg) then
-            if arg == '-h' or arg == '--help' then
-                need_help = true
-            else
-                table.insert(options, arg)
-            end
-        elseif command then
-            table.insert(rest, arg)
+function main.process_common_arguments(args)
+    for i, arg in ipairs(args) do
+        if arg == '-h' or arg == '--help' then
+            return 'help', 1
+        elseif main.is_option(arg) then
+            jagen.die('invalid argument: %s', arg)
         else
-            command = arg
+            return arg, i
         end
     end
-
-    if need_help then
-        print_help(command)
-        os.exit(0)
-    end
-
-    return command, options, rest
 end
 
-name, options, rest = process_arguments(arg)
+function main.process_arguments(args, start)
+    local options, rest = {}, {}
+    for i = start, #args do
+        if main.is_option(args[i]) then
+            table.insert(options, args[i])
+        else
+            table.insert(rest, args[i])
+        end
+    end
+    return options, rest
+end
+
+local name, index = main.process_common_arguments(arg)
+local err, status
 
 if not name then
-    print_help()
-    os.exit(0)
-elseif command[name] then
-    command[name](options, rest)
+    name = 'help'
+    index = 1
+end
+
+if command[name] then
+    err, status = command[name](main.process_arguments(arg, index + 1))
 else
-    jagen.die('unknown command: %s', name)
+    jagen.die('invalid command: %s', name)
 end
 
 os.exit((status or 0) % 0xFF)
