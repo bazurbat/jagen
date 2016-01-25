@@ -1,3 +1,10 @@
+function assert_arg(fname, num, expected, value)
+    local got = type(value)
+    assert(got == expected,
+        string.format("bad argument #%d to '%s' (%s expected, got %s)",
+            num, fname, expected, got))
+end
+
 function copy(o)
     if type(o) == 'table' then
         local c = {}
@@ -68,6 +75,8 @@ function table.rest(t, start)
 end
 
 function table.merge(a, b)
+    assert_arg('merge', 1, 'table', a)
+    assert_arg('merge', 2, 'table', b)
     for k, v in pairs(b) do
         if type(k) ~= 'number' then
             if type(v) == 'table' then
