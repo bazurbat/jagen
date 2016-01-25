@@ -205,7 +205,7 @@ function command.src(options, rest)
     end
 
     if src[subcommand..'_command'] then
-        status = src[subcommand..'_command'](src, args)
+        src[subcommand..'_command'](src, args)
     else
         jagen.die('unknown src subcommand: %s', subcommand)
     end
