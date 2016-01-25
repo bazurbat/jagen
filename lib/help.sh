@@ -1,7 +1,46 @@
 #!/bin/sh
 
 print_help() {
-    echo "Usage: jagen <COMMAND> [OPTIONS...]
+    case $1 in
+        src)
+            cat <<EOF
+Usage: jagen src <subcommand> [PACKAGES...]
+
+  Manage SCM package sources.
+
+  The optional PACKAGES argument should be the list of SCM packages defined in
+  the current environment. If none are specified, all are assumed.
+
+Available subcommands:
+
+    dirty   Check if packages source directories have any changes
+    status  Show packages location, head commit and dirty status
+    clean   Clean up packages source directories
+    update  Update the sources to the latest upstream version
+    clone   Clone the specified packages
+    delete  Delete packages source directories
+
+  The 'dirty' subcommand exits with 0 (true) status if any of the specified
+  packages source directories have changes. It exits with 1 (false) status if
+  all sources are clean. Intended for usage by shell scripts.
+
+  The 'status' subcommand prints SCM packages status in human readable form.
+
+  The 'clean' subcommand resets modifications to the HEAD state and deletes
+  all extra files in packages source directories.
+
+  The 'update' subcommand fetches the latest sources from upstream and tries
+  to merge them with the current source directories.
+
+  The 'clone' subcommand clones the specified packages.
+
+  The 'delete' subcommand deletes packages source directories.
+
+EOF
+;;
+        *)
+            cat <<EOF
+Usage: jagen <COMMAND> [OPTIONS...]
 
   Generates and manages a build system according to the predefined rules.
 
@@ -10,7 +49,6 @@ Commands:
   clean		Delete the build directory
   update	Update jagen and regenerate the build system
   refresh	Regenerate the build system
-  build		Build the specified targets
   run   	Run the build system for the specified targets
   src		Manage SCM package sources
 
@@ -26,15 +64,6 @@ Commands:
 
   The 'refresh' command generates build system from rules according to the
   configuration.
-
-  The 'build' command have the form:
-
-    jagen build [TARGETS...]
-
-  and builds the specified targets which are not up to date. If no targets are
-  specified then all will be checked. Build output for each target is saved in
-  the build directory alongside the target stamp file with the '.log' extension
-  appended. See below for TARGETS syntax.
 
   The 'run' command have the form:
 
@@ -61,38 +90,6 @@ Commands:
   corresponding target to be rebuilt unconditionally next time the build system
   runs.
 
-SRC COMMAND:
-
-  Usage: jagen src <subcommand> [PACKAGES...]
-
-  The optional PACKAGES argument should be the list of SCM packages defined in
-  the current environment. If none are specified, all are assumed.
-
-  Available subcommands:
-
-    dirty   Check if packages source directories have any changes
-    status  Show packages location, head commit and dirty status
-    clean   Clean up packages source directories
-    update  Update the sources to the latest upstream version
-    clone   Clone the specified packages
-    delete  Delete packages source directories
-
-  The 'dirty' subcommand exits with 0 (true) status if any of the specified
-  packages source directories have changes. It exits with 1 (false) status if
-  all sources are clean. Intended for usage by shell scripts.
-
-  The 'status' subcommand prints SCM packages status in human readable form.
-
-  The 'clean' subcommand resets modifications to the HEAD state and deletes
-  all extra files in packages source directories.
-
-  The 'update' subcommand fetches the latest sources from upstream and tries
-  to merge them with the current source directories.
-
-  The 'clone' subcommand clones the specified packages.
-
-  The 'delete' subcommand deletes packages source directories.
-
 CONFIGURATION:
 
   User can supply additional configuration in \"<jagen_root>/config.sh\" file.
@@ -105,5 +102,8 @@ NOTES:
   source directories. Add package names to the 'jagen_source_exclude'
   configuration variable as in the example above to stop the build scripts from
   touching their source directories (build directories will still be wiped).
-"
+
+EOF
+    ;;
+    esac
 }
