@@ -167,7 +167,7 @@ local function find_targets(packages, arg)
     local target = Target:from_arg(arg)
     local packages = target.name and { packages[target.name] } or packages
 
-    for _, pkg in ipairs(packages) do
+    for _, pkg in pairs(packages) do
         for _, stage in ipairs(pkg.stages) do
             if match_target(target, stage) then
                 table.insert(targets, stage)
@@ -176,7 +176,7 @@ local function find_targets(packages, arg)
     end
 
     if #targets == 0 then
-        jagen.die('could not find targets matching the argument: %s', arg)
+        jagen.die('could not find targets matching argument: %s', arg)
     end
 
     return targets
