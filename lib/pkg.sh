@@ -162,7 +162,7 @@ jagen_pkg_autoreconf() {
 }
 
 default_build() {
-    local IFS="$(printf '\n\t')" OLDIFS="$IFS" A=
+    local S="$jagen_FS" IFS="$(printf '\n\t')" OLDIFS="$IFS" A=
 
     [ "$pkg_source_dir" ] || return 0
 
