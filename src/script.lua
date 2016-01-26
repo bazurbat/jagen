@@ -94,6 +94,9 @@ function P:write(pkg)
         if build.libs then
             w("\npkg_libs='%s'", table.concat(build.libs, ' '))
         end
+        if build.work_dir then
+            w('\npkg_work_dir="%s"', build.work_dir)
+        end
         if build.in_source then
             build_dir = '$pkg_source_dir'
         end
