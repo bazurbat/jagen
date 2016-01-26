@@ -6,13 +6,15 @@ local P = {}
 
 local function open_shared(pkg)
     assert(pkg)
-    local filename = mkpath(jagen.include_dir, pkg.name..'-shared_.sh')
+    local name = string.format('%s__.sh', assert(pkg.name))
+    local filename = mkpath(jagen.include_dir, name)
     return assert(io.open(filename, 'w+'))
 end
 
 local function open(pkg)
     assert(pkg)
-    local filename = mkpath(jagen.include_dir, tostring(pkg)..'.sh')
+    local name = string.format('%s.sh', tostring(pkg))
+    local filename = mkpath(jagen.include_dir, name)
     return assert(io.open(filename, 'w+'))
 end
 

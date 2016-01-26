@@ -57,7 +57,7 @@ function Rule:__tostring()
     local name = self.name
     local config = self.config
     if name and config then
-        return name..'-'..config
+        return string.format('%s__%s', name, config)
     else
         return name or config or 'rule'
     end
