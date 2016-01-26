@@ -9,18 +9,18 @@ package { 'hi-kernel' }
 package { 'hi-sdk-tools' }
 
 package { 'hi-sdk', 'target',
-    { 'tools_install',
+    { 'tools',
         { 'hi-sdk-tools', 'unpack'            },
         { 'toolchain',    'install', 'target' }
     },
-    { 'prepare'           },
-    { 'hiboot_install'    },
-    { 'linux_install'     },
-    { 'rootfs_install'    },
-    { 'common_install'    },
-    { 'msp_install'       },
-    { 'component_install' },
-    { 'rootbox_install'   },
+    { 'prepare'   },
+    { 'hiboot'    },
+    { 'linux'     },
+    { 'rootfs'    },
+    { 'common'    },
+    { 'msp'       },
+    { 'component' },
+    { 'rootbox'   },
 }
 
 -- package { 'cmake-modules' }

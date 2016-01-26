@@ -25,7 +25,7 @@ jagen_pkg_patch() {
     fi
 }
 
-jagen_pkg_tools_install() {
+jagen_pkg_tools() {
     pkg_link \
         "$jagen_build_dir/hi-sdk-tools/tools" \
         "$pkg_source_dir/tools"
@@ -37,31 +37,31 @@ jagen_pkg_prepare() {
     pkg_run make prepare
 }
 
-jagen_pkg_hiboot_install() {
+jagen_pkg_hiboot() {
     pkg_run make hiboot_install
 }
 
-jagen_pkg_linux_install() {
+jagen_pkg_linux() {
     pkg_run make linux_install
 }
 
-jagen_pkg_rootfs_install() {
+jagen_pkg_rootfs() {
     pkg_run make rootfs_install
 }
 
-jagen_pkg_common_install() {
+jagen_pkg_common() {
     pkg_run make common_install
 }
 
-jagen_pkg_msp_install() {
+jagen_pkg_msp() {
     pkg_run make msp_install
 }
 
-jagen_pkg_component_install() {
+jagen_pkg_component() {
     pkg_run make component_install
 }
 
-jagen_pkg_rootbox_install() {
+jagen_pkg_rootbox() {
     pkg_run make rootbox_install
     pkg_run make fs
 }
