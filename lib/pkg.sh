@@ -83,6 +83,7 @@ pkg_link() {
     pkg_run cd $(dirname "$dst")
     pkg_run rm -rf "$src"
     pkg_run ln -rs $(basename "$dst") "$src"
+    pkg_run cd "$OLDPWD"
 }
 
 jagen_pkg_unpack_pre() {
