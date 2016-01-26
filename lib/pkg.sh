@@ -165,14 +165,16 @@ jagen_pkg_autoreconf() {
 }
 
 default_build() {
+    local IFS="$IFS" OLDIFS="$IFS"
     [ "$pkg_source_dir" ] || return 0
     if [ -x "$pkg_source_dir/configure" ]; then
-        IFS="$(printf '\n\t')" \
+        IFS=$(printf '\n\t')
         pkg_run "$pkg_source_dir/configure" \
             --host="$pkg_system" \
             --prefix="$pkg_prefix" \
             --disable-dependency-tracking \
             $pkg_options "$@"
+        IFS=$OLDIFS
         pkg_run make
     fi
 }
