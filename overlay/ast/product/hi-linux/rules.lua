@@ -23,24 +23,26 @@ package { 'hi-sdk', 'target',
     { 'rootbox'   },
 }
 
--- package { 'cmake-modules' }
---
--- package { 'libuv', 'target' }
---
--- package { 'ffmpeg', 'target' }
---
--- package { 'hi-utils', 'target',
---     { 'build',
---         { 'cmake-modules', 'unpack'              },
---         { 'hi-sdk',        'component', 'target' }
---     }
--- }
---
--- package { 'karaoke-player', 'target',
---     { 'build',
---         { 'cmake-modules', 'unpack'              },
---         { 'ffmpeg',        'install',   'target' },
---         { 'hi-sdk',        'component', 'target' },
---         { 'libuv',         'install',   'target' },
---     }
--- }
+package { 'cmake-modules' }
+
+package { 'libuv', 'target' }
+
+package { 'ffmpeg', 'target' }
+
+package { 'hi-utils', 'target',
+    { 'build',
+        { 'cmake-modules', 'unpack'              },
+        { 'hi-sdk',        'component', 'target' }
+    }
+}
+
+package { 'karaoke-player', 'target',
+    { 'build',
+        requires = {
+            'ffmpeg',
+            'libuv'
+        },
+        { 'cmake-modules', 'unpack'              },
+        { 'hi-sdk',        'component', 'target' },
+    }
+}

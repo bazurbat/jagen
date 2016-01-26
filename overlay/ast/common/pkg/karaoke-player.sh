@@ -13,7 +13,6 @@ jagen_pkg_build_host() {
 
 jagen_pkg_build_target() {
     local IFS="$(printf '\n\t')"
-    local S="$(printf '\t')"
     local A="-G$jagen_cmake_generator"
     A="$A$S-DCMAKE_MODULE_PATH=$jagen_src_dir/cmake-modules"
     A="$A$S-DCMAKE_SYSTEM_NAME=Linux"
@@ -40,9 +39,8 @@ jagen_pkg_build_target() {
                 "$pkg_source_dir"
             ;;
         hi-linux)
-            pkg_run cmake $A \
-                -DHISILICON_ROOT_DIR="$jagen_sdk_dir" \
-                "$pkg_source_dir"
+            A="-DTARGET_BOARD=$jagen_target_board"
+            default_build $A
             ;;
         *)
             pkg_run cmake $A \
