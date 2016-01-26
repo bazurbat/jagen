@@ -7,6 +7,7 @@ package {
         path     = 'android'
     },
     build = {
-        in_source = true
+        in_source = true,
+        work_dir = '$pkg_source_dir/out'
     }
 }
