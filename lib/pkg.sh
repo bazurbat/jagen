@@ -162,18 +162,43 @@ jagen_pkg_autoreconf() {
 }
 
 default_build() {
-    local IFS="$IFS" OLDIFS="$IFS"
+    local IFS="$(printf '\n\t')" OLDIFS="$IFS" A=
+
     [ "$pkg_source_dir" ] || return 0
-    if [ -x "$pkg_source_dir/configure" ]; then
-        IFS=$(printf '\n\t')
-        pkg_run "$pkg_source_dir/configure" \
-            --host="$pkg_system" \
-            --prefix="$pkg_prefix" \
-            --disable-dependency-tracking \
-            $pkg_options "$@"
-        IFS=$OLDIFS
-        pkg_run make
-    fi
+
+    case $pkg_build_type in
+        GNU)
+            if [ -x "$pkg_source_dir/configure" ]; then
+                pkg_run "$pkg_source_dir/configure" \
+                    --host="$pkg_system" \
+                    --prefix="$pkg_prefix" \
+                    --disable-dependency-tracking \
+                    $pkg_options "$@"
+
+                IFS=$OLDIFS
+                pkg_run make
+            else
+                die "GNU build type specified but ./configure was not found in $pkg_source_dir"
+            fi
+            ;;
+        CMake)
+            if [ "$jagen_cmake_module_path" ]; then
+                A="$A$S-DCMAKE_MODULE_PATH=$jagen_cmake_module_path"
+            fi
+            if [ "$pkg_config" = "target" ]; then
+                A="$A$S-DCMAKE_SYSTEM_NAME=Linux"
+                A="$A$S-DCMAKE_C_COMPILER=${jagen_toolchain_prefix}gcc"
+            fi
+
+            pkg_run cmake -G"${jagen_cmake_generator:?}" \
+                -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
+                -DCMAKE_INSTALL_PREFIX="$pkg_install_dir" \
+                $A $jagen_cmake_options "$@" "$pkg_source_dir"
+
+            IFS=$OLDIFS
+            pkg_run cmake --build . -- $jagen_cmake_build_options
+            ;;
+    esac
 }
 
 jagen_pkg_build() {
