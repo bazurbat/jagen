@@ -16,9 +16,11 @@ package { 'hi-sdk', 'target',
     { 'prepare'           },
     { 'hiboot_install'    },
     { 'linux_install'     },
+    { 'rootfs_install'    },
     { 'common_install'    },
     { 'msp_install'       },
-    { 'component_install' }
+    { 'component_install' },
+    { 'rootbox_install'   },
 }
 
 -- package { 'cmake-modules' }

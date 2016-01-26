@@ -13,11 +13,16 @@ jagen_pkg_unpack() {
 }
 
 jagen_pkg_patch() {
-    case $jagen_sdk in
-        hi-linux)
-            pkg_run cp configs/hi3719cdmo1b_hi3719cv100_cfg.mak cfg.mak
-            ;;
-    esac
+    if [ "$jagen_sdk" = "hi-linux" ]; then
+        case $jagen_target_board in
+            ast2*)
+                pkg_run cp configs/ast2xx_hi3719cv100_cfg.mak cfg.mak
+                ;;
+            *)
+                pkg_run cp configs/hi3719cdmo1b_hi3719cv100_cfg.mak cfg.mak
+                ;;
+        esac
+    fi
 }
 
 jagen_pkg_tools_install() {
@@ -40,6 +45,10 @@ jagen_pkg_linux_install() {
     pkg_run make linux_install
 }
 
+jagen_pkg_rootfs_install() {
+    pkg_run make rootfs_install
+}
+
 jagen_pkg_common_install() {
     pkg_run make common_install
 }
@@ -50,4 +59,9 @@ jagen_pkg_msp_install() {
 
 jagen_pkg_component_install() {
     pkg_run make component_install
+}
+
+jagen_pkg_rootbox_install() {
+    pkg_run make rootbox_install
+    pkg_run make fs
 }
