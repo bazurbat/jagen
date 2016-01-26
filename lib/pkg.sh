@@ -73,10 +73,6 @@ pkg_fix_la() {
     pkg_run sed -i "s|^\(libdir=\)'\(.*\)'$|\1'${prefix}\2'|" "$filename"
 }
 
-pkg_run_autoreconf() {
-    pkg_run autoreconf -if -I "$jagen_host_dir/share/aclocal"
-}
-
 pkg_link() {
     local dst="${1:?}" src="${2:?}"
 
@@ -161,7 +157,7 @@ jagen_pkg_autoreconf() {
             pkg_run ./autogen.sh
         fi
     else
-        pkg_run_autoreconf
+        pkg_run autoreconf -if -I "$jagen_host_dir/share/aclocal"
     fi
 }
 
@@ -190,7 +186,11 @@ default_install() {
             pkg_run cmake --build . --target install
             ;;
         GNU)
-            pkg_run make DESTDIR="${pkg_dest_dir:?}" install
+            if [ "$pkg_dest_dir" ]; then
+                pkg_run make DESTDIR="$pkg_dest_dir" install
+            else
+                pkg_run make install
+            fi
 
             for name in $pkg_libs; do
                 pkg_fix_la "$pkg_dest_dir$pkg_prefix/lib/lib${name}.la" "$pkg_dest_dir"
