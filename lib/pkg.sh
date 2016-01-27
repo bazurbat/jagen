@@ -68,9 +68,11 @@ pkg_run_depmod() {
 }
 
 pkg_fix_la() {
-    local filename="${1:?}" prefix="${2:?}"
+    local filename="${1:?}" prefix="$2"
     debug "fix la $filename $prefix"
-    pkg_run sed -i "s|^\(libdir=\)'\(.*\)'$|\1'${prefix}\2'|" "$filename"
+    if [ "$prefix" ]; then
+        pkg_run sed -i "s|^\(libdir=\)'\(.*\)'$|\1'${prefix}\2'|" "$filename"
+    fi
 }
 
 pkg_link() {
@@ -80,6 +82,15 @@ pkg_link() {
     pkg_run rm -rf "$src"
     pkg_run ln -rs $(basename "$dst") "$src"
     pkg_run cd "$OLDPWD"
+}
+
+pkg_cmake_use_chicken() {
+    local S="$jagen_FS" A=
+
+    A="$A$S-DCHICKEN_COMPILER=$jagen_host_dir/bin/chicken"
+    A="$A$S-DCHICKEN_INTERPRETER=$jagen_host_dir/bin/csi"
+
+    printf "$A"
 }
 
 jagen_pkg_unpack_pre() {
@@ -188,11 +199,15 @@ default_build() {
             if [ "$pkg_config" = "target" ]; then
                 A="$A$S-DCMAKE_SYSTEM_NAME=Linux"
                 A="$A$S-DCMAKE_C_COMPILER=${jagen_toolchain_prefix}gcc"
+                A="$A$S-DCMAKE_FIND_ROOT_PATH=$pkg_install_dir"
             fi
 
+            # NOTE: CMakePackageConfigHelpers.cmake does not handle empty
+            # CMAKE_INSTALL_PREFIX, setting it to '/' should have the same
+            # effect.
             pkg_run cmake -G"${jagen_cmake_generator:?}" \
                 -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
-                -DCMAKE_INSTALL_PREFIX="$pkg_install_dir" \
+                -DCMAKE_INSTALL_PREFIX="${pkg_prefix:-/}" \
                 $A $jagen_cmake_options "$@" "$pkg_source_dir"
 
             IFS=$OLDIFS
@@ -207,19 +222,16 @@ jagen_pkg_build() {
 
 default_install() {
     case $pkg_build_type in
-        CMake)
-            pkg_run cmake --build . --target install
-            ;;
         GNU)
-            if [ "$pkg_dest_dir" ]; then
-                pkg_run make DESTDIR="$pkg_dest_dir" install
-            else
-                pkg_run make install
-            fi
+            pkg_run make DESTDIR="$pkg_dest_dir" install
 
             for name in $pkg_libs; do
                 pkg_fix_la "$pkg_dest_dir$pkg_prefix/lib/lib${name}.la" "$pkg_dest_dir"
             done
+            ;;
+        CMake)
+            export DESTDIR="$pkg_dest_dir"
+            pkg_run cmake --build . --target install
             ;;
     esac
 }
