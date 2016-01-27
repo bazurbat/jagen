@@ -19,6 +19,12 @@ jagen_pkg_build_target() {
                 $(pkg_using_hisilicon_sdk) \
                 $(pkg_using_target_board)
             ;;
+        hi-linux)
+            default_build \
+                $(pkg_using_hisilicon_sdk) \
+                $(pkg_using_host_chicken) \
+                $(pkg_using_target_board)
+            ;;
         *)
             default_build \
                 $(pkg_using_target_board)

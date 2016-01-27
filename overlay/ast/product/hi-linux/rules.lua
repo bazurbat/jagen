@@ -39,8 +39,9 @@ package { 'hi-utils', 'target',
 package { 'karaoke-player', 'target',
     { 'build',
         requires = {
+            'chicken-eggs',
             'ffmpeg',
-            'libuv'
+            'libuv',
         },
         { 'cmake-modules', 'unpack'              },
         { 'hi-sdk',        'component', 'target' },
