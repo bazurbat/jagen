@@ -13,16 +13,24 @@ jagen_pkg_build_target() {
         sigma)
             default_build \
                 -DCMAKE_SYSTEM_PROCESSOR="mips32" \
+                $(pkg_using_install_prefix) \
                 $(pkg_using_host_chicken)
             ;;
         android)
             default_build \
+                $(pkg_using_install_prefix) \
                 $(pkg_using_android_toolchain) \
                 $(pkg_using_host_chicken)
             ;;
         *)
             default_build \
+                $(pkg_using_install_prefix) \
                 $(pkg_using_host_chicken)
             ;;
     esac
+}
+
+jagen_pkg_install_target() {
+    export DESTDIR="$pkg_dest_dir"
+    default_install
 }

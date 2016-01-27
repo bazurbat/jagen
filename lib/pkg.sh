@@ -84,6 +84,10 @@ pkg_link() {
     pkg_run cd "$OLDPWD"
 }
 
+pkg_using_install_prefix() {
+    printf '%s' "-DCMAKE_INSTALL_PREFIX=${1:-$pkg_prefix}"
+}
+
 pkg_using_host_chicken() {
     local S="$jagen_FS" A=
     A="$A$S-DCHICKEN_COMPILER=$jagen_host_dir/bin/chicken"
@@ -201,7 +205,6 @@ default_build() {
             if [ "$pkg_config" = "target" ]; then
                 A="$A$S-DCMAKE_SYSTEM_NAME=Linux"
                 A="$A$S-DCMAKE_C_COMPILER=${jagen_toolchain_prefix}gcc"
-                A="$A$S-DCMAKE_FIND_ROOT_PATH=$pkg_install_dir"
             fi
 
             # NOTE: CMakePackageConfigHelpers.cmake does not handle empty
@@ -209,7 +212,7 @@ default_build() {
             # effect.
             pkg_run cmake -G"${jagen_cmake_generator:?}" \
                 -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
-                -DCMAKE_INSTALL_PREFIX="${pkg_prefix:-/}" \
+                -DCMAKE_INSTALL_PREFIX="$pkg_install_dir" \
                 $A $jagen_cmake_options "$@" "$pkg_source_dir"
 
             IFS=$OLDIFS
@@ -232,7 +235,6 @@ default_install() {
             done
             ;;
         CMake)
-            export DESTDIR="$pkg_dest_dir"
             pkg_run cmake --build . --target install
             ;;
     esac
