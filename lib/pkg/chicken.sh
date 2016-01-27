@@ -9,15 +9,11 @@ jagen_pkg_build_host() {
 }
 
 jagen_pkg_build_target() {
-    local IFS="$jagen_IFS" S="$jagen_FS" A=
-
-    A="-DCHICKEN_COMPILER=$jagen_host_dir/bin/chicken"
-    A="$A$S-DCHICKEN_INTERPRETER=$jagen_host_dir/bin/csi"
-
     case $jagen_sdk in
         sigma)
             default_build \
-                -DCMAKE_SYSTEM_PROCESSOR="mips32"
+                -DCMAKE_SYSTEM_PROCESSOR="mips32" \
+                $(pkg_cmake_use_host_chicken)
             ;;
         android)
             pkg_run cmake -G"$jagen_cmake_generator" \
@@ -31,7 +27,8 @@ jagen_pkg_build_target() {
             pkg_run cmake --build . -- $jagen_cmake_build_options
             ;;
         *)
-            default_build $A
+            default_build \
+                $(pkg_cmake_use_host_chicken)
             ;;
     esac
 }

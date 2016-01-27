@@ -31,7 +31,6 @@ package { 'utils', 'host' }
 package { 'karaoke-player', 'host',
     { 'build',
         requires = {
-            'chicken',
             'chicken-eggs',
             'ffmpeg',
             'libuv',
@@ -175,21 +174,6 @@ firmware_package { 'karaoke-player',
         },
         { 'astindex',     'unpack'          },
         { 'mrua',         'build',          },
-        { 'chicken-eggs', 'install', 'host' },
-    }
-}
-
-firmware_package { 'chicken',
-    { 'build', { 'chicken',  'install', 'host' } }
-}
-
-firmware_package { 'chicken-eggs',
-    { 'install',
-        requires = {
-            'chicken',
-            'dbus',
-            'sqlite',
-        },
         { 'chicken-eggs', 'install', 'host' },
     }
 }
