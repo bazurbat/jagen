@@ -84,13 +84,15 @@ pkg_link() {
     pkg_run cd "$OLDPWD"
 }
 
-pkg_cmake_use_host_chicken() {
+pkg_using_host_chicken() {
     local S="$jagen_FS" A=
-
     A="$A$S-DCHICKEN_COMPILER=$jagen_host_dir/bin/chicken"
     A="$A$S-DCHICKEN_INTERPRETER=$jagen_host_dir/bin/csi"
+    printf '%s' "$A"
+}
 
-    printf "$A"
+pkg_using_target_board() {
+    printf '%s' "-DTARGET_BOARD=${jagen_target_board:?}"
 }
 
 jagen_pkg_unpack_pre() {

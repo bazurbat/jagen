@@ -13,7 +13,7 @@ jagen_pkg_build_target() {
         sigma)
             default_build \
                 -DCMAKE_SYSTEM_PROCESSOR="mips32" \
-                $(pkg_cmake_use_host_chicken)
+                $(pkg_using_host_chicken)
             ;;
         android)
             pkg_run cmake -G"$jagen_cmake_generator" \
@@ -28,7 +28,7 @@ jagen_pkg_build_target() {
             ;;
         *)
             default_build \
-                $(pkg_cmake_use_host_chicken)
+                $(pkg_using_host_chicken)
             ;;
     esac
 }

@@ -13,7 +13,7 @@ jagen_pkg_build_host() {
 jagen_pkg_build_target() {
     delete_install_targets
 
-    default_build $(pkg_cmake_use_host_chicken)
+    default_build $(pkg_using_host_chicken)
 }
 
 jagen_pkg_install() {
