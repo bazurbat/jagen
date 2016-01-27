@@ -3,7 +3,7 @@ package {
     source = {
         type     = 'hg',
         location = 'ssh://hg@bitbucket.org/art-system/karaoke-player',
-        branch   = 'stable'
+        branch   = 'master'
     },
     build = { type = 'CMake' }
 }
