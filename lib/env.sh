@@ -35,6 +35,8 @@ fi
 jagen_cmake_generator="${jagen_cmake_generator:-Ninja}"
 jagen_cmake_build_options="${jagen_cmake_build_options}"
 jagen_cmake_build_type="$jagen_build_type"
+jagen_cmake_module_path=''
+jagen_cmake_options=''
 
 export jagen_patch_dir="$jagen_dist_dir/patches"
 export jagen_private_dir="$jagen_src_dir/files"
