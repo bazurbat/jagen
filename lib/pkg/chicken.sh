@@ -16,15 +16,9 @@ jagen_pkg_build_target() {
                 $(pkg_using_host_chicken)
             ;;
         android)
-            pkg_run cmake -G"$jagen_cmake_generator" \
-                -DCMAKE_TOOLCHAIN_FILE="$jagen_src_dir/android-cmake/android.toolchain.cmake" \
-                -DANDROID_STANDALONE_TOOLCHAIN="${jagen_target_dir}/${jagen_target_toolchain}" \
-                -DANDROID_GOLD_LINKER=NO \
-                -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
-                -DCMAKE_SYSTEM_NAME="Linux" \
-                -DCMAKE_INSTALL_PREFIX="$jagen_target_prefix" \
-                "$pkg_source_dir"
-            pkg_run cmake --build . -- $jagen_cmake_build_options
+            default_build \
+                $(pkg_using_android_toolchain) \
+                $(pkg_using_host_chicken)
             ;;
         *)
             default_build \
