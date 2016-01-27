@@ -103,7 +103,7 @@ jagen_pkg_unpack_pre() {
     cd "$jagen_build_dir"
 }
 
-default_unpack() {
+pkg_unpack() {
     set -- $pkg_source
     local src_type="$1"
     local src_path="$2"
@@ -148,7 +148,7 @@ default_unpack() {
 }
 
 jagen_pkg_unpack() {
-    default_unpack
+    pkg_unpack
 }
 
 jagen_pkg_patch_pre() {
