@@ -84,6 +84,8 @@ pkg_link() {
     pkg_run cd "$OLDPWD"
 }
 
+# usings
+
 pkg_using_install_prefix() {
     printf '%s' "-DCMAKE_INSTALL_PREFIX=${1:-$pkg_prefix}"
 }
@@ -99,9 +101,7 @@ pkg_using_target_board() {
     printf '%s' "-DTARGET_BOARD=${jagen_target_board:?}"
 }
 
-jagen_pkg_unpack_pre() {
-    cd "$jagen_build_dir"
-}
+# default stages
 
 pkg_unpack() {
     set -- $pkg_source
@@ -147,26 +147,13 @@ pkg_unpack() {
     esac
 }
 
-jagen_pkg_unpack() {
-    pkg_unpack
-}
-
-jagen_pkg_patch_pre() {
-    [ "$pkg_source_dir" ] || return 0
-    pkg_run cd "$pkg_source_dir"
-}
-
 pkg_patch() {
     if is_function jagen_pkg_apply_patches; then
         jagen_pkg_apply_patches
     fi
 }
 
-jagen_pkg_patch() {
-    pkg_patch
-}
-
-jagen_pkg_autoreconf() {
+pkg_autoreconf() {
     [ "$pkg_source_dir" ] || return 0
     pkg_run cd "$pkg_source_dir"
     if [ "$pkg_build_generate" ]; then
@@ -221,10 +208,6 @@ pkg_build() {
     esac
 }
 
-jagen_pkg_build() {
-    pkg_build
-}
-
 pkg_install() {
     case $pkg_build_type in
         GNU)
@@ -238,6 +221,33 @@ pkg_install() {
             pkg_run cmake --build . --target install
             ;;
     esac
+}
+
+# stages
+
+jagen_pkg_unpack_pre() {
+    cd "$jagen_build_dir"
+}
+
+jagen_pkg_unpack() {
+    pkg_unpack
+}
+
+jagen_pkg_patch_pre() {
+    [ "$pkg_source_dir" ] || return 0
+    pkg_run cd "$pkg_source_dir"
+}
+
+jagen_pkg_patch() {
+    pkg_patch
+}
+
+jagen_pkg_autoreconf() {
+    pkg_autoreconf
+}
+
+jagen_pkg_build() {
+    pkg_build
 }
 
 jagen_pkg_install() {
