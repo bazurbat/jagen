@@ -194,9 +194,6 @@ pkg_build() {
                 A="$A$S-DCMAKE_C_COMPILER=${jagen_toolchain_prefix}gcc"
             fi
 
-            # NOTE: CMakePackageConfigHelpers.cmake does not handle empty
-            # CMAKE_INSTALL_PREFIX, setting it to '/' should have the same
-            # effect.
             pkg_run cmake -G"${jagen_cmake_generator:?}" \
                 -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
                 -DCMAKE_INSTALL_PREFIX="$pkg_install_dir" \
