@@ -5,25 +5,25 @@ jagen_pkg_build_host() {
     # Newer CMake has more convenient CMAKE_FIND_NO_INSTALL_PREFIX for the same
     # purpose, but we are stuck with 2.8.12 for now.
 
-    default_build -DCMAKE_SYSTEM_IGNORE_PATH="$pkg_prefix"
+    pkg_build -DCMAKE_SYSTEM_IGNORE_PATH="$pkg_prefix"
 }
 
 jagen_pkg_build_target() {
     case $jagen_sdk in
         sigma)
-            default_build \
+            pkg_build \
                 -DCMAKE_SYSTEM_PROCESSOR="mips32" \
                 $(pkg_using_install_prefix) \
                 $(pkg_using_host_chicken)
             ;;
         android)
-            default_build \
+            pkg_build \
                 $(pkg_using_install_prefix) \
                 $(pkg_using_android_toolchain) \
                 $(pkg_using_host_chicken)
             ;;
         *)
-            default_build \
+            pkg_build \
                 $(pkg_using_install_prefix) \
                 $(pkg_using_host_chicken)
             ;;
@@ -32,5 +32,5 @@ jagen_pkg_build_target() {
 
 jagen_pkg_install_target() {
     export DESTDIR="$pkg_dest_dir"
-    default_install
+    pkg_install
 }

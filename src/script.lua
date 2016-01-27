@@ -43,7 +43,7 @@ function P:write_shared(pkg)
         for _, patch in ipairs(pkg.patches or {}) do
             local name = patch[1]
             local strip = patch[2]
-            w('\n  pkg_patch %d "%s"', strip, name)
+            w('\n  pkg_run_patch %d "%s"', strip, name)
         end
         w('\n}')
     end

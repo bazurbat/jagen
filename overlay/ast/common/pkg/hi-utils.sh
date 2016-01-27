@@ -21,7 +21,7 @@ jagen_pkg_build_target() {
             pkg_run cmake --build . -- $jagen_cmake_build_options
             ;;
         hi-linux)
-            default_build
+            pkg_build
             ;;
     esac
 }

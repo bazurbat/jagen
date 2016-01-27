@@ -25,7 +25,7 @@ pkg_run() {
     $cmd "$@" || $pkg_run_on_error
 }
 
-pkg_patch() {
+pkg_run_patch() {
     local num="${1:?}" name="${2:?}"
     pkg_run patch -p$num -i "$jagen_patch_dir/${name}.patch"
 }
@@ -156,14 +156,14 @@ jagen_pkg_patch_pre() {
     pkg_run cd "$pkg_source_dir"
 }
 
-default_patch() {
+pkg_patch() {
     if is_function jagen_pkg_apply_patches; then
         jagen_pkg_apply_patches
     fi
 }
 
 jagen_pkg_patch() {
-    default_patch
+    pkg_patch
 }
 
 jagen_pkg_autoreconf() {
@@ -178,7 +178,7 @@ jagen_pkg_autoreconf() {
     fi
 }
 
-default_build() {
+pkg_build() {
     local OLDIFS="$IFS" IFS="$jagen_IFS" S="$jagen_FS" A=
 
     [ "$pkg_source_dir" ] || return 0
@@ -222,10 +222,10 @@ default_build() {
 }
 
 jagen_pkg_build() {
-    default_build
+    pkg_build
 }
 
-default_install() {
+pkg_install() {
     case $pkg_build_type in
         GNU)
             pkg_run make DESTDIR="$pkg_dest_dir" install
@@ -241,5 +241,5 @@ default_install() {
 }
 
 jagen_pkg_install() {
-    default_install
+    pkg_install
 }

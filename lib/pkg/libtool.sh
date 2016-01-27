@@ -1,7 +1,7 @@
 #!/bin/sh
 
 jagen_pkg_patch() {
-    default_patch
+    pkg_patch
 
     export LIBTOOLIZE=echo
 
@@ -12,5 +12,5 @@ jagen_pkg_patch() {
 jagen_pkg_build() {
     export CONFIG_SHELL=/bin/bash
 
-    default_build
+    pkg_build
 }

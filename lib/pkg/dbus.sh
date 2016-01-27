@@ -5,5 +5,5 @@ jagen_pkg_build() {
     export CFLAGS="$CFLAGS -I$pkg_install_dir/include"
     export LDFLAGS="$LDFLAGS -L$pkg_install_dir/lib"
 
-    default_build
+    pkg_build
 }

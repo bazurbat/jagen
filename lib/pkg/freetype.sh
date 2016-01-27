@@ -1,7 +1,7 @@
 #!/bin/sh
 
 jagen_pkg_patch() {
-    default_patch
+    pkg_patch
 
     enable_option() {
         sed -i -e "/#define $1/a #define $1" \
