@@ -1,25 +1,25 @@
 #!/bin/sh
 
 jagen_pkg_build_host() {
-    pkg_run cmake -G"$jagen_cmake_generator" \
-        -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
-        -DCMAKE_INSTALL_PREFIX="$jagen_host_dir" \
-        "$pkg_source_dir"
+    # Ignore already installed CHICKEN in the pacakge prefix for clean rebuild.
+    # Newer CMake has more convenient CMAKE_FIND_NO_INSTALL_PREFIX for the same
+    # purpose, but we are stuck with 2.8.12 for now.
 
-    pkg_run cmake --build . -- $jagen_cmake_build_options
+    default_build -DCMAKE_SYSTEM_IGNORE_PATH="$pkg_prefix"
 }
 
 jagen_pkg_build_target() {
-    case $jagen_target_board in
-        ast25|ast50|ast100)
-            pkg_run cmake -G"$jagen_cmake_generator" \
-                -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
-                -DCMAKE_SYSTEM_NAME="Linux" \
-                -DCMAKE_SYSTEM_PROCESSOR="mips32" \
-                -DCMAKE_INSTALL_PREFIX="$jagen_target_prefix" \
-                "$pkg_source_dir"
+    local IFS="$jagen_IFS" S="$jagen_FS" A=
+
+    A="-DCHICKEN_COMPILER=$jagen_host_dir/bin/chicken"
+    A="$A$S-DCHICKEN_INTERPRETER=$jagen_host_dir/bin/csi"
+
+    case $jagen_sdk in
+        sigma)
+            default_build \
+                -DCMAKE_SYSTEM_PROCESSOR="mips32"
             ;;
-        *)
+        android)
             pkg_run cmake -G"$jagen_cmake_generator" \
                 -DCMAKE_TOOLCHAIN_FILE="$jagen_src_dir/android-cmake/android.toolchain.cmake" \
                 -DANDROID_STANDALONE_TOOLCHAIN="${jagen_target_dir}/${jagen_target_toolchain}" \
@@ -28,18 +28,10 @@ jagen_pkg_build_target() {
                 -DCMAKE_SYSTEM_NAME="Linux" \
                 -DCMAKE_INSTALL_PREFIX="$jagen_target_prefix" \
                 "$pkg_source_dir"
+            pkg_run cmake --build . -- $jagen_cmake_build_options
+            ;;
+        *)
+            default_build $A
             ;;
     esac
-
-    pkg_run cmake --build . -- $jagen_cmake_build_options
-}
-
-jagen_pkg_install_host() {
-    pkg_run cmake --build . --target install -- $jagen_cmake_build_options
-}
-
-jagen_pkg_install_target() {
-    # supplying this directly on command line fails on Ubuntu
-    export DESTDIR="$jagen_target_dir"
-    pkg_run cmake --build . --target install -- $jagen_cmake_build_options
 }

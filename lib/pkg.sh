@@ -84,7 +84,7 @@ pkg_link() {
     pkg_run cd "$OLDPWD"
 }
 
-pkg_cmake_use_chicken() {
+pkg_cmake_use_host_chicken() {
     local S="$jagen_FS" A=
 
     A="$A$S-DCHICKEN_COMPILER=$jagen_host_dir/bin/chicken"
