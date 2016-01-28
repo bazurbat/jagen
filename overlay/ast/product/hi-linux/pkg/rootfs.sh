@@ -10,8 +10,8 @@ jagen_pkg_install() {
         pkg_run install -m 755 "$src/bin/$name" "$dst/bin"
     done
 
-    pkg_run rsync -rtlm --include='*/' --include='*.so*' --exclude='*' \
+    pkg_run rsync -vrtlm --include='*/' --include='*.so*' --exclude='*' \
         "$src/lib" "$dst"
-    pkg_run rsync -rtl "$src/lib/chicken" "$dst/lib"
+    pkg_run rsync -vrtl "$src/lib/chicken" "$dst/lib"
     find "$dst/lib" -name '*.so*' -exec chmod 755 '{}' \+ || die
 }
