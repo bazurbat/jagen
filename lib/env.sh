@@ -22,6 +22,8 @@ export jagen_include_dir="$jagen_root/include"
 export jagen_log_dir="$jagen_build_dir"
 export jagen_output_dir="$jagen_root/out"
 
+export jagen_sdk_dir
+
 jagen_build_type="Release"
 jagen_build_verbose="no"
 
