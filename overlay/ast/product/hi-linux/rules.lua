@@ -25,10 +25,6 @@ package { 'hi-sdk', 'target',
 
 package { 'cmake-modules' }
 
-package { 'libuv', 'target' }
-
-package { 'ffmpeg', 'target' }
-
 package { 'hi-utils', 'target',
     { 'build',
         { 'cmake-modules', 'unpack'              },
@@ -45,5 +41,15 @@ package { 'karaoke-player', 'target',
         },
         { 'cmake-modules', 'unpack'              },
         { 'hi-sdk',        'component', 'target' },
+    }
+}
+
+package { 'rootfs', 'target',
+    { 'install',
+        requires = {
+            'hi-utils',
+            'karaoke-player',
+        },
+        { 'hi-sdk', 'rootbox', 'target' }
     }
 }
