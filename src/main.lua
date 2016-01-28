@@ -86,10 +86,21 @@ end
 
 local command = {}
 
-function command.help(options, rest)
+function command.help(start)
     local help = require 'help'
-    local command = rest[1]
-    io.write(help.get(command))
+    local section
+    if not start then
+        section = 'usage'
+    elseif type(start) == 'string' then
+        section = start
+    elseif type(start) == 'number' then
+        section = arg[start] or 'usage'
+    end
+    if help[section] then
+        io.write(help[section])
+    else
+        jagen.die('no such help section: %s', section)
+    end
 end
 
 function command.clean()
@@ -183,32 +194,71 @@ local function find_targets(packages, arg)
     return targets
 end
 
-function command.run(options, rest)
-    local packages = rules.merge(rules.load())
-    local args = assert(options)
+function command.run(start)
+    local options, args, need_help = {}, {}
 
-    for _, arg in ipairs(rest) do
-        for _, tgt in ipairs(find_targets(packages, arg)) do
-            table.insert(args, tgt)
+    for i = start, #arg do
+        if main.is_option(arg[i]) then
+            if arg[i] == '-h' or arg[i] == '--help' then
+                need_help = true
+                break
+            else
+                table.insert(options, arg[i])
+            end
+        else
+            if arg[i] == 'help' then
+                need_help = true
+            else
+                table.insert(args, arg[i])
+            end
         end
     end
 
-    return system.exec(jagen.cmd, 'run', unpack(args))
-end
-
-function command.src(options, rest)
-    local subcommand = rest[1]
-    local args = table.rest(rest, 2)
-    local src = SourceManager:new()
-
-    if not subcommand then
-        jagen.die('no src subcommand specified')
+    if need_help then
+        return command.help('usage')
     end
 
-    if src[subcommand..'_command'] then
-        src[subcommand..'_command'](src, args)
+    local packages = rules.merge(rules.load())
+
+    for _, arg in ipairs(args) do
+        for _, tgt in ipairs(find_targets(packages, arg)) do
+            table.insert(options, tgt)
+        end
+    end
+
+    return system.exec(jagen.cmd, 'run', unpack(options))
+end
+
+function command.src(start)
+    local cmd, names = nil, {}
+
+    for i = start, #arg do
+        if main.is_option(arg[i]) then
+            if arg[i] == '-h' or arg[i] == '--help' then
+                cmd = 'help'
+                break
+            else
+                jagen.die('invalid argument: %s', arg[i])
+            end
+        else
+            if cmd then
+                table.insert(names, arg[i])
+            else
+                cmd = arg[i]
+            end
+        end
+    end
+
+    local src = SourceManager:new()
+
+    if not cmd then
+        jagen.die("subcommand required, try 'jagen src help'")
+    elseif cmd == 'help' then
+        return command.help('src')
+    elseif src[cmd..'_command'] then
+        return src[cmd..'_command'](src, names)
     else
-        jagen.die('unknown src subcommand: %s', subcommand)
+        jagen.die("'%s' is not valid src subcommand, use 'jagen src help'", cmd)
     end
 end
 
@@ -216,42 +266,29 @@ function main.is_option(arg)
     return string.sub(arg, 1, 1) == '-'
 end
 
-function main.process_common_arguments(args)
-    for i, arg in ipairs(args) do
-        if arg == '-h' or arg == '--help' then
-            return 'help', 1
-        elseif main.is_option(arg) then
-            jagen.die('invalid argument: %s', arg)
-        else
-            return arg, i
-        end
-    end
-end
-
-function main.process_arguments(args, start)
-    local options, rest = {}, {}
-    for i = start, #args do
-        if main.is_option(args[i]) then
-            table.insert(options, args[i])
-        else
-            table.insert(rest, args[i])
-        end
-    end
-    return options, rest
-end
-
-local name, index = main.process_common_arguments(arg)
 local err, status
 
-if not name then
-    name = 'help'
-    index = 1
+if #arg == 0 then
+    command.help()
+    os.exit(0)
 end
 
-if command[name] then
-    err, status = command[name](main.process_arguments(arg, index + 1))
-else
-    jagen.die('invalid command: %s', name)
+for i, arg in ipairs(arg) do
+    if main.is_option(arg) then
+        if arg == '-h' or arg == '--help' then
+            command.help()
+            break
+        else
+            jagen.die('invalid argument: %s', arg)
+        end
+    else
+        if command[arg] then
+            err, status = command[arg](i + 1)
+            break
+        else
+            jagen.die('invalid command: %s', arg)
+        end
+    end
 end
 
 os.exit((status or 0) % 0xFF)

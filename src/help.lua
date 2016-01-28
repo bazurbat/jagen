@@ -1,5 +1,3 @@
-local P = {}
-
 local usage = [[
 Usage: jagen <COMMAND> [OPTIONS...]
 
@@ -101,12 +99,7 @@ Available subcommands:
 
 ]]
 
-function P.get(section)
-    if section == 'src' then
-        return src
-    else
-        return usage
-    end
-end
-
-return P
+return {
+    usage = usage,
+    src = src
+}
