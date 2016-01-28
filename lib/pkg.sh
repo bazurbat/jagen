@@ -166,13 +166,14 @@ pkg_autoreconf() {
 }
 
 pkg_build() {
-    local OLDIFS="$IFS" IFS="$jagen_IFS" S="$jagen_FS" A=
+    local OLDIFS="$IFS" S="$jagen_FS" A=
 
     [ "$pkg_source_dir" ] || return 0
 
     case $pkg_build_type in
         GNU)
             if [ -x "$pkg_source_dir/configure" ]; then
+                IFS="$jagen_IFS" 
                 pkg_run "$pkg_source_dir/configure" \
                     --host="$pkg_system" \
                     --prefix="$pkg_prefix" \
@@ -186,6 +187,7 @@ pkg_build() {
             fi
             ;;
         CMake)
+            IFS="$jagen_IFS" 
             if [ "$jagen_cmake_module_path" ]; then
                 A="$A$S-DCMAKE_MODULE_PATH=$jagen_cmake_module_path"
             fi
@@ -201,6 +203,9 @@ pkg_build() {
 
             IFS=$OLDIFS
             pkg_run cmake --build . -- $jagen_cmake_build_options
+            ;;
+        KBuild)
+            pkg_run make
             ;;
     esac
 }
