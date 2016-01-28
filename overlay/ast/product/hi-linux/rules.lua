@@ -23,6 +23,12 @@ package { 'hi-sdk', 'target',
     { 'rootbox'   },
 }
 
+package { 'hi-drivers', 'target',
+    { 'build',
+        { 'hi-sdk', 'linux', 'target' }
+    }
+}
+
 package { 'cmake-modules' }
 
 package { 'hi-utils', 'target',
