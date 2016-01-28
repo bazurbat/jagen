@@ -66,11 +66,6 @@ cmd_run() {
 }
 
 case $1 in
-    help)
-        shift
-        . "$jagen_dir/lib/help.sh"
-        print_help "$@"
-        ;;
     run)
         shift
         cmd_run "$@"

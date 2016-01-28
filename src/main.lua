@@ -87,8 +87,9 @@ end
 local command = {}
 
 function command.help(options, rest)
+    local help = require 'help'
     local command = rest[1]
-    return system.exec(jagen.cmd, 'help', command)
+    io.write(help.get(command))
 end
 
 function command.clean()
