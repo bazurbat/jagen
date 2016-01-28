@@ -41,10 +41,16 @@ import "pkg/$pkg_name"
 
 pkg_install_dir="$pkg_dest_dir$pkg_prefix"
 
-if [ "$pkg_build_dir" ]; then
-    pkg_run mkdir -p "$pkg_build_dir"
-    pkg_run cd "$pkg_build_dir"
-fi
+case $pkg_stage in
+    unpack|patch)
+        # initial stages shared between package configs
+        ;;
+    *)
+        if [ "$pkg_build_dir" ]; then
+            pkg_run mkdir -p "$pkg_build_dir"
+            pkg_run cd "$pkg_build_dir"
+        fi ;;
+esac
 
 run_stage() {
     local stage="$1"
