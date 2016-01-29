@@ -1,27 +1,15 @@
 #!/bin/sh
 
 jagen_pkg_build_target() {
-    local IFS="$(printf '\n\t')"
-    local A="-G$jagen_cmake_generator"
-    local S="$jagen_FS"
-    A="$A$S-DCMAKE_MODULE_PATH=$jagen_src_dir/cmake-modules"
-    A="$A$S-DCMAKE_SYSTEM_NAME=Linux"
-    A="$A$S-DCMAKE_BUILD_TYPE=$jagen_cmake_build_type"
-    A="$A$S-DCMAKE_INSTALL_PREFIX=${jagen_target_dir}${jagen_target_prefix}"
-
     case $jagen_sdk in
         android)
-            pkg_run cmake $A \
-                -DCMAKE_MODULE_PATH="$jagen_src_dir/cmake-modules" \
-                -DCMAKE_TOOLCHAIN_FILE="$jagen_src_dir/android-cmake/android.toolchain.cmake" \
-                -DANDROID_STANDALONE_TOOLCHAIN="${jagen_target_dir}/${jagen_target_toolchain}" \
-                -DHISILICON_ROOT_DIR="$jagen_sdk_dir" \
-                -DHISILICON_OUT_DIR="$jagen_sdk_staging_dir" \
-                "$pkg_source_dir"
-            pkg_run cmake --build . -- $jagen_cmake_build_options
+            pkg_build \
+                $(pkg_using_android_toolchain) \
+                $(pkg_using_hisilicon_sdk)
             ;;
         hi-linux)
-            pkg_build
+            pkg_build \
+                $(pkg_using_hisilicon_sdk)
             ;;
     esac
 }
