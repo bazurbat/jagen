@@ -194,6 +194,7 @@ pkg_build() {
             if [ "$pkg_config" = "target" ]; then
                 A="$A$S-DCMAKE_SYSTEM_NAME=Linux"
                 A="$A$S-DCMAKE_C_COMPILER=${jagen_toolchain_prefix}gcc"
+                A="$A$S-DCMAKE_FIND_ROOT_PATH=$pkg_install_dir"
             fi
 
             pkg_run cmake -G"${jagen_cmake_generator:?}" \
