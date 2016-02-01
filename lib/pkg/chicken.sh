@@ -1,6 +1,13 @@
 #!/bin/sh
 
 jagen_pkg_build_host() {
+    # If an executable has RUNPATH set, LD_LIBRARY_PATH is searched first,
+    # which is the case with csi on gentoo. This prevents automatic dependency
+    # generation to work once compiled libchicken becomes available in the
+    # build directory.
+
+    unset LD_LIBRARY_PATH
+
     # Ignore already installed CHICKEN in the pacakge prefix for clean rebuild.
     # Newer CMake has more convenient CMAKE_FIND_NO_INSTALL_PREFIX for the same
     # purpose, but we are stuck with 2.8.12 for now.
