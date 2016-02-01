@@ -2,27 +2,31 @@
 
 S=$(printf '\t')
 
-on_interrupt() { :; }
-
-build() {
-    cd "$jagen_build_dir" || exit 1
-    ninja "$@"
+die() {
+    unset IFS
+    printf 'jagen run: %s\n' "$*"
+    exit 1
 }
+
+on_interrupt() { :; }
 
 cmd_run() {
     local IFS="$(printf '\n\t')"
-    local arg print_targets targets_only show_output show_all
+    local print_targets targets_only show_output show_all
     local targets logs sts
     local cmd_log="$jagen_log_dir/build.log"
 
-    for arg; do
-        [ "$arg" = '-p' ] && { print_targets=1; continue; }
-        [ "$arg" = '-t' ] && { targets_only=1; continue; }
-        [ "$arg" = '-o' ] && { show_output=1; continue; }
-        [ "$arg" = "-a" ] && { show_all=1; continue; }
-
-        targets="${targets}${S}${arg}"
-        logs="${logs}${S}${jagen_log_dir}/${arg}.log"
+    while [ $# -gt 0 ]; do
+        case $1 in
+            -p) print_targets=1 ;;
+            -t) targets_only=1 ;;
+            -o) show_output=1 ;;
+            -a) show_all=1 ;;
+            -*) die "invalid option '$1', try 'jagen run --help'" ;;
+             *) targets="${targets}${S}${1}"
+                logs="${logs}${S}${jagen_log_dir}/${1}.log" ;;
+        esac
+        shift
     done
 
     if [ "$print_targets" ]; then
@@ -71,7 +75,6 @@ case $1 in
         cmd_run "$@"
         ;;
     *)
-        echo "Unknown wrapper command: $1"
-        exit 1
+        die "unknown wrapper command: $1"
         ;;
 esac
