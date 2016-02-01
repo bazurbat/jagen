@@ -111,7 +111,7 @@ function jagen.command.clean(args, i)
 
     assert(system.rmrf(unpack(dirs)))
 
-    return command.refresh()
+    return jagen.command.refresh()
 end
 
 function jagen.command.update()
@@ -123,7 +123,7 @@ function jagen.command.update()
     else
         assert(source:exec('pull', '--ff-only'))
     end
-    return command.refresh()
+    return jagen.command.refresh()
 end
 
 local function prepare_root()
