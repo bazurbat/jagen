@@ -10,6 +10,7 @@ package { 'hi-sdk-tools' }
 
 package { 'hi-sdk', 'target',
     { 'tools',
+        { 'make',         'install', 'host'   },
         { 'hi-sdk-tools', 'unpack'            },
         { 'toolchain',    'install', 'target' }
     },
