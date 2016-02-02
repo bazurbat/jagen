@@ -55,6 +55,7 @@ package { 'karaoke-player', 'target',
 package { 'rootfs', 'target',
     { 'install',
         requires = {
+            'dropbear',
             'hi-utils',
             'karaoke-player',
         },
