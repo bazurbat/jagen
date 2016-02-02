@@ -69,6 +69,10 @@ function P:write(pkg)
 
     w('#!/bin/sh\n')
 
+    if pkg.config then
+        w('\nuse_env %s || return', pkg.config)
+    end
+
     -- put install variables before build to allow referencing them from
     -- configure options
     if pkg.install then

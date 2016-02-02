@@ -15,10 +15,6 @@ pkg_work_dir="$jagen_build_dir/$pkg_name"
 
 cd "$jagen_build_dir" || die "failed to cd to $jagen_build_dir"
 
-if [ "$pkg_config" ]; then
-    use_env "$pkg_config"
-fi
-
 if [ "$pkg_config" = 'host' ]; then
     pkg_system="$jagen_host_system"
     pkg_prefix="$jagen_host_dir$jagen_host_prefix"
