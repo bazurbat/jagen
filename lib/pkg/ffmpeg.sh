@@ -48,7 +48,7 @@ jagen_pkg_patch() {
     :
 }
 
-jagen_pkg_build() {
+jagen_pkg_configure() {
     local cross_options
 
     CFLAGS=''

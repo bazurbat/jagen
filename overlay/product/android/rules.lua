@@ -5,7 +5,7 @@ package { 'make', 'host',
 }
 
 package { 'android',
-    { 'build',
+    { 'configure',
         { 'make', 'build', 'host' }
     }
 }

@@ -9,8 +9,8 @@ jagen_pkg_patch() {
     pkg_run autoreconf -ifv
 }
 
-jagen_pkg_build() {
+jagen_pkg_configure() {
     export CONFIG_SHELL=/bin/bash
 
-    pkg_build
+    pkg_configure
 }

@@ -8,7 +8,7 @@ jagen_pkg_patch() {
         glib/Makefile.am glib/Makefile.in
 }
 
-jagen_pkg_build_target() {
+jagen_pkg_configure_target() {
     local cache="config.cache"
     cat >$cache <<'EOF'
 glib_cv_stack_grows=no
@@ -17,5 +17,5 @@ ac_cv_func_posix_getpwuid_r=yes
 ac_cv_func_posix_getgrgid_r=yes
 EOF
 
-    pkg_build --cache-file="$cache"
+    pkg_configure --cache-file="$cache"
 }

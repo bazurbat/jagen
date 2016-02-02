@@ -29,7 +29,7 @@ package { 'make', 'tools' }
 package { 'utils', 'host' }
 
 package { 'karaoke-player', 'host',
-    { 'build',
+    { 'configure',
         requires = {
             'chicken-eggs',
             'ffmpeg',
@@ -47,7 +47,7 @@ package { 'astindex',
 
 local kernel_package_template = {
     config = 'target',
-    { 'build', { 'kernel', 'build' } }
+    { 'configure', { 'kernel', 'build' } }
 }
 
 local function kernel_package(rule)
@@ -56,7 +56,7 @@ end
 
 package { 'kernel',
     source = { branch = 'sigma-2.6' },
-    { 'build',
+    { 'configure',
         { 'linux',  'unpack' },
         { 'rootfs', 'build'  },
         { 'ezboot', 'build', 'target' },
@@ -77,7 +77,7 @@ local rootfs_package_template = {
         path = '$jagen_sdk_staging_dir',
         prefix = ''
     },
-    { 'build', { 'rootfs', 'build' } }
+    { 'configure', { 'rootfs', 'build' } }
 }
 
 local function rootfs_package(rule)
@@ -86,7 +86,7 @@ end
 
 package { 'rootfs',
     template = rootfs_package_template,
-    { 'build',
+    { 'configure',
         { 'ast-files', 'unpack'           },
         { 'xsdk',      'unpack'           },
         { 'make',      'install', 'tools' },
@@ -107,13 +107,13 @@ package { 'rootfs',
 }
 
 package { 'mrua',
-    { 'build',  { 'kernel', 'build' } },
+    { 'configure',  { 'kernel', 'build' } },
     { 'modules' },
     { 'install' },
 }
 
 rootfs_package { 'ezboot',
-    { 'build',
+    { 'configure',
         { 'make', 'install', 'tools' }
     }
 }
@@ -123,7 +123,7 @@ rootfs_package { 'busybox',
 }
 
 rootfs_package { 'utils',
-    { 'build',
+    { 'configure',
         requires = { 'gpgme' },
         { 'dbus', 'install', 'target' }
     }
@@ -160,7 +160,7 @@ package { 'firmware',
 }
 
 firmware_package { 'karaoke-player',
-    { 'build',
+    { 'configure',
         requires = {
             'chicken-eggs',
             'connman',

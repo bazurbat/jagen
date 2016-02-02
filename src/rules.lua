@@ -183,7 +183,7 @@ function Rule:add_default_targets(list)
     end
 
     if self.requires then
-        table.insert(self, { 'build', requires = self.requires })
+        table.insert(self, { 'configure', requires = self.requires })
     end
 
     if build then
@@ -196,12 +196,12 @@ function Rule:add_default_targets(list)
             end
         end
         if build.type then
-            local build_rule = {
-                { 'build', requires = { 'toolchain' } }
+            local build_rules = {
+                { 'configure', requires = { 'toolchain' } },
+                { 'build'   },
+                { 'install' }
             }
-            self:add_targets(build_rule, list)
-            self:add_target(Target:from_rule({ 'install'
-                }, self.name, config))
+            self:add_targets(build_rules, list)
         end
     end
 end

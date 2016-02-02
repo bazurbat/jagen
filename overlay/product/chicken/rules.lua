@@ -5,11 +5,11 @@ package { 'chicken', 'host' }
 package { 'chicken-eggs', 'host' }
 
 package { 'chicken', 'target',
-    { 'build', { 'chicken', 'install', 'host' } }
+    { 'configure', { 'chicken', 'install', 'host' } }
 }
 
 package { 'chicken-eggs', 'target',
-    { 'build',
+    { 'configure',
         requires = {
             'dbus',
             'sqlite',

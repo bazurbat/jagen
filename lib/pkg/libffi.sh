@@ -8,8 +8,8 @@ jagen_pkg_patch() {
     pkg_run sed -i -e 's:@toolexeclibdir@:${libdir}:' libffi.pc.in
 }
 
-jagen_pkg_build() {
+jagen_pkg_configure() {
     # Needed starting from GCC 4.4
     CFLAGS="$CFLAGS -mno-compact-eh"
-    pkg_build
+    pkg_configure
 }

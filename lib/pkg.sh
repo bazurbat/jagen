@@ -165,29 +165,28 @@ pkg_autoreconf() {
     fi
 }
 
-pkg_build() {
-    local OLDIFS="$IFS" S="$jagen_FS" A=
+pkg_configure() {
+    local IFS="$jagen_IFS" S="$jagen_FS" A=
 
     [ "$pkg_source_dir" ] || return 0
 
     case $pkg_build_type in
         GNU)
-            if [ -x "$pkg_source_dir/configure" ]; then
-                IFS="$jagen_IFS" 
-                pkg_run "$pkg_source_dir/configure" \
-                    --host="$pkg_system" \
-                    --prefix="$pkg_prefix" \
-                    --disable-dependency-tracking \
-                    $pkg_options "$@"
-
-                IFS=$OLDIFS
-                pkg_run make
-            else
+            if ! [ -x "$pkg_source_dir/configure" ]; then
                 die "GNU build type specified but ./configure was not found in $pkg_source_dir"
             fi
+
+            pkg_run "$pkg_source_dir/configure" \
+                --host="$pkg_system" \
+                --prefix="$pkg_prefix" \
+                --disable-dependency-tracking \
+                $pkg_options "$@"
             ;;
         CMake)
-            IFS="$jagen_IFS" 
+            if ! [ -f "$pkg_source_dir/CMakeLists.txt" ]; then
+                die "CMake build type specified but no CMakeLists.txt was found in $pkg_source_dir"
+            fi
+
             if [ "$jagen_cmake_module_path" ]; then
                 A="$A$S-DCMAKE_MODULE_PATH=$jagen_cmake_module_path"
             fi
@@ -201,12 +200,19 @@ pkg_build() {
                 -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
                 -DCMAKE_INSTALL_PREFIX="$pkg_install_dir" \
                 $A $jagen_cmake_options "$@" "$pkg_source_dir"
-
-            IFS=$OLDIFS
-            pkg_run cmake --build . -- $jagen_cmake_build_options
             ;;
-        KBuild)
-            pkg_run make
+    esac
+}
+
+pkg_build() {
+    [ "$pkg_source_dir" ] || return 0
+
+    case $pkg_build_type in
+        GNU|KBuild)
+            pkg_run make "$@"
+            ;;
+        CMake)
+            pkg_run cmake --build . -- $jagen_cmake_build_options "$@"
             ;;
     esac
 }
@@ -214,14 +220,14 @@ pkg_build() {
 pkg_install() {
     case $pkg_build_type in
         GNU)
-            pkg_run make DESTDIR="$pkg_dest_dir" install
+            pkg_run make DESTDIR="$pkg_dest_dir" "$@" install
 
             for name in $pkg_libs; do
                 pkg_fix_la "$pkg_dest_dir$pkg_prefix/lib/lib${name}.la" "$pkg_dest_dir"
             done
             ;;
         CMake)
-            pkg_run cmake --build . --target install
+            pkg_run cmake --build . --target install -- "$@"
             ;;
     esac
 }
@@ -247,6 +253,10 @@ jagen_pkg_patch() {
 
 jagen_pkg_autoreconf() {
     pkg_autoreconf
+}
+
+jagen_pkg_configure() {
+    pkg_configure
 }
 
 jagen_pkg_build() {

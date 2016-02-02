@@ -5,7 +5,7 @@ package { 'android-cmake' }
 package { 'cmake-modules' }
 
 package { 'chicken', 'host',
-    { 'build',
+    { 'configure',
         { 'android-cmake', 'unpack' }
     }
 }
@@ -35,14 +35,14 @@ package { 'firmware',
 }
 
 firmware_package { 'hi-utils',
-    { 'build',
+    { 'configure',
         { 'android-cmake', 'unpack' },
         { 'cmake-modules', 'unpack' },
     }
 }
 
 firmware_package { 'chicken',
-    { 'build',
+    { 'configure',
         { 'chicken', 'install', 'host' }
     }
 }
@@ -60,7 +60,7 @@ firmware_package { 'sqlite' }
 firmware_package { 'ffmpeg' }
 
 firmware_package { 'karaoke-player',
-    { 'build',
+    { 'configure',
         { 'astindex',      'unpack'            },
         { 'cmake-modules', 'unpack'            },
         { 'chicken-eggs',  'install', 'host'   },
