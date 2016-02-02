@@ -107,7 +107,7 @@ function Rule:add_package(rule, list)
 
         table.merge(pkg, rule)
 
-        pkg:add_default_targets()
+        pkg:add_default_targets(list)
         pkg:add_targets(pkg, list)
 
         list[key] = pkg
@@ -168,7 +168,7 @@ function Rule:add_target(target)
     return self
 end
 
-function Rule:add_default_targets()
+function Rule:add_default_targets(list)
     local source = self.source
     local build = self.build
     local config = self.config
@@ -197,9 +197,10 @@ function Rule:add_default_targets()
         end
         if build.type then
             if config == 'target' then
-                self:add_target(Target:from_rule({ 'build',
-                            { 'toolchain', 'install', 'target' }
-                    }, self.name, config))
+                local rule = {
+                    { 'build', requires = { 'toolchain' } }
+                }
+                self:add_targets(rule, list)
             else
                 self:add_target(Target:from_rule({ 'build',
                     }, self.name, config))
@@ -241,8 +242,6 @@ function P.load()
             add(rule)
         end
     end
-
-    add { 'toolchain', 'target', { 'install' } }
 
     if P.need_libtool then
         add { 'libtool', 'host' }
