@@ -1,6 +1,6 @@
 #!/bin/sh
 
-jagen_pkg_build() {
+jagen_pkg_compile() {
     pkg_link "$pkg_build_dir" "$pkg_source_dir/out"
 
     use_env lunch || return

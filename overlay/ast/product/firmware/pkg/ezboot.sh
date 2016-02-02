@@ -7,7 +7,7 @@ export RMCFLAGS="$RMCFLAGS \
 -DRMCHIP_REVISION=3 \
 -DWITH_PROD=1"
 
-jagen_pkg_build() {
+jagen_pkg_compile() {
     add_PATH "$SMP86XX_TOOLCHAIN_PATH/bin"
     add_PATH "$pkg_dest_dir/bin"
 

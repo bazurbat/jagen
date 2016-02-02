@@ -23,8 +23,8 @@ local function firmware_package(rule)
 end
 
 package { 'firmware',
-    { 'build',
-        { 'hi-utils', 'install', 'target' },
+    { 'compile',
+        { 'hi-utils',       'install', 'target' },
         { 'chicken',        'install', 'target' },
         { 'chicken-eggs',   'install', 'target' },
         { 'ffmpeg',         'install', 'target' },

@@ -4,7 +4,7 @@ use_env target
 
 workdir="gdb/gdbserver"
 
-jagen_pkg_build() {
+jagen_pkg_compile() {
     pkg_run cd "$workdir"
     pkg_run "$pkg_source_dir/configure" \
         --host="$jagen_target_system" \

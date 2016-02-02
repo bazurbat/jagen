@@ -204,7 +204,7 @@ pkg_configure() {
     esac
 }
 
-pkg_build() {
+pkg_compile() {
     [ "$pkg_source_dir" ] || return 0
 
     case $pkg_build_type in
@@ -259,8 +259,8 @@ jagen_pkg_configure() {
     pkg_configure
 }
 
-jagen_pkg_build() {
-    pkg_build
+jagen_pkg_compile() {
+    pkg_compile
 }
 
 jagen_pkg_install() {

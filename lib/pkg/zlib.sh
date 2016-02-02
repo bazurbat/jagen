@@ -1,11 +1,9 @@
 #!/bin/sh
 
-jagen_pkg_build() {
+jagen_pkg_configure() {
     pkg_run "$pkg_source_dir/configure" \
         --prefix="$pkg_prefix" \
         --libdir="$pkg_prefix/lib"
-
-    pkg_run make
 }
 
 cleanup_headers() {

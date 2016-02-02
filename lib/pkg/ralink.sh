@@ -1,6 +1,6 @@
 #!/bin/sh
 
-jagen_pkg_build() {
+jagen_pkg_compile() {
     pkg_run sed -i 's|^\(HAS_WPA_SUPPLICANT=\).*$|\1y|' \
         os/linux/config.mk
     pkg_run sed -i 's|^\(HAS_NATIVE_WPA_SUPPLICANT_SUPPORT=\).*$|\1y|' \

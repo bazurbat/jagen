@@ -11,7 +11,7 @@ export KCFLAGS="-mhard-float -Wa,-mhard-float"
 
 protectordir="$jagen_sdk_ezboot_dir/protector"
 
-jagen_pkg_build() {
+jagen_pkg_compile() {
     pkg_run ln -sfT "$jagen_src_dir/linux" linux
 
     if [ $with_kernel_config_default = yes ]; then

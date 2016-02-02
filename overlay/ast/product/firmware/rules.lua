@@ -47,7 +47,7 @@ package { 'astindex',
 
 local kernel_package_template = {
     config = 'target',
-    { 'configure', { 'kernel', 'build' } }
+    { 'configure', { 'kernel', 'compile' } }
 }
 
 local function kernel_package(rule)
@@ -57,9 +57,9 @@ end
 package { 'kernel',
     source = { branch = 'sigma-2.6' },
     { 'configure',
-        { 'linux',  'unpack' },
-        { 'rootfs', 'build'  },
-        { 'ezboot', 'build', 'target' },
+        { 'linux',  'unpack'            },
+        { 'rootfs', 'compile'           },
+        { 'ezboot', 'compile', 'target' },
     },
     { 'install' },
     { 'image',  { 'rootfs', 'install' } }
@@ -77,7 +77,7 @@ local rootfs_package_template = {
         path = '$jagen_sdk_staging_dir',
         prefix = ''
     },
-    { 'configure', { 'rootfs', 'build' } }
+    { 'configure', { 'rootfs', 'compile' } }
 }
 
 local function rootfs_package(rule)
@@ -107,7 +107,7 @@ package { 'rootfs',
 }
 
 package { 'mrua',
-    { 'configure',  { 'kernel', 'build' } },
+    { 'configure',  { 'kernel', 'compile' } },
     { 'modules' },
     { 'install' },
 }
@@ -142,8 +142,8 @@ end
 
 package { 'firmware',
     template = firmware_package_template,
-    { 'build',
-        { 'mrua', 'build' }
+    { 'compile',
+        { 'mrua', 'compile' }
     },
     { 'install',
         requires = {
@@ -173,7 +173,7 @@ firmware_package { 'karaoke-player',
             'soundtouch',
         },
         { 'astindex',     'unpack'          },
-        { 'mrua',         'build',          },
+        { 'mrua',         'compile',        },
         { 'chicken-eggs', 'install', 'host' },
     }
 }

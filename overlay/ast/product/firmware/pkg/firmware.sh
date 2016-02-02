@@ -31,7 +31,7 @@ create_xmaterial() {
     pkg_run genromfs -d "$workdir" -f "$jagen_target_dir/xmaterial.romfs" -V xmaterial
 }
 
-jagen_pkg_build() {
+jagen_pkg_compile() {
     create_imaterial || return $?
     create_xmaterial || return $?
 }

@@ -12,7 +12,7 @@ build_libs="rmcore rmcec rmedid rmhdmi rmhsi rmi2c rmsha1 rmvideoout rmoutput"
 
 PATH="$SMP86XX_TOOLCHAIN_PATH/bin:$PATH"
 
-jagen_pkg_build() {
+jagen_pkg_compile() {
     pkg_run make
 
     for lib in $build_libs; do

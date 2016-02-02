@@ -1,6 +1,6 @@
 #!/bin/sh
 
-jagen_pkg_build() {
+jagen_pkg_compile() {
     rm -f .config
 
     echo "BINDIR=$pkg_prefix/bin"              >> .config

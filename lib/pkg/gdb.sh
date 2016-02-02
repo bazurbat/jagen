@@ -1,6 +1,6 @@
 #!/bin/sh
 
-jagen_pkg_build_host() {
+jagen_pkg_configure_host() {
     pkg_run "$pkg_source_dir/configure" \
         --target="$jagen_target_system" \
         --prefix="$jagen_tools_dir" \
@@ -18,8 +18,6 @@ jagen_pkg_build_host() {
         --with-expat \
         --with-python="/usr/bin/python2.7" \
         --with-zlib
-
-    pkg_run make
 }
 
 jagen_pkg_install_host() {

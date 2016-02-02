@@ -198,7 +198,7 @@ function Rule:add_default_targets(list)
         if build.type then
             local build_rules = {
                 { 'configure', requires = { 'toolchain' } },
-                { 'build'   },
+                { 'compile' },
                 { 'install' }
             }
             self:add_targets(build_rules, list)

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-jagen_pkg_build() {
+jagen_pkg_compile() {
     local programs="csi smplayer"
 
     mkdir -p bin lib

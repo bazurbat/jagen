@@ -1,6 +1,6 @@
 #!/bin/sh
 
-jagen_pkg_build() {
+jagen_pkg_compile() {
     pkg_run make \
         LINUX_SOURCE="$LINUX_KERNEL" \
         KBUILD_OUTPUT="$LINUX_KERNEL" \

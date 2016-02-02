@@ -5,7 +5,7 @@ jagen_pkg_patch() {
     pkg_run sed -ri 's|^(CFLAGS.*ENABLE_REPLAY)|# \1|' Makefile
 }
 
-jagen_pkg_build() {
+jagen_pkg_compile() {
     pkg_run make
 }
 

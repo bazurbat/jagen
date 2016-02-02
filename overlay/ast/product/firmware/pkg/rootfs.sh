@@ -2,7 +2,7 @@
 
 pkg_run_jobs=1
 
-jagen_pkg_build() {
+jagen_pkg_compile() {
     use_env tools
 
     PATH="$SMP86XX_TOOLCHAIN_PATH/bin:$PATH"
