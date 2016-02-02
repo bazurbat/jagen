@@ -1,6 +1,6 @@
 #!/bin/sh
 
-jagen_pkg_install() {
+jagen_pkg_install_target() {
     : ${jagen_toolchain_bin_dir:?}
     : ${jagen_toolchain_dir:?}
     : ${jagen_target_dir:?}

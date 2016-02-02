@@ -8,7 +8,7 @@ exec $ccache $gcc_dir/mips-linux-gnu-${name} $pre_opt "\$@" $post_opt
 EOF
 }
 
-jagen_pkg_install() {
+jagen_pkg_install_target() {
     : ${jagen_toolchain_dir:?}
 
     local common_tools="addr2line ar c++filt elfedit gcov gdb gdbtui gprof nm \
