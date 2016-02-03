@@ -3,6 +3,19 @@ local system = require 'system'
 
 local Source = {}
 
+function Source:new(o)
+    local o = o or {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+local GitSource  = Source:new()
+local HgSource   = Source:new()
+local RepoSource = Source:new()
+
+-- Source
+
 function Source:is_scm()
     return self.type == 'git' or self.type == 'hg' or self.type == 'repo'
 end
@@ -45,14 +58,7 @@ function Source:create(source)
     return source
 end
 
-function Source:new(o)
-    local o = o or {}
-    setmetatable(o, self)
-    self.__index = self
-    return o
-end
-
-GitSource = Source:new()
+-- GitSource
 
 function GitSource:new(o)
     local source = Source.new(GitSource, o)
@@ -80,42 +86,55 @@ function GitSource:clean()
     return self:exec('checkout', 'HEAD', '.') and self:exec('clean', '-fxd')
 end
 
-function GitSource:fetch(branch)
-    if jagen.flag 'offline' then
-        return true
-    end
-    local cmd = { 'fetch', '--prune', '--no-tags', 'origin' }
-    if branch then
-        local src = 'refs/heads/'..branch
-        local dst = 'refs/remotes/origin/'..branch
-        table.insert(cmd, '+'..src..':'..dst)
-    end
+function GitSource:update()
+    local branch = assert(self.branch)
+    local cmd = { 'fetch', '--prune', '--no-tags', 'origin',
+        string.format('+refs/heads/%s:refs/remotes/origin/%s', branch, branch)
+    }
     return self:exec(unpack(cmd))
 end
 
-function GitSource:checkout(branch)
-    assert(branch)
-    local name = self:popen('branch', '--list', branch)
-    if name and #name > 0 then
-        if string.sub(name, 1, 1) == '*' then
-            return true
-        else
-            return self:exec('checkout', branch)
-        end
+function GitSource:_is_branch(pattern)
+    local branch = self:popen('branch', '-a', '--list', pattern)
+    local exists, active = false, false
+
+    if branch and #branch > 0 then
+        exists = true
+        active = string.sub(branch, 1, 1) == '*'
+    end
+
+    return exists, active
+end
+
+function GitSource:_checkout()
+    local branch = assert(self.branch)
+    local exists, active = self:_is_branch(branch)
+    if active then
+        return true
+    elseif exists then
+        return self:exec('checkout', branch)
     else
-        local add = { 'remote', 'set-branches', '--add', 'origin', branch }
-        local checkout = { 'checkout', '-b', branch, '-t', 'origin/'..branch }
-        return self:exec(unpack(add)) and self:exec(unpack(checkout))
+        local start_point = 'origin/'..branch
+        exists = self:_is_branch(start_point)
+        if exists then
+            local add = { 'remote', 'set-branches', 'origin', branch }
+            local checkout = { 'checkout', '-b', branch, start_point }
+            return self:exec(unpack(add)) and self:exec(unpack(checkout))
+        else
+            jagen.error("could not find branch '%s' in local repository", branch)
+            return false
+        end
     end
 end
 
-function GitSource:merge(branch)
-    return self:exec('merge', '--ff-only', 'origin/'..assert(branch))
+function GitSource:_merge()
+    local branch = assert(self.branch)
+    local cmd = { 'merge', '--ff-only', string.format('origin/%s', branch) }
+    return self:exec(unpack(cmd))
 end
 
-function GitSource:update()
-    local branch = assert(self.branch)
-    return self:fetch(branch) and self:checkout(branch) and self:merge(branch)
+function GitSource:switch()
+    return self:_checkout() and self:_merge()
 end
 
 function GitSource:clone()
@@ -123,7 +142,7 @@ function GitSource:clone()
         '--depth', 1, assert(self.location), assert(self.path))
 end
 
-HgSource = Source:new()
+-- HgSource
 
 function HgSource:new(o)
     local source = Source.new(HgSource, o)
@@ -137,6 +156,12 @@ end
 
 function HgSource:popen(...)
     return system.popen('hg', '-R', assert(self.path), ...):read()
+end
+
+function HgSource:_update()
+    local pull = { 'pull', '-r', assert(self.branch) }
+    local update = { 'update', '-r', assert(self.branch) }
+    return self:exec(unpack(pull)) and self:exec(unpack(update))
 end
 
 function HgSource:head()
@@ -153,13 +178,9 @@ function HgSource:clean()
 end
 
 function HgSource:update()
-    local pull = { 'pull', '-r', assert(self.branch) }
-    local update = { 'update', '-r', assert(self.branch) }
-    if jagen.flag 'offline' then
-        return self:exec(unpack(update))
-    else
-        return self:exec(unpack(pull)) and self:exec(unpack(update))
-    end
+end
+
+function HgSource:switch()
 end
 
 function HgSource:clone()
@@ -167,7 +188,7 @@ function HgSource:clone()
         assert(self.location), assert(self.path))
 end
 
-RepoSource = Source:new()
+-- RepoSource
 
 function RepoSource:new(o)
     local source = Source.new(RepoSource, o)
@@ -175,17 +196,17 @@ function RepoSource:new(o)
     return source
 end
 
-function RepoSource:exec(...)
+function RepoSource:_exec(...)
     local cmd = { 'cd', '"'..assert(self.path)..'"', '&&', 'repo', ... }
     return system.exec(unpack(cmd))
 end
 
-function RepoSource:popen(...)
+function RepoSource:_popen(...)
     local cmd = { 'cd', '"'..assert(self.path)..'"', '&&', 'repo', ... }
     return system.popen(unpack(cmd))
 end
 
-function RepoSource:load_projects(...)
+function RepoSource:_load_projects(...)
     local o = {}
     local list = self:popen('list', ...)
     while true do
@@ -197,6 +218,14 @@ function RepoSource:load_projects(...)
         end
     end
     return o
+end
+
+function RepoSource:_clone()
+    local mkdir = { 'mkdir -p "'..self.path..'"' }
+    local init = { 'init', '-u', assert(self.location),
+        '-b', assert(self.branch), '-p', 'linux', '--depth', 1
+    }
+    return system.exec(unpack(mkdir)) and self:exec(unpack(init)) and self:update()
 end
 
 function RepoSource:head()
@@ -233,12 +262,7 @@ function RepoSource:update()
     return self:exec(unpack(cmd))
 end
 
-function RepoSource:clone()
-    local mkdir = { 'mkdir -p "'..self.path..'"' }
-    local init = { 'init', '-u', assert(self.location),
-        '-b', assert(self.branch), '-p', 'linux', '--depth', 1
-    }
-    return system.exec(unpack(mkdir)) and self:exec(unpack(init)) and self:update()
+function RepoSource:switch()
 end
 
 return Source
