@@ -1,3 +1,3 @@
 #!/bin/sh
 
-PROGRAMS="dropbear"
+export PROGRAMS="dropbear"
