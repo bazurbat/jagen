@@ -233,3 +233,5 @@ function RepoSource:clone()
     }
     return system.exec(unpack(mkdir)) and self:exec(unpack(init)) and self:update()
 end
+
+return Source

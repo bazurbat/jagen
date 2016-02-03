@@ -227,6 +227,7 @@ end
 
 function P.load()
     local packages = {}
+    local source = require 'sources'
 
     local function add(rule)
         Rule:add_package(rule, packages)
@@ -247,7 +248,7 @@ function P.load()
     end
 
     for _, pkg in pairs(packages) do
-        pkg.source = Source:create(pkg.source)
+        pkg.source = source:create(pkg.source)
     end
 
     return packages

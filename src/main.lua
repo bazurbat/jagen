@@ -1,10 +1,8 @@
 require 'common'
-require 'Source'
 require 'Ninja'
 
 local system = require 'system'
-local rules = require 'rules'
-local SourceManager = require 'SourceManager'
+local rules  = require 'rules'
 
 jagen =
 {
@@ -91,6 +89,80 @@ function jagen.show_help(section)
     else
         jagen.error('no such help section: %s', section)
         return 2
+    end
+end
+
+-- src
+
+jagen.src = {}
+
+local function exists(pathname)
+    assert(type(pathname) == 'string')
+    return os.execute(string.format('test -e "%s"', pathname)) == 0
+end
+
+-- Should return 0 if true, 1 if false, for shell scripting.
+function jagen.src.dirty(names)
+    for _, pkg in ipairs(packages) do
+        if pkg.source:dirty() then
+            return 0
+        end
+    end
+    return 1
+end
+
+function jagen.src.status(packages)
+    for _, pkg in ipairs(packages) do
+        local source = pkg.source
+        if exists(source.path) then
+            local dirty = source:dirty() and 'dirty' or ''
+            local head = source:head()
+            if not head then
+                jagen.die('failed to get source head for %s in %s',
+                    pkg.name, source.path)
+            end
+            print(string.format("%s (%s): %s %s", pkg.name, source.location, head, dirty))
+        else
+            print(string.format("%s (%s): not exists", pkg.name, source.location))
+        end
+    end
+end
+
+function jagen.src.clean(packages)
+    for _, pkg in ipairs(packages) do
+        if not pkg.source:clean() then
+            jagen.die('failed to clean %s (%s) in %s',
+                pkg.name, pkg.source.branch, pkg.source.path)
+        end
+    end
+end
+
+function jagen.src.update(packages)
+    for _, pkg in ipairs(packages) do
+        if not pkg.source:update() then
+            jagen.die('failed to update %s to the latest %s in %s',
+                pkg.name, pkg.source.branch, pkg.source.path)
+        end
+    end
+end
+
+function jagen.src.clone(packages)
+    for _, pkg in ipairs(packages) do
+        if not pkg.source:clone() then
+            jagen.die('failed to clone %s from %s to %s',
+                pkg.name, pkg.source.location, pkg.source.path)
+        end
+    end
+end
+
+function jagen.src.delete(packages)
+    for _, pkg in ipairs(packages) do
+        if exists(pkg.source.path) then
+            if not system.exec('rm', '-rf', pkg.source.path) then
+                jagen.die('failed to delete %s source directory %s',
+                    pkg.name, pkg.source.path)
+            end
+        end
     end
 end
 
@@ -202,16 +274,45 @@ function jagen.command.build(options, rest)
     return status
 end
 
-function jagen.command.src(options, rest)
-    local src = SourceManager:new()
-    local cmd = rest[1]
+local function scm_packages(names)
+    local packages = rules.merge(rules.load())
+    local o = {}
 
-    if not cmd then
-        jagen.die("command required, try 'jagen src help'")
-    elseif src[cmd..'_command'] then
-        return src[cmd..'_command'](src, table.rest(rest, 2))
+    if names and #names > 0 then
+        for _, name in ipairs(names) do
+            if not packages[name] then
+                jagen.die('no such package: %s', name)
+            end
+            if not packages[name].source:is_scm() then
+                jagen.die('not scm package: %s', name)
+            end
+            table.insert(o, packages[name])
+        end
     else
-        jagen.die("'%s' is not valid src command, use 'jagen src help'", cmd)
+        for _, pkg in pairs(packages) do
+            if pkg.source:is_scm() then
+                table.insert(o, pkg)
+            end
+        end
+    end
+
+    table.sort(o, function (a, b)
+            return a.name < b.name
+        end)
+
+    return o
+end
+
+function jagen.command.src(options, rest)
+    local src = jagen.src
+    local command = rest[1]
+
+    if not command then
+        jagen.die("command required, try 'jagen src help'")
+    elseif src[command] then
+        return src[command](scm_packages(table.rest(rest, 2)))
+    else
+        jagen.die("'%s' is not valid src command, use 'jagen src help'", command)
     end
 end
 
