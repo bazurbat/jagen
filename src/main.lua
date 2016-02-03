@@ -102,9 +102,10 @@ local function exists(pathname)
 end
 
 -- Should return 0 if true, 1 if false, for shell scripting.
-function jagen.src.dirty(names)
+function jagen.src.dirty(packages)
     for _, pkg in ipairs(packages) do
-        if pkg.source:dirty() then
+        local source = pkg.source
+        if exists(source.path) and source:dirty() then
             return 0
         end
     end
@@ -304,13 +305,13 @@ local function scm_packages(names)
 end
 
 function jagen.command.src(options, rest)
-    local src = jagen.src
     local command = rest[1]
 
     if not command then
         jagen.die("command required, try 'jagen src help'")
-    elseif src[command] then
-        return src[command](scm_packages(table.rest(rest, 2)))
+    elseif jagen.src[command] then
+        local packages = scm_packages(table.rest(rest, 2))
+        return jagen.src[command](packages)
     else
         jagen.die("'%s' is not valid src command, use 'jagen src help'", command)
     end
