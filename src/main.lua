@@ -207,11 +207,11 @@ function jagen.command.src(options, rest)
     local cmd = rest[1]
 
     if not cmd then
-        jagen.die("subcommand required, try 'jagen src help'")
+        jagen.die("command required, try 'jagen src help'")
     elseif src[cmd..'_command'] then
         return src[cmd..'_command'](src, table.rest(rest, 2))
     else
-        jagen.die("'%s' is not valid src subcommand, use 'jagen src help'", cmd)
+        jagen.die("'%s' is not valid src command, use 'jagen src help'", cmd)
     end
 end
 
