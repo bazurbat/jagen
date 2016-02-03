@@ -25,7 +25,7 @@ package { 'hi-sdk', 'target',
 }
 
 package { 'hi-drivers', 'target',
-    { 'compile',
+    { 'configure',
         { 'hi-sdk', 'linux', 'target' }
     }
 }
@@ -33,14 +33,14 @@ package { 'hi-drivers', 'target',
 package { 'cmake-modules' }
 
 package { 'hi-utils', 'target',
-    { 'compile',
+    { 'configure',
         { 'cmake-modules', 'unpack'              },
         { 'hi-sdk',        'component', 'target' }
     }
 }
 
 package { 'karaoke-player', 'target',
-    { 'compile',
+    { 'configure',
         requires = {
             'chicken-eggs',
             'ffmpeg',
