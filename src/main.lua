@@ -189,7 +189,7 @@ local function find_targets(packages, arg)
     return targets
 end
 
-function jagen.command.run(options, rest)
+function jagen.command.build(options, rest)
     local packages = rules.merge(rules.load())
 
     for _, arg in ipairs(rest) do

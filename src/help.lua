@@ -9,7 +9,7 @@ COMMANDS
   clean     Clean up build root
   update    Update jagen and regenerate build system
   refresh   Regenerate the build system
-  run       Run the build system for the specified targets
+  build     Run the build system for the specified targets
   src       Manage SCM package sources
 
   Use 'jagen help <command>' to get help about individual commands.
@@ -70,8 +70,8 @@ Usage: jagen refresh
 
 ]]
 
-local run = [[
-Usage: jagen run [-t] [-o] [-a] [-p] [TARGETS...]
+local build = [[
+Usage: jagen build [-t] [-o] [-a] [-p] [TARGETS...]
 
   Tries to build the specified targets.
 
@@ -87,11 +87,11 @@ SYNOPSIS
   package stages are filtered with the given expression. Omitted component
   means 'all'. For example:
 
-  utils             - select all stages of the utils package
-  utils:install     - select all utils install stages
-  utils::host       - select all host utils stages
-  utils:build:host  - select only host utils build stage
-  :build:host       - select host build stages of all packages
+  utils              - select all stages of the utils package
+  utils:install      - select all utils install stages
+  utils::host        - select all host utils stages
+  utils:compile:host - select only host utils compile stage
+  :build:host        - select host build stages of all packages
 
   When a target is succesfully built the stamp file is created in the build
   directory with the name: <name>__<stage>__<config>. This file is used to
@@ -144,6 +144,6 @@ return {
     clean   = clean,
     update  = update,
     refresh = refresh,
-    run     = run,
+    build   = build,
     src     = src
 }
