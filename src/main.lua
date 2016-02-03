@@ -140,18 +140,21 @@ end
 
 function jagen.src.update(packages)
     for _, pkg in ipairs(packages) do
-        if not pkg.source:update() then
-            jagen.die('failed to update %s to the latest %s in %s',
-                pkg.name, pkg.source.branch, pkg.source.path)
-        end
-    end
-end
-
-function jagen.src.clone(packages)
-    for _, pkg in ipairs(packages) do
-        if not pkg.source:clone() then
-            jagen.die('failed to clone %s from %s to %s',
-                pkg.name, pkg.source.location, pkg.source.path)
+        local source = pkg.source
+        if exists(source.path) then
+            if not pkg.source:update() then
+                jagen.die('failed to update %s to the latest %s in %s',
+                    pkg.name, source.branch, source.path)
+            end
+        else
+            if jagen.flag('offline') then
+                jagen.die("could not clone '%s' in offline mode", pkg.name)
+            else
+                if not pkg.source:clone() then
+                    jagen.die('failed to clone %s from %s to %s',
+                        pkg.name, source.location, source.path)
+                end
+            end
         end
     end
 end

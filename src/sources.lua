@@ -81,6 +81,9 @@ function GitSource:clean()
 end
 
 function GitSource:fetch(branch)
+    if jagen.flag 'offline' then
+        return true
+    end
     local cmd = { 'fetch', '--prune', '--no-tags', 'origin' }
     if branch then
         local src = 'refs/heads/'..branch
@@ -152,7 +155,11 @@ end
 function HgSource:update()
     local pull = { 'pull', '-r', assert(self.branch) }
     local update = { 'update', '-r', assert(self.branch) }
-    return self:exec(unpack(pull)) and self:exec(unpack(update))
+    if jagen.flag 'offline' then
+        return self:exec(unpack(update))
+    else
+        return self:exec(unpack(pull)) and self:exec(unpack(update))
+    end
 end
 
 function HgSource:clone()

@@ -115,25 +115,12 @@ pkg_unpack() {
 
     case $src_type in
         git|hg|repo)
-            if [ -d "${pkg_source_dir:?}" ]; then
-                if in_list "$pkg_name" $jagen_source_exclude; then
-                    message "not cleaning $pkg_name: excluded"
-                else
-                    _jagen src clean "$pkg_name"  || return
-                fi
-
-                if in_flags offline; then
-                    message "not updating $pkg_name: offline mode"
-                else
-                    _jagen src update "$pkg_name" || return
-                fi
-            else
-                if in_flags offline; then
-                    die "could not clone $pkg_name in offline mode"
-                else
-                    _jagen src clone "$pkg_name"
-                fi
+            if in_list "$pkg_name" $jagen_source_exclude; then
+                message "not updating $pkg_name: excluded"
             fi
+
+            _jagen src clean  "$pkg_name" || return
+            _jagen src update "$pkg_name" || return
             ;;
         dist)
             pkg_run mkdir -p "$pkg_work_dir"
