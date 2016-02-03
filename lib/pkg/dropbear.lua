@@ -15,7 +15,7 @@ package {
             '--disable-wtmp',
             '--disable-wtmpx',
             '--disable-loginfunc',
-            '--disable-pututlinux',
+            '--disable-pututline',
             '--disable-pututxline'
         },
         in_source = true
