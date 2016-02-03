@@ -1,4 +1,5 @@
 require 'Target'
+
 local system = require 'system'
 
 local mkpath = system.mkpath
@@ -227,7 +228,7 @@ end
 
 function P.load()
     local packages = {}
-    local source = require 'sources'
+    local Source = require 'Source'
 
     local function add(rule)
         Rule:add_package(rule, packages)
@@ -248,7 +249,7 @@ function P.load()
     end
 
     for _, pkg in pairs(packages) do
-        pkg.source = source:create(pkg.source)
+        pkg.source = Source:create(pkg.source)
     end
 
     return packages

@@ -1,7 +1,7 @@
 
-Source = {}
-
 local system = require 'system'
+
+local Source = {}
 
 function Source:is_scm()
     return self.type == 'git' or self.type == 'hg' or self.type == 'repo'
