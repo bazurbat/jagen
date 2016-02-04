@@ -70,5 +70,3 @@ function Target:add_inputs(target)
 
     return self
 end
-
---}}}
