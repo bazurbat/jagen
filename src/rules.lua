@@ -120,20 +120,29 @@ function Rule:new_package(rule)
 end
 
 function Rule:required(name, config, template)
-    local rule = { name = name, config = config }
-    table.merge(rule, template)
+    local rule = copy(assert(template))
+    rule.name = name
+    rule.config = config
     rule.template = template
     return rule
 end
 
 function Rule:add_stages(rule, list)
     local template = rule.template or {}
-    local config = template.config or self.config
+    local config = self.config or template.config
 
     for _, stage in ipairs(rule) do
         local target = Target:from_rule(stage, self.name, self.config)
 
-        for _, name in ipairs(stage.requires or {}) do
+        for _, item in ipairs(stage.requires or {}) do
+            local config, name = config
+            if type(item) == 'string' then
+                name = item
+            else
+                name   = item[1]
+                config = item[2] or config
+            end
+
             target:append(Target:required(name, config))
             add_package(Rule:required(name, config, template), list)
         end
