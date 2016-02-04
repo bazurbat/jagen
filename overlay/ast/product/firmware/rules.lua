@@ -107,7 +107,7 @@ package { 'rootfs',
 }
 
 package { 'mrua',
-    { 'configure',  { 'kernel', 'compile' } },
+    { 'compile',  { 'kernel', 'compile' } },
     { 'modules' },
     { 'install' },
 }
