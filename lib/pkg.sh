@@ -160,7 +160,7 @@ pkg_configure() {
     case $pkg_build_type in
         GNU)
             if ! [ -x "$pkg_source_dir/configure" ]; then
-                die "GNU build type specified but ./configure was not found in $pkg_source_dir"
+                die "GNU build type specified but no ./configure was found in $pkg_source_dir"
             fi
 
             pkg_run "$pkg_source_dir/configure" \
@@ -188,6 +188,8 @@ pkg_configure() {
                 -DCMAKE_INSTALL_PREFIX="$pkg_install_dir" \
                 $A $jagen_cmake_options "$@" "$pkg_source_dir"
             ;;
+        *)
+            ;;
     esac
 }
 
@@ -195,7 +197,7 @@ pkg_compile() {
     [ "$pkg_source_dir" ] || return 0
 
     case $pkg_build_type in
-        GNU|KBuild)
+        GNU|KBuild|make)
             pkg_run make "$@"
             ;;
         CMake)

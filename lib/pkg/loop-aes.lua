@@ -1,8 +1,7 @@
 package {
-    name   = 'loop-aes',
     source = 'loop-AES-v3.7b.tar.bz2',
     build  = {
-        type = 'GNU',
+        type = 'make',
         in_source = true
     }
 }
