@@ -6,6 +6,11 @@ local mkpath = system.mkpath
 
 local P = {}
 
+local Rule = {
+    init_stages = { 'unpack', 'patch' }
+}
+Rule.__index = Rule
+
 local function import_paths(filename)
     local o = {}
     table.insert(o, mkpath(jagen.dir, 'lib', filename))
@@ -49,10 +54,27 @@ local function loadall(filename)
     return o
 end
 
-local Rule = {
-    init_stages = { 'unpack', 'patch' }
-}
-Rule.__index = Rule
+local function add_package(rule, list)
+    rule = Rule:parse(rule)
+
+    local key = tostring(rule)
+    local pkg = list[key]
+
+    if not pkg then
+        pkg = Rule:new_package { rule.name, rule.config }
+
+        table.merge(pkg, rule)
+
+        pkg:add_default_targets(list)
+        pkg:add_stages(pkg, list)
+
+        list[key] = pkg
+    else
+        table.merge(pkg, rule)
+    end
+
+    pkg:add_stages(rule, list)
+end
 
 function Rule:__tostring()
     local name = self.name
@@ -97,29 +119,14 @@ function Rule:new_package(rule)
     return pkg
 end
 
-function Rule:add_package(rule, list)
-    rule = Rule:parse(rule)
-
-    local key = tostring(rule)
-    local pkg = list[key]
-
-    if not pkg then
-        pkg = Rule:new_package { rule.name, rule.config }
-
-        table.merge(pkg, rule)
-
-        pkg:add_default_targets(list)
-        pkg:add_targets(pkg, list)
-
-        list[key] = pkg
-    else
-        table.merge(pkg, rule)
-    end
-
-    pkg:add_targets(rule, list)
+function Rule:required(name, config, template)
+    local rule = { name = name, config = config }
+    table.merge(rule, template)
+    rule.template = template
+    return rule
 end
 
-function Rule:add_targets(rule, list)
+function Rule:add_stages(rule, list)
     local template = rule.template or {}
     local config = template.config or self.config
 
@@ -127,17 +134,8 @@ function Rule:add_targets(rule, list)
         local target = Target:from_rule(stage, self.name, self.config)
 
         for _, name in ipairs(stage.requires or {}) do
-            local req_input = Target:new(name, 'install', config)
-            table.insert(target.inputs, req_input)
-
-            local req_rule = {
-                name = name,
-                config = config,
-            }
-            table.merge(req_rule, template)
-            req_rule.template = template
-
-            Rule:add_package(req_rule, list)
+            target:append(Target:required(name, config))
+            add_package(Rule:required(name, config, template), list)
         end
 
         self:add_target(target)
@@ -202,7 +200,7 @@ function Rule:add_default_targets(list)
                 { 'compile' },
                 { 'install' }
             }
-            self:add_targets(build_rules, list)
+            self:add_stages(build_rules, list)
         end
     end
 end
@@ -231,7 +229,7 @@ function P.load()
     local Source = require 'Source'
 
     local function add(rule)
-        Rule:add_package(rule, packages)
+        add_package(rule, packages)
     end
 
     for filename in each(import_paths('rules.lua')) do

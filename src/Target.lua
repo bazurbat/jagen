@@ -70,3 +70,11 @@ function Target:add_inputs(target)
 
     return self
 end
+
+function Target:required(name, config)
+    return Target:new(name, 'install', config)
+end
+
+function Target:append(input)
+    table.insert(self.inputs, input)
+end
