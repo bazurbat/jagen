@@ -158,12 +158,6 @@ function HgSource:popen(...)
     return system.popen('hg', '-R', assert(self.path), ...):read()
 end
 
-function HgSource:_update()
-    local pull = { 'pull', '-r', assert(self.branch) }
-    local update = { 'update', '-r', assert(self.branch) }
-    return self:exec(unpack(pull)) and self:exec(unpack(update))
-end
-
 function HgSource:head()
     return self:popen('id', '-i')
 end
@@ -178,9 +172,13 @@ function HgSource:clean()
 end
 
 function HgSource:update()
+    local cmd = { 'pull', '-r', assert(self.branch) }
+    return self:exec(unpack(cmd))
 end
 
 function HgSource:switch()
+    local cmd = { 'update', '-r', assert(self.branch) }
+    return self:exec(unpack(cmd))
 end
 
 function HgSource:clone()
