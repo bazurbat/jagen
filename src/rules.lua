@@ -132,7 +132,8 @@ function Rule:add_stages(rule, list)
     local config = self.config or template.config
 
     for _, stage in ipairs(rule) do
-        local target = Target:from_rule(stage, self.name, self.config)
+        local tc = not stage.shared and self.config
+        local target = Target:from_rule(stage, self.name, tc)
 
         for _, item in ipairs(stage.requires or {}) do
             local config, name = config
@@ -181,15 +182,6 @@ function Rule:add_default_targets(list)
     local build = self.build
     local config = self.config
 
-    if source then
-        if source.type == 'repo' then
-            P.need_repo = true
-            self:add_target(Target:from_rule({ 'unpack',
-                        { 'repo', 'unpack' }
-                }, self.name))
-        end
-    end
-
     if self.requires then
         table.insert(self, { 'configure', requires = self.requires })
     end
@@ -197,10 +189,12 @@ function Rule:add_default_targets(list)
     if build then
         if build.type == 'GNU' then
             if build.generate or build.autoreconf then
-                P.need_libtool = true
-                self:add_target(Target:from_rule({ 'autoreconf',
-                            { 'libtool', 'install', 'host' }
-                    }, self.name))
+                local autoreconf = {
+                    { 'autoreconf', shared = true,
+                        requires = { { 'libtool', 'host' } }
+                    }
+                }
+                self:add_stages(autoreconf, list)
             end
         end
         if build.type then
@@ -245,14 +239,6 @@ function P.load()
         for rule in each(loadall(filename)) do
             add(rule)
         end
-    end
-
-    if P.need_libtool then
-        add { 'libtool', 'host' }
-    end
-
-    if P.need_repo then
-        add { 'repo' }
     end
 
     for _, pkg in pairs(packages) do
