@@ -7,7 +7,6 @@ function Target:new(name, stage, config)
         name   = name,
         stage  = stage,
         config = config,
-        inputs = {}
     }
     setmetatable(target, self)
     return target
@@ -17,9 +16,13 @@ function Target:from_rule(rule, name, config)
     local stage = rule[1]; assert(type(stage) == 'string')
     local target = Target:new(name, stage, config)
 
+    if #rule > 1 then
+        target.inputs = {}
+    end
+
     for i = 2, #rule do
         local input = rule[i]
-        table.insert(target.inputs, Target:new(input[1], input[2], input[3]))
+        append(target.inputs, Target:new(input[1], input[2], input[3]))
     end
 
     return target
@@ -58,16 +61,17 @@ function Target:__tostring(sep)
 end
 
 function Target:add_inputs(target)
-    for _, i in ipairs(target.inputs) do
-        local function eq(t)
-            return t == i
-        end
-        local found = find(eq, self.inputs)
-        if not found then
-            table.insert(self.inputs, i)
+    if target.inputs then
+        self.inputs = self.inputs or {}
+        for _, input in ipairs(target.inputs) do
+            local function eq(this)
+                return this == input
+            end
+            if not find(eq, self.inputs) then
+                append(self.inputs, input)
+            end
         end
     end
-
     return self
 end
 
@@ -76,5 +80,7 @@ function Target:required(name, config)
 end
 
 function Target:append(input)
-    table.insert(self.inputs, input)
+    self.inputs = self.inputs or {}
+    append(self.inputs, input)
+    return self
 end

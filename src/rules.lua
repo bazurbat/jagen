@@ -213,10 +213,11 @@ function Rule:add_ordering_dependencies()
 
     for _, s in ipairs(self.stages) do
         if prev then
+            s.inputs = s.inputs or {}
             if common and s.config ~= prev.config then
-                table.insert(s.inputs, 1, common)
+                append(s.inputs, common)
             else
-                table.insert(s.inputs, 1, prev)
+                append(s.inputs, prev)
             end
         end
 

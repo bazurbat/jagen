@@ -104,7 +104,7 @@ function Ninja:generate(out_file, rules)
 
     for _, pkg in ipairs(packages) do
         for _, stage in ipairs(pkg.stages) do
-            table.sort(stage.inputs, function (a, b)
+            table.sort(stage.inputs or {}, function (a, b)
                     return tostring(a) < tostring(b)
                 end)
         end
