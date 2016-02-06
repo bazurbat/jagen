@@ -1,8 +1,18 @@
-function assert_arg(fname, num, expected, value)
+-- common
+
+local function assert_arg(fname, num, expected, value)
     local got = type(value)
     assert(got == expected,
         string.format("bad argument #%d to '%s' (%s expected, got %s)",
             num, fname, expected, got))
+end
+
+function append(ls, ...)
+    assert_arg('append', 1, 'table', ls)
+    for _, arg in ipairs({...}) do
+        table.insert(ls, arg)
+    end
+    return ls
 end
 
 function copy(o)
@@ -23,16 +33,6 @@ function each(a)
         i = i + 1
         if i <= n then return t[i] end
     end, a
-end
-
-function append(...)
-    local o = {}
-    for _, arg in ipairs({...}) do
-        for _, i in ipairs(arg) do
-            table.insert(o, i)
-        end
-    end
-    return o
 end
 
 function map(f, t)
