@@ -41,14 +41,14 @@ package { 'astindex',
 
 local kernel_package_template = {
     config = 'target',
-    { 'configure', { 'kernel', 'compile' } }
+    { 'configure', { 'kernel', 'compile', 'target' } }
 }
 
 local function kernel_package(rule)
     package(rule, kernel_package_template)
 end
 
-package { 'kernel',
+package { 'kernel', 'target',
     { 'configure',
         { 'linux',  'unpack'            },
         { 'rootfs', 'compile'           },
@@ -92,7 +92,7 @@ package { 'rootfs',
             'util-linux',
             'utils',
         },
-        { 'kernel',   'install'           },
+        { 'kernel',   'install', 'target' },
         { 'mrua',     'modules', 'target' },
         { 'loop-aes', 'install', 'target' },
         { 'ralink',   'install', 'target' },
@@ -100,7 +100,7 @@ package { 'rootfs',
 }
 
 package { 'mrua', 'target',
-    { 'compile',  { 'kernel', 'compile' } },
+    { 'compile',  { 'kernel', 'compile', 'target' } },
     { 'modules' },
     { 'install' },
 }
@@ -144,7 +144,7 @@ package { 'firmware',
             'rsync',
             'wpa_supplicant',
         },
-        { 'kernel', 'image'             },
+        { 'kernel', 'image',   'target' },
         { 'mrua',   'install', 'target' },
         { 'ucode',  'install'           },
         { 'ezboot', 'install', 'target' },
