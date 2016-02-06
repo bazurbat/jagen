@@ -4,9 +4,7 @@
 
 package { 'ast-files' }
 
-package { 'linux',
-    source = { branch = 'ast50' }
-}
+package { 'linux' }
 
 package { 'xsdk' }
 
