@@ -55,7 +55,6 @@ local function kernel_package(rule)
 end
 
 package { 'kernel',
-    source = { branch = 'sigma-2.6' },
     { 'configure',
         { 'linux',  'unpack'            },
         { 'rootfs', 'compile'           },
