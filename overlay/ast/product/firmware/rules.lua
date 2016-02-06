@@ -18,12 +18,6 @@ package { 'ucode',
 
 package { 'make', 'tools' }
 
--- FIXME: pkg scripts need review
--- if jagen.flag('debug') then
---     package        { 'gdb', 'host' }
---     rootfs_package { 'gdbserver' }
--- end
-
 -- host
 
 package { 'utils', 'host' }
