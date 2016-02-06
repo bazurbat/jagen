@@ -99,13 +99,13 @@ package { 'rootfs',
             'utils',
         },
         { 'kernel',   'install'           },
-        { 'mrua',     'modules',          },
+        { 'mrua',     'modules', 'target' },
         { 'loop-aes', 'install', 'target' },
         { 'ralink',   'install', 'target' },
     }
 }
 
-package { 'mrua',
+package { 'mrua', 'target',
     { 'compile',  { 'kernel', 'compile' } },
     { 'modules' },
     { 'install' },
@@ -142,7 +142,7 @@ end
 package { 'firmware',
     template = firmware_package_template,
     { 'compile',
-        { 'mrua', 'compile' }
+        { 'mrua', 'compile', 'target' }
     },
     { 'install',
         requires = {
@@ -151,7 +151,7 @@ package { 'firmware',
             'wpa_supplicant',
         },
         { 'kernel', 'image'             },
-        { 'mrua',   'install'           },
+        { 'mrua',   'install', 'target' },
         { 'ucode',  'install'           },
         { 'ezboot', 'install', 'target' },
     },
@@ -171,8 +171,8 @@ firmware_package { 'karaoke-player',
             'libuv',
             'soundtouch',
         },
-        { 'astindex',     'unpack'          },
-        { 'mrua',         'compile',        },
-        { 'chicken-eggs', 'install', 'host' },
+        { 'astindex',     'unpack'            },
+        { 'mrua',         'compile', 'target' },
+        { 'chicken-eggs', 'install', 'host'   },
     }
 }
