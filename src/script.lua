@@ -69,8 +69,9 @@ function P:write(pkg)
 
     w('#!/bin/sh\n')
 
-    if pkg.config then
-        w('\nuse_env %s || return', pkg.config)
+    local env = pkg.env or { pkg.config }
+    for _, e in ipairs(env or {}) do
+        w('\nuse_env %s || return', e)
     end
 
     -- put install variables before build to allow referencing them from
