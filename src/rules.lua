@@ -228,6 +228,10 @@ function Rule:add_ordering_dependencies()
     end
 end
 
+function Rule:each()
+    return each(self.stages)
+end
+
 function P.load()
     local packages = {}
     local Source = require 'Source'
@@ -256,7 +260,7 @@ function P.merge(rules)
         local name = assert(rule.name)
         local pkg = packages[name]
         if pkg then
-            for target in each(rule.stages) do
+            for target in rule:each() do
                 pkg:add_target(target)
             end
         else

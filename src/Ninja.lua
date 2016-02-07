@@ -84,7 +84,7 @@ end
 
 function Ninja:build_package(pkg)
     local o = {}
-    for _, stage in ipairs(pkg.stages) do
+    for stage in pkg:each() do
         table.insert(o, self:build_stage(stage))
     end
     return table.concat(o)
@@ -103,7 +103,7 @@ function Ninja:generate(out_file, rules)
         end)
 
     for _, pkg in ipairs(packages) do
-        for _, stage in ipairs(pkg.stages) do
+        for stage in pkg:each() do
             table.sort(stage.inputs or {}, function (a, b)
                     return tostring(a) < tostring(b)
                 end)
