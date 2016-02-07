@@ -193,9 +193,9 @@ if ! [ "$jagen_config" ]; then
     die "no configuration template specified"
 fi
 
-jagen_config_dir="$jagen_dir/lib/config/$jagen_config"
+jagen_init_dir="$jagen_dir/lib/init/$jagen_config"
 
-if ! [ -d "$jagen_config_dir" ]; then
+if ! [ -d "$jagen_init_dir" ]; then
     die "no such configuration template: $jagen_config"
 fi
 
@@ -205,7 +205,7 @@ else
     jagen_src_dir='$jagen_base_dir/src'
 fi
 
-. "$jagen_config_dir/env.sh" || exit
+. "$jagen_init_dir/env.sh" || exit
 
 write_env || exit
 write_config "$config_file" || exit
