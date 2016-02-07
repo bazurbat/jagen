@@ -15,18 +15,8 @@ pkg_work_dir="$jagen_build_dir/$pkg_name"
 
 cd "$jagen_build_dir" || die "failed to cd to $jagen_build_dir"
 
-if [ "$pkg_config" = 'host' ]; then
-    pkg_system="$jagen_host_system"
-    pkg_prefix="$jagen_host_dir$jagen_host_prefix"
-    pkg_dest_dir=""
-elif [ "$pkg_config" = 'target' ]; then
-    pkg_system="$jagen_target_system"
-    pkg_prefix="$jagen_target_prefix"
-    pkg_dest_dir="$jagen_target_dir"
-elif [ "$pkg_config" = 'tools' ]; then
-    pkg_system="$jagen_host_system"
-    pkg_prefix="$jagen_tools_dir$jagen_tools_prefix"
-    pkg_dest_dir=""
+if [ "$pkg_config" ]; then
+    import "config/$pkg_config" || return
 fi
 
 pkg_build_dir="$pkg_work_dir${pkg_config:+/$pkg_config}"
