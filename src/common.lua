@@ -27,12 +27,12 @@ function copy(o)
     end
 end
 
-function each(a)
-    local i, n = 0, #a
-    return function (t)
+function each(t)
+    local i, n = 0, #t
+    return function ()
         i = i + 1
         if i <= n then return t[i] end
-    end, a
+    end
 end
 
 function map(f, t)
