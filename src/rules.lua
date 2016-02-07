@@ -161,16 +161,14 @@ function Rule:add_target(target)
         end
     end
     local function eq(this)
-        return this == target or default(this)
+        return this.stage == target.stage and this.config == target.config or
+            default(this)
     end
 
     local found = find(eq, self.stages)
     if found then
-        jagen.debug2(tostring(self), '=', tostring(target))
         found:add_inputs(target)
-        return self
     else
-        jagen.debug2(tostring(self), '+', tostring(target))
         table.insert(self.stages, target)
     end
 
