@@ -46,14 +46,13 @@ include() {
 }
 
 import() {
-    : ${jagen_dir:?}
     local pathname="${1:?}.sh"
-    try_include "$jagen_dir/lib/$pathname"
+    try_include "${jagen_dir:?}/lib/$pathname" || return
     for overlay in $jagen_overlays; do
-        try_include "$jagen_dir/overlay/$overlay/$pathname"
+        try_include "$jagen_dir/overlay/$overlay/$pathname" || return
     done
     if [ "$jagen_root" ]; then
-        try_include "$jagen_root/$pathname"
+        try_include "$jagen_root/$pathname" || return
     fi
 }
 
