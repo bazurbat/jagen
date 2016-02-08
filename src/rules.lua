@@ -69,7 +69,10 @@ local function add_package(rule, list)
 
         table.merge(pkg, rule)
 
-        pkg:add_default_targets(list)
+        if pkg.build and pkg.config then
+            pkg:add_build_stages(list)
+        end
+
         pkg:add_stages(pkg, list)
 
         list[key] = pkg
@@ -179,34 +182,33 @@ function Rule:add_target(target)
     return self
 end
 
-function Rule:add_default_targets(list)
-    local source = self.source
+function Rule:add_build_stages(list)
     local build = self.build
-    local config = self.config
 
     if self.requires then
         table.insert(self, { 'configure', requires = self.requires })
     end
 
-    if build and config then
-        if build.type == 'GNU' then
-            if build.generate or build.autoreconf then
-                local autoreconf = {
-                    { 'autoreconf', shared = true,
-                        requires = { { 'libtool', 'host' } }
-                    }
+    if build.type == 'GNU' then
+        if build.generate or build.autoreconf then
+            local autoreconf = {
+                { 'autoreconf', shared = true,
+                    requires = { { 'libtool', 'host' } }
                 }
-                self:add_stages(autoreconf, list)
-            end
-        end
-        if build.type then
-            local build_rules = {
-                { 'configure', requires = { 'toolchain' } },
-                { 'compile' },
-                { 'install' }
             }
-            self:add_stages(build_rules, list)
+
+            self:add_stages(autoreconf, list)
         end
+    end
+
+    if build.type then
+        local build_rules = {
+            { 'configure', requires = { 'toolchain' } },
+            { 'compile' },
+            { 'install' }
+        }
+
+        self:add_stages(build_rules, list)
     end
 end
 
