@@ -188,7 +188,7 @@ function Rule:add_default_targets(list)
         table.insert(self, { 'configure', requires = self.requires })
     end
 
-    if build then
+    if build and config then
         if build.type == 'GNU' then
             if build.generate or build.autoreconf then
                 local autoreconf = {
