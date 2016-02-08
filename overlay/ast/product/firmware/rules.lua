@@ -110,6 +110,10 @@ rootfs_package { 'ezboot',
 }
 
 rootfs_package { 'busybox',
+    install = {
+        path = '$jagen_sdk_initfs_dir',
+        prefix = ''
+    },
     { 'patch', { 'ast-files', 'unpack' } }
 }
 
