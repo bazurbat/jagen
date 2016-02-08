@@ -40,11 +40,15 @@ local function loadall(filename)
         jagen = jagen
     }
     function env.package(rule, template)
+        local t
         if template then
-            table.merge(rule, template)
-            rule.template = template
+            t = copy(template)
+            table.merge(t, Rule:parse(rule))
+            t.template = template
+        else
+            t = rule
         end
-        table.insert(o, rule)
+        table.insert(o, t)
     end
     local chunk = loadfile(filename)
     if chunk then
