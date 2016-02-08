@@ -40,15 +40,16 @@ local function loadall(filename)
         jagen = jagen
     }
     function env.package(rule, template)
-        local t
+        local this
         if template then
-            t = copy(template)
-            table.merge(t, Rule:parse(rule))
-            t.template = template
+            this = copy(template)
+            table.merge(this, Rule:parse(rule))
+            this.template = template
         else
-            t = rule
+            this = Rule:parse(rule)
         end
-        table.insert(o, t)
+        -- FIXME: parse is needed for tostring used as getkey
+        table.insert(o, Rule:parse(this))
     end
     local chunk = loadfile(filename)
     if chunk then
@@ -59,8 +60,6 @@ local function loadall(filename)
 end
 
 local function add_package(rule, list)
-    rule = Rule:parse(rule)
-
     local key = tostring(rule)
     local pkg = list[key]
 
@@ -131,7 +130,7 @@ function Rule:required(name, config, template)
     rule.name = name
     rule.config = config
     rule.template = template
-    return rule
+    return Rule:parse(rule)
 end
 
 function Rule:add_stages(rule, list)
@@ -240,13 +239,9 @@ function P.load()
     local packages = {}
     local Source = require 'Source'
 
-    local function add(rule)
-        add_package(rule, packages)
-    end
-
     for filename in each(import_paths('rules.lua')) do
         for rule in each(loadall(filename)) do
-            add(rule)
+            add_package(rule, packages)
         end
     end
 
