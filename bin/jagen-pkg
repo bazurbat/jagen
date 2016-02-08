@@ -1,19 +1,19 @@
 #!/bin/sh
 
-. "$jagen_dir/lib/pkg.sh" || die "Failed to load pkg env"
+. "${jagen_dir:?}/lib/pkg.sh" || die
 
-pkg_name="$1"
-pkg_stage="$2"
+pkg_name="${1:?}"
+pkg_stage="${2:?}"
 pkg_config="$3"
 
 pkg_qname=${pkg_name}${pkg_config:+__${pkg_config}}
 
-pkg_log="${jagen_log_dir}/${pkg_name}__${pkg_stage}${pkg_config:+__${pkg_config}}.log"
-pkg_work_dir="$jagen_build_dir/$pkg_name"
+pkg_log="${jagen_log_dir:?}/${pkg_name}__${pkg_stage}${pkg_config:+__${pkg_config}}.log"
+pkg_work_dir="${jagen_build_dir:?}/$pkg_name"
 
 : >"$pkg_log"
 
-cd "$jagen_build_dir" || die "failed to cd to $jagen_build_dir"
+cd "$jagen_build_dir" || die
 
 if [ "$pkg_config" ]; then
     import "config/$pkg_config" || die
@@ -28,8 +28,12 @@ import "pkg/$pkg_name" || die
 pkg_install_dir="$pkg_dest_dir$pkg_prefix"
 
 case $pkg_stage in
-    unpack|patch)
-        # initial stages shared between package configs
+    unpack)
+        cd "$jagen_build_dir"
+        ;;
+    patch)
+        [ "$pkg_source_dir" ] || return 0
+        pkg_run cd "$pkg_source_dir"
         ;;
     *)
         if [ "$pkg_build_dir" ]; then
@@ -41,19 +45,17 @@ esac
 run_stage() {
     local stage="$1"
     local pkg="$pkg_name${pkg_config:+ ($pkg_config)}"
+
     if is_function "$stage"; then
         debug "$pkg: $stage"
         eval "$stage" >>"$pkg_log" 2>&1 ||
-            die "Failed to run '$stage' stage of package $pkg"
+            die "failed to run $pkg_stage stage of package $pkg"
+    else
+        return 2
     fi
 }
 
-run_stage "jagen_pkg_${pkg_stage}_pre"
-
-if is_function "jagen_pkg_${pkg_stage}_${pkg_config}"; then
-    run_stage "jagen_pkg_${pkg_stage}_${pkg_config}"
-else
+run_stage "jagen_pkg_${pkg_stage}_${pkg_config}" ||
     run_stage "jagen_pkg_${pkg_stage}"
-fi
 
-run_stage "jagen_pkg_${pkg_stage}_post"
+exit 0

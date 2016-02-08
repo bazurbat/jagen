@@ -223,17 +223,8 @@ pkg_install() {
 
 # stages
 
-jagen_pkg_unpack_pre() {
-    cd "$jagen_build_dir"
-}
-
 jagen_pkg_unpack() {
     pkg_unpack
-}
-
-jagen_pkg_patch_pre() {
-    [ "$pkg_source_dir" ] || return 0
-    pkg_run cd "$pkg_source_dir"
 }
 
 jagen_pkg_patch() {
