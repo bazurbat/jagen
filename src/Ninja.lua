@@ -20,12 +20,12 @@ function Ninja:indent(level)
 end
 
 function Ninja:variable(k, v, level)
-    return string.format('%s%s = %s\n', self:indent(level), k, v)
+    return string.format('%s%s = %s', self:indent(level), k, v)
 end
 
 function Ninja:rule(rule)
     local o = {
-        string.format('rule %s', rule.name),
+        string.format('\nrule %s', rule.name),
         self:variable('command', rule.command, 1)
     }
     if rule.variables then
@@ -38,7 +38,7 @@ end
 
 function Ninja:build(build)
     local header = {
-        string.format('build %s: %s',
+        string.format('\nbuild %s: %s',
             table.concat(build.outputs, ' '), build.rule),
         unpack(map(tostring, build.inputs))
     }
@@ -78,7 +78,10 @@ function Ninja:build_stage(target)
             rule      = 'script',
             outputs   = { tostring(target) },
             inputs    = target.inputs,
-            variables = { script = script }
+            variables = {
+                script      = script,
+                description = target:__tostring(' ')
+            }
         })
 end
 
