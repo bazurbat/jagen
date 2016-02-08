@@ -115,12 +115,16 @@ pkg_unpack() {
 
     case $src_type in
         git|hg|repo)
-            if in_list "$pkg_name" $jagen_source_exclude; then
-                message "not updating $pkg_name: excluded"
+            if [ -d "$pkg_source_dir" ]; then
+                if in_list "$pkg_name" $jagen_source_exclude; then
+                    message "not updating $pkg_name: excluded"
+                else
+                    _jagen src clean "$pkg_name"  || return
+                    _jagen src update "$pkg_name" || return
+                fi
+            else
+                _jagen src update "$pkg_name" || return
             fi
-
-            _jagen src clean  "$pkg_name" || return
-            _jagen src update "$pkg_name" || return
             ;;
         dist)
             pkg_run mkdir -p "$pkg_work_dir"
