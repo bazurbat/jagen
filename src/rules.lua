@@ -40,16 +40,7 @@ local function loadall(filename)
         jagen = jagen
     }
     function env.package(rule, template)
-        local this
-        if template then
-            this = copy(template)
-            table.merge(this, Rule:parse(rule))
-            this.template = template
-        else
-            this = Rule:parse(rule)
-        end
-        -- FIXME: parse is needed for tostring used as getkey
-        table.insert(o, Rule:parse(this))
+        table.insert(o, Rule:new(Rule:parse(rule), template))
     end
     local chunk = loadfile(filename)
     if chunk then
@@ -108,6 +99,19 @@ function Rule:parse(rule)
     return rule
 end
 
+function Rule:new(other, template)
+    local rule
+    if template then
+        rule = copy(template)
+        table.merge(rule, other)
+        rule.template = template
+    else
+        rule = other
+    end
+    setmetatable(rule, self)
+    return rule
+end
+
 function Rule:new_package(rule)
     local pkg  = Rule:parse(rule)
     local name = pkg.name
@@ -123,14 +127,6 @@ function Rule:new_package(rule)
     end
 
     return pkg
-end
-
-function Rule:required(name, config, template)
-    local rule = copy(assert(template))
-    rule.name = name
-    rule.config = config
-    rule.template = template
-    return Rule:parse(rule)
 end
 
 function Rule:add_stages(rule, list)
@@ -151,7 +147,8 @@ function Rule:add_stages(rule, list)
             end
 
             target:append(Target:required(name, config))
-            add_package(Rule:required(name, config, template), list)
+            add_package(Rule:new({ name = name, config = config }, template),
+                list)
         end
 
         self:add_target(target)
