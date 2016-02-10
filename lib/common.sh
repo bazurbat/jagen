@@ -57,11 +57,11 @@ import() {
 }
 
 use_env() {
-    import "env/$1"
+    import "env/${1:?}"
 }
 
 require() {
-    import "require/$1"
+    import "require/${1:?}"
 }
 
 in_list() {
