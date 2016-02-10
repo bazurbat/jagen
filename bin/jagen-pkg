@@ -43,8 +43,9 @@ case $pkg_stage in
 esac
 
 run_stage() {
-    local stage="$1"
-    local pkg="$pkg_name${pkg_config:+ ($pkg_config)}"
+    local stage pkg
+    stage=$(echo "$1" | sed 's/-/_/')
+    pkg="$pkg_name${pkg_config:+ ($pkg_config)}"
 
     if is_function "$stage"; then
         debug "$pkg: $stage"
