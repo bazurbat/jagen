@@ -6,22 +6,20 @@ package { 'make', 'host',
 
 package { 'hi-kernel' }
 
-package { 'hi-sdk-tools' }
-
 package { 'hi-sdk', 'target',
-    { 'tools',
-        { 'make',         'install', 'host'   },
-        { 'hi-sdk-tools', 'unpack'            },
-        { 'toolchain',    'install', 'target' }
+    { 'prepare',
+        requires = {
+            'toolchain',
+            { 'make', 'host' },
+        },
+        { 'hi-kernel', 'unpack' },
     },
-    { 'prepare'   },
     { 'hiboot'    },
     { 'linux'     },
     { 'rootfs'    },
     { 'common'    },
     { 'msp'       },
     { 'component' },
-    { 'rootbox'   },
 }
 
 package { 'hi-drivers', 'target',
@@ -53,12 +51,15 @@ package { 'karaoke-player', 'target',
 }
 
 package { 'rootfs', 'target',
+    { 'prepare' },
+    { 'hi-utils',
+        requires = { 'hi-utils' }
+    },
+    { 'dropbear',
+        requires = { 'dropbear' }
+    },
+    { 'dropbear-key' },
     { 'install',
-        requires = {
-            'dropbear',
-            'hi-utils',
-            'karaoke-player',
-        },
-        { 'hi-sdk', 'rootbox', 'target' }
-    }
+        requires = { 'karaoke-player' }
+    },
 }
