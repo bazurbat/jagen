@@ -32,7 +32,7 @@ case $pkg_stage in
         cd "$jagen_build_dir"
         ;;
     patch)
-        [ "$pkg_source_dir" ] || return 0
+        [ "$pkg_source_dir" ] || exit 0
         pkg_run cd "$pkg_source_dir"
         ;;
     *)
