@@ -84,6 +84,18 @@ pkg_link() {
     pkg_run cd "$OLDPWD"
 }
 
+pkg_is_release() {
+    test "$jagen_build_type" = "Release"
+}
+
+pkg_is_release_with_debug() {
+    test "$jagen_build_type" = "RelWithDebInfo"
+}
+
+pkg_is_debug() {
+    test "$jagen_build_type" = "Debug"
+}
+
 # usings
 
 pkg_using_install_prefix() {
