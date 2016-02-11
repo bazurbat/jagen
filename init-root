@@ -72,7 +72,7 @@ EOF
 }
 
 list_configs() {
-    cd "$jagen_dir/lib/config"
+    cd "$jagen_init_dir"
     for cfg_dir in *; do
         echo $cfg_dir
     done
@@ -181,6 +181,7 @@ jagen_dir=$(dirname $0)
 jagen_root=''
 jagen_config=''
 jagen_flags=''
+jagen_init_dir="$jagen_dir/lib/init"
 
 if [ $# = 0 ]; then
     show_help
@@ -193,9 +194,9 @@ if ! [ "$jagen_config" ]; then
     die "no configuration template specified"
 fi
 
-jagen_init_dir="$jagen_dir/lib/init/$jagen_config"
+jagen_config_dir="$jagen_init_dir/$jagen_config"
 
-if ! [ -d "$jagen_init_dir" ]; then
+if ! [ -d "$jagen_config_dir" ]; then
     die "no such configuration template: $jagen_config"
 fi
 
@@ -205,7 +206,7 @@ else
     jagen_src_dir='$jagen_base_dir/src'
 fi
 
-. "$jagen_init_dir/env.sh" || exit
+. "$jagen_config_dir/env.sh" || exit
 
 write_env || exit
 write_config "$config_file" || exit
