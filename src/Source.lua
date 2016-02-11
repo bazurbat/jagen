@@ -227,13 +227,17 @@ function RepoSource:_load_projects(...)
 end
 
 function RepoSource:clean()
-    local projects = self:load_projects()
+    local projects = self:_load_projects()
     local function is_empty(path)
         return system.popen('cd', '"'..path..'"', '&&', 'echo', '*'):read() == '*'
     end
+    local function is_dirty(path)
+        local cmd = { 'git', '-C', assert(path), 'status', '--porcelain' }
+        return system.popen(unpack(cmd)):read() ~= nil
+    end
     for n, p in pairs(projects) do
         local path = system.mkpath(self.path, p)
-        if not is_empty(path) then
+        if not is_empty(path) and is_dirty(path) then
             if not system.exec('git', '-C', path, 'checkout', 'HEAD', '.') then
                 return false
             end
@@ -253,6 +257,10 @@ function RepoSource:update()
 end
 
 function RepoSource:switch()
+    return true
+    -- TODO
+    -- local cmd = { 'checkout', assert(self.branch) }
+    -- return self:exec(unpack(cmd))
 end
 
 function RepoSource:clone()
