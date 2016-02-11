@@ -137,7 +137,7 @@ jagen_pkg_strip() {
         -o -name "*.types" \
         ")" -print -delete
 
-    if [ "$jagen_build_type" = "Release" ]; then
+    if pkg_is_release; then
         pkg_run find lib/chicken -type f "(" \
             -name "*.import.*" \
             -o -name "*.scm" \

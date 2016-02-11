@@ -138,8 +138,8 @@ jagen_flags="$jagen_flags"
 jagen_source_exclude=""
 
 # Global build type.
-# Available values: Release|RelWithDebInfo|Debug
-jagen_build_type="Release"
+# Available values: release|debug|release_with_debug
+jagen_build_profile="release"
 EOF
 }
 

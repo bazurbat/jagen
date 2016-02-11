@@ -84,16 +84,40 @@ pkg_link() {
     pkg_run cd "$OLDPWD"
 }
 
-pkg_is_release() {
-    test "$jagen_build_type" = "Release"
+pkg_get_build_profile() {
+    local profile="${pkg_build_profile:-$jagen_build_profile}"
+    case $profile in
+        release|debug|release_with_debug)
+            echo $profile ;;
+        *)
+            echo release ;;
+    esac
 }
 
-pkg_is_release_with_debug() {
-    test "$jagen_build_type" = "RelWithDebInfo"
+pkg_cmake_build_type() {
+    local profile="$(pkg_get_build_profile)"
+    case $profile in
+        release)
+            echo "Release" ;;
+        debug)
+            echo "Debug" ;;
+        release_with_debug)
+            echo "RelWithDebInfo" ;;
+        *)
+            echo "Release" ;;
+    esac
+}
+
+pkg_is_release() {
+    test "$(pkg_get_build_profile)" = "release"
 }
 
 pkg_is_debug() {
-    test "$jagen_build_type" = "Debug"
+    test "$(pkg_get_build_profile)" = "debug"
+}
+
+pkg_is_release_with_debug() {
+    test "$(pkg_get_build_profile)" = "release_with_debug"
 }
 
 # usings
@@ -200,7 +224,7 @@ pkg_configure() {
             fi
 
             pkg_run cmake -G"${jagen_cmake_generator:?}" \
-                -DCMAKE_BUILD_TYPE="$jagen_cmake_build_type" \
+                -DCMAKE_BUILD_TYPE="$(pkg_cmake_build_type)" \
                 -DCMAKE_INSTALL_PREFIX="$pkg_install_dir" \
                 $A $jagen_cmake_options "$@" "$pkg_source_dir"
             ;;

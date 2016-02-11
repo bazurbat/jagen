@@ -95,13 +95,12 @@ jagen_pkg_configure() {
     done
 
     local options=""
-    case $jagen_build_type in
-        Rel*) options="--disable-debug" ;;
-        Debug)
-            options="--disable-optimizations"
-            components="$components --enable-decoder=eac3"
-            ;;
-    esac
+    if pkg_is_debug; then
+        options="--disable-optimizations"
+        components="$components --enable-decoder=eac3"
+    else
+        options="--disable-debug" 
+    fi
 
     pkg_run $pkg_source_dir/configure \
         --prefix="$pkg_prefix" \

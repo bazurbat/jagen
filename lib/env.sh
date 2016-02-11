@@ -24,7 +24,6 @@ export jagen_output_dir="$jagen_root/out"
 
 export jagen_sdk_dir
 
-jagen_build_type="Release"
 jagen_build_verbose="no"
 
 . "$jagen_lib_dir/common.sh" || return
@@ -36,7 +35,6 @@ fi
 
 jagen_cmake_generator="${jagen_cmake_generator:-Ninja}"
 jagen_cmake_build_options="${jagen_cmake_build_options}"
-jagen_cmake_build_type="$jagen_build_type"
 jagen_cmake_module_path=''
 jagen_cmake_options=''
 

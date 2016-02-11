@@ -37,7 +37,7 @@ if in_flags "sigma_with_monitoring"; then
 fi
 
 export COMPILKIND="codesourcery glibc hardfloat"
-if [ "$jagen_build_type" = "Debug" ]; then
+if [ "$jagen_build_profile" = "debug" ]; then
     COMPILKIND="$COMPILKIND debug"
 else
     COMPILKIND="$COMPILKIND release"
