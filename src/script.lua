@@ -91,6 +91,10 @@ function P:write(pkg)
     if pkg.build then
         local build = pkg.build
 
+        if build.profile then
+            w("\npkg_build_profile='%s'", build.profile)
+        end
+
         if build.options then
             local o = build.options
             if type(build.options) == 'string' then
