@@ -106,3 +106,7 @@ add_LD_LIBRARY_PATH() {
 _jagen() {
     ${jagen_lua:-lua} "$jagen_dir/src/main.lua" "$@"
 }
+
+to_lower() {
+    echo "${1:?}" | tr '[:upper:]' '[:lower:]'
+}
