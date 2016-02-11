@@ -6,6 +6,7 @@ package { 'make', 'host',
 
 package { 'android',
     { 'configure',
-        { 'make', 'build', 'host' }
-    }
+        requires = { { 'make', 'host' } }
+    },
+    { 'compile' }
 }
