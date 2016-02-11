@@ -194,14 +194,22 @@ function RepoSource:new(o)
     return source
 end
 
-function RepoSource:_exec(...)
+function RepoSource:exec(...)
     local cmd = { 'cd', '"'..assert(self.path)..'"', '&&', 'repo', ... }
     return system.exec(unpack(cmd))
 end
 
-function RepoSource:_popen(...)
+function RepoSource:popen(...)
     local cmd = { 'cd', '"'..assert(self.path)..'"', '&&', 'repo', ... }
     return system.popen(unpack(cmd))
+end
+
+function RepoSource:head()
+    return self:popen('status', '-j', 1, '--orphans'):read('*all')
+end
+
+function RepoSource:dirty()
+    return false
 end
 
 function RepoSource:_load_projects(...)
@@ -216,22 +224,6 @@ function RepoSource:_load_projects(...)
         end
     end
     return o
-end
-
-function RepoSource:_clone()
-    local mkdir = { 'mkdir -p "'..self.path..'"' }
-    local init = { 'init', '-u', assert(self.location),
-        '-b', assert(self.branch), '-p', 'linux', '--depth', 1
-    }
-    return system.exec(unpack(mkdir)) and self:exec(unpack(init)) and self:update()
-end
-
-function RepoSource:head()
-    return self:popen('status', '-j', 1, '--orphans'):read('*all')
-end
-
-function RepoSource:dirty()
-    return false
 end
 
 function RepoSource:clean()
@@ -261,6 +253,14 @@ function RepoSource:update()
 end
 
 function RepoSource:switch()
+end
+
+function RepoSource:clone()
+    local mkdir = { 'mkdir -p "'..self.path..'"' }
+    local init = { 'init', '-u', assert(self.location),
+        '-b', assert(self.branch), '-p', 'linux', '--depth', 1
+    }
+    return system.exec(unpack(mkdir)) and self:exec(unpack(init)) and self:update()
 end
 
 return Source
