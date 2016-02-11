@@ -6,8 +6,6 @@ require u-boot-tools || return
 
 : ${jagen_android_product:?}
 
-use_env target
-
 message "Changing current directory to: $jagen_sdk_dir"
 cd "$jagen_sdk_dir" || return
 

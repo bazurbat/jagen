@@ -7,7 +7,5 @@ jagen_pkg_patch() {
 }
 
 jagen_pkg_compile() {
-    use_env lunch || return
-
     pkg_run make BUILD_EMULATOR=false bigfish_emmc
 }

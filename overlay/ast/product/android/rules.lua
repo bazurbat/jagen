@@ -12,7 +12,11 @@ package { 'hi-sdk', 'target',
 }
 
 package { 'android',
+    env = { 'target' },
     { 'unpack',
         { 'hi-sdk', 'unpack' }
+    },
+    { 'configure',
+        requires = { { 'toolchain', 'target' } }
     }
 }

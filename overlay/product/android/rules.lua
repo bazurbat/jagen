@@ -5,6 +5,7 @@ package { 'make', 'host',
 }
 
 package { 'android',
+    env = { 'lunch' },
     { 'configure',
         requires = { { 'make', 'host' } }
     },
