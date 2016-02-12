@@ -221,20 +221,26 @@ local function prepare_root()
 end
 
 function jagen.command.refresh()
+    -- during development naming scheme was changed, user might have older
+    -- scripts lying around after update
+    if not system.rmrf(jagen.include_dir) then
+        return 2
+    end
+
     prepare_root()
 
     local packages = rules.load()
     local script = require 'script'
 
     for _, pkg in pairs(packages) do
-        script:write(pkg)
+        script:write(script:get(pkg), tostring(pkg))
     end
 
     packages = rules.merge(packages)
 
     for _, pkg in pairs(packages) do
         pkg:add_ordering_dependencies()
-        script:write_shared(pkg)
+        script:write(script:get_shared(pkg), pkg.name)
     end
 
     local ninja = Ninja:new()

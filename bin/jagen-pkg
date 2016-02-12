@@ -6,8 +6,6 @@ pkg_name="${1:?}"
 pkg_stage="${2:?}"
 pkg_config="$3"
 
-pkg_qname=${pkg_name}${pkg_config:+__${pkg_config}}
-
 pkg_log="${jagen_log_dir:?}/${pkg_name}__${pkg_stage}${pkg_config:+__${pkg_config}}.log"
 pkg_work_dir="${jagen_build_dir:?}/$pkg_name"
 
@@ -21,8 +19,12 @@ fi
 
 pkg_build_dir="$pkg_work_dir${pkg_config:+/$pkg_config}"
 
-try_include "$jagen_include_dir/${pkg_name}__.sh" || die
-try_include "$jagen_include_dir/${pkg_qname}.sh"  || die
+try_include "$jagen_include_dir/${pkg_name}.sh" || die
+
+if ! [ "$pkg_stage" = "unpack" -o "$pkg_stage" = "patch" ]; then
+    try_include "$jagen_include_dir/${pkg_name}__${pkg_config}.sh"  || die
+fi
+
 import "pkg/$pkg_name" || die
 
 pkg_install_dir="$pkg_dest_dir$pkg_prefix"

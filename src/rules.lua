@@ -74,13 +74,7 @@ local function add_package(rule, list)
 end
 
 function Rule:__tostring()
-    local name = self.name
-    local config = self.config
-    if name and config then
-        return string.format('%s__%s', name, config)
-    else
-        return name or config or 'rule'
-    end
+    return string.format('%s__%s', self.name or '', self.config or '')
 end
 
 function Rule:parse(rule)
