@@ -16,10 +16,13 @@ package { 'chicken-eggs', 'host',
     }
 }
 
+local firmware_package_template = {
+    config = 'target',
+    { 'install', { 'firmware', 'unpack' } }
+}
+
 local function firmware_package(rule)
-    rule.config = 'target'
-    table.insert(rule, { 'install', { 'firmware', 'unpack' } })
-    package(rule)
+    package(rule, firmware_package_template)
 end
 
 package { 'firmware',
