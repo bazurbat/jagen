@@ -1,12 +1,15 @@
 #!/bin/sh
 
 jagen_pkg_prepare() {
+    local pub_dir="$jagen_sdk_dir/pub"
+
     pkg_run install -d -m 755 \
         bin dev etc home lib libexec mnt proc run sbin share sys usr var
     pkg_run install -d -m 700 root
     pkg_run install -d -m 1777 tmp
 
     pkg_run rsync -vrtl "$jagen_sdk_dir/pub/rootfs/" "."
+    pkg_run rsync -vrtl "$pub_dir/lib/share/" "lib"
 }
 
 jagen_pkg_hi_utils() {
