@@ -23,7 +23,7 @@ package {
             '--disable-beos',
             '--disable-drm',
             '--disable-gallium',
-            '--disable-png',
+            '--enable-png',
             '--disable-gl',
             '--disable-glesv2',
             '--disable-cogl',
@@ -34,7 +34,7 @@ package {
             '--disable-wgl',
             '--disable-script',
             '--enable-ft',
-            '--disable-fc',
+            '--enable-fc',
             '--disable-ps',
             '--disable-pdf',
             '--disable-svg',
@@ -46,9 +46,23 @@ package {
             '--disable-trace',
             '--disable-interpreter',
             '--disable-symbol-lookup',
-            '--without-x'
+            '--without-x',
+            '--without-skia',
+            '--without-gallium',
         },
         libs = { 'cairo' }
     },
-    requires = { 'pixman', 'freetype' }
+    requires = {
+        'fontconfig',
+        'freetype',
+        'pixman',
+    }
 }
+--[[ NOTES:
+Fontconfig is needed to properly compile cairo:
+  ../pango/.libs/libpangocairo-1.0.so: undefined reference to `cairo_ft_font_options_substitute'
+  ../pango/.libs/libpangocairo-1.0.so: undefined reference to `cairo_ft_font_face_create_for_pattern'
+PNG is needed for cairo too:
+  test-pangocairo-threads.c:(.text.startup+0x210): undefined reference to `cairo_surface_write_to_png'
+  test-pangocairo-threads.c:(.text.startup+0x220): undefined reference to `cairo_surface_write_to_png'
+]]
