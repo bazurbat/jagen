@@ -33,7 +33,7 @@ function Source:basename(filename)
     end
 end
 
-function Source:create(source)
+function Source:create(source, name)
     local source = source or {}
 
     if source.type == 'git' then
@@ -50,8 +50,15 @@ function Source:create(source)
     end
 
     if source.location and source.type ~= 'curl' then
-        local dir = source:is_scm() and '$jagen_src_dir' or '$pkg_work_dir'
         local basename = source:basename(source.location)
+        local src_dir = assert(os.getenv('jagen_src_dir'))
+        local work_dir = assert(os.getenv('jagen_build_dir'))
+        local dir
+        if source:is_scm() then
+            dir = src_dir
+        else
+            dir = system.mkpath(work_dir, name or basename)
+        end
         source.path = system.mkpath(dir, source.path or basename)
     end
 

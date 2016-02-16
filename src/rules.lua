@@ -237,7 +237,7 @@ function P.load()
     end
 
     for _, pkg in pairs(packages) do
-        pkg.source = Source:create(pkg.source)
+        pkg.source = Source:create(pkg.source, pkg.name)
     end
 
     return packages
