@@ -140,6 +140,13 @@ end
 
 function jagen.src.update(packages)
     local offline = jagen.flag 'offline'
+    -- Sorting from the shortest to the longest is needed for a case when the
+    -- source directories are specified inside each other and we need to clone
+    -- both, deeper one is cloned first, then clone complains about already
+    -- existing directory or update fails.
+    table.sort(packages, function (a, b)
+            return a.source.path < b.source.path
+    end)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
         if exists(source.path) then
