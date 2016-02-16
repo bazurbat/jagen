@@ -183,6 +183,13 @@ function HgSource:update()
     return self:exec(unpack(cmd))
 end
 
+function HgSource:_branch()
+    local s = self:popen('branch')
+    if s then
+        return string.match(s, '^[%w_-]+')
+    end
+end
+
 function HgSource:_is_bookmark(pattern)
     local bm = self:popen("bookmarks | grep '^..."..pattern.."\\s'")
     local exists, active = false, false
@@ -203,6 +210,8 @@ function HgSource:switch()
     elseif exists then
         local cmd = { 'update', '-r', assert(self.branch) }
         return self:exec(unpack(cmd))
+    elseif branch == self:_branch() then
+        return true
     else
         jagen.error("could not find bookmark '%s' in local repository", branch)
         return false
