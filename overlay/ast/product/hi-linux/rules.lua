@@ -52,7 +52,9 @@ package { 'karaoke-player', 'target',
 }
 
 package { 'rootfs', 'target',
-    { 'prepare' },
+    { 'prepare',
+        { 'hi-sdk', 'rootfs', 'target' }
+    },
     { 'hi-utils',
         requires = { 'hi-utils' }
     },
