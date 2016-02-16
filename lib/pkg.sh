@@ -206,6 +206,7 @@ pkg_configure() {
             pkg_run "$pkg_source_dir/configure" \
                 --host="$pkg_system" \
                 --prefix="$pkg_prefix" \
+                --with-sysroot="$pkg_dest_dir" \
                 --disable-dependency-tracking \
                 $pkg_options "$@"
             ;;
@@ -251,9 +252,9 @@ pkg_install() {
         GNU)
             pkg_run make DESTDIR="$pkg_dest_dir" "$@" install
 
-            for name in $pkg_libs; do
-                pkg_fix_la "$pkg_dest_dir$pkg_prefix/lib/lib${name}.la" "$pkg_dest_dir"
-            done
+            # for name in $pkg_libs; do
+            #     pkg_fix_la "$pkg_dest_dir$pkg_prefix/lib/lib${name}.la" "$pkg_dest_dir"
+            # done
             ;;
         CMake)
             pkg_run cmake --build . --target install -- "$@"
