@@ -61,6 +61,10 @@ jagen_pkg_component() {
     pkg_run make component_install
 }
 
+jagen_pkg_mkload() {
+    pkg_run make -C scripts load_install
+}
+
 jagen_pkg_rootbox() {
     pkg_run make rootbox_install
     pkg_run make fs

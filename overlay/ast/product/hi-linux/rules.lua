@@ -20,6 +20,7 @@ package { 'hi-sdk', 'target',
     { 'common'    },
     { 'msp'       },
     { 'component' },
+    { 'mkload'    },
 }
 
 package { 'hi-drivers', 'target',
