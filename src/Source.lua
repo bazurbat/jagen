@@ -162,7 +162,7 @@ function HgSource:exec(...)
 end
 
 function HgSource:popen(...)
-    return system.popen('hg', '-R', assert(self.path), ...):read()
+    return system.popen('hg', '-R', assert(self.path), ...):read('*a')
 end
 
 function HgSource:head()
@@ -183,9 +183,30 @@ function HgSource:update()
     return self:exec(unpack(cmd))
 end
 
+function HgSource:_is_bookmark(pattern)
+    local bm = self:popen("bookmarks | grep '^..."..pattern.."\\s'")
+    local exists, active = false, false
+
+    if bm and #bm > 0 then
+        exists = true
+        active = string.sub(bm, 2, 2) == '*'
+    end
+
+    return exists, active
+end
+
 function HgSource:switch()
-    local cmd = { 'update', '-r', assert(self.branch) }
-    return self:exec(unpack(cmd))
+    local branch = assert(self.branch)
+    local exists, active = self:_is_bookmark(branch)
+    if active then
+        return true
+    elseif exists then
+        local cmd = { 'update', '-r', assert(self.branch) }
+        return self:exec(unpack(cmd))
+    else
+        jagen.error("could not find bookmark '%s' in local repository", branch)
+        return false
+    end
 end
 
 function HgSource:clone()
