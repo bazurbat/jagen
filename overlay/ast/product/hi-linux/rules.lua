@@ -6,7 +6,12 @@ package { 'make', 'host',
 
 package { 'hi-kernel' }
 
+package { 'hi-sdk-tools' }
+
 package { 'hi-sdk', 'target',
+    { 'tools',
+        { 'hi-sdk-tools', 'unpack' }
+    },
     { 'prepare',
         requires = {
             'toolchain',
