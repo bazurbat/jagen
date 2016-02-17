@@ -1,8 +1,11 @@
 package {
     source = 'cairo-1.14.2.tar.xz',
     build = {
-        type    = 'GNU',
+        type = 'GNU',
+        workaround_libtool_rpath = true,
+        hardcode_target_env = true,
         options = {
+            '--disable-silent-rules',
             '--disable-static',
             '--disable-gtk-doc',
             '--disable-gtk-doc-html',
@@ -55,7 +58,9 @@ package {
     requires = {
         'fontconfig',
         'freetype',
+        'libpng',
         'pixman',
+        'zlib',
     }
 }
 --[[ NOTES:

@@ -67,6 +67,15 @@ pkg_run_depmod() {
         "$jagen_kernel_release"
 }
 
+pkg_fix_pc() {
+    local name="${1:?}"
+    local filename="$pkg_install_dir/lib/pkgconfig/${name}.pc"
+    debug "fix pc $filename"
+    if [ -f "$filename" ]; then
+        pkg_run sed -i "s|$pkg_dest_dir||g" "$filename"
+    fi
+}
+
 pkg_fix_la() {
     local filename="${1:?}" prefix="$2"
     debug "fix la $filename $prefix"
@@ -203,10 +212,14 @@ pkg_configure() {
                 die "GNU build type specified but no ./configure was found in $pkg_source_dir"
             fi
 
+            if [ "$pkg_build_workaround_libtool_rpath" ]; then
+                pkg_run sed -i 's|\(hardcode_into_libs\)=yes|\1=no|g' \
+                    "$pkg_source_dir/configure"
+            fi
+ 
             pkg_run "$pkg_source_dir/configure" \
                 --host="$pkg_system" \
                 --prefix="$pkg_prefix" \
-                --with-sysroot="$pkg_dest_dir" \
                 --disable-dependency-tracking \
                 $pkg_options "$@"
             ;;
@@ -252,9 +265,10 @@ pkg_install() {
         GNU)
             pkg_run make DESTDIR="$pkg_dest_dir" "$@" install
 
-            # for name in $pkg_libs; do
-            #     pkg_fix_la "$pkg_dest_dir$pkg_prefix/lib/lib${name}.la" "$pkg_dest_dir"
-            # done
+            for name in $pkg_libs; do
+                pkg_fix_pc "$name"
+                pkg_fix_la "$pkg_dest_dir$pkg_prefix/lib/lib${name}.la" "$pkg_dest_dir"
+            done
             ;;
         CMake)
             pkg_run cmake --build . --target install -- "$@"
