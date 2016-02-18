@@ -225,6 +225,8 @@ pkg_configure() {
                 LDFLAGS="$LDFLAGS -L$pkg_install_dir/lib"
             fi
 
+            export CFLAGS LDFLAGS
+
             pkg_run "$pkg_source_dir/configure" $A \
                 ${pkg_system:+--host="$pkg_system"} \
                 --prefix="$pkg_prefix" \
