@@ -94,7 +94,7 @@ function GitSource:head()
 end
 
 function GitSource:dirty()
-    return self:popen('status', '--porcelain')
+    return self:popen('status', '--porcelain') ~= nil
 end
 
 function GitSource:clean()
@@ -186,7 +186,7 @@ function HgSource:head()
 end
 
 function HgSource:dirty()
-    return self:pipe_line('status')
+    return self:pipe_line('status') ~= nil
 end
 
 function HgSource:clean()
