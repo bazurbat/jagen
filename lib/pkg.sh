@@ -76,7 +76,7 @@ pkg_fix_pc() {
     local filename="$pkg_install_dir/lib/pkgconfig/${name}.pc"
     debug "fix pc $filename"
     if [ -f "$filename" ]; then
-        pkg_run sed -i "s|$pkg_dest_dir||g" "$filename"
+        pkg_run sed -i "s|$pkg_sysroot||g" "$filename"
     fi
 }
 
@@ -216,8 +216,7 @@ pkg_configure() {
                 die "GNU build type specified but no ./configure was found in $pkg_source_dir"
             fi
 
-            # assuming custom sysroot
-            if [ "$pkg_dest_dir" ]; then
+            if [ "$pkg_sysroot" ]; then
                 LDFLAGS="$LDFLAGS -Wl,-rpath-link=$pkg_install_dir/lib"
             fi
 
@@ -230,7 +229,7 @@ pkg_configure() {
                 ${pkg_system:+--host="$pkg_system"} \
                 --prefix="$pkg_prefix" \
                 --disable-dependency-tracking \
-                ${pkg_dest_dir:+--with-sysroot="$pkg_dest_dir"} \
+                ${pkg_sysroot:+--with-sysroot="$pkg_sysroot"} \
                 $pkg_options "$@"
 
             # Never add RPATH to generated binaries because libtool uses
@@ -289,11 +288,11 @@ pkg_compile() {
 pkg_install() {
     case $pkg_build_type in
         GNU)
-            pkg_run make DESTDIR="$pkg_dest_dir" "$@" install
+            pkg_run make ${pkg_sysroot:+DESTDIR="$pkg_sysroot"} "$@" install
 
             for name in $pkg_libs; do
                 pkg_fix_pc "$name"
-                # pkg_fix_la "$pkg_dest_dir$pkg_prefix/lib/lib${name}.la" "$pkg_dest_dir"
+                # pkg_fix_la "$pkg_sysroot$pkg_prefix/lib/lib${name}.la" "$pkg_sysroot"
             done
             ;;
         CMake)

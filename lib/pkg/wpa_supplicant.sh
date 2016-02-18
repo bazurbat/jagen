@@ -37,7 +37,7 @@ jagen_pkg_compile() {
 
 jagen_pkg_install() {
     local s="$pkg_build_dir"
-    local d="$pkg_dest_dir$pkg_prefix"
+    local d="$pkg_sysroot$pkg_prefix"
 
     pkg_run install -vd "$d/bin" "$d/sbin" \
         "$d/etc/dbus-1/system.d" \

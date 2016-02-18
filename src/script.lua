@@ -71,8 +71,8 @@ function P:get(pkg)
     -- configure options
     if pkg.install then
         local i = pkg.install
-        if i.path then
-            w('pkg_dest_dir="%s"', i.path)
+        if i.root then
+            w('pkg_sysroot="%s"', i.root)
         end
         if i.prefix then
             w('pkg_prefix="%s"', i.prefix)

@@ -65,7 +65,7 @@ kernel_package { 'ralink' }
 local rootfs_package_template = {
     config  = 'target',
     install = {
-        path = '$jagen_sdk_staging_dir',
+        root = '$jagen_sdk_staging_dir',
         prefix = ''
     },
     { 'configure', { 'rootfs', 'compile' } }
@@ -113,7 +113,7 @@ rootfs_package { 'ezboot',
 
 rootfs_package { 'busybox',
     install = {
-        path = '$jagen_sdk_initfs_dir',
+        root = '$jagen_sdk_initfs_dir',
         prefix = ''
     },
     { 'patch', { 'ast-files', 'unpack' } }

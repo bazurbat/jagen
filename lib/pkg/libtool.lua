@@ -10,9 +10,5 @@ package {
         options = {
             '--disable-ltdl-install'
         }
-    },
-    install = {
-        prefix = '$jagen_host_dir$jagen_host_prefix',
-        path = ''
     }
 }

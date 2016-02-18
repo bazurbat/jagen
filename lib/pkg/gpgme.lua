@@ -11,8 +11,8 @@ package {
             '--disable-gpg-test',
             '--disable-gpgsm-test',
             '--disable-g13-test',
-            '--with-libgpg-error-prefix=$pkg_dest_dir',
-            '--with-libassuan-prefix=$pkg_dest_dir'
+            '--with-libgpg-error-prefix=$pkg_sysroot',
+            '--with-libassuan-prefix=$pkg_sysroot'
         },
         libs = { 'gpgme' }
     },

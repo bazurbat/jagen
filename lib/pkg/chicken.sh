@@ -38,6 +38,6 @@ jagen_pkg_configure_target() {
 }
 
 jagen_pkg_install_target() {
-    export DESTDIR="$pkg_dest_dir"
+    export DESTDIR="$pkg_sysroot"
     pkg_install
 }

@@ -10,5 +10,5 @@ jagen_pkg_compile() {
 }
 
 jagen_pkg_install() {
-    pkg_run make CONFIG_PREFIX="$pkg_dest_dir" install
+    pkg_run make CONFIG_PREFIX="$pkg_sysroot" install
 }
