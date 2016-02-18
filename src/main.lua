@@ -150,16 +150,29 @@ function jagen.src.update(packages)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
         if exists(source.path) then
-            if not offline then
-                if not source:update() then
-                    jagen.die('failed to update %s from %s in %s',
-                        pkg.name, source.location, source.path)
+            if not source:dirty() then
+                if offline then
+                    jagen.message('switch %s to %s in %s',
+                        pkg.name, source.branch, source.path)
+                else
+                    jagen.message('update %s from %s to %s in %s',
+                        pkg.name, source.location, source.branch, source.path)
                 end
-            end
 
-            if not source:switch() then
-                jagen.die('failed to switch %s to the latest %s in %s',
-                    pkg.name, source.branch, source.path)
+                if not offline then
+                    if not source:update() then
+                        jagen.die('failed to update %s from %s in %s',
+                            pkg.name, source.location, source.path)
+                    end
+                end
+
+                if not source:switch() then
+                    jagen.die('failed to switch %s to the latest %s in %s',
+                        pkg.name, source.branch, source.path)
+                end
+            else
+                jagen.warning("skip update of %s because working directory '%s' is dirty",
+                    pkg.name, source.path)
             end
         else
             if offline then
