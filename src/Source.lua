@@ -310,10 +310,9 @@ function RepoSource:update()
 end
 
 function RepoSource:switch()
+    -- Not doing Android development at the time.
+    jagen.warning('branch switching is not implemented for repo sources')
     return true
-    -- TODO
-    -- local cmd = { 'checkout', assert(self.branch) }
-    -- return self:exec(unpack(cmd))
 end
 
 function RepoSource:clone()
