@@ -110,6 +110,10 @@ jagen_overlays="$jagen_overlays"
 # outside and inside the chrooted container.
 jagen_base_dir=\$(real_path "\$jagen_dir/..")
 
+# Common output directory outside of build root for easier sharing of
+# byproducts.
+jagen_out_dir="\$jagen_base_dir/out"
+
 # A directory containing software distributions and patches.
 jagen_dist_dir="\$jagen_base_dir/dist"
 
