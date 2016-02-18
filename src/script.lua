@@ -48,8 +48,8 @@ function P:get_shared(pkg)
         if build.generate then
             w("pkg_build_generate='yes'")
         end
-        if build.hardcode_target_env then
-            w("pkg_build_hardcode_target_env='yes'")
+        if build.configure_needs_install_dir then
+            w("pkg_configure_needs_install_dir='yes'")
         end
     end
 

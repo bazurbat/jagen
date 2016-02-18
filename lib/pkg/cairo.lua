@@ -2,7 +2,9 @@ package {
     source = 'cairo-1.14.2.tar.xz',
     build = {
         type = 'GNU',
-        hardcode_target_env = true,
+        -- fails to find lz otherwise and other build failures assuming zlib in
+        -- default paths
+        configure_needs_install_dir = true,
         options = {
             '--disable-silent-rules',
             '--disable-static',

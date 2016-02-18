@@ -3,6 +3,8 @@ package {
     source = 'dbus-1.6.18.tar.gz',
     build  = {
         type = 'GNU',
+        -- fails to find lexpat otherwise
+        configure_needs_install_dir = true,
         libs = { 'dbus-1' },
         options = {
             '--with-system-pid-file=/run/dbus.pid',
