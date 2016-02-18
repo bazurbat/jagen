@@ -253,6 +253,11 @@ function P.merge(rules)
             for target in rule:each() do
                 pkg:add_target(target)
             end
+            -- FIXME: really need to sanitize rule handling to get rid of merge
+            -- step
+            if pkg.source and rule.source then
+                table.merge(pkg.source, rule.source)
+            end
         else
             packages[name] = rule
         end
