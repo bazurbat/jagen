@@ -9,6 +9,7 @@ jagen_pkg_prepare() {
     pkg_run install -d -m 1777 tmp
 
     pkg_run rsync -vrtl "$jagen_sdk_dir/pub/rootfs/" "."
+    pkg_run rsync -vrtl "$jagen_sdk_dir/pub/kmod/" "./kmod"
     pkg_run rsync -vrtl "$pub_dir/lib/share/" "lib"
 }
 
@@ -87,6 +88,16 @@ install_karaoke_player() {
     done
 }
 
+install_debug_utils() {
+    local src="$pkg_install_dir"
+    local dst="$pkg_build_dir"
+    local programs='strace'
+
+    for name in $programs; do
+        pkg_run install -vm 755 "$src/bin/$name" "$dst/bin"
+    done
+}
+
 jagen_pkg_install() {
     local src="$pkg_install_dir"
     local dst="$pkg_build_dir"
@@ -95,6 +106,9 @@ jagen_pkg_install() {
     install_chicken || return
     install_chmod_libs || return
     install_karaoke_player || return
+    if in_flags debug; then
+        install_debug_utils || return
+    fi
 
     if pkg_is_release; then
         _jagen src status > "$dst/heads" || return

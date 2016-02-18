@@ -71,3 +71,7 @@ package { 'rootfs', 'target',
         requires = { 'karaoke-player' }
     },
 }
+
+if jagen.flag 'debug' then
+    package { 'strace', 'target' }
+end
