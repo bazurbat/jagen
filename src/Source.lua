@@ -16,6 +16,14 @@ local RepoSource = Source:new()
 
 -- Source
 
+function Source._read_line(file)
+    return file:read()
+end
+
+function Source._read_all(file)
+    return file:read('*a')
+end
+
 function Source:is_scm()
     return self.type == 'git' or self.type == 'hg' or self.type == 'repo'
 end
@@ -161,16 +169,24 @@ function HgSource:exec(...)
     return system.exec('hg', '-R', assert(self.path), ...)
 end
 
-function HgSource:popen(...)
-    return system.popen('hg', '-R', assert(self.path), ...):read('*a')
+function HgSource:pipe(func, ...)
+    return system.pipe(func, 'hg', '-R', assert(self.path), ...)
+end
+
+function HgSource:pipe_line(...)
+    return self:pipe(self._read_line, ...)
+end
+
+function HgSource:pipe_all(...)
+    return self:pipe(self._read_all, ...)
 end
 
 function HgSource:head()
-    return self:popen('id', '-i')
+    return self:pipe_line('id', '-i')
 end
 
 function HgSource:dirty()
-    return self:popen('status')
+    return self:pipe_line('status')
 end
 
 function HgSource:clean()
@@ -184,14 +200,14 @@ function HgSource:update()
 end
 
 function HgSource:_branch()
-    local s = self:popen('branch')
+    local s = self:pipe_line('branch')
     if s then
         return string.match(s, '^[%w_-]+')
     end
 end
 
 function HgSource:_is_bookmark(pattern)
-    local bm = self:popen("bookmarks | grep '^..."..pattern.."\\s'")
+    local bm = self:pipe_all("bookmarks | grep '^..."..pattern.."\\s'")
     local exists, active = false, false
 
     if bm and #bm > 0 then
