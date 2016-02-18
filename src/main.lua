@@ -131,9 +131,11 @@ end
 
 function jagen.src.clean(packages)
     for _, pkg in ipairs(packages) do
+        local source = pkg.source
+        jagen.message('clean %s in %s', pkg.name, source.path)
         if not pkg.source:clean() then
             jagen.die('failed to clean %s (%s) in %s',
-                pkg.name, pkg.source.branch, pkg.source.path)
+                pkg.name, source.branch, source.path)
         end
     end
 end
