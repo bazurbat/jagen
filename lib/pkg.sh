@@ -67,6 +67,10 @@ pkg_run_depmod() {
         "$jagen_kernel_release"
 }
 
+# Some packages write full paths with sysroot prepended to their pc files which
+# causes the sysroot to be prepended twice in build flags of packages which
+# actually support it. Namely fontconfig does this. It is easier to patch
+# everything just in case than fixing every individual package.
 pkg_fix_pc() {
     local name="${1:?}"
     local filename="$pkg_install_dir/lib/pkgconfig/${name}.pc"
@@ -212,16 +216,38 @@ pkg_configure() {
                 die "GNU build type specified but no ./configure was found in $pkg_source_dir"
             fi
 
-            if [ "$pkg_build_workaround_libtool_rpath" ]; then
-                pkg_run sed -i 's|\(hardcode_into_libs\)=yes|\1=no|g' \
-                    "$pkg_source_dir/configure"
+            # assuming custom sysroot
+            if [ "$pkg_dest_dir" ]; then
+                LDFLAGS="$LDFLAGS -Wl,-rpath-link=$pkg_install_dir/lib"
             fi
- 
-            pkg_run "$pkg_source_dir/configure" \
-                --host="$pkg_system" \
+
+            if [ "$pkg_build_hardcode_target_env" ]; then
+                CFLAGS="$CFLAGS -I$pkg_install_dir/include"
+                LDFLAGS="$LDFLAGS -L$pkg_install_dir/lib"
+            fi
+
+            pkg_run "$pkg_source_dir/configure" $A \
+                ${pkg_system:+--host="$pkg_system"} \
                 --prefix="$pkg_prefix" \
                 --disable-dependency-tracking \
+                ${pkg_dest_dir:+--with-sysroot="$pkg_dest_dir"} \
                 $pkg_options "$@"
+
+            # Never add RPATH to generated binaries because libtool uses
+            # various heuristics to determine when to add it, some Linux
+            # distributions patch it to adjust a list of 'system' paths, but
+            # generally things seems to work because everyone install to
+            # /usr/local/lib or /usr/lib or lib64 whatever and these are
+            # handled specially. Embedded systems often have different
+            # conventions and naming schemes, libtool not always does the
+            # 'right' thing and you might end up with a mixed bag of libraries
+            # some having RPATH and some not.
+
+            if [ -x ./libtool ]; then
+                pkg_run sed -i 's|\(hardcode_into_libs\)=yes|\1=no|g' \
+                    "./libtool"
+            fi
+
             ;;
         CMake)
             if ! [ -f "$pkg_source_dir/CMakeLists.txt" ]; then
@@ -267,7 +293,7 @@ pkg_install() {
 
             for name in $pkg_libs; do
                 pkg_fix_pc "$name"
-                pkg_fix_la "$pkg_dest_dir$pkg_prefix/lib/lib${name}.la" "$pkg_dest_dir"
+                # pkg_fix_la "$pkg_dest_dir$pkg_prefix/lib/lib${name}.la" "$pkg_dest_dir"
             done
             ;;
         CMake)

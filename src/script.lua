@@ -48,9 +48,6 @@ function P:get_shared(pkg)
         if build.generate then
             w("pkg_build_generate='yes'")
         end
-        if build.workaround_libtool_rpath then
-            w("pkg_build_workaround_libtool_rpath='yes'")
-        end
         if build.hardcode_target_env then
             w("pkg_build_hardcode_target_env='yes'")
         end
