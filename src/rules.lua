@@ -65,6 +65,13 @@ local function add_package(rule, list)
 
         pkg:add_stages(pkg, list)
 
+        if pkg.source and pkg.source.type == 'repo' then
+            local unpack = {
+                { 'unpack', requires = { { 'repo', 'host' } } }
+            }
+            pkg:add_stages(unpack, list)
+        end
+
         list[key] = pkg
     else
         table.merge(pkg, rule)
