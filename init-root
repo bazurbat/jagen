@@ -34,17 +34,15 @@ OPTIONS:
 
   -a, --flags         specify default flags
   -l, --list          list config templates
-  -s, --with-sources  use sources from this root
+  -s, --share-sources share sources between build roots
   -h, --help          show this help
 
-  In the default configuration a path to software distributions, patches,
-  source packages and toolchains is specified relative to base directory
-  (\$jagen_dir/..) to facilitate sharing between different build roots. Specify
-  '--with-sources' option to set the path to source packages inside the
-  initialized build root (\$jagen_root/src). The sources will be cloned to this
-  root separately which will allow you to have different branches checked out
-  for different roots simultaneously. Note that 'jagen clean' command does not
-  touch the source packages location even if it is inside the build root.
+  In the default configuration a path to software distributions, patches and
+  toolchains is specified relative to base directory (\$jagen_dir/..) to
+  facilitate sharing. Source packages are checked out to the build root
+  (\$jagen_root/src). Specify '--share-sources' option to use the sources from
+  shared directory relative to the base. Note that 'jagen clean' command does
+  not touch the source packages location even if it is inside the build root.
 
   The generated environment binds the build root to the corresponding jagen
   project directory. If one or the other is moved it will become invalid. Use
@@ -152,8 +150,8 @@ parse_command_line() {
                 arg='flags' ;;
             -l|--list)
                 list_configs; exit 0 ;;
-            -s|--with-sources)
-                with_sources=1 ;;
+            -s|--share-sources)
+                share_sources=1 ;;
             -h|--help)
                 show_help; exit 0 ;;
             -*)
@@ -200,10 +198,10 @@ if ! [ -d "$jagen_config_dir" ]; then
     die "no such configuration template: $jagen_config"
 fi
 
-if [ "$with_sources" ]; then
-    jagen_src_dir='$jagen_root/src'
-else
+if [ "$share_sources" ]; then
     jagen_src_dir='$jagen_base_dir/src'
+else
+    jagen_src_dir='$jagen_root/src'
 fi
 
 . "$jagen_config_dir/env.sh" || exit
