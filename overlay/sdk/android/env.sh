@@ -10,8 +10,12 @@ jagen_target_prefix="/system"
 : ${jagen_sdk_dir:?}
 : ${jagen_android_product:?}
 
-jagen_sdk_staging_dir="$jagen_sdk_dir/out/target/product/$jagen_android_product"
+# set output directory of Android build system
+export OUT_DIR="${jagen_out_dir:?}/android"
 
+jagen_sdk_staging_dir="$OUT_DIR/target/product/$jagen_android_product"
+
+# for out of tree Linux kernel modules
 export KDIR="$jagen_sdk_staging_dir/obj/KERNEL_OBJ"
 
 if in_flags ccache; then
