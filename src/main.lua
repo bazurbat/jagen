@@ -241,6 +241,7 @@ function jagen.command.refresh()
 
     local packages = rules.load()
     local script = require 'script'
+    local log_dir = assert(os.getenv('jagen_log_dir'))
 
     for _, pkg in pairs(packages) do
         script:write(script:get(pkg), tostring(pkg))
@@ -251,6 +252,13 @@ function jagen.command.refresh()
     for _, pkg in pairs(packages) do
         pkg:add_ordering_dependencies()
         script:write(script:get_shared(pkg), pkg.name)
+
+        -- create/truncate all log files beforehand to allow tail following
+        -- them on interactive rebuild
+        for _, stage in ipairs(pkg.stages) do
+            local filename = string.format('%s/%s.log', log_dir, tostring(stage))
+            assert(io.open(filename, 'w+')):close()
+        end
     end
 
     local ninja = Ninja:new()
@@ -297,7 +305,20 @@ function jagen.command.build(options, rest)
         end
     end
 
-    local err, status = system.exec(jagen.cmd, 'run', unpack(options))
+    local err, status = system.exec(jagen.cmd, 'build', unpack(options))
+    return status
+end
+
+function jagen.command.rebuild(options, rest)
+    local packages = rules.merge(rules.load())
+
+    for _, arg in ipairs(rest) do
+        for _, target in ipairs(find_targets(packages, arg)) do
+            table.insert(options, target)
+        end
+    end
+
+    local err, status = system.exec(jagen.cmd, 'rebuild', unpack(options))
     return status
 end
 

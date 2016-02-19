@@ -2,34 +2,45 @@
 
 S=$(printf '\t')
 
+mode=''
+
 die() {
     unset IFS
-    printf 'jagen run: %s\n' "$*"
+    printf "jagen${mode:+ $mode}: %s\n" "$*"
     exit 1
 }
 
 on_interrupt() { :; }
 
-cmd_run() {
+maybe_sync() {
+    if [ "$show_progress" -o "$show_all" ]; then
+        sync
+    fi
+}
+
+cmd_build() {
     local IFS="$(printf '\n\t')"
-    local print_targets targets_only show_output show_all
+    local dry_run show_progress show_all
     local targets logs sts
-    local cmd_log="$jagen_log_dir/build.log"
+    local cmd_log="$jagen_log_dir/$mode.log"
 
     while [ $# -gt 0 ]; do
         case $1 in
-            -p) print_targets=1 ;;
-            -t) targets_only=1 ;;
-            -o) show_output=1 ;;
-            -a) show_all=1 ;;
-            -*) die "invalid option '$1', try 'jagen run --help'" ;;
+            -n) dry_run=1       ;;
+            -p) show_progress=1 ;;
+            -P) show_all=1      ;;
+            -*) if [ "$mode" = 'rebuild' -a "$1" = '-a' ]; then
+                    build_all=1
+                else
+                    die "invalid option '$1', try 'jagen $mode --help'"
+                fi ;;
              *) targets="${targets}${S}${1}"
                 logs="${logs}${S}${jagen_log_dir}/${1}.log" ;;
         esac
         shift
     done
 
-    if [ "$print_targets" ]; then
+    if [ "$dry_run" ]; then
         set -- $targets
         if [ $# = 0 ]; then
             printf "default\n"
@@ -39,15 +50,18 @@ cmd_run() {
         return 0
     fi
 
-    cd "$jagen_build_dir" || exit 1
-    : > "$cmd_log"
+    cd "$jagen_build_dir" || return
 
-    rm -f $targets
+    : > "$cmd_log" || return
     for log in $logs; do
-        : > "$log"
+        : > "$log" || return
     done
 
-    if [ "$show_output" ]; then
+    if [ "$mode" = 'rebuild' ]; then
+        rm -f $targets || return
+    fi
+
+    if [ "$show_progress" ]; then
         tail -qFn+1 "$cmd_log" $logs 2>/dev/null &
     elif [ "$show_all" ]; then
         tail -qFn0 *.log 2>/dev/null &
@@ -58,11 +72,18 @@ cmd_run() {
     # catch SIGINT to kill background tail process and exit cleanly
     trap on_interrupt INT
 
-    if [ "$targets_only" ]; then
-        ninja $targets > "$cmd_log"; sts=$?
-    else
+    # It is hard to reliably reproduce but testing shows that both syncs are
+    # necessary to avoid losing log messages from console. When neither of
+    # 'show_*' options are supplied we do not sync assuming non-interactive run
+    # (build server) not caring about console logs that much.
+
+    maybe_sync
+    if [ "$build_all" ]; then
         ninja > "$cmd_log"; sts=$?
+    else
+        ninja $targets > "$cmd_log"; sts=$?
     fi
+    maybe_sync
 
     kill $!
 
@@ -70,9 +91,15 @@ cmd_run() {
 }
 
 case $1 in
-    run)
+    build)
+        mode="$1"
         shift
-        cmd_run "$@"
+        cmd_build "$@"
+        ;;
+    rebuild)
+        mode="$1"
+        shift
+        cmd_build "$@"
         ;;
     *)
         die "unknown wrapper command: $1"

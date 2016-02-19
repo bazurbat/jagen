@@ -63,21 +63,54 @@ Usage: jagen refresh
 ]]
 
 local build = [[
-Usage: jagen build [-t] [-o] [-a] [-p] [TARGETS...]
+Usage: jagen build [OPTION...] [TARGET...]
 
-  Tries to build the specified targets.
+  Builds the specified targets or everything out of date.
+
+OPTIONS
+
+  -n  Print expanded value of TARGET... arguments and exit.
+  -p  Show build progress for the specified targets.
+  -P  Show all build output.
+
+  Use command 'jagen help targets' for information about targets.
 
 SYNOPSIS
 
-  Runs the the build system starting from the specified targets. Add the
-  '-t' option to stop after given targets are completed. With the '-o' option
-  the command output will be shown for the specified targets. With the '-a'
-  option all build output will be shown. With the '-p' option only target names
-  will be shown and nothing will be built.
+  If no targets were specified it builds everything not already built;
+  otherwise it expands TARGET... arguments and builds the resulting targets if
+  they are out of date.
 
-  The targets are specified as '<name>:<stage>:<config>'. The available
-  package stages are filtered with the given expression. Omitted component
-  means 'all'. For example:
+]]
+
+local rebuild = [[
+Usage: jagen rebuild [OPTIONS...] [TARGETS...]
+
+  Rebuilds the specified targets and optionally their dependencies.
+
+OPTIONS
+
+  -n  Print expanded value of TARGET... arguments and exit.
+  -p  Show build progress for the specified targets.
+  -P  Show all build output.
+  -a  Also build dependencies.
+
+  Use command 'jagen help targets' for information about targets.
+
+SYNOPSIS
+
+  If no targets were specified it builds everything not already built;
+  otherwise it expands TARGET... arguments and rebuilds the resulting targets
+  unconditionally. Use the '-a' option to continue until everything is up to
+  date (build all).
+
+]]
+
+local targets = [[
+
+  Targets are specified as '<name>:<stage>:<config>'. Available package stages
+  are filtered with the given expression. Omitted component means 'all'.  For
+  example:
 
   utils              - select all stages of the utils package
   utils:install      - select all utils install stages
@@ -136,5 +169,7 @@ return {
     clean   = clean,
     refresh = refresh,
     build   = build,
-    src     = src
+    rebuild = rebuild,
+    src     = src,
+    targets = targets
 }
