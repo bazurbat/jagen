@@ -7,7 +7,6 @@ COMMANDS
 
   help      Show jagen usage information
   clean     Clean up build root
-  update    Update jagen and regenerate build system
   refresh   Regenerate the build system
   build     Run the build system for the specified targets
   src       Manage SCM package sources
@@ -53,13 +52,6 @@ SYNOPSIS
 
   Actual paths depend on configuration. After the deletion regenerates the
   build system using the 'jagen refresh' command.
-
-]]
-
-local update = [[
-Usage: jagen update
-
-  Updates the jagen itself from upstream and regenerates the build system.
 
 ]]
 
@@ -142,7 +134,6 @@ return {
     usage   = usage,
     help    = help,
     clean   = clean,
-    update  = update,
     refresh = refresh,
     build   = build,
     src     = src
