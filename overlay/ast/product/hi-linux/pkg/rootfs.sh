@@ -88,6 +88,14 @@ install_karaoke_player() {
     done
 }
 
+install_modules() {
+    local src="$pkg_install_dir$jagen_kernel_modules_install_dir"
+    local dst="$pkg_build_dir$jagen_kernel_modules_install_dir"
+
+    pkg_run mkdir -p "$dst"
+    pkg_run rsync -vrtlp "$src/" "$dst"
+}
+
 install_debug_utils() {
     local src="$pkg_install_dir"
     local dst="$pkg_build_dir"
@@ -106,6 +114,7 @@ jagen_pkg_install() {
     install_chicken || return
     install_chmod_libs || return
     install_karaoke_player || return
+    install_modules || return
     if in_flags debug; then
         install_debug_utils || return
     fi

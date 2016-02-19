@@ -68,7 +68,10 @@ package { 'rootfs', 'target',
     },
     { 'dropbear-key' },
     { 'install',
-        requires = { 'karaoke-player' }
+        requires = {
+            'hi-drivers',
+            'karaoke-player',
+        }
     },
 }
 

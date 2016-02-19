@@ -304,7 +304,7 @@ pkg_install() {
             pkg_run cmake --build . --target install -- "$@"
             ;;
         linux_module)
-            pkg_run make INSTALL_MOD_PATH="$pkg_sysroot" "$@" modules_install
+            pkg_run make INSTALL_MOD_PATH="$pkg_install_dir" "$@" modules_install
             ;;
     esac
 }
