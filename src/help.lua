@@ -8,7 +8,8 @@ COMMANDS
   help      Show jagen usage information
   clean     Clean up build root
   refresh   Regenerate the build system
-  build     Run the build system for the specified targets
+  build     Ensure that targets are up to date
+  rebuild   Rebuild targets with dependencies
   src       Manage SCM package sources
 
   Use 'jagen help <command>' to get help about individual commands.
