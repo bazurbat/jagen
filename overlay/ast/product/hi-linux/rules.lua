@@ -4,6 +4,8 @@ package { 'make', 'host',
     source = 'make-3.81.tar.bz2'
 }
 
+package { 'ast-files' }
+
 package { 'hi-kernel' }
 
 package { 'hi-sdk-tools' }
@@ -58,7 +60,8 @@ package { 'karaoke-player', 'target',
 
 package { 'rootfs', 'target',
     { 'prepare',
-        { 'hi-sdk', 'rootfs', 'target' }
+        { 'ast-files', 'unpack'           },
+        { 'hi-sdk',    'mkload', 'target' }
     },
     { 'hi-utils',
         requires = { 'hi-utils' }

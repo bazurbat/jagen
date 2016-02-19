@@ -11,6 +11,8 @@ jagen_pkg_prepare() {
     pkg_run rsync -vrtl "$jagen_sdk_dir/pub/rootfs/" "."
     pkg_run rsync -vrtl "$jagen_sdk_dir/pub/kmod/" "./kmod"
     pkg_run rsync -vrtl "$pub_dir/lib/share/" "lib"
+
+    pkg_run rsync -vt "$jagen_private_dir/lib/libHA.AUDIO.PCM.decode.so" "lib"
 }
 
 jagen_pkg_hi_utils() {
