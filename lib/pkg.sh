@@ -284,6 +284,9 @@ pkg_compile() {
         CMake)
             pkg_run cmake --build . -- $jagen_cmake_build_options "$@"
             ;;
+        linux_module)
+            pkg_run make "$@" modules
+            ;;
     esac
 }
 
@@ -299,6 +302,9 @@ pkg_install() {
             ;;
         CMake)
             pkg_run cmake --build . --target install -- "$@"
+            ;;
+        linux_module)
+            pkg_run make INSTALL_MOD_PATH="$pkg_sysroot" "$@" modules_install
             ;;
     esac
 }

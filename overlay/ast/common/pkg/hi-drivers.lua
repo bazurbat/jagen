@@ -5,7 +5,7 @@ package {
         branch   = 'master'
     },
     build = {
-        type = 'KBuild',
+        type = 'linux_module',
         in_source = true
     }
 }
