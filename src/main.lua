@@ -322,6 +322,10 @@ function jagen.command.rebuild(options, rest)
     return status
 end
 
+function jagen.command.status()
+    return jagen.command.src({}, { 'status' })
+end
+
 local function scm_packages(names)
     local packages = rules.merge(rules.load())
     local o = {}
