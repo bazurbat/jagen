@@ -1,5 +1,4 @@
 package {
-    name   = 'android',
     source = {
         type     = 'repo',
         location = 'https://android.googlesource.com/platform/manifest',
