@@ -136,7 +136,7 @@ function Rule:add_stages(rule, list)
 
     for _, stage in ipairs(rule) do
         local tc = not stage.shared and self.config
-        local target = Target:from_rule(stage, self.name, tc)
+        local target = Target:parse(stage, self.name, tc)
 
         for _, item in ipairs(stage.requires or {}) do
             local config, name = config

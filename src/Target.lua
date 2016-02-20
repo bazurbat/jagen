@@ -12,7 +12,7 @@ function Target:new(name, stage, config)
     return target
 end
 
-function Target:from_rule(rule, name, config)
+function Target:parse(rule, name, config)
     local stage = rule[1]; assert(type(stage) == 'string')
     local target = Target:new(name, stage, config)
 
