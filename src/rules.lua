@@ -40,7 +40,7 @@ local function loadall(filename)
         jagen = jagen
     }
     function env.package(rule, template)
-        table.insert(o, Rule:new(Rule:parse(rule), template))
+        table.insert(o, Rule:new(rule, template))
     end
     local chunk = loadfile(filename)
     if chunk then
@@ -85,7 +85,6 @@ function Rule:__tostring()
 end
 
 function Rule:parse(rule)
-    setmetatable(rule, self)
     if type(rule[1]) == 'string' then
         rule.name = rule[1]
         table.remove(rule, 1)
@@ -100,21 +99,22 @@ function Rule:parse(rule)
     return rule
 end
 
-function Rule:new(other, template)
-    local rule
+function Rule:new(rule, template)
+    rule = Rule:parse(rule)
+    local new
     if template then
-        rule = copy(template)
-        table.merge(rule, other)
-        rule.template = template
+        new = Rule:parse(copy(template))
+        table.merge(new, rule)
+        new.template = template
     else
-        rule = other
+        new = rule
     end
-    setmetatable(rule, self)
-    return rule
+    setmetatable(new, self)
+    return new
 end
 
 function Rule:new_package(rule)
-    local pkg  = Rule:parse(rule)
+    local pkg  = Rule:new(rule)
     local name = pkg.name
 
     pkg.stages = pkg.stages or {}
@@ -124,7 +124,7 @@ function Rule:new_package(rule)
     end
 
     for filename in each(import_paths('pkg/'..name..'.lua')) do
-        table.merge(pkg, Rule:parse(loadsingle(filename)))
+        table.merge(pkg, Rule:new(loadsingle(filename)))
     end
 
     return pkg
