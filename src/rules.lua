@@ -75,6 +75,11 @@ local function add_package(rule, list)
         list[key] = pkg
     else
         table.merge(pkg, rule)
+
+        if pkg.build and pkg.config then
+            pkg:add_build_stages(list)
+            pkg:add_stages(pkg, list)
+        end
     end
 
     pkg:add_stages(rule, list)
@@ -134,7 +139,7 @@ function Rule:add_stages(rule, list)
     local template = rule.template or {}
     local config = self.config or template.config
 
-    for _, stage in ipairs(rule) do
+    for i, stage in ipairs(rule) do
         local tc = not stage.shared and self.config
         local target = Target:parse(stage, self.name, tc)
 
@@ -153,6 +158,8 @@ function Rule:add_stages(rule, list)
         end
 
         self:add_target(target)
+
+        rule[i] = nil
     end
 end
 
