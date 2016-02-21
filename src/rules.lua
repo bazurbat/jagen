@@ -55,7 +55,7 @@ local function add_package(rule, list)
     local pkg = list[key]
 
     if not pkg then
-        pkg = Rule:new_package { rule.name, rule.config }
+        pkg = Rule:new_package { rule.name }
 
         table.merge(pkg, rule)
 
@@ -157,23 +157,37 @@ function Rule:add_stages(rule, list)
 end
 
 function Rule:add_target(target)
-    local function default(this)
-        for _, stage in ipairs(self.init_stages) do
-            if stage == target.stage and stage == this.stage then
-                return this
-            end
+    local name   = target.stage
+    local config = target.config
+    local shared = {
+        unpack = true,
+        patch  = true,
+    }
+
+    local function add_to(pkg)
+        if not pkg.stages then
+            pkg.stages = {}
+        end
+        local stages = pkg.stages
+        if stages[name] then
+            stages[name]:add_inputs(target)
+        else
+            table.insert(stages, target)
+            stages[name] = target
         end
     end
-    local function eq(this)
-        return this.stage == target.stage and this.config == target.config or
-            default(this)
-    end
 
-    local found = find(eq, self.stages)
-    if found then
-        found:add_inputs(target)
+    if not config or shared[name] then
+        add_to(self)
     else
-        table.insert(self.stages, target)
+        if not self.configs then
+            self.configs = {}
+        end
+        if not self.configs[config] then
+            self.configs[config] = {}
+        end
+
+        add_to(self.configs[config])
     end
 
     return self
@@ -212,7 +226,7 @@ end
 function Rule:add_ordering_dependencies()
     local prev, common
 
-    for _, s in ipairs(self.stages) do
+    for s in self:each() do
         if prev then
             s.inputs = s.inputs or {}
             if common and s.config ~= prev.config then
@@ -230,7 +244,16 @@ function Rule:add_ordering_dependencies()
 end
 
 function Rule:each()
-    return each(self.stages)
+    return coroutine.wrap(function ()
+            for _, t in ipairs(self.stages) do
+                coroutine.yield(t)
+            end
+            for k, c in pairs(self.configs or {}) do
+                for _, t in ipairs(c.stages or {}) do
+                    coroutine.yield(t)
+                end
+            end
+        end)
 end
 
 function P.load()
