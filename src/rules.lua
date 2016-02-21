@@ -11,6 +11,8 @@ local Rule = {
 }
 Rule.__index = Rule
 
+local packages = {}
+
 local function import_paths(filename)
     local o = {}
     table.insert(o, mkpath(jagen.dir, 'lib', filename))
@@ -50,9 +52,9 @@ local function loadall(filename)
     return o
 end
 
-local function add_package(rule, list)
+local function add_package(rule)
     local key = tostring(rule)
-    local pkg = list[key]
+    local pkg = packages[key]
 
     if not pkg then
         pkg = Rule:new_package { rule.name }
@@ -60,29 +62,29 @@ local function add_package(rule, list)
         table.merge(pkg, rule)
 
         if pkg.build and pkg.config then
-            pkg:add_build_stages(list)
+            pkg:add_build_stages()
         end
 
-        pkg:add_stages(pkg, list)
+        pkg:add_stages(pkg)
 
         if pkg.source and pkg.source.type == 'repo' then
             local unpack = {
                 { 'unpack', requires = { { 'repo', 'host' } } }
             }
-            pkg:add_stages(unpack, list)
+            pkg:add_stages(unpack)
         end
 
-        list[key] = pkg
+        packages[key] = pkg
     else
         table.merge(pkg, rule)
 
         if pkg.build and pkg.config then
-            pkg:add_build_stages(list)
-            pkg:add_stages(pkg, list)
+            pkg:add_build_stages()
+            pkg:add_stages(pkg)
         end
     end
 
-    pkg:add_stages(rule, list)
+    pkg:add_stages(rule)
 end
 
 function Rule:__tostring()
@@ -135,7 +137,7 @@ function Rule:new_package(rule)
     return pkg
 end
 
-function Rule:add_stages(rule, list)
+function Rule:add_stages(rule)
     local template = rule.template or {}
     local config = self.config or template.config
 
@@ -153,8 +155,7 @@ function Rule:add_stages(rule, list)
             end
 
             target:append(Target:required(name, config))
-            add_package(Rule:new({ name = name, config = config }, template),
-                list)
+            add_package(Rule:new({ name = name, config = config }, template))
         end
 
         self:add_target(target)
@@ -200,7 +201,7 @@ function Rule:add_target(target)
     return self
 end
 
-function Rule:add_build_stages(list)
+function Rule:add_build_stages()
     local build = self.build
 
     if self.requires then
@@ -215,7 +216,7 @@ function Rule:add_build_stages(list)
                 }
             }
 
-            self:add_stages(autoreconf, list)
+            self:add_stages(autoreconf)
         end
     end
 
@@ -226,7 +227,7 @@ function Rule:add_build_stages(list)
             { 'install' }
         }
 
-        self:add_stages(build_rules, list)
+        self:add_stages(build_rules)
     end
 end
 
@@ -264,12 +265,11 @@ function Rule:each()
 end
 
 function P.load()
-    local packages = {}
     local Source = require 'Source'
 
     for filename in each(import_paths('rules.lua')) do
         for rule in each(loadall(filename)) do
-            add_package(rule, packages)
+            add_package(rule)
         end
     end
 
@@ -281,11 +281,11 @@ function P.load()
 end
 
 function P.merge(rules)
-    local packages = {}
+    local list = {}
 
     for _, rule in pairs(rules) do
         local name = assert(rule.name)
-        local pkg = packages[name]
+        local pkg = list[name]
         if pkg then
             for target in rule:each() do
                 pkg:add_target(target)
@@ -296,11 +296,11 @@ function P.merge(rules)
                 table.merge(pkg.source, rule.source)
             end
         else
-            packages[name] = rule
+            list[name] = rule
         end
     end
 
-    return packages
+    return list
 end
 
 return P
