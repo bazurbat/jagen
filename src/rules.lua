@@ -139,27 +139,10 @@ end
 
 function Rule:add_stages(rule)
     local template = rule.template or {}
-    local config = self.config or template.config
 
     for i, stage in ipairs(rule) do
-        local tc = not stage.shared and self.config
-        local target = Target:parse(stage, self.name, tc)
-
-        for _, item in ipairs(stage.requires or {}) do
-            local config, name = config
-            if type(item) == 'string' then
-                name = item
-            else
-                name   = item[1]
-                config = item[2] or config
-            end
-
-            target:append(Target:required(name, config))
-            add_package(Rule:new({ name = name, config = config }, template))
-        end
-
-        self:add_target(target)
-
+        self:add_stage(stage, template)
+ 
         rule[i] = nil
     end
 end
@@ -199,6 +182,27 @@ function Rule:add_target(target)
     end
 
     return self
+end
+
+function Rule:add_stage(stage, template)
+    local config = self.config or template.config
+    local tc = not stage.shared and self.config
+    local target = Target:parse(stage, self.name, tc)
+
+    for _, item in ipairs(stage.requires or {}) do
+        local config, name = config
+        if type(item) == 'string' then
+            name = item
+        else
+            name   = item[1]
+            config = item[2] or config
+        end
+
+        target:append(Target:required(name, config))
+        add_package(Rule:new({ name = name, config = config }, template))
+    end
+
+    self:add_target(target)
 end
 
 function Rule:add_build_stages()
