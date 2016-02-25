@@ -282,7 +282,7 @@ local function find_targets(packages, arg)
     local packages = target.name and { packages[target.name] } or packages
 
     for _, pkg in pairs(packages) do
-        for _, stage in ipairs(pkg.stages) do
+        for stage in pkg:each() do
             if match_target(target, stage) then
                 table.insert(targets, stage)
             end
