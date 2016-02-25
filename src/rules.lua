@@ -53,35 +53,55 @@ local function loadall(filename)
 end
 
 local function add_package(rule)
-    local key = tostring(rule)
+    local key = rule.name
     local pkg = packages[key]
 
     if not pkg then
         pkg = Rule:new_package { rule.name }
-
-        table.merge(pkg, rule)
-
-        if pkg.build and pkg.config then
-            pkg:add_build_stages()
-        end
-
-        pkg:add_stages(pkg)
-
-        if pkg.source and pkg.source.type == 'repo' then
-            pkg:add_stage({ 'unpack', requires = { { 'repo', 'host' } } })
-        end
-
         packages[key] = pkg
-    else
-        table.merge(pkg, rule)
+    end
 
-        if pkg.build and pkg.config then
-            pkg:add_build_stages()
-            pkg:add_stages(pkg)
+    local stages = pkg:get_stages(rule)
+    local config = rule.config
+
+    pkg:merge(rule)
+
+    local source = pkg.source
+    local build  = pkg.build
+
+    if source and source.type == 'repo' then
+        pkg:add_stage({ 'unpack', requires = { { 'repo', 'host' } } }, nil, config)
+    end
+
+    if build and config then
+        if pkg.requires then
+            table.insert(pkg, { 'configure', requires = pkg.requires })
+        end
+
+        if build.type == 'GNU' then
+            if build.generate or build.autoreconf then
+                pkg:add_stage({ 'autoreconf', shared = true,
+                        requires = { { 'libtool', 'host' } }
+                    }, nil, config)
+            end
+        end
+
+        if build.type then
+            pkg:add_stage({ 'configure',
+                    requires = { 'toolchain' }
+                }, nil, config)
+            pkg:add_stage({ 'compile' }, nil, config)
+            pkg:add_stage({ 'install' }, nil, config)
         end
     end
 
-    pkg:add_stages(rule)
+    for i, stage in ipairs(pkg) do
+        pkg:add_stage(stage, pkg.template, config)
+    end
+
+    for _, stage in ipairs(stages) do
+        pkg:add_stage(stage, pkg.template, config)
+    end
 end
 
 function Rule:__tostring()
@@ -134,14 +154,22 @@ function Rule:new_package(rule)
     return pkg
 end
 
-function Rule:add_stages(rule)
-    local template = rule.template or {}
-
-    for i, stage in ipairs(rule) do
-        self:add_stage(stage, template)
- 
+function Rule:get_stages(rule)
+    local o = {}
+    for i, v in ipairs(rule) do
+        table.insert(o, v)
         rule[i] = nil
     end
+    return o
+end
+
+function Rule:merge(rule)
+    -- do not append the same template again and again, just replace it
+    if rule.template then
+        self.template = nil
+    end
+    table.merge(self, rule)
+    return self
 end
 
 function Rule:add_target(target)
@@ -181,8 +209,8 @@ function Rule:add_target(target)
     return self
 end
 
-function Rule:add_stage(stage, template)
-    local config = self.config or template and template.config
+function Rule:add_stage(stage, template, config)
+    local config = config or self.config or template and template.config
     local tc = not stage.shared and self.config
     local target = Target:parse(stage, self.name, tc)
 
@@ -200,35 +228,6 @@ function Rule:add_stage(stage, template)
     end
 
     self:add_target(target)
-end
-
-function Rule:add_build_stages()
-    local build = self.build
-    local stages = {}
-
-    if self.requires then
-        table.insert(self, { 'configure', requires = self.requires })
-    end
-
-    if build.type == 'GNU' then
-        if build.generate or build.autoreconf then
-            local autoreconf = { 'autoreconf', shared = true,
-                requires = { { 'libtool', 'host' } }
-            }
-
-            table.insert(stages, autoreconf)
-        end
-    end
-
-    if build.type then
-        table.insert(stages, { 'configure', requires = { 'toolchain' } })
-        table.insert(stages, { 'compile' })
-        table.insert(stages, { 'install' })
-    end
-
-    for stage in each(stages) do
-        self:add_stage(stage)
-    end
 end
 
 function Rule:add_ordering_dependencies()
@@ -281,24 +280,24 @@ function P.load()
 end
 
 function P.merge(rules)
-    local list = {}
+    local list = rules
 
-    for _, rule in pairs(rules) do
-        local name = assert(rule.name)
-        local pkg = list[name]
-        if pkg then
-            for target in rule:each() do
-                pkg:add_target(target)
-            end
-            -- FIXME: really need to sanitize rule handling to get rid of merge
-            -- step
-            if pkg.source and rule.source then
-                table.merge(pkg.source, rule.source)
-            end
-        else
-            list[name] = rule
-        end
-    end
+    -- for _, rule in pairs(rules) do
+    --     local name = assert(rule.name)
+    --     local pkg = list[name]
+    --     if pkg then
+    --         for target in rule:each() do
+    --             pkg:add_target(target)
+    --         end
+    --         -- FIXME: really need to sanitize rule handling to get rid of merge
+    --         -- step
+    --         if pkg.source and rule.source then
+    --             table.merge(pkg.source, rule.source)
+    --         end
+    --     else
+    --         list[name] = rule
+    --     end
+    -- end
 
     return list
 end
