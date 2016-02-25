@@ -185,7 +185,7 @@ function Rule:add_target(target)
 end
 
 function Rule:add_stage(stage, template)
-    local config = self.config or template.config
+    local config = self.config or template and template.config
     local tc = not stage.shared and self.config
     local target = Target:parse(stage, self.name, tc)
 
