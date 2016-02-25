@@ -247,8 +247,6 @@ function jagen.command.refresh()
         script:write(script:get(pkg), tostring(pkg))
     end
 
-    packages = rules.merge(packages)
-
     for _, pkg in pairs(packages) do
         pkg:add_ordering_dependencies()
         script:write(script:get_shared(pkg), pkg.name)
@@ -297,7 +295,7 @@ local function find_targets(packages, arg)
 end
 
 function jagen.command.build(options, rest)
-    local packages = rules.merge(rules.load())
+    local packages = rules.load()
 
     for _, arg in ipairs(rest) do
         for _, target in ipairs(find_targets(packages, arg)) do
@@ -310,7 +308,7 @@ function jagen.command.build(options, rest)
 end
 
 function jagen.command.rebuild(options, rest)
-    local packages = rules.merge(rules.load())
+    local packages = rules.load()
 
     for _, arg in ipairs(rest) do
         for _, target in ipairs(find_targets(packages, arg)) do
@@ -327,7 +325,7 @@ function jagen.command.status()
 end
 
 local function scm_packages(names)
-    local packages = rules.merge(rules.load())
+    local packages = rules.load()
     local o = {}
 
     if names and #names > 0 then

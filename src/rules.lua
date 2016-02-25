@@ -279,27 +279,4 @@ function P.load()
     return packages
 end
 
-function P.merge(rules)
-    local list = rules
-
-    -- for _, rule in pairs(rules) do
-    --     local name = assert(rule.name)
-    --     local pkg = list[name]
-    --     if pkg then
-    --         for target in rule:each() do
-    --             pkg:add_target(target)
-    --         end
-    --         -- FIXME: really need to sanitize rule handling to get rid of merge
-    --         -- step
-    --         if pkg.source and rule.source then
-    --             table.merge(pkg.source, rule.source)
-    --         end
-    --     else
-    --         list[name] = rule
-    --     end
-    -- end
-
-    return list
-end
-
 return P
