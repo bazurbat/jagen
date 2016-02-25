@@ -207,6 +207,7 @@ end
 
 function Rule:add_build_stages()
     local build = self.build
+    local stages = {}
 
     if self.requires then
         table.insert(self, { 'configure', requires = self.requires })
@@ -214,24 +215,22 @@ function Rule:add_build_stages()
 
     if build.type == 'GNU' then
         if build.generate or build.autoreconf then
-            local autoreconf = {
-                { 'autoreconf', shared = true,
-                    requires = { { 'libtool', 'host' } }
-                }
+            local autoreconf = { 'autoreconf', shared = true,
+                requires = { { 'libtool', 'host' } }
             }
 
-            self:add_stages(autoreconf)
+            table.insert(stages, autoreconf)
         end
     end
 
     if build.type then
-        local build_rules = {
-            { 'configure', requires = { 'toolchain' } },
-            { 'compile' },
-            { 'install' }
-        }
+        table.insert(stages, { 'configure', requires = { 'toolchain' } })
+        table.insert(stages, { 'compile' })
+        table.insert(stages, { 'install' })
+    end
 
-        self:add_stages(build_rules)
+    for stage in each(stages) do
+        self:add_stage(stage)
     end
 end
 
