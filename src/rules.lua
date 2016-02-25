@@ -68,10 +68,7 @@ local function add_package(rule)
         pkg:add_stages(pkg)
 
         if pkg.source and pkg.source.type == 'repo' then
-            local unpack = {
-                { 'unpack', requires = { { 'repo', 'host' } } }
-            }
-            pkg:add_stages(unpack)
+            pkg:add_stage({ 'unpack', requires = { { 'repo', 'host' } } })
         end
 
         packages[key] = pkg
