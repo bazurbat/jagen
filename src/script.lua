@@ -2,16 +2,6 @@ local system = require 'system'
 
 local P = {}
 
-function P:write(script, name)
-    if script and #script > 0 then
-        local filename = system.mkpath(
-            jagen.include_dir, string.format("%s.sh", name))
-        local file = assert(io.open(filename, 'w+'))
-        file:write(table.concat(script, '\n'))
-        file:close()
-    end
-end
-
 function P:get_shared(pkg)
     local o = {}
     local function w(format, ...)
@@ -56,13 +46,13 @@ function P:get_shared(pkg)
     return o
 end
 
-function P:get(pkg)
+function P:get(pkg, config)
     local o = {}
     local function w(format, ...)
         table.insert(o, string.format(format, ...))
     end
 
-    local env = pkg.env or { pkg.config }
+    local env = pkg.env or { config }
     for _, e in ipairs(env or {}) do
         w('use_env %s || return', e)
     end
@@ -114,6 +104,32 @@ function P:get(pkg)
     end
 
     return o
+end
+
+function P:_write(script, filename)
+    if script and #script > 0 then
+        local file = assert(io.open(filename, 'w+'))
+        file:write(table.concat(script, '\n'))
+        file:close()
+    end
+end
+
+function P:write(pkg, dir)
+    local name = pkg.name
+    local s = system.mkpath(dir, string.format('%s.sh', name))
+    P:_write(P:get_shared(pkg), s)
+
+    if pkg.configs then
+        for name, config in pairs(pkg.configs) do
+            local filename = string.format('%s__%s.sh', pkg.name, name)
+            local path = system.mkpath(dir, filename)
+            P:_write(P:get(pkg, name), path)
+        end
+    else
+        local filename = string.format('%s__.sh', pkg.name)
+        local path = system.mkpath(dir, filename)
+        P:_write(P:get(pkg), path)
+    end
 end
 
 return P

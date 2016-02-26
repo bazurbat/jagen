@@ -241,15 +241,13 @@ function jagen.command.refresh()
 
     local packages = rules.load()
     local script = require 'script'
+    local include_dir = assert(os.getenv('jagen_include_dir'))
     local log_dir = assert(os.getenv('jagen_log_dir'))
 
     for _, pkg in pairs(packages) do
-        script:write(script:get(pkg), tostring(pkg))
-    end
-
-    for _, pkg in pairs(packages) do
         pkg:add_ordering_dependencies()
-        script:write(script:get_shared(pkg), pkg.name)
+
+        script:write(pkg, include_dir)
 
         -- create/truncate all log files beforehand to allow tail following
         -- them on interactive rebuild
