@@ -55,48 +55,66 @@ end
 local function add_package(rule)
     local key = rule.name
     local pkg = packages[key]
+    local config = rule.config
+
+    local stages = {}
+    local pkg_stages = {}
+    local build_stages = {}
+    local rule_stages = rule:collect_stages()
 
     if not pkg then
         pkg = Rule:new_package { rule.name }
         packages[key] = pkg
     end
 
-    local stages = pkg:get_stages(rule)
-    local config = rule.config
-
     pkg:merge(rule)
 
     local source = pkg.source
-    local build  = pkg.build
 
     if source and source.type == 'repo' then
-        pkg:add_stage({ 'unpack', requires = { { 'repo', 'host' } } }, nil, config)
+        local unpack = { 'unpack', requires = { { 'repo', 'host' } } }
+        table.insert(stages, unpack)
     end
 
-    if build and config then
+    local build  = pkg.build
+
+    if build and config and not pkg:has_config(config) then
+
         if pkg.requires then
-            table.insert(pkg, { 'configure', requires = pkg.requires })
+            -- print(pkg.name, pkg.config, config)
+            append(pkg, { 'configure', requires = pkg.requires })
         end
 
         if build.type == 'GNU' then
             if build.generate or build.autoreconf then
-                pkg:add_stage({ 'autoreconf', shared = true,
+                append(build_stages, { 'autoreconf', shared = true,
                         requires = { { 'libtool', 'host' } }
-                    }, nil, config)
+                    })
             end
         end
 
         if build.type then
-            pkg:add_stage({ 'configure',
+            append(build_stages, { 'configure',
                     requires = { 'toolchain' }
-                }, nil, config)
-            pkg:add_stage({ 'compile' }, nil, config)
-            pkg:add_stage({ 'install' }, nil, config)
+                })
+            append(build_stages, { 'compile' })
+            append(build_stages, { 'install' })
         end
+
     end
+
+    append(stages, unpack(rule_stages))
 
     for i, stage in ipairs(pkg) do
         pkg:add_stage(stage, pkg.template, config)
+    end
+
+    for i, stage in ipairs(pkg_stages) do
+        pkg:add_stage(stage, pkg.template, config)
+    end
+
+    for i, stage in ipairs(build_stages) do
+        pkg:add_stage(stage)
     end
 
     for _, stage in ipairs(stages) do
@@ -154,11 +172,11 @@ function Rule:new_package(rule)
     return pkg
 end
 
-function Rule:get_stages(rule)
+function Rule:collect_stages()
     local o = {}
-    for i, v in ipairs(rule) do
+    for i, v in ipairs(self) do
         table.insert(o, v)
-        rule[i] = nil
+        self[i] = nil
     end
     return o
 end
@@ -170,6 +188,19 @@ function Rule:merge(rule)
     end
     table.merge(self, rule)
     return self
+end
+
+function Rule:has_config(name)
+    return self.configs and self.configs[name]
+end
+
+function Rule:add_config(name)
+    if not self.configs then
+        self.configs = {}
+    end
+    if not self.configs[name] then
+        self.configs[name] = {}
+    end
 end
 
 function Rule:add_target(target)
@@ -213,6 +244,8 @@ function Rule:add_stage(stage, template, config)
     local config = config or self.config or template and template.config
     local tc = not stage.shared and self.config
     local target = Target:parse(stage, self.name, tc)
+
+    -- print(self.name, self.config, config)
 
     for _, item in ipairs(stage.requires or {}) do
         local config, name = config
