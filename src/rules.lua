@@ -206,9 +206,6 @@ function Rule:add_package(rule)
     local pkg = packages[key]
     local config = rule.config
 
-    local stages = {}
-    local pkg_stages = {}
-    local build_stages = {}
     local rule_stages = rule:collect_stages()
 
     jagen.debug2('%s+ %s %s', P.indent(),
@@ -225,7 +222,7 @@ function Rule:add_package(rule)
 
     if source and source.type == 'repo' then
         local unpack = { 'unpack', requires = { { 'repo', 'host' } } }
-        table.insert(stages, unpack)
+        pkg:add_stage(unpack)
     end
 
     local build  = pkg.build
@@ -234,26 +231,30 @@ function Rule:add_package(rule)
         pkg:add_config(config)
 
         if pkg.requires then
-            -- print(pkg.name, pkg.config, config)
             append(pkg, { 'configure', requires = pkg.requires })
         end
 
         if build.type == 'GNU' then
             if build.generate or build.autoreconf then
-                append(build_stages, { 'autoreconf', shared = true,
-                        requires = { { 'libtool', 'host' } }
-                    })
+                local autoreconf = { 'autoreconf', shared = true,
+                    requires = { { 'libtool', 'host' } }
+                }
+                pkg:add_stage(autoreconf)
             end
         end
 
         if build.type then
-            append(build_stages, { 'configure',
+            local build_stages = {
+                { 'configure',
                     requires = { 'toolchain' }
-                })
-            append(build_stages, { 'compile' })
-            append(build_stages, { 'install' })
+                },
+                { 'compile' },
+                { 'install' }
+            }
+            for i, stage in ipairs(build_stages) do
+                pkg:add_stage(stage)
+            end
         end
-
     end
 
     if pkg.install then
@@ -261,21 +262,11 @@ function Rule:add_package(rule)
         pkg.install = nil
     end
 
-    append(stages, unpack(rule_stages))
-
     for i, stage in ipairs(pkg) do
         pkg:add_stage(stage, pkg.template, config)
     end
 
-    for i, stage in ipairs(pkg_stages) do
-        pkg:add_stage(stage, pkg.template, config)
-    end
-
-    for i, stage in ipairs(build_stages) do
-        pkg:add_stage(stage)
-    end
-
-    for _, stage in ipairs(stages) do
+    for _, stage in ipairs(rule_stages) do
         pkg:add_stage(stage, pkg.template, config)
     end
 end
