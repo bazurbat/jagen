@@ -59,8 +59,8 @@ function P:get(pkg, config)
 
     -- put install variables before build to allow referencing them from
     -- configure options
-    if pkg.install then
-        local i = pkg.install
+    if config and pkg.configs[config] and pkg.configs[config].install then
+        local i = pkg.configs[config].install
         if i.root then
             w('pkg_sysroot="%s"', i.root)
         end

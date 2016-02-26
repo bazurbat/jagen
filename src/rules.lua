@@ -79,6 +79,7 @@ local function add_package(rule)
     local build  = pkg.build
 
     if build and config and not pkg:has_config(config) then
+        pkg:add_config(config)
 
         if pkg.requires then
             -- print(pkg.name, pkg.config, config)
@@ -101,6 +102,11 @@ local function add_package(rule)
             append(build_stages, { 'install' })
         end
 
+    end
+
+    if pkg.install then
+        pkg.configs[config].install = pkg.install
+        pkg.install = nil
     end
 
     append(stages, unpack(rule_stages))
