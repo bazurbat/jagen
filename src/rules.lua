@@ -5,6 +5,11 @@ local system = require 'system'
 local mkpath = system.mkpath
 
 local P = {}
+P.level = 0
+
+function P.indent()
+    return string.rep('  ', P.level)
+end
 
 local Rule = {
     init_stages = { 'unpack', 'patch' }
@@ -175,7 +180,8 @@ function Rule:add_stage(stage, template, config)
     local tc = not stage.shared and self.config
     local target = Target:parse(stage, self.name, tc)
 
-    -- print(self.name, self.config, config)
+    jagen.debug2('%s| %s', P.indent(),
+        Target.__tostring(target, ':'))
 
     for _, item in ipairs(stage.requires or {}) do
         local config, name = config
@@ -187,7 +193,9 @@ function Rule:add_stage(stage, template, config)
         end
 
         target:append(Target:required(name, config))
+        P.level = P.level + 1
         Rule:add_package(Rule:new({ name = name, config = config }, template))
+        P.level = P.level - 1
     end
 
     self:add_target(target)
@@ -202,6 +210,9 @@ function Rule:add_package(rule)
     local pkg_stages = {}
     local build_stages = {}
     local rule_stages = rule:collect_stages()
+
+    jagen.debug2('%s+ %s %s', P.indent(),
+        rule.name, rule.config or '')
 
     if not pkg then
         pkg = Rule:new_package { rule.name }
