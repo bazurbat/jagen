@@ -52,82 +52,6 @@ local function loadall(filename)
     return o
 end
 
-local function add_package(rule)
-    local key = rule.name
-    local pkg = packages[key]
-    local config = rule.config
-
-    local stages = {}
-    local pkg_stages = {}
-    local build_stages = {}
-    local rule_stages = rule:collect_stages()
-
-    if not pkg then
-        pkg = Rule:new_package { rule.name }
-        packages[key] = pkg
-    end
-
-    pkg:merge(rule)
-
-    local source = pkg.source
-
-    if source and source.type == 'repo' then
-        local unpack = { 'unpack', requires = { { 'repo', 'host' } } }
-        table.insert(stages, unpack)
-    end
-
-    local build  = pkg.build
-
-    if build and config and not pkg:has_config(config) then
-        pkg:add_config(config)
-
-        if pkg.requires then
-            -- print(pkg.name, pkg.config, config)
-            append(pkg, { 'configure', requires = pkg.requires })
-        end
-
-        if build.type == 'GNU' then
-            if build.generate or build.autoreconf then
-                append(build_stages, { 'autoreconf', shared = true,
-                        requires = { { 'libtool', 'host' } }
-                    })
-            end
-        end
-
-        if build.type then
-            append(build_stages, { 'configure',
-                    requires = { 'toolchain' }
-                })
-            append(build_stages, { 'compile' })
-            append(build_stages, { 'install' })
-        end
-
-    end
-
-    if pkg.install then
-        pkg.configs[config].install = pkg.install
-        pkg.install = nil
-    end
-
-    append(stages, unpack(rule_stages))
-
-    for i, stage in ipairs(pkg) do
-        pkg:add_stage(stage, pkg.template, config)
-    end
-
-    for i, stage in ipairs(pkg_stages) do
-        pkg:add_stage(stage, pkg.template, config)
-    end
-
-    for i, stage in ipairs(build_stages) do
-        pkg:add_stage(stage)
-    end
-
-    for _, stage in ipairs(stages) do
-        pkg:add_stage(stage, pkg.template, config)
-    end
-end
-
 function Rule:__tostring()
     return string.format('%s__%s', self.name or '', self.config or '')
 end
@@ -263,11 +187,88 @@ function Rule:add_stage(stage, template, config)
         end
 
         target:append(Target:required(name, config))
-        add_package(Rule:new({ name = name, config = config }, template))
+        Rule:add_package(Rule:new({ name = name, config = config }, template))
     end
 
     self:add_target(target)
 end
+
+function Rule:add_package(rule)
+    local key = rule.name
+    local pkg = packages[key]
+    local config = rule.config
+
+    local stages = {}
+    local pkg_stages = {}
+    local build_stages = {}
+    local rule_stages = rule:collect_stages()
+
+    if not pkg then
+        pkg = Rule:new_package { rule.name }
+        packages[key] = pkg
+    end
+
+    pkg:merge(rule)
+
+    local source = pkg.source
+
+    if source and source.type == 'repo' then
+        local unpack = { 'unpack', requires = { { 'repo', 'host' } } }
+        table.insert(stages, unpack)
+    end
+
+    local build  = pkg.build
+
+    if build and config and not pkg:has_config(config) then
+        pkg:add_config(config)
+
+        if pkg.requires then
+            -- print(pkg.name, pkg.config, config)
+            append(pkg, { 'configure', requires = pkg.requires })
+        end
+
+        if build.type == 'GNU' then
+            if build.generate or build.autoreconf then
+                append(build_stages, { 'autoreconf', shared = true,
+                        requires = { { 'libtool', 'host' } }
+                    })
+            end
+        end
+
+        if build.type then
+            append(build_stages, { 'configure',
+                    requires = { 'toolchain' }
+                })
+            append(build_stages, { 'compile' })
+            append(build_stages, { 'install' })
+        end
+
+    end
+
+    if pkg.install then
+        pkg.configs[config].install = pkg.install
+        pkg.install = nil
+    end
+
+    append(stages, unpack(rule_stages))
+
+    for i, stage in ipairs(pkg) do
+        pkg:add_stage(stage, pkg.template, config)
+    end
+
+    for i, stage in ipairs(pkg_stages) do
+        pkg:add_stage(stage, pkg.template, config)
+    end
+
+    for i, stage in ipairs(build_stages) do
+        pkg:add_stage(stage)
+    end
+
+    for _, stage in ipairs(stages) do
+        pkg:add_stage(stage, pkg.template, config)
+    end
+end
+
 
 function Rule:add_ordering_dependencies()
     local prev, common
@@ -307,7 +308,7 @@ function P.load()
 
     for filename in each(import_paths('rules.lua')) do
         for rule in each(loadall(filename)) do
-            add_package(rule)
+            Rule:add_package(rule)
         end
     end
 
