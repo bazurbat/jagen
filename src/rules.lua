@@ -107,15 +107,6 @@ function Rule:new_package(rule)
     return pkg
 end
 
-function Rule:collect_stages()
-    local o = {}
-    for i, v in ipairs(self) do
-        table.insert(o, v)
-        self[i] = nil
-    end
-    return o
-end
-
 function Rule:merge(rule)
     -- do not append the same template again and again, just replace it
     if rule.template then
@@ -219,8 +210,6 @@ function Rule:add_package(rule)
     local pkg = packages[key]
     local config = rule.config
 
-    local rule_stages = rule:collect_stages()
-
     jagen.debug2('%s+ %s %s', P.indent(),
         rule.name, rule.config or '')
 
@@ -228,6 +217,8 @@ function Rule:add_package(rule)
         pkg = Rule:new_package { rule.name }
         packages[key] = pkg
     end
+
+    local stages = table.imove(rule, {})
 
     pkg:merge(rule)
 
@@ -284,10 +275,10 @@ function Rule:add_package(rule)
 
     pkg:add_stages(pkg)
 
-    rule_stages.template = pkg.template
-    rule_stages.config = config
+    stages.template = pkg.template
+    stages.config = config
 
-    pkg:add_stages(rule_stages)
+    pkg:add_stages(stages)
 end
 
 function Rule:add_ordering_dependencies()

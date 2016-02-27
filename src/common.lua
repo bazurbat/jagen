@@ -92,6 +92,14 @@ function table.merge(a, b)
     return a
 end
 
+function table.imove(from, to)
+    for i, v in ipairs(from) do
+        table.insert(to, v)
+        from[i] = nil
+    end
+    return to
+end
+
 function table.dump(t, i)
     local i = i or 0
     if type(t) ~= 'table' then
