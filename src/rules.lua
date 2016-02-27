@@ -166,15 +166,15 @@ function Rule:add_target(target)
     return self
 end
 
-function Rule:add_stages(rule)
-    local template = rule.template
-    local config = rule.config
+function Rule:add_stages(stages)
+    local config = stages.config
+    local template = stages.template
 
     if not config and template then
         config = template.config
     end
 
-    for stage in each(rule) do
+    for stage in each(stages) do
         local target_config = not stage.shared and self.config
         local target = Target:parse(stage, self.name, target_config)
 
@@ -206,79 +206,83 @@ function Rule:add_stages(rule)
 end
 
 function Rule:add_package(rule)
-    local key = rule.name
-    local pkg = packages[key]
-    local config = rule.config
+    jagen.debug2('%s+ %s %s', P.indent(), rule.name, rule.config or '')
 
-    jagen.debug2('%s+ %s %s', P.indent(),
-        rule.name, rule.config or '')
+    local pkg = packages[rule.name]
 
     if not pkg then
         pkg = Rule:new_package { rule.name }
-        packages[key] = pkg
+        packages[rule.name] = pkg
     end
 
     local stages = table.imove(rule, {})
 
     pkg:merge(rule)
 
-    local source = pkg.source
-
-    if source and source.type == 'repo' then
-        local unpack = {
-            { 'unpack',
-                requires = { { 'repo', 'host' } }
+    do local source = pkg.source
+        if source and source.type == 'repo' then
+            pkg:add_stages {
+                { 'unpack',
+                    requires = { { 'repo', 'host' } }
+                }
             }
-        }
-        pkg:add_stages(unpack)
+        end
     end
 
-    local build  = pkg.build
+    do local build = pkg.build
+        if build and rule.config and not pkg:has_config(rule.config) then
+            pkg:add_config(rule.config)
 
-    if build and config and not pkg:has_config(config) then
-        pkg:add_config(config)
-
-        if pkg.requires then
-            local configure = { 'configure', requires = pkg.requires }
-            append(pkg, configure)
-        end
-
-        if build.type == 'GNU' then
-            if build.generate or build.autoreconf then
-                local autoreconf = {
-                    { 'autoreconf', shared = true,
-                        requires = { { 'libtool', 'host' } }
+            if build.type == 'GNU' then
+                if build.generate or build.autoreconf then
+                    pkg:add_stages {
+                        { 'autoreconf', shared = true,
+                            requires = { { 'libtool', 'host' } }
+                        }
                     }
+                end
+            end
+
+            if build.type then
+                pkg:add_stages {
+                    config = rule.config,
+                    template = rule.template,
+                    { 'configure',
+                        requires = { 'toolchain' }
+                    },
+                    { 'compile' },
+                    { 'install' }
                 }
-                pkg:add_stages(autoreconf)
             end
         end
-
-        if build.type then
-            local build_stages = {
-                config = config,
-                { 'configure',
-                    requires = { 'toolchain' }
-                },
-                { 'compile' },
-                { 'install' }
-            }
-
-            pkg:add_stages(build_stages)
-        end
     end
 
-    if pkg.install then
-        pkg.configs[config].install = pkg.install
-        pkg.install = nil
-    end
-
+    -- add global stages specified in pkg file regardless of config or build
     pkg:add_stages(pkg)
 
-    stages.template = pkg.template
-    stages.config = config
+    -- evaluate requires for every add to collect rules from all templates
+    if pkg.requires then
+        pkg:add_stages {
+            config = rule.config,
+            template = rule.template,
+            { 'configure',
+                requires = pkg.requires
+            }
+        }
+    end
 
-    pkg:add_stages(stages)
+    -- TODO: find a way to distinguish this kind or rule without adding a flag
+    if rule.name ~= 'toolchain' then
+        if pkg.install then
+            pkg.configs[rule.config].install = pkg.install
+            pkg.install = nil
+        end
+
+        stages.config = rule.config
+        stages.template = pkg.template
+
+        pkg:add_stages(stages)
+    end
 end
 
 function Rule:add_ordering_dependencies()
