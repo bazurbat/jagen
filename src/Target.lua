@@ -75,10 +75,6 @@ function Target:add_inputs(target)
     return self
 end
 
-function Target:required(name, config)
-    return Target:new(name, 'install', config)
-end
-
 function Target:append(input)
     self.inputs = self.inputs or {}
     append(self.inputs, input)

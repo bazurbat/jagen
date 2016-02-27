@@ -175,30 +175,43 @@ function Rule:add_target(target)
     return self
 end
 
-function Rule:add_stage(stage, template, config)
-    local config = config or self.config or template and template.config
-    local tc = not stage.shared and self.config
-    local target = Target:parse(stage, self.name, tc)
+function Rule:add_stages(rule)
+    local template = rule.template
+    local config = rule.config
 
-    jagen.debug2('%s| %s', P.indent(),
-        Target.__tostring(target, ':'))
-
-    for _, item in ipairs(stage.requires or {}) do
-        local config, name = config
-        if type(item) == 'string' then
-            name = item
-        else
-            name   = item[1]
-            config = item[2] or config
-        end
-
-        target:append(Target:required(name, config))
-        P.level = P.level + 1
-        Rule:add_package(Rule:new({ name = name, config = config }, template))
-        P.level = P.level - 1
+    if not config and template then
+        config = template.config
     end
 
-    self:add_target(target)
+    for stage in each(rule) do
+        local target_config = not stage.shared and self.config
+        local target = Target:parse(stage, self.name, target_config)
+
+        jagen.debug2('%s| %s', P.indent(),
+            Target.__tostring(target, ':'))
+
+        for item in each(stage.requires or {}) do
+            local name, config = nil, config
+
+            if type(item) == 'string' then
+                name = item
+            else
+                name   = item[1]
+                config = item[2] or config
+            end
+
+            target:append(Target:new(name, 'install', config))
+
+            P.level = P.level + 1
+            Rule:add_package(Rule:new({ name = name, config = config }, template))
+            P.level = P.level - 1
+
+        end
+
+        self:add_target(target)
+    end
+
+    return self
 end
 
 function Rule:add_package(rule)
@@ -221,8 +234,12 @@ function Rule:add_package(rule)
     local source = pkg.source
 
     if source and source.type == 'repo' then
-        local unpack = { 'unpack', requires = { { 'repo', 'host' } } }
-        pkg:add_stage(unpack)
+        local unpack = {
+            { 'unpack',
+                requires = { { 'repo', 'host' } }
+            }
+        }
+        pkg:add_stages(unpack)
     end
 
     local build  = pkg.build
@@ -231,29 +248,32 @@ function Rule:add_package(rule)
         pkg:add_config(config)
 
         if pkg.requires then
-            append(pkg, { 'configure', requires = pkg.requires })
+            local configure = { 'configure', requires = pkg.requires }
+            append(pkg, configure)
         end
 
         if build.type == 'GNU' then
             if build.generate or build.autoreconf then
-                local autoreconf = { 'autoreconf', shared = true,
-                    requires = { { 'libtool', 'host' } }
+                local autoreconf = {
+                    { 'autoreconf', shared = true,
+                        requires = { { 'libtool', 'host' } }
+                    }
                 }
-                pkg:add_stage(autoreconf)
+                pkg:add_stages(autoreconf)
             end
         end
 
         if build.type then
             local build_stages = {
+                config = config,
                 { 'configure',
                     requires = { 'toolchain' }
                 },
                 { 'compile' },
                 { 'install' }
             }
-            for i, stage in ipairs(build_stages) do
-                pkg:add_stage(stage)
-            end
+
+            pkg:add_stages(build_stages)
         end
     end
 
@@ -262,15 +282,13 @@ function Rule:add_package(rule)
         pkg.install = nil
     end
 
-    for i, stage in ipairs(pkg) do
-        pkg:add_stage(stage, pkg.template, config)
-    end
+    pkg:add_stages(pkg)
 
-    for _, stage in ipairs(rule_stages) do
-        pkg:add_stage(stage, pkg.template, config)
-    end
+    rule_stages.template = pkg.template
+    rule_stages.config = config
+
+    pkg:add_stages(rule_stages)
 end
-
 
 function Rule:add_ordering_dependencies()
     local prev, common
