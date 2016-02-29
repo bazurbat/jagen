@@ -28,8 +28,13 @@ local function import_paths(filename)
     return o
 end
 
-local function loadsingle(filename)
+function Rule:__tostring()
+    return string.format('%s__%s', self.name or '', self.config or '')
+end
+
+function Rule:loadsingle(filename)
     local o, env = {}, {}
+    setmetatable(env, { __index = _G })
     function env.package(rule)
         o = rule
     end
@@ -41,11 +46,9 @@ local function loadsingle(filename)
     return o
 end
 
-local function loadall(filename)
-    local o, env = {}, {
-        table = table,
-        jagen = jagen
-    }
+function Rule:loadall(filename)
+    local o, env = {}, {}
+    setmetatable(env, { __index = _G })
     function env.package(rule, template)
         table.insert(o, Rule:new(rule, template))
     end
@@ -55,10 +58,6 @@ local function loadall(filename)
         chunk()
     end
     return o
-end
-
-function Rule:__tostring()
-    return string.format('%s__%s', self.name or '', self.config or '')
 end
 
 function Rule:parse(rule)
@@ -101,7 +100,7 @@ function Rule:new_package(rule)
     end
 
     for filename in each(import_paths('pkg/'..name..'.lua')) do
-        table.merge(pkg, Rule:new(loadsingle(filename)))
+        table.merge(pkg, Rule:new(Rule:loadsingle(filename)))
     end
 
     return pkg
@@ -322,7 +321,7 @@ function P.load()
     local Source = require 'Source'
 
     for filename in each(import_paths('rules.lua')) do
-        for rule in each(loadall(filename)) do
+        for rule in each(Rule:loadall(filename)) do
             Rule:add_package(rule)
         end
     end
