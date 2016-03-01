@@ -77,16 +77,9 @@ end
 
 function Rule:new(rule, template)
     rule = Rule:parse(rule)
-    local new
-    if template then
-        new = Rule:parse(copy(template))
-        table.merge(new, rule)
-        new.template = template
-    else
-        new = rule
-    end
-    setmetatable(new, self)
-    return new
+    rule._template = template
+    setmetatable(rule, self)
+    return rule
 end
 
 function Rule:new_package(rule)
@@ -205,13 +198,20 @@ function Rule:add_stages(stages)
 end
 
 function Rule:add_package(rule)
-    jagen.debug2('%s+ %s %s', P.indent(), rule.name, rule.config or '')
+    jagen.debug2('%s+ %s', P.indent(), rule.name)
 
     local pkg = packages[rule.name]
 
     if not pkg then
         pkg = Rule:new_package { rule.name }
         packages[rule.name] = pkg
+    end
+
+    local template = rule._template
+
+    if template then
+        rule = table.merge(copy(template), rule)
+        rule.template = template
     end
 
     local stages = table.imove(rule, {})
