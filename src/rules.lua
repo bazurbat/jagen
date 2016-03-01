@@ -207,11 +207,15 @@ function Rule:add_package(rule)
         packages[rule.name] = pkg
     end
 
-    local template = rule._template
+    local final = pkg.final
 
-    if template then
-        rule = table.merge(copy(template), rule)
-        rule.template = template
+    if not final then
+        local template = rule._template
+
+        if template then
+            rule = table.merge(copy(template), rule)
+            rule.template = template
+        end
     end
 
     local config = rule.config
@@ -277,11 +281,9 @@ function Rule:add_package(rule)
         }
     end
 
-    -- TODO: find a way to distinguish this kind or rule without adding a flag
-    if rule.name ~= 'toolchain' then
+    if not pkg.final then
         stages.config = config
         stages.template = pkg.template
-
         pkg:add_stages(stages)
     end
 end
