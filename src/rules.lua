@@ -214,6 +214,7 @@ function Rule:add_package(rule)
         rule.template = template
     end
 
+    local config = rule.config
     local stages = table.imove(rule, {})
 
     pkg:merge(rule)
@@ -229,8 +230,8 @@ function Rule:add_package(rule)
     end
 
     do local build = pkg.build
-        if build and rule.config and not pkg:has_config(rule.config) then
-            pkg:add_config(rule.config)
+        if build and config and not pkg:has_config(config) then
+            pkg:add_config(config)
 
             if build.type == 'GNU' then
                 if build.generate or build.autoreconf then
@@ -244,7 +245,7 @@ function Rule:add_package(rule)
 
             if build.type then
                 pkg:add_stages {
-                    config = rule.config,
+                    config = config,
                     template = rule.template,
                     { 'configure',
                         requires = { 'toolchain' }
@@ -256,13 +257,19 @@ function Rule:add_package(rule)
         end
     end
 
+    if pkg.install and config then
+        pkg:add_config(config)
+        pkg.configs[config].install = pkg.install
+        pkg.install = nil
+    end
+
     -- add global stages specified in pkg file regardless of config or build
     pkg:add_stages(pkg)
 
     -- evaluate requires for every add to collect rules from all templates
     if pkg.requires then
         pkg:add_stages {
-            config = rule.config,
+            config = config,
             template = rule.template,
             { 'configure',
                 requires = pkg.requires
@@ -272,12 +279,7 @@ function Rule:add_package(rule)
 
     -- TODO: find a way to distinguish this kind or rule without adding a flag
     if rule.name ~= 'toolchain' then
-        if pkg.install then
-            pkg.configs[rule.config].install = pkg.install
-            pkg.install = nil
-        end
-
-        stages.config = rule.config
+        stages.config = config
         stages.template = pkg.template
 
         pkg:add_stages(stages)
