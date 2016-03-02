@@ -220,10 +220,8 @@ end
 
 function HgSource:switch()
     local branch = assert(self.branch)
-    local exists, active = self:_is_bookmark(branch)
-    if active then
-        return true
-    elseif exists then
+    local exists = self:_is_bookmark(branch)
+    if exists then
         local cmd = { 'update', '-r', assert(self.branch) }
         return self:exec(unpack(cmd))
     elseif branch == self:_branch() then
