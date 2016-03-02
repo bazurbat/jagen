@@ -4,6 +4,8 @@
 
 package { 'ast-files' }
 
+package { 'cmake-modules' }
+
 package { 'linux' }
 
 package { 'xsdk' }
