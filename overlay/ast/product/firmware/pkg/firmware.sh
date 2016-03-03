@@ -144,7 +144,7 @@ jagen_pkg_strip() {
             -o -name "types.db" \
             ")" -print -delete
 
-        pkg_strip_dir "$pkg_build_dir"
+        pkg_strip_root "$pkg_build_dir"
     fi
 
     _jagen src status > "$pkg_build_dir/heads" || die

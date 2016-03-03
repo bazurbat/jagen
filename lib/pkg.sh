@@ -30,7 +30,7 @@ pkg_run_patch() {
     pkg_run patch -p$num -i "$jagen_patch_dir/${name}.patch"
 }
 
-pkg_strip_dir() {
+pkg_strip_root() {
     local root files
     root="$1"
     files=$(find "$root" -type f -not -name "*.ko" \

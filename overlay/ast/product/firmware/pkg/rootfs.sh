@@ -2,87 +2,133 @@
 
 pkg_run_jobs=1
 
-jagen_pkg_compile() {
-    use_env tools
+jagen_pkg_patch() {
+    pkg_patch
+    pkg_run cp -f config.release .config
+}
 
+jagen_pkg_compile() {
     PATH="$SMP86XX_TOOLCHAIN_PATH/bin:$PATH"
 
-    pkg_run rm -f "$jagen_sdk_rootfs_root/init"
+    # this becomes dangling symlink on rebuild and make fails
+    pkg_run rm -f "$jagen_sdk_initfs_dir/init"
 
-    pkg_run cp -f config.release .config
     pkg_run make
+}
 
-    # contains cyclic symlinks
-    rm -rf "package/udev/udev-114/test/sys"
+install_cleanup() {
+    local dest="${1:?}"
 
-    # cleanup while bin dir is almost empty, doing this in install script
-    # confuses the shell for some reason (maybe [ [[ filenames from busybox?)
-    pkg_run rm -f "$jagen_sdk_rootfs_root"/bin/*.bash
+    pkg_run cd "$dest"
 
-    pkg_run cd "$jagen_sdk_rootfs_root/bin"
+    pkg_run rm -fr dev opt proc root tmp usr var/run
+    pkg_run install -m 700 -d root
+
+    pkg_run rm -f init
+    pkg_run ln -s /bin/busybox init
+
+    pkg_run cd "$dest/bin"
+
+    pkg_run rm -f *.bash
     pkg_run rm -f setxenv unsetxenv
     pkg_run ln -fs setxenv2_mipsel setxenv2
     pkg_run ln -fs setxenv2_mipsel unsetxenv2
+
+    pkg_run cd "$dest/etc"
+
+    pkg_run rm -fr init.d network cs_rootfs_*
+    pkg_run rm -f inputrc ld.so.cache mtab
+
+    for dir in up down pre-up post-down; do
+        pkg_run mkdir -p "network/if-${dir}.d"
+    done
+
+    pkg_run cd "$dest/lib"
+
+    pkg_run rm -f libnss_compat* libnss_hesiod* libnss_nis*
+    find . \( -name "*.a" -o -name "*.la" \) -delete || return
 }
 
 install_timezone() {
-    pkg_run rm -f "$jagen_sdk_rootfs_root/etc/TZ"
+    local dest="${1:?}"
+    : ${TOOLCHAIN_RUNTIME_PATH:?}
+
+    pkg_run rm -f "$dest/etc/TZ"
     pkg_run install -m644 \
         "$TOOLCHAIN_RUNTIME_PATH/usr/share/zoneinfo/Europe/Moscow" \
-        "$jagen_sdk_rootfs_root/etc/localtime"
-}
-
-install_keys() {
-    pkg_run mkdir -p "$jagen_sdk_rootfs_root/lib/firmware"
-    pkg_run cp -a \
-        "$jagen_private_dir/keys/keyfile.gpg" \
-        "$jagen_sdk_rootfs_root/lib/firmware"
-}
-
-install_gpg() {
-    pkg_run cp -a \
-        "$jagen_sdk_rootfs_prefix/bin/gpg" \
-        "$jagen_sdk_rootfs_root/bin"
-    pkg_run cp -a \
-        "$jagen_sdk_rootfs_prefix"/lib/libgpg*.so* \
-        "$jagen_sdk_rootfs_prefix"/lib/libassuan.so* \
-        "$jagen_sdk_rootfs_root/lib"
-}
-
-install_losetup() {
-    pkg_run cp -a \
-        "$jagen_sdk_rootfs_prefix/sbin/losetup" \
-        "$jagen_sdk_rootfs_root/sbin"
+        "$dest/etc/localtime"
 }
 
 install_ldconfig() {
+    local dest="${1:?}"
+    : ${TOOLCHAIN_RUNTIME_PATH:?}
+
     pkg_run cp -a \
         "$TOOLCHAIN_RUNTIME_PATH/usr/lib/bin/ldconfig" \
-        "$jagen_sdk_rootfs_root/sbin"
+        "$dest/sbin"
 }
 
-install_utils() {
+install_gnupg() {
+    local dest="${1:?}"
+    : ${jagen_sdk_staging_dir:?}
+
     pkg_run cp -a \
-        "$jagen_sdk_rootfs_prefix"/lib/libblkid.so* \
-        "$jagen_sdk_rootfs_prefix"/lib/libmount.so* \
-        "$jagen_sdk_rootfs_root/lib"
+        "$jagen_sdk_staging_dir/bin/gpg" \
+        "$dest/bin"
     pkg_run cp -a \
-        "$jagen_sdk_rootfs_prefix/sbin/mkswap" \
-        "$jagen_sdk_rootfs_prefix/sbin/swapoff" \
-        "$jagen_sdk_rootfs_prefix/sbin/swapon" \
-        "$jagen_sdk_rootfs_root/sbin"
+        "$jagen_sdk_staging_dir"/lib/libgpg*.so* \
+        "$jagen_sdk_staging_dir"/lib/libassuan.so* \
+        "$dest/lib"
+}
+
+install_ntpclient() {
+    local dest="${1:?}"
+    : ${jagen_sdk_staging_dir:?}
+
+    pkg_run cp -a \
+        "$jagen_sdk_staging_dir/bin/ntpclient" \
+        "$dest/bin"
+}
+
+install_util_linux() {
+    local dest="${1:?}"
+    : ${jagen_sdk_staging_dir:?}
+
+    pkg_run cp -a \
+        "$jagen_sdk_staging_dir"/lib/libblkid.so* \
+        "$jagen_sdk_staging_dir"/lib/libmount.so* \
+        "$dest/lib"
+
+    local programs="losetup mkswap swapoff swapon"
+
+    for program in $programs; do
+        pkg_run cp -a \
+            "$jagen_sdk_staging_dir/sbin/$program" \
+            "$dest/sbin"
+    done
+}
+
+install_keys() {
+    local dest="${1:?}"
+    : ${jagen_private_dir:?}
+
+    pkg_run mkdir -p "$dest/lib/firmware"
+    pkg_run cp -a \
+        "$jagen_private_dir/keys/keyfile.gpg" \
+        "$dest/lib/firmware"
 }
 
 install_files() {
-    local root_dir="$jagen_sdk_rootfs_root"
-    local flags_dir="$root_dir/etc/flags"
+    local dest="${1:?}"
+    local flags_dir="$dest/etc/flags"
+    : ${jagen_private_dir:?}
 
-    pkg_run cp -rf "$jagen_private_dir"/rootfs/* "$root_dir"
+    pkg_run cp -rf "$jagen_private_dir"/rootfs/* "$dest"
     pkg_run mkdir -p "$flags_dir"
 
     if in_flags devenv; then
-        pkg_run cp -rf "$jagen_private_dir"/rootfs-dev/* "$root_dir"
-        rm -f "$root_dir/var/service/dropbear/down"
+        pkg_run cp -rf "$jagen_private_dir"/rootfs-dev/* "$dest"
+        rm -f "$dest/var/service/dropbear/down"
         touch "$flags_dir/devenv"
     fi
 
@@ -93,34 +139,19 @@ install_files() {
 
 jagen_pkg_install() {
     use_env target
+    local dest="${jagen_sdk_initfs_dir:?}"
 
-    pkg_run cd "$jagen_sdk_rootfs_root"
+    install_cleanup  "$dest" || return
 
-    pkg_run rm -fr dev opt proc sys root tmp usr var/run
-    pkg_run install -m 700 -d root
-    pkg_run rm -f init linuxrc
-    pkg_run ln -s /bin/busybox init
+    install_timezone "$dest" || return
+    install_ldconfig "$dest" || return
 
-    pkg_run cd "$jagen_sdk_rootfs_root/etc"
+    install_gnupg      "$dest" || return
+    install_ntpclient  "$dest" || return
+    install_util_linux "$dest" || return
 
-    pkg_run rm -fr init.d network cs_rootfs_*
-    pkg_run rm -f inputrc ld.so.cache mtab
-    for d in up down pre-up post-down; do
-        pkg_run mkdir -p network/if-${d}.d
-    done
+    install_keys  "$dest" || return
+    install_files "$dest" || return
 
-    pkg_run cd "$jagen_sdk_rootfs_root/lib"
-
-    pkg_run rm -f libnss_compat* libnss_hesiod* libnss_nis*
-    find "$jagen_sdk_rootfs_root/lib" \( -name "*.a" -o -name "*.la" \) -delete
-
-    install_timezone
-    install_keys
-    install_gpg
-    install_losetup
-    install_ldconfig
-    install_utils
-    install_files
-
-    pkg_strip_dir "$jagen_sdk_rootfs_root"
+    pkg_strip_root "$dest"
 }

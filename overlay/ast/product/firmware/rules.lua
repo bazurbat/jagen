@@ -78,6 +78,7 @@ local function rootfs_package(rule)
 end
 
 package { 'rootfs',
+    env = { 'tools' },
     template = rootfs_package_template,
     { 'configure',
         { 'ast-files', 'unpack'            },
