@@ -121,6 +121,14 @@ function Rule:add_config(name)
     end
 end
 
+function Rule:get(key, config)
+    if config and self.configs and self.configs[config] then
+        return self.configs[config][key]
+    else
+        return self[key]
+    end
+end
+
 function Rule:add_target(target)
     local name   = target.stage
     local config = target.config
