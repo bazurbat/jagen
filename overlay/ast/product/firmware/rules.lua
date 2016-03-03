@@ -99,7 +99,8 @@ package { 'rootfs',
         { 'mrua',     'modules', 'target' },
         { 'loop-aes', 'install', 'target' },
         { 'ralink',   'install', 'target' },
-    }
+    },
+    { 'strip' }
 }
 
 package { 'mrua', 'target',

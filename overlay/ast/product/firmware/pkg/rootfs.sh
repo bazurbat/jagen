@@ -138,7 +138,6 @@ install_files() {
 }
 
 jagen_pkg_install() {
-    use_env target
     local dest="${jagen_sdk_initfs_dir:?}"
 
     install_cleanup  "$dest" || return
@@ -152,6 +151,9 @@ jagen_pkg_install() {
 
     install_keys  "$dest" || return
     install_files "$dest" || return
+}
 
-    pkg_strip_root "$dest"
+jagen_pkg_strip() {
+    use_env target
+    pkg_strip_root "${jagen_sdk_initfs_dir:?}"
 }

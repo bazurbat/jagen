@@ -31,14 +31,15 @@ pkg_run_patch() {
 }
 
 pkg_strip_root() {
-    local root files
-    root="$1"
+    local root="${1:?}" files
+    local strip="${jagen_toolchain_prefix:?}strip"
+
     files=$(find "$root" -type f -not -name "*.ko" \
         "(" -path "*/lib*" -o -path "*/bin*" -o -path "*/sbin*" ")" | \
         xargs -r file | grep "ELF.*\(executable\|shared object\).*not stripped" | cut -d: -f1)
 
     for f in $files; do
-        pkg_run "$STRIP" -v --strip-unneeded \
+        pkg_run "$strip" --strip-unneeded \
             -R .comment \
             -R .GCC.command.line \
             -R .note.gnu.gold-version \
