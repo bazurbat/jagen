@@ -11,6 +11,12 @@ package { 'hi-sdk', 'target',
     }
 }
 
+package { 'hi-sdk-tools',
+    { 'unpack',
+        { 'hi-sdk', 'unpack' }
+    }
+}
+
 package { 'android',
     env = { 'target' },
     { 'unpack',
