@@ -255,14 +255,6 @@ function RepoSource:popen(...)
     return system.popen(unpack(cmd))
 end
 
-function RepoSource:head()
-    return self:popen('status', '-j', 1, '--orphans'):read('*all')
-end
-
-function RepoSource:dirty()
-    return false
-end
-
 function RepoSource:_load_projects(...)
     local o = {}
     local list = self:popen('list', ...)
@@ -277,22 +269,42 @@ function RepoSource:_load_projects(...)
     return o
 end
 
+function RepoSource:_is_dirty(path)
+    local cmd   = string.format('git -C "%s" status --porcelain', path)
+    local pipe  = assert(system.popen(cmd))
+    local dirty = pipe:read() ~= nil
+    pipe:close()
+    return dirty
+end
+
+function RepoSource:head()
+    return self:popen('status', '-j', 1, '--orphans'):read('*all')
+end
+
+function RepoSource:dirty()
+    local projects = self:_load_projects()
+    for n, p in pairs(projects) do
+        local path = system.mkpath(assert(self.path), p)
+        if system.exists(path) and not system.is_empty(path)
+                and self:_is_dirty(path) then
+            return true
+        end
+    end
+    return false
+end
+
 function RepoSource:clean()
     local projects = self:_load_projects()
-    local function is_empty(path)
-        return system.popen('cd', '"'..path..'"', '&&', 'echo', '*'):read() == '*'
-    end
-    local function is_dirty(path)
-        local cmd = { 'git', '-C', assert(path), 'status', '--porcelain' }
-        return system.popen(unpack(cmd)):read() ~= nil
-    end
     for n, p in pairs(projects) do
-        local path = system.mkpath(self.path, p)
-        if not is_empty(path) and is_dirty(path) then
-            if not system.exec('git', '-C', path, 'checkout', 'HEAD', '.') then
+        local path = system.mkpath(assert(self.path), p)
+        if system.exists(path) and not system.is_empty(path)
+                and self:_is_dirty(path) then
+            local checkout = string.format('git -C "%s" checkout HEAD .', path)
+            if not system.exec(checkout) then
                 return false
             end
-            if not system.exec('git', '-C', path, 'clean', '-fxd') then
+            local clean = string.format('git -C "%s" clean -fxd', path)
+            if not system.exec(clean) then
                 return false
             end
         end
@@ -301,10 +313,10 @@ function RepoSource:clean()
 end
 
 function RepoSource:update()
-    local cmd = { 'sync', '-j', self.jobs, '--current-branch', '--no-tags',
-        '--optimized-fetch'
-    }
-    return self:exec(unpack(cmd))
+    local sync = string.format([[
+sync -j %d --current-branch --no-tags --optimized-fetch]],
+        self.jobs)
+    return self:exec(sync)
 end
 
 function RepoSource:switch()
