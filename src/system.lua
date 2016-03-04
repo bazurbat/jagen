@@ -57,4 +57,15 @@ function P.mkdir(...)
     return P.exec('mkdir', '-p', ...)
 end
 
+function P.exists(path)
+    return P.exec(string.format('test -e "%s"', path))
+end
+
+function P.is_empty(path)
+    local pipe = assert(P.popen(string.format('cd "%s" && echo *', path)))
+    local empty = assert(pipe:read()) == '*'
+    pipe:close()
+    return empty
+end
+
 return P
