@@ -9,7 +9,11 @@ jagen_pkg_patch() {
 }
 
 jagen_pkg_configure() {
-    # Needed starting from GCC 4.4
-    CFLAGS="$CFLAGS -mno-compact-eh"
+    case $jagen_sdk in
+        sigma)
+            # Needed starting from GCC 4.4
+            CFLAGS="$CFLAGS -mno-compact-eh"
+            ;;
+    esac
     pkg_configure
 }
