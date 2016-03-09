@@ -50,6 +50,7 @@ package { 'karaoke-player', 'target',
         requires = {
             'chicken-eggs',
             'ffmpeg',
+            'libass',
             'libuv',
             'soundtouch',
         },
