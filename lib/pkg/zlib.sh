@@ -1,6 +1,7 @@
 #!/bin/sh
 
 jagen_pkg_configure() {
+    export CHOST="$pkg_system"
     pkg_run "$pkg_source_dir/configure" \
         --prefix="$pkg_prefix" \
         --libdir="$pkg_prefix/lib"
