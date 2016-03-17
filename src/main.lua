@@ -249,7 +249,7 @@ function jagen.command.refresh()
 
         -- create/truncate all log files beforehand to allow tail following
         -- them on interactive rebuild
-        for _, stage in ipairs(pkg.stages) do
+        for stage in pkg:each() do
             local filename = string.format('%s/%s.log', log_dir, tostring(stage))
             assert(io.open(filename, 'w+')):close()
         end
