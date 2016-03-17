@@ -3,7 +3,7 @@
 . "$jagen_dir/lib/env.sh" ||
     { echo "Failed to load environment"; exit 1; }
 
-: ${pkg_run_jobs:=$(nproc)}
+: ${pkg_run_jobs:=$(jagen_nproc)}
 : ${pkg_run_on_error:=exit}
 
 pkg_run() {

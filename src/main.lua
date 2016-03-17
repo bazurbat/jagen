@@ -23,8 +23,6 @@ jagen =
 
     patch_dir   = os.getenv('jagen_patch_dir'),
     private_dir = os.getenv('jagen_private_dir'),
-
-    nproc = assert(tonumber(io.popen('nproc'):read()))
 }
 
 jagen.cmd = system.mkpath(jagen.lib_dir, 'cmd.sh')
@@ -382,9 +380,24 @@ function jagen.parse_args(args)
     return cmd, options, rest
 end
 
+function jagen:_nproc()
+    local function read(f)
+        return f:read()
+    end
+
+    local name = system.pipe(read, 'uname -s')
+    if name == 'Darwin' then
+        return system.pipe(read, 'sysctl -n hw.ncpu')
+    else
+        return system.pipe(read, 'nproc')
+    end
+end
+
 function jagen:run(args)
     local cmd, options, rest = self.parse_args(args)
     local first = options[1]
+
+    jagen.nproc = jagen:_nproc()
 
     --[[ Handling the following cases:
     --   jagen

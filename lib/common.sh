@@ -110,3 +110,12 @@ _jagen() {
 to_lower() {
     echo "${1:?}" | tr '[:upper:]' '[:lower:]'
 }
+
+jagen_nproc() {
+    case $(uname -s) in
+        Darwin)
+            sysctl -n hw.ncpu ;;
+        *)
+            nproc
+    esac
+}
