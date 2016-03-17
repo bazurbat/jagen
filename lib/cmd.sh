@@ -10,6 +10,13 @@ die() {
     exit 1
 }
 
+assert_ninja_found() {
+    if [ -z "$(command -v ninja)" ]; then
+        die "A 'ninja' command is not found in your PATH. You need to install \
+Ninja build system (https://ninja-build.org) to run 'build' or 'rebuild'"
+    fi
+}
+
 on_interrupt() { :; }
 
 maybe_sync() {
@@ -23,6 +30,8 @@ cmd_build() {
     local dry_run show_progress show_all
     local targets logs sts
     local cmd_log="$jagen_log_dir/$mode.log"
+
+    assert_ninja_found
 
     while [ $# -gt 0 ]; do
         case $1 in
