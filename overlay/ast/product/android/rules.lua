@@ -1,21 +1,12 @@
 -- AST HiSilicon Android
 
+package { 'hi-sdk', 'target' }
+
+package { 'hi-sdk-tools' }
+
 package { 'hi-kernel' }
 
 package { 'hi-sample', 'target' }
-
-package { 'hi-sdk', 'target',
-    { 'unpack',
-        { 'hi-kernel', 'unpack' },
-        { 'hi-sample', 'unpack' },
-    }
-}
-
-package { 'hi-sdk-tools',
-    { 'unpack',
-        { 'hi-sdk', 'unpack' }
-    }
-}
 
 package { 'android',
     env = { 'target' },

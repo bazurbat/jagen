@@ -26,13 +26,9 @@ package { 'hi-sdk', 'target',
     { 'mkload'    },
 }
 
-package { 'hi-sdk-tools',
-    { 'unpack', { 'hi-sdk', 'unpack' } }
-}
+package { 'hi-sdk-tools' }
 
-package { 'hi-kernel',
-    { 'unpack', { 'hi-sdk', 'unpack' } }
-}
+package { 'hi-kernel' }
 
 package { 'hi-drivers', 'target',
     { 'configure',
