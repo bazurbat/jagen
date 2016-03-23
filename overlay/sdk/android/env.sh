@@ -11,7 +11,7 @@ jagen_target_prefix="/system"
 : ${jagen_android_product:?}
 
 # set output directory of Android build system
-export OUT_DIR="${jagen_out_dir:?}/android"
+# export OUT_DIR="${jagen_out_dir:?}/android"
 
 jagen_sdk_staging_dir="$OUT_DIR/target/product/$jagen_android_product"
 
