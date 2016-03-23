@@ -7,5 +7,5 @@ jagen_pkg_patch() {
 }
 
 jagen_pkg_compile() {
-    pkg_run make BUILD_EMULATOR=false bigfish_emmc
+    pkg_run make BUILD_EMULATOR=false bigfish
 }
