@@ -90,11 +90,11 @@ pkg_fix_la() {
 }
 
 pkg_link() {
-    local dst="${1:?}" src="${2:?}"
+    local src="${1:?}" dst="${2:?}"
 
     pkg_run cd $(dirname "$dst")
-    pkg_run rm -rf "$src"
-    pkg_run ln -rs $(basename "$dst") "$src"
+    pkg_run rm -rf $(basename "$dst")
+    pkg_run ln -rs "$src" "$dst"
     pkg_run cd "$OLDPWD"
 }
 
