@@ -6,10 +6,6 @@ package { 'make', 'host',
 
 package { 'ast-files' }
 
-package { 'hi-kernel' }
-
-package { 'hi-sdk-tools' }
-
 package { 'hi-sdk', 'target',
     { 'tools',
         { 'hi-sdk-tools', 'unpack' }
@@ -28,6 +24,14 @@ package { 'hi-sdk', 'target',
     { 'msp'       },
     { 'component' },
     { 'mkload'    },
+}
+
+package { 'hi-sdk-tools',
+    { 'unpack', { 'hi-sdk', 'unpack' } }
+}
+
+package { 'hi-kernel',
+    { 'unpack', { 'hi-sdk', 'unpack' } }
 }
 
 package { 'hi-drivers', 'target',
