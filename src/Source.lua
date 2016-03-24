@@ -297,11 +297,12 @@ function RepoSource:clean()
     local projects = self:_load_projects()
     for n, p in pairs(projects) do
         local path = system.mkpath(assert(self.path), p)
-        if system.exists(path) and not system.is_empty(path)
-                and self:_is_dirty(path) then
-            local checkout = string.format('git -C "%s" checkout HEAD .', path)
-            if not system.exec(checkout) then
-                return false
+        if system.exists(path) then
+            if self:_is_dirty(path) then
+                local checkout = string.format('git -C "%s" checkout HEAD .', path)
+                if not system.exec(checkout) then
+                    return false
+                end
             end
             local clean = string.format('git -C "%s" clean -fxd', path)
             if not system.exec(clean) then
