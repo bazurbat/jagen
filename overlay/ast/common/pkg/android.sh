@@ -2,8 +2,8 @@
 
 jagen_pkg_patch() {
     pkg_link \
-        "$jagen_src_dir/hi-sdk" \
-        "$pkg_source_dir/device/hisilicon/bigfish/sdk"
+        "${jagen_sdk_tools_dir:?}" \
+        "$pkg_source_dir/device/hisilicon/bigfish/sdk/tools"
 }
 
 jagen_pkg_compile() {
