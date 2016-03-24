@@ -6,16 +6,21 @@ package { 'make', 'host',
 
 package { 'ast-files' }
 
+package { 'hi-kernel' }
+
+package { 'hi-sdk-tools' }
+
 package { 'hi-sdk', 'target',
-    { 'tools',
-        { 'hi-sdk-tools', 'unpack' }
+    { 'patch',
+        { 'hi-kernel',    'unpack' },
+        { 'hi-sdk-tools', 'unpack' },
     },
+    { 'tools' },
     { 'prepare',
         requires = {
             'toolchain',
             { 'make', 'host' },
         },
-        { 'hi-kernel', 'unpack' },
     },
     { 'hiboot'    },
     { 'linux'     },
@@ -25,10 +30,6 @@ package { 'hi-sdk', 'target',
     { 'component' },
     { 'mkload'    },
 }
-
-package { 'hi-sdk-tools' }
-
-package { 'hi-kernel' }
 
 package { 'hi-drivers', 'target',
     { 'configure',

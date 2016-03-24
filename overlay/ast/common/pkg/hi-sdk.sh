@@ -11,13 +11,16 @@ jagen_pkg_patch() {
                 ;;
         esac
     fi
+
+    pkg_link "${jagen_kernel_src_dir:?}" \
+        "$pkg_source_dir/source/kernel/linux-3.4.y"
+
+    pkg_link \
+        "${jagen_sdk_tools_dir:?}" \
+        "$pkg_source_dir/tools"
 }
 
 jagen_pkg_tools() {
-    pkg_link \
-        "$jagen_build_dir/hi-sdk-tools/tools" \
-        "$pkg_source_dir/tools"
-
     pkg_run make tools_install
 }
 
