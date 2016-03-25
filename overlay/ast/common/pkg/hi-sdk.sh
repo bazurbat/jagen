@@ -46,6 +46,7 @@ jagen_pkg_common() {
 
 jagen_pkg_msp() {
     pkg_run make msp_install
+    pkg_run make msp_mod_install
 }
 
 jagen_pkg_component() {
