@@ -11,8 +11,8 @@ die() {
 show_help() {
     cat <<EOF
 Usage: init-root <CONFIG> [OPTIONS...]
-       init-root [-l|--list]
-       init-root [-h|--help]
+       init-root [-h]
+       init-root [-l]
 
   Initializes current directory as jagen build root.
 
@@ -32,39 +32,41 @@ SYNOPSIS:
 
 OPTIONS:
 
-  -a, --flags         specify default flags
-  -l, --list          list config templates
-  -s, --share-sources share sources between build roots
-  -h, --help          show this help
+  -a  add flag
+  -h  show this help
+  -l  list config templates
+  -s  share sources between build roots
 
-  In the default configuration a path to software distributions, patches and
-  toolchains is specified relative to base directory (\$jagen_dir/..) to
-  facilitate sharing. Source packages are checked out to the build root
-  (\$jagen_root/src). Specify '--share-sources' option to use the sources from
-  shared directory relative to the base. Note that 'jagen clean' command does
-  not touch the source packages location even if it is inside the build root.
+  In the default configuration a location of software distributions, patches
+  and toolchains is set relative to a base directory (\$jagen_dir/..) to
+  facilitate sharing between different build roots. Source packages are checked
+  out into the current build root (\$jagen_root/src). Use the '-s' option to
+  set a location of source packages relative to the base directory too. Note
+  that 'jagen clean' command does not touch the source packages location even
+  if it is inside the build root.
 
   The generated environment binds the build root to the corresponding jagen
   project directory. If one or the other is moved it will become invalid. Use
   'init-root' again to reinitialize.
 
   The generated configuration can be adjusted manually but will be overwritten
-  by the next 'init-root' invocation.
+  by the next 'init-root' invocation. Use '-a' option to set 'jagen_flags' from
+  command line; it can be specified multiple times.
 
 EXAMPLES:
 
     mkdir -p ~/work/root-ast100
     cd ~/work/root-ast100
-    "<jagen_dir>/init-root" ast100 -a flag1 flag2
+    "<jagen_dir>/init-root" ast100 -a flag1 -a flag2
     . ./$env_file
-    jagen run target1 target2
+    jagen build
     exit
 
   For subsequent invocations:
 
     cd ~/work/root-ast100
     . ./$env_file
-    jagen run target3 target4
+    jagen rebuild target1 target2
 
 EOF
 }
@@ -146,34 +148,25 @@ EOF
 }
 
 parse_command_line() {
-    local arg='config'
+    local arg
+
+    arg=$(getopt hlsa: "$@")
+    [ $? = 0 ] || die "failed to parse command line options"
+    set -- $arg
 
     while [ $# -gt 0 ]; do
         case $1 in
-            -a|--flags)
-                arg='flags' ;;
-            -l|--list)
-                list_configs; exit 0 ;;
-            -s|--share-sources)
-                share_sources=1 ;;
-            -h|--help)
-                show_help; exit 0 ;;
-            -*)
-                die "invalid argument: $1" ;;
-            *)
-                case $arg in
-                    config)
-                        jagen_config="$1"; arg='' ;;
-                    flags)
-                        if [ "$jagen_flags" ]; then
-                            jagen_flags="$jagen_flags $1"
-                        else
-                            jagen_flags="$1"
-                        fi ;;
-                    *)
-                        die "unexpected argument: $1"
-                        ;;
-                esac ;;
+            -h) show_help; exit 0 ;;
+            -l) list_configs; exit 0 ;;
+            -s) share_sources=1 ;;
+            -a) if [ "$jagen_flags" ]; then
+                    jagen_flags="$jagen_flags $2"
+                else
+                    jagen_flags="$2"
+                fi
+                shift ;;
+            --) ;;
+             *) jagen_config="$1"; break ;;
         esac
         shift
     done
