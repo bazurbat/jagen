@@ -18,7 +18,7 @@ jagen_pkg_prepare() {
 jagen_pkg_hi_utils() {
     local src="$pkg_install_dir/bin"
     local dst="$pkg_build_dir/bin"
-    local programs="gpio regrw"
+    local programs="gpio regrw dsp_tune"
 
     for name in $programs; do
         pkg_run install -vm 755 "$src/$name" "$dst"
