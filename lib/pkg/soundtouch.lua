@@ -2,7 +2,7 @@ package {
     source = {
         type     = 'dist',
         location = 'soundtouch-1.9.2.tar.gz',
-        path     = 'soundtouch'
+        dir      = 'soundtouch'
     },
     build = {
         type = 'GNU',

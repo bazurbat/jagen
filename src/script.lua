@@ -16,8 +16,8 @@ function P:get_shared(pkg)
     if source.branch then
         w('pkg_source_branch="%s"', source.branch)
     end
-    if source.path then
-        w('pkg_source_dir="%s"', source.path)
+    if source.dir then
+        w('pkg_source_dir="%s"', source.dir)
     end
 
     if pkg.patches then

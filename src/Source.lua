@@ -67,7 +67,7 @@ function Source:create(source, name)
         else
             dir = system.mkpath(work_dir, name or basename)
         end
-        source.path = system.mkpath(dir, source.path or basename)
+        source.dir = system.mkpath(dir, source.dir or basename)
     end
 
     return source
