@@ -1,5 +1,5 @@
 package {
     build = {
-        directory = '$pkg_work_dir'
+        dir = '$pkg_work_dir'
     }
 }

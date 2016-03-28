@@ -95,8 +95,8 @@ function P:get(pkg, config)
         if build.in_source then
             build_dir = '$pkg_source_dir'
         end
-        if build.directory then
-            build_dir = build.directory
+        if build.dir then
+            build_dir = build.dir
         end
     end
 
