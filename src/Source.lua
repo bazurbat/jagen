@@ -82,11 +82,11 @@ function GitSource:new(o)
 end
 
 function GitSource:exec(...)
-    return system.exec('git', '-C', assert(self.path), ...)
+    return system.exec('git', '-C', assert(self.dir), ...)
 end
 
 function GitSource:popen(...)
-    return system.popen('git', '-C', assert(self.path), ...):read()
+    return system.popen('git', '-C', assert(self.dir), ...):read()
 end
 
 function GitSource:head()
@@ -154,7 +154,7 @@ end
 
 function GitSource:clone()
     return system.exec('git', 'clone', '--branch', assert(self.branch),
-        '--depth', 1, assert(self.location), assert(self.path))
+        '--depth', 1, assert(self.location), assert(self.dir))
 end
 
 -- HgSource
@@ -166,11 +166,11 @@ function HgSource:new(o)
 end
 
 function HgSource:exec(...)
-    return system.exec('hg', '-R', assert(self.path), ...)
+    return system.exec('hg', '-R', assert(self.dir), ...)
 end
 
 function HgSource:pipe(func, ...)
-    return system.pipe(func, 'hg', '-R', assert(self.path), ...)
+    return system.pipe(func, 'hg', '-R', assert(self.dir), ...)
 end
 
 function HgSource:pipe_line(...)
@@ -234,7 +234,7 @@ end
 
 function HgSource:clone()
     return system.exec('hg', 'clone', '-r', assert(self.branch),
-        assert(self.location), assert(self.path))
+        assert(self.location), assert(self.dir))
 end
 
 -- RepoSource
@@ -246,12 +246,12 @@ function RepoSource:new(o)
 end
 
 function RepoSource:exec(...)
-    local cmd = { 'cd', '"'..assert(self.path)..'"', '&&', 'repo', ... }
+    local cmd = { 'cd', '"'..assert(self.dir)..'"', '&&', 'repo', ... }
     return system.exec(unpack(cmd))
 end
 
 function RepoSource:popen(...)
-    local cmd = { 'cd', '"'..assert(self.path)..'"', '&&', 'repo', ... }
+    local cmd = { 'cd', '"'..assert(self.dir)..'"', '&&', 'repo', ... }
     return system.popen(unpack(cmd))
 end
 
@@ -284,7 +284,7 @@ end
 function RepoSource:dirty()
     local projects = self:_load_projects()
     for n, p in pairs(projects) do
-        local path = system.mkpath(assert(self.path), p)
+        local path = system.mkpath(assert(self.dir), p)
         if system.exists(path) and not system.is_empty(path)
                 and self:_is_dirty(path) then
             return true
@@ -296,7 +296,7 @@ end
 function RepoSource:clean()
     local projects = self:_load_projects()
     for n, p in pairs(projects) do
-        local path = system.mkpath(assert(self.path), p)
+        local path = system.mkpath(assert(self.dir), p)
         if system.exists(path) then
             if self:_is_dirty(path) then
                 local checkout = string.format('git -C "%s" checkout HEAD .', path)
@@ -327,7 +327,7 @@ function RepoSource:switch()
 end
 
 function RepoSource:clone()
-    local mkdir = { 'mkdir -p "'..self.path..'"' }
+    local mkdir = { 'mkdir -p "'..self.dir..'"' }
     local init = { 'init', '-u', assert(self.location),
         '-b', assert(self.branch), '-p', 'linux', '--depth', 1
     }

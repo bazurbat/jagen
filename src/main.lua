@@ -103,7 +103,7 @@ end
 function jagen.src.dirty(packages)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
-        if exists(source.path) and source:dirty() then
+        if exists(source.dir) and source:dirty() then
             return 0
         end
     end
@@ -113,12 +113,12 @@ end
 function jagen.src.status(packages)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
-        if exists(source.path) then
+        if exists(source.dir) then
             local dirty = source:dirty() and 'dirty' or ''
             local head = source:head()
             if not head then
                 jagen.die('failed to get source head for %s in %s',
-                    pkg.name, source.path)
+                    pkg.name, source.dir)
             end
             print(string.format("%s (%s): %s %s", pkg.name, source.location, head, dirty))
         else
@@ -130,10 +130,10 @@ end
 function jagen.src.clean(packages)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
-        jagen.message('clean %s in %s', pkg.name, source.path)
+        jagen.message('clean %s in %s', pkg.name, source.dir)
         if not pkg.source:clean() then
             jagen.die('failed to clean %s (%s) in %s',
-                pkg.name, source.branch, source.path)
+                pkg.name, source.branch, source.dir)
         end
     end
 end
@@ -145,41 +145,41 @@ function jagen.src.update(packages)
     -- both, deeper one is cloned first, then clone complains about already
     -- existing directory or update fails.
     table.sort(packages, function (a, b)
-            return a.source.path < b.source.path
+            return a.source.dir < b.source.dir
     end)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
-        if exists(source.path) then
+        if exists(source.dir) then
             if not source:dirty() then
                 if offline then
                     jagen.message('switch %s to %s in %s',
-                        pkg.name, source.branch, source.path)
+                        pkg.name, source.branch, source.dir)
                 else
                     jagen.message('update %s from %s to %s in %s',
-                        pkg.name, source.location, source.branch, source.path)
+                        pkg.name, source.location, source.branch, source.dir)
                 end
 
                 if not offline then
                     if not source:update() then
                         jagen.die('failed to update %s from %s in %s',
-                            pkg.name, source.location, source.path)
+                            pkg.name, source.location, source.dir)
                     end
                 end
 
                 if not source:switch() then
                     jagen.die('failed to switch %s to the latest %s in %s',
-                        pkg.name, source.branch, source.path)
+                        pkg.name, source.branch, source.dir)
                 end
             else
                 jagen.warning("skip update of %s because working directory '%s' is dirty",
-                    pkg.name, source.path)
+                    pkg.name, source.dir)
             end
         else
             if offline then
                 jagen.die("could not clone '%s' in offline mode", pkg.name)
             elseif not source:clone() then
                 jagen.die('failed to clone %s from %s to %s',
-                    pkg.name, source.location, source.path)
+                    pkg.name, source.location, source.dir)
             end
         end
     end
@@ -188,10 +188,10 @@ end
 function jagen.src.delete(packages)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
-        if exists(source.path) then
-            if not system.rmrf(source.path) then
+        if exists(source.dir) then
+            if not system.rmrf(source.dir) then
                 jagen.die('failed to delete %s source directory %s',
-                    pkg.name, source.path)
+                    pkg.name, source.dir)
             end
         end
     end
