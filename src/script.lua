@@ -19,6 +19,9 @@ function P:get_shared(pkg)
     if source.dir then
         w('pkg_source_dir="%s"', source.dir)
     end
+    if source.exclude then
+        w("pkg_source_exclude='yes'")
+    end
 
     if pkg.patches then
         w('jagen_pkg_apply_patches() {')

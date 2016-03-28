@@ -166,7 +166,9 @@ pkg_unpack() {
     case $src_type in
         git|hg|repo)
             if [ -d "$pkg_source_dir" ]; then
-                if in_list "$pkg_name" $jagen_source_exclude; then
+                if [ "$pkg_source_exclude" ] ||
+                    in_list "$pkg_name" $jagen_source_exclude
+                then
                     message "not updating $pkg_name: excluded"
                 else
                     _jagen src clean "$pkg_name"  || return
