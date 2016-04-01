@@ -295,7 +295,7 @@ pkg_compile() {
 
 pkg_install() {
     case $pkg_build_type in
-        GNU)
+        GNU|make)
             pkg_run make ${pkg_sysroot:+DESTDIR="$pkg_sysroot"} "$@" install
 
             for name in $pkg_libs; do
