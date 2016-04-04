@@ -272,6 +272,15 @@ pkg_configure() {
                 -DCMAKE_INSTALL_PREFIX="$pkg_install_dir" \
                 $A $jagen_cmake_options "$@" "$pkg_source_dir"
             ;;
+        skarnet)
+            pkg_run ./configure \
+                ${pkg_system:+--host="$pkg_system"} \
+                ${pkg_prefix:+--prefix="$pkg_prefix"} \
+                ${jagen_sysdeps_cfg:+--with-sysdeps="$jagen_sysdeps_cfg"} \
+                --with-include="$pkg_install_dir/include" \
+                --with-dynlib="$pkg_install_dir/lib" \
+                "$@"
+            ;;
         *)
             ;;
     esac
@@ -281,7 +290,7 @@ pkg_compile() {
     [ "$pkg_source_dir" ] || return 0
 
     case $pkg_build_type in
-        GNU|KBuild|make)
+        GNU|make|KBuild|skarnet)
             pkg_run make "$@"
             ;;
         CMake)
@@ -295,7 +304,7 @@ pkg_compile() {
 
 pkg_install() {
     case $pkg_build_type in
-        GNU|make)
+        GNU|make|skarnet)
             pkg_run make ${pkg_sysroot:+DESTDIR="$pkg_sysroot"} "$@" install
 
             for name in $pkg_libs; do
