@@ -15,6 +15,8 @@ jagen_pkg_prepare() {
     pkg_run rsync -vrtl "$pub_dir/lib/share/" "lib"
 
     pkg_run rsync -vt "$jagen_private_dir/lib/libHA.AUDIO.PCM.decode.so" "lib"
+
+    pkg_run ln -snf /bin/busybox init
 }
 
 jagen_pkg_hi_utils() {
@@ -100,6 +102,10 @@ install_modules() {
     pkg_run rsync -vrtlp "$src/" "$dst"
 }
 
+install_files() {
+    pkg_run rsync -a "$pkg_source_dir/hisi/" .
+}
+
 install_debug_utils() {
     local src="$pkg_install_dir"
     local dst="$pkg_build_dir"
@@ -119,6 +125,7 @@ jagen_pkg_install() {
     install_chmod_libs || return
     install_karaoke_player || return
     install_modules || return
+    install_files || return
     if in_flags debug; then
         install_debug_utils || return
     fi
