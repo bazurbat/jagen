@@ -1,7 +1,13 @@
 #!/bin/sh
 
 jagen_pkg_patch() {
-    pkg_run cp -f "$jagen_private_dir/cfg/busybox.config" ".config"
+    local config="$(jagen_find_path config/busybox.config)"
+
+    if [ -f "$config" ]; then
+        pkg_run cp -vf "$config" .config
+    else
+        die "Could not find BusyBox config for current configuration"
+    fi
 }
 
 jagen_pkg_compile() {
@@ -10,5 +16,5 @@ jagen_pkg_compile() {
 }
 
 jagen_pkg_install() {
-    pkg_run make CONFIG_PREFIX="$pkg_sysroot" install
+    pkg_run make CONFIG_PREFIX="$pkg_install_dir" install
 }
