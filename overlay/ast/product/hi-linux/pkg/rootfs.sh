@@ -9,12 +9,12 @@ jagen_pkg_prepare() {
     pkg_run install -d -m 1777 tmp
 
     if [ -d "$jagen_sdk_dir/pub/rootfs" ]; then
-        pkg_run rsync -vrtl "$jagen_sdk_dir/pub/rootfs/" "."
+        pkg_run rsync -rtl "$jagen_sdk_dir/pub/rootfs/" "."
     fi
-    pkg_run rsync -vrtl "$jagen_sdk_dir/pub/kmod/" "./kmod"
-    pkg_run rsync -vrtl "$pub_dir/lib/share/" "lib"
+    pkg_run rsync -rtl "$jagen_sdk_dir/pub/kmod/" "./kmod"
+    pkg_run rsync -rtl "$pub_dir/lib/share/" "lib"
 
-    pkg_run rsync -vt "$jagen_private_dir/lib/libHA.AUDIO.PCM.decode.so" "lib"
+    pkg_run rsync -t "$jagen_private_dir/lib/libHA.AUDIO.PCM.decode.so" "lib"
 
     pkg_run ln -snf /bin/busybox init
 }
@@ -25,7 +25,7 @@ jagen_pkg_hi_utils() {
     local programs="gpio regrw dsp_tune"
 
     for name in $programs; do
-        pkg_run install -vm 755 "$src/$name" "$dst"
+        pkg_run install -m 755 "$src/$name" "$dst"
     done
 }
 
@@ -35,7 +35,7 @@ jagen_pkg_dropbear() {
     local programs="dropbear"
 
     for name in $programs; do
-        pkg_run install -vm 755 "$src/$name" "$dst"
+        pkg_run install -m 755 "$src/$name" "$dst"
     done
 }
 
@@ -44,9 +44,9 @@ jagen_pkg_dropbear_key() {
     local dst="$pkg_build_dir"
 
     pkg_run mkdir -p "$dst/etc/dropbear"
-    pkg_run cp -fv "$src/etc/dropbear/"* "$dst/etc/dropbear"
+    pkg_run cp -f "$src/etc/dropbear/"* "$dst/etc/dropbear"
 
-    pkg_run cp -frv "$src/root/.ssh" "$dst/root/.ssh"
+    pkg_run cp -fr "$src/root/.ssh" "$dst/root/.ssh"
     pkg_run chmod 700 "$dst/root/.ssh"
 }
 
@@ -54,7 +54,7 @@ install_libs() {
     local src="$pkg_install_dir"
     local dst="$pkg_build_dir"
 
-    pkg_run rsync -vrtlm --include='*/' --include='*.so*' --exclude='*' \
+    pkg_run rsync -rtlm --include='*/' --include='*.so*' --exclude='*' \
         "$src/lib" "$dst"
 }
 
@@ -64,17 +64,17 @@ install_chicken() {
     local programs="csi"
 
     for name in $programs; do
-        pkg_run install -vm 755 "$src/bin/$name" "$dst/bin"
+        pkg_run install -m 755 "$src/bin/$name" "$dst/bin"
     done
 
-    pkg_run rsync -vrtl "$src/lib/chicken" "$dst/lib"
+    pkg_run rsync -rtl "$src/lib/chicken" "$dst/lib"
 
     if pkg_is_release; then
         pkg_run find "$dst/lib/chicken" -type f '(' \
             -name '*.import.*' -o \
             -name '*.scm' -o \
             -name 'types.db' ')' \
-            -print -delete
+            -delete
     fi
 }
 
@@ -90,7 +90,7 @@ install_karaoke_player() {
     local programs="smplayer"
 
     for name in $programs; do
-        pkg_run install -vm 755 "$src/bin/$name" "$dst/bin"
+        pkg_run install -m 755 "$src/bin/$name" "$dst/bin"
     done
 }
 
@@ -99,10 +99,15 @@ install_modules() {
     local dst="$pkg_build_dir$jagen_kernel_modules_install_dir"
 
     pkg_run mkdir -p "$dst"
-    pkg_run rsync -vrtlp "$src/" "$dst"
+    pkg_run rsync -rtlp "$src/" "$dst"
 }
 
 install_files() {
+    local sysroot="$(${pkg_system}-gcc --print-sysroot)"
+
+    pkg_run rsync -a "$sysroot/lib/" lib
+
+    pkg_run rsync -a "$jagen_target_dir/busybox/" .
     pkg_run rsync -a "$pkg_source_dir/hisi/" .
 }
 
@@ -112,7 +117,7 @@ install_debug_utils() {
     local programs='strace'
 
     for name in $programs; do
-        pkg_run install -vm 755 "$src/bin/$name" "$dst/bin"
+        pkg_run install -m 755 "$src/bin/$name" "$dst/bin"
     done
 }
 

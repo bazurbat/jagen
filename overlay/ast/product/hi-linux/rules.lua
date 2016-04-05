@@ -81,6 +81,12 @@ package { 'rootfs', 'target',
     },
 }
 
+package { 'busybox', 'target',
+    install = {
+        prefix = '/busybox'
+    }
+}
+
 if jagen.flag 'debug' then
     package { 'strace', 'target' }
 end
