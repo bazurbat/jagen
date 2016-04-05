@@ -8,7 +8,9 @@ jagen_pkg_prepare() {
     pkg_run install -d -m 700 root
     pkg_run install -d -m 1777 tmp
 
-    pkg_run rsync -vrtl "$jagen_sdk_dir/pub/rootfs/" "."
+    if [ -d "$jagen_sdk_dir/pub/rootfs" ]; then
+        pkg_run rsync -vrtl "$jagen_sdk_dir/pub/rootfs/" "."
+    fi
     pkg_run rsync -vrtl "$jagen_sdk_dir/pub/kmod/" "./kmod"
     pkg_run rsync -vrtl "$pub_dir/lib/share/" "lib"
 
