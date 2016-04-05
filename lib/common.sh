@@ -45,6 +45,36 @@ include() {
     fi
 }
 
+jagen_find_path() {
+    local path="${1:?}" result= i=
+    : ${jagen_dir:?}
+
+    if [ "$jagen_root" ]; then
+        result="$jagen_root/$path"
+        if [ -e "$result" ]; then
+            echo "$result"
+            return
+        fi
+    fi
+
+    set -- $jagen_overlays
+    i=$#
+
+    while [ "$i" -gt 0 ]; do
+        result="$jagen_dir/overlay/$(eval echo \$$i)/$path"
+        if [ -e "$result" ]; then
+            echo "$result"
+            return
+        fi
+        : $((i--))
+    done
+
+    result="$jagen_dir/lib/$path"
+    if [ -e "$result" ]; then
+        echo "$result"
+    fi
+}
+
 import() {
     local pathname="${1:?}.sh"
     try_include "${jagen_dir:?}/lib/$pathname" || return
