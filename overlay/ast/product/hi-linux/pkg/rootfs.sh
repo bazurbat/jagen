@@ -13,7 +13,7 @@ jagen_pkg_prepare() {
     if [ -d "$jagen_sdk_dir/pub/rootfs" ]; then
         pkg_run rsync -rtl "$jagen_sdk_dir/pub/rootfs/" "."
     fi
-    pkg_run rsync -rtl "$jagen_sdk_dir/pub/kmod/" "./kmod"
+    pkg_run rsync -rtl --delete "$jagen_sdk_dir/pub/kmod/" "kmod"
     pkg_run rsync -rtl "$pub_dir/lib/share/" "lib"
 
     pkg_run rsync -t "$jagen_private_dir/lib/libHA.AUDIO.PCM.decode.so" "lib"
