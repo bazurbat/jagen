@@ -8,6 +8,8 @@ jagen_pkg_prepare() {
     pkg_run install -d -m 700 root
     pkg_run install -d -m 1777 tmp
 
+    pkg_run ln -snf /proc/mounts etc/mtab
+
     if [ -d "$jagen_sdk_dir/pub/rootfs" ]; then
         pkg_run rsync -rtl "$jagen_sdk_dir/pub/rootfs/" "."
     fi
@@ -109,6 +111,8 @@ install_files() {
 
     pkg_run rsync -a "$jagen_target_dir/busybox/" .
     pkg_run rsync -a "$pkg_source_dir/hisi/" .
+
+    echo "$jagen_target_board" > etc/hostname
 }
 
 install_debug_utils() {
