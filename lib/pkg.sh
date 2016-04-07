@@ -204,7 +204,7 @@ pkg_autoreconf() {
             pkg_run ./autogen.sh
         fi
     else
-        pkg_run autoreconf -if -I "$jagen_host_dir/share/aclocal"
+        pkg_run autoreconf -vif -B "$jagen_host_dir/share/aclocal"
     fi
 }
 
