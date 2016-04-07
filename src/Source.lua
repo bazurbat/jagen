@@ -73,6 +73,9 @@ function Source:create(source, name)
     return source
 end
 
+function Source:fixup()
+end
+
 -- GitSource
 
 function GitSource:new(o)
@@ -155,6 +158,13 @@ end
 function GitSource:clone()
     return system.exec('git', 'clone', '--branch', assert(self.branch),
         '--depth', 1, assert(self.location), assert(self.dir))
+end
+
+function GitSource:fixup()
+    if self.assume_unchanged then
+        return self:exec('update-index', '--assume-unchanged',
+            unpack(self.assume_unchanged))
+    end
 end
 
 -- HgSource

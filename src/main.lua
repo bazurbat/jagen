@@ -182,6 +182,11 @@ function jagen.src.update(packages)
                     pkg.name, source.location, source.dir)
             end
         end
+
+        if not offline and not source:fixup() then
+            jagen.die('failed to fix up %s source in %s',
+                pkg.name, source.dir)
+        end
     end
 end
 
