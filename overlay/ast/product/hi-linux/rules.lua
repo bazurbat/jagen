@@ -61,31 +61,18 @@ package { 'karaoke-player', 'target',
 }
 
 package { 'rootfs', 'target',
-    { 'prepare',
-        { 'ast-files', 'unpack'           },
-        { 'hi-sdk',    'mkload', 'target' }
-    },
-    { 'hi-utils',
-        requires = { 'hi-utils' }
-    },
-    { 'dropbear',
-        requires = { 'dropbear' }
-    },
-    { 'dropbear-key' },
     { 'install',
         requires = {
             'busybox',
             'connman',
+            'dropbear',
             'hi-drivers',
+            'hi-utils',
             'karaoke-player',
-        }
+        },
+        { 'ast-files', 'unpack'           },
+        { 'hi-sdk',    'mkload', 'target' }
     },
-}
-
-package { 'busybox', 'target',
-    install = {
-        prefix = '/busybox'
-    }
 }
 
 if jagen.flag 'debug' then
