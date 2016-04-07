@@ -75,6 +75,7 @@ package { 'rootfs', 'target',
     { 'install',
         requires = {
             'busybox',
+            'connman',
             'hi-drivers',
             'karaoke-player',
         }
