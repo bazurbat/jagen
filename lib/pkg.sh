@@ -138,7 +138,10 @@ pkg_is_release_with_debug() {
 # usings
 
 pkg_using_install_prefix() {
-    printf '%s' "-DCMAKE_INSTALL_PREFIX=${1:-$pkg_prefix}"
+    local prefix="${1:-$pkg_prefix}"
+    if [ "$prefix" ]; then
+        printf '%s' "-DCMAKE_INSTALL_PREFIX=$prefix"
+    fi
 }
 
 pkg_using_host_chicken() {
