@@ -34,6 +34,9 @@ jagen_pkg_hiboot() {
 
 jagen_pkg_linux() {
     pkg_run make linux_install
+    pkg_run make -C "$jagen_src_dir/hi-kernel" \
+        INSTALL_MOD_PATH="$pkg_install_dir" \
+        modules_install
 }
 
 jagen_pkg_rootfs() {
