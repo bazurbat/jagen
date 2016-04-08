@@ -37,6 +37,12 @@ package { 'hi-drivers', 'target',
     }
 }
 
+package { 'rtl8188eu', 'target',
+    { 'build',
+        { 'hi-sdk', 'linux', 'target' }
+    }
+}
+
 package { 'cmake-modules' }
 
 package { 'hi-utils', 'target',
@@ -69,6 +75,8 @@ package { 'rootfs', 'target',
             'hi-drivers',
             'hi-utils',
             'karaoke-player',
+            'libnl',
+            'rtl8188eu',
         },
         { 'ast-files', 'unpack'           },
         { 'hi-sdk',    'mkload', 'target' }
