@@ -3,7 +3,7 @@
 jagen_pkg_configure_host() {
     pkg_run cmake -G"$jagen_cmake_generator" \
         -DCMAKE_BUILD_TYPE="$(pkg_cmake_build_type)" \
-        -DCMAKE_INSTALL_PREFIX="$jagen_tools_dir" \
+        -DCMAKE_INSTALL_PREFIX="$jagen_host_dir" \
         -DUSE_LOOPAES=0 \
         ${losetup:+"-DLOSETUP=$losetup"} \
         "$pkg_source_dir"

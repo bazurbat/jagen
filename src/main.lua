@@ -210,7 +210,6 @@ function jagen.command.clean(args, i)
         'jagen_log_dir',
         'jagen_host_dir',
         'jagen_target_dir',
-        'jagen_tools_dir'
     }
     local dirs = system.getenv(vars)
 

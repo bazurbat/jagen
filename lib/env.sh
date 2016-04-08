@@ -39,9 +39,6 @@ jagen_host_prefix=""
 export jagen_target_dir="$jagen_root/target"
 jagen_target_prefix="/usr"
 
-export jagen_tools_dir="$jagen_root/tools"
-jagen_tools_prefix=""
-
 export LUA_PATH="$jagen_dir/src/?.lua;;"
 
 add_PATH "$jagen_host_dir/bin"

@@ -49,7 +49,6 @@ SYNOPSIS
     jagen_log_dir
     jagen_host_dir
     jagen_target_dir
-    jagen_tools_dir
 
   Actual paths depend on configuration. After the deletion regenerates the
   build system using the 'jagen refresh' command.

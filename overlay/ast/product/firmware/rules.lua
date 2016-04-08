@@ -14,10 +14,6 @@ package { 'ucode',
     { 'install' }
 }
 
--- tools
-
-package { 'make', 'tools' }
-
 -- host
 
 package { 'utils', 'host' }
@@ -78,13 +74,11 @@ local function rootfs_package(rule)
 end
 
 package { 'rootfs',
-    env = { 'tools' },
     template = rootfs_package_template,
     { 'configure',
         { 'ast-files', 'unpack'            },
         { 'xsdk',      'unpack'            },
         { 'toolchain', 'install', 'target' },
-        { 'make',      'install', 'tools'  },
     },
     { 'compile' },
     { 'install',
@@ -109,11 +103,7 @@ package { 'mrua', 'target',
     { 'install' },
 }
 
-rootfs_package { 'ezboot',
-    { 'configure',
-        { 'make', 'install', 'tools' }
-    }
-}
+rootfs_package { 'ezboot' }
 
 rootfs_package { 'busybox',
     install = {
