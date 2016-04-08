@@ -28,7 +28,7 @@ pkg_run() {
 
 pkg_run_patch() {
     local num="${1:?}" name="${2:?}"
-    pkg_run patch -p$num -i "$jagen_patch_dir/${name}.patch"
+    pkg_run patch -p$num -i "$jagen_dist_dir/patches/${name}.patch"
 }
 
 pkg_strip_root() {

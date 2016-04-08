@@ -21,7 +21,6 @@ jagen =
     build_dir   = os.getenv('jagen_build_dir'),
     include_dir = os.getenv('jagen_include_dir'),
 
-    patch_dir   = os.getenv('jagen_patch_dir'),
     private_dir = os.getenv('jagen_private_dir'),
 }
 
