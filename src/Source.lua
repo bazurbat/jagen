@@ -74,6 +74,7 @@ function Source:create(source, name)
 end
 
 function Source:fixup()
+    return true
 end
 
 -- GitSource
@@ -165,6 +166,7 @@ function GitSource:fixup()
         return self:exec('update-index', '--assume-unchanged',
             unpack(self.assume_unchanged))
     end
+    return true
 end
 
 -- HgSource
