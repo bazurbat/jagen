@@ -66,7 +66,7 @@ jagen_find_path() {
             echo "$result"
             return
         fi
-        : $((i--))
+        i=$((i-1))
     done
 
     result="$jagen_dir/lib/$path"
