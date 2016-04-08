@@ -33,8 +33,6 @@ if [ "$jagen_root" ]; then
     try_include "$jagen_root/config.sh"
 fi
 
-export jagen_private_dir="$jagen_src_dir/files"
-
 export jagen_host_dir="$jagen_root/host"
 jagen_host_prefix=""
 

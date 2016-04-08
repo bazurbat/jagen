@@ -20,8 +20,6 @@ jagen =
     src_dir     = os.getenv('jagen_src_dir'),
     build_dir   = os.getenv('jagen_build_dir'),
     include_dir = os.getenv('jagen_include_dir'),
-
-    private_dir = os.getenv('jagen_private_dir'),
 }
 
 jagen.cmd = system.mkpath(jagen.lib_dir, 'cmd.sh')

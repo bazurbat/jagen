@@ -94,7 +94,6 @@ if [ \$sts != 0 ]; then
     return \$sts
 fi
 
-add_PATH "\$jagen_private_dir/bin"
 add_PATH "\$jagen_dir/bin"
 EOF
 }
