@@ -13,6 +13,9 @@ build_libs="rmcore rmcec rmedid rmhdmi rmhsi rmi2c rmsha1 rmvideoout rmoutput"
 PATH="$SMP86XX_TOOLCHAIN_PATH/bin:$PATH"
 
 jagen_pkg_compile() {
+    # This is hardcoded somewhere, make needs lib to exist
+    pkg_run mkdir -p "$jagen_sdk_rootfs_prefix/lib"
+
     pkg_run make
 
     for lib in $build_libs; do
