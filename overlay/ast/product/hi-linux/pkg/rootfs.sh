@@ -52,6 +52,7 @@ jagen_pkg_install() {
 
     pkg_run ln -snf /proc/mounts etc/mtab
     pkg_run ln -snf /bin/busybox init
+    pkg_run ln -snf /var settings
 
     pkg_run chmod 0700 root
     pkg_run chmod 0700 root/.ssh
@@ -65,6 +66,10 @@ jagen_pkg_install() {
     pkg_run rm -rf lib/dbus* lib/libffi* lib/pkgconfig lib/xtables
     pkg_run rm -rf libexec/xtables-addons
     pkg_run find . -type f -name '.dirholder' -delete
+
+    if [ -d var/service/connman ]; then
+        pkg_run touch var/service/connman/down
+    fi
 
     # if pkg_is_release; then
     #     _jagen src status > heads || return
