@@ -5,6 +5,7 @@
 
 : ${pkg_run_jobs:=$(jagen_nproc)}
 : ${pkg_run_on_error:=exit}
+: ${jagen_cmake_generator:=Ninja}
 
 pkg_run() {
     local cmd="$1"
