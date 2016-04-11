@@ -48,6 +48,9 @@ jagen_sigma_cpukeys="CPU_KEYS_SMP86xx_2010-02-12"
 
 jagen_sigma_xsdk_dir="$jagen_build_dir/xsdk/$jagen_sigma_cpukeys"
 
+# to find ...-config tools and other utils
+add_PATH "$jagen_sdk_rootfs_prefix/bin"
+
 # XSDK
 export XSDK_ROOT="$jagen_sigma_xsdk_dir/signed_items"
 export XSDK_DEFAULT_KEY_DOMAIN=8644_ES1_prod
