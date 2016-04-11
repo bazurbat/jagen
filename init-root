@@ -95,6 +95,7 @@ if [ \$sts != 0 ]; then
 fi
 
 add_PATH "\$jagen_dir/bin"
+add_PATH "\$jagen_root/bin"
 EOF
 }
 
