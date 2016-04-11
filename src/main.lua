@@ -221,6 +221,7 @@ end
 
 local function prepare_root()
     local vars = {
+        'jagen_bin_dir',
         'jagen_build_dir',
         'jagen_include_dir',
         'jagen_log_dir'
