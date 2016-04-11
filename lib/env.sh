@@ -16,6 +16,8 @@ export jagen_sdk=""
 export jagen_overlays
 
 export jagen_lib_dir="$jagen_dir/lib"
+
+export jagen_bin_dir="$jagen_root/bin"
 export jagen_src_dir="$jagen_root/src"
 export jagen_build_dir="$jagen_root/build"
 export jagen_include_dir="$jagen_root/include"
