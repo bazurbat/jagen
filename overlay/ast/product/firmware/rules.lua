@@ -62,10 +62,6 @@ kernel_package { 'ralink' }
 
 local rootfs_package_template = {
     config  = 'target',
-    install = {
-        root = '$jagen_sdk_staging_dir',
-        prefix = ''
-    },
     { 'configure', { 'rootfs', 'compile' } }
 }
 
@@ -73,7 +69,7 @@ local function rootfs_package(rule)
     package(rule, rootfs_package_template)
 end
 
-package { 'rootfs',
+package { 'rootfs', 'target',
     template = rootfs_package_template,
     { 'configure',
         { 'ast-files', 'unpack'            },

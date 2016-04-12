@@ -1,5 +1,5 @@
 package {
     source = {
-        dir = '$jagen_target_dir'
+        dir = '$jagen_target_dir/firmware'
     }
 }

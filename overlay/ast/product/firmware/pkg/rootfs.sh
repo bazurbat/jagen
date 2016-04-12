@@ -1,5 +1,7 @@
 #!/bin/sh
 
+require nocflags
+
 pkg_run_jobs=1
 
 jagen_pkg_patch() {
@@ -9,9 +11,6 @@ jagen_pkg_patch() {
 
 jagen_pkg_compile() {
     PATH="$SMP86XX_TOOLCHAIN_PATH/bin:$PATH"
-
-    # this becomes dangling symlink on rebuild and make fails
-    pkg_run rm -f "$jagen_sdk_initfs_dir/init"
 
     pkg_run make
 }
