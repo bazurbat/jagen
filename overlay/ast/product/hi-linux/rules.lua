@@ -1,30 +1,16 @@
 -- HiSilicon Linux SDK
 
-package { 'make', 'host',
-    source = 'make-3.81.tar.bz2'
-}
-
 package { 'ast-files' }
 
 package { 'hi-kernel' }
 
-package { 'hi-sdk-tools' }
-
 package { 'hi-sdk', 'target',
     { 'patch',
         { 'hi-kernel',    'unpack' },
-        { 'hi-sdk-tools', 'unpack' },
     },
-    -- { 'tools' },
-    { 'prepare',
-        requires = {
-            'toolchain',
-            { 'make', 'host' },
-        },
-    },
-    -- { 'hiboot'    },
+    { 'prepare', requires = { 'toolchain' } },
+    { 'hiboot'    },
     { 'linux'     },
-    -- { 'rootfs'    },
     { 'common'    },
     { 'msp'       },
     { 'component' },

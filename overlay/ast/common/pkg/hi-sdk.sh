@@ -14,14 +14,6 @@ jagen_pkg_patch() {
 
     pkg_link "${jagen_kernel_src_dir:?}" \
         "$pkg_source_dir/source/kernel/linux-3.4.y"
-
-    pkg_link \
-        "${jagen_sdk_tools_dir:?}" \
-        "$pkg_source_dir/tools"
-}
-
-jagen_pkg_tools() {
-    pkg_run make tools_install
 }
 
 jagen_pkg_prepare() {
@@ -34,13 +26,9 @@ jagen_pkg_hiboot() {
 
 jagen_pkg_linux() {
     pkg_run make linux_install
-    pkg_run make -C "$jagen_src_dir/hi-kernel" \
+    pkg_run make -C "$jagen_kernel_src_dir" \
         INSTALL_MOD_PATH="$pkg_install_dir" \
         modules_install
-}
-
-jagen_pkg_rootfs() {
-    pkg_run make rootfs_install
 }
 
 jagen_pkg_common() {
@@ -58,9 +46,4 @@ jagen_pkg_component() {
 
 jagen_pkg_mkload() {
     pkg_run make -C scripts load_install
-}
-
-jagen_pkg_rootbox() {
-    pkg_run make rootbox_install
-    pkg_run make fs
 }
