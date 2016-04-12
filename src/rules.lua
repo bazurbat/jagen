@@ -196,7 +196,16 @@ function Rule:add_stages(stages)
             P.level = P.level + 1
             Rule:add_package(Rule:new({ name = name, config = config }, template))
             P.level = P.level - 1
+        end
 
+        for item in each(stage.depends or {}) do
+            local stage = stage[1]
+            target:append(Target:new(item, stage, config))
+            P.level = P.level + 1
+            Rule:add_package(Rule:new({ name = item, config = config,
+                        { 'deploy' }
+                }, template))
+            P.level = P.level - 1
         end
 
         self:add_target(target)
