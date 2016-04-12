@@ -2,8 +2,6 @@
 
 jagen_sdk='sigma'
 
-jagen_target_prefix="/firmware"
-
 jagen_sdk_ezboot_dir="$jagen_src_dir/sigma-ezboot"
 jagen_sdk_kernel_dir="$jagen_src_dir/sigma-kernel"
 jagen_sdk_mrua_dir="$jagen_src_dir/sigma-mrua"

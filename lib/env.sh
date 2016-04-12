@@ -36,10 +36,8 @@ if [ "$jagen_root" ]; then
 fi
 
 export jagen_host_dir="$jagen_root/host"
-jagen_host_prefix=""
 
 export jagen_target_dir="$jagen_root/target"
-jagen_target_prefix=""
 
 export LUA_PATH="$jagen_dir/src/?.lua;;"
 

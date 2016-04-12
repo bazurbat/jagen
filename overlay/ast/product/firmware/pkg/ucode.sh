@@ -1,7 +1,7 @@
 #!/bin/sh
 
 jagen_pkg_install() {
-    local dst="$jagen_target_dir$jagen_target_prefix/xload"
+    local dst="$pkg_install_dir/xload"
 
     pkg_run install -vd "$dst"
 

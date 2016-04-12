@@ -13,7 +13,7 @@ if [ -d "$jagen_toolchain_bin_dir" ]; then
 fi
 
 export PKG_CONFIG_SYSROOT_DIR="${jagen_target_dir}"
-export PKG_CONFIG_LIBDIR="${jagen_target_dir}${jagen_target_prefix}/lib/pkgconfig"
+export PKG_CONFIG_LIBDIR="${jagen_target_dir}/lib/pkgconfig"
 export PKG_CONFIG_PATH=""
 
 # pkg-config tries to be smart and removes -I and -L flags from it's output

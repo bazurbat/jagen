@@ -35,8 +35,8 @@ jagen_pkg_modules() {
 }
 
 jagen_pkg_install() {
-    local bin_dir="$jagen_target_dir$jagen_target_prefix/bin"
-    local lib_dir="$jagen_target_dir$jagen_target_prefix/lib"
+    local bin_dir="$pkg_install_dir/bin"
+    local lib_dir="$pkg_install_dir/lib"
 
     pkg_run mkdir -p "$bin_dir" "$lib_dir"
 

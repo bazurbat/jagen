@@ -5,8 +5,6 @@ jagen_sdk='android'
 # Many Android build and utility scripts assume Bash shell
 jagen_shell="/bin/bash"
 
-jagen_target_prefix="/system"
-
 : ${jagen_sdk_dir:?}
 : ${jagen_android_product:?}
 

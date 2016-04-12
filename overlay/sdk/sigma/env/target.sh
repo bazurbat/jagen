@@ -16,5 +16,5 @@ export LDFLAGS=""
 : ${jagen_target_dir:?}
 
 export PKG_CONFIG_SYSROOT_DIR="${jagen_target_dir}"
-export PKG_CONFIG_LIBDIR="${jagen_target_dir}${jagen_target_prefix}/lib/pkgconfig"
+export PKG_CONFIG_LIBDIR="${jagen_target_dir}/lib/pkgconfig"
 export PKG_CONFIG_PATH="$jagen_sdk_rootfs_prefix/lib/pkgconfig"

@@ -124,6 +124,9 @@ rootfs_package { 'utils',
 
 local firmware_package_template = {
     config = 'target',
+    install = {
+        prefix = '/firmware'
+    },
     { 'install', { 'firmware', 'unpack' } }
 }
 

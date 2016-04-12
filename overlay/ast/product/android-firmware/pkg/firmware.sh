@@ -24,7 +24,7 @@ jagen_pkg_compile() {
 }
 
 jagen_pkg_install() {
-    local out_dir="$jagen_sdk_staging_dir$jagen_target_prefix"
+    local out_dir="$jagen_sdk_staging_dir"
 
     if ! [ -d "$out_dir" ]; then
         message "output directory $out_dir is not exists, skipping deployment"
