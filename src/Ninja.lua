@@ -74,6 +74,9 @@ function Ninja:build_stage(target)
     if shell and #shell > 0 then
         script = shell.." "..script
     end
+    if target.arg then
+        script = script.." '"..string.gsub(target.arg, '%$', '$$').."'"
+    end
     return self:build({
             rule      = 'script',
             outputs   = { tostring(target) },

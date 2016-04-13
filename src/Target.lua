@@ -16,6 +16,8 @@ function Target:parse(rule, name, config)
     local stage = rule[1]; assert(type(stage) == 'string')
     local target = Target:new(name, stage, config)
 
+    target.arg = rule.arg
+
     if #rule > 1 then
         target.inputs = {}
     end
