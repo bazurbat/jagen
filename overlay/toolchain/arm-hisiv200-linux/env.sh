@@ -15,7 +15,8 @@ fi
 
 jagen_toolchain_install_runtime() {
     local dest="${1:?}"
-    local abi="armv5te_soft"
+    # local abi="armv5te_soft"
+    local abi="armv7a_vfp_v3d16"
 
     pkg_run rsync -a \
         "$jagen_toolchain_dir/target/$abi/lib/" \
