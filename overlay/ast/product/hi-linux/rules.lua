@@ -24,7 +24,7 @@ package { 'hi-drivers', 'target',
 }
 
 package { 'rtl8188eu', 'target',
-    { 'build',
+    { 'compile',
         { 'hi-sdk', 'linux', 'target' }
     }
 }
@@ -42,6 +42,7 @@ package { 'karaoke-player', 'target',
     { 'configure',
         requires = {
             'chicken-eggs',
+            'connman',
             'ffmpeg',
             'libass',
             'libuv',
@@ -56,12 +57,10 @@ package { 'rootfs', 'target',
     { 'install',
         requires = {
             'busybox',
-            'connman',
             'dropbear',
             'hi-drivers',
             'hi-utils',
             'karaoke-player',
-            'libnl',
             'rtl8188eu',
         },
         { 'ast-files', 'unpack'           },
