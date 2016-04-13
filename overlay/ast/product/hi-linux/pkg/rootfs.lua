@@ -1,5 +1,5 @@
 package {
     build = {
-        dir = '$pkg_work_dir'
+        dir = '$jagen_target_dir'
     }
 }
