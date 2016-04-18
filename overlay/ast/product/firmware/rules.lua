@@ -41,7 +41,8 @@ local kernel_package_template = {
 }
 
 local function kernel_package(rule)
-    package(rule, kernel_package_template)
+    rule.template = kernel_package_template
+    package(rule)
 end
 
 package { 'kernel', 'target',
@@ -66,11 +67,13 @@ local rootfs_package_template = {
 }
 
 local function rootfs_package(rule)
-    package(rule, rootfs_package_template)
+    rule.template = rootfs_package_template
+    package(rule)
 end
 
 package { 'rootfs', 'target',
     template = rootfs_package_template,
+    skip_template = true,
     { 'configure',
         { 'ast-files', 'unpack'            },
         { 'xsdk',      'unpack'            },
@@ -127,11 +130,13 @@ local firmware_package_template = {
 }
 
 local function firmware_package(rule)
-    package(rule, firmware_package_template)
+    rule.template = firmware_package_template
+    package(rule)
 end
 
 package { 'firmware',
     template = firmware_package_template,
+    skip_template = true,
     { 'compile',
         { 'mrua', 'compile', 'target' }
     },

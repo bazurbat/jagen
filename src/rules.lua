@@ -49,8 +49,8 @@ end
 function Rule:loadall(filename)
     local env = {}
     setmetatable(env, { __index = _G })
-    function env.package(rule, template)
-        Rule:add_package(Rule:new(rule, template))
+    function env.package(rule)
+        Rule:add_package(Rule:new(rule))
     end
     local chunk = loadfile(filename)
     if chunk then
@@ -74,9 +74,8 @@ function Rule:parse(rule)
     return rule
 end
 
-function Rule:new(rule, template)
+function Rule:new(rule)
     rule = Rule:parse(rule)
-    rule._template = template
     setmetatable(rule, self)
     return rule
 end
@@ -193,7 +192,11 @@ function Rule:add_stages(stages)
             target:append(Target:new(name, 'install', config))
 
             P.level = P.level + 1
-            Rule:add_package(Rule:new({ name = name, config = config }, template))
+            Rule:add_package(Rule:new({
+                        name = name,
+                        config = config,
+                        template = template
+                }))
             P.level = P.level - 1
         end
 
@@ -201,9 +204,12 @@ function Rule:add_stages(stages)
             local stage = stage[1]
             target:append(Target:new(item, stage, config))
             P.level = P.level + 1
-            Rule:add_package(Rule:new({ name = item, config = config,
+            Rule:add_package(Rule:new({
+                        name = item,
+                        config = config,
+                        template = template,
                         { 'deploy' }
-                }, template))
+                }))
             P.level = P.level - 1
         end
 
@@ -226,10 +232,12 @@ function Rule:add_package(rule)
     local final = pkg.final
 
     if not final then
-        local template = rule._template
+        local template = rule.template
 
         if template then
-            rule = table.merge(copy(template), rule)
+            if not rule.skip_template then
+                rule = table.merge(copy(template), rule)
+            end
             rule.template = template
         end
     end
