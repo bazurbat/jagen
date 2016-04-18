@@ -47,17 +47,16 @@ function Rule:loadsingle(filename)
 end
 
 function Rule:loadall(filename)
-    local o, env = {}, {}
+    local env = {}
     setmetatable(env, { __index = _G })
     function env.package(rule, template)
-        table.insert(o, Rule:new(rule, template))
+        Rule:add_package(Rule:new(rule, template))
     end
     local chunk = loadfile(filename)
     if chunk then
         setfenv(chunk, env)
         chunk()
     end
-    return o
 end
 
 function Rule:parse(rule)
@@ -342,9 +341,7 @@ function P.load()
     local Source = require 'Source'
 
     for filename in each(import_paths('rules.lua')) do
-        for rule in each(Rule:loadall(filename)) do
-            Rule:add_package(rule)
-        end
+        Rule:loadall(filename)
     end
 
     for _, pkg in pairs(packages) do
