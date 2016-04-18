@@ -50,7 +50,7 @@ function Rule:loadall(filename)
     local env = {}
     setmetatable(env, { __index = _G })
     function env.package(rule)
-        Rule:add_package(Rule:new(rule))
+        Rule:add_package(rule)
     end
     local chunk = loadfile(filename)
     if chunk then
@@ -192,11 +192,11 @@ function Rule:add_stages(stages)
             target:append(Target:new(name, 'install', config))
 
             P.level = P.level + 1
-            Rule:add_package(Rule:new({
-                        name = name,
-                        config = config,
-                        template = template
-                }))
+            Rule:add_package {
+                name = name,
+                config = config,
+                template = template
+            }
             P.level = P.level - 1
         end
 
@@ -204,12 +204,12 @@ function Rule:add_stages(stages)
             local stage = stage[1]
             target:append(Target:new(item, stage, config))
             P.level = P.level + 1
-            Rule:add_package(Rule:new({
-                        name = item,
-                        config = config,
-                        template = template,
-                        { 'deploy' }
-                }))
+            Rule:add_package {
+                name = item,
+                config = config,
+                template = template,
+                { 'deploy' }
+            }
             P.level = P.level - 1
         end
 
@@ -221,6 +221,8 @@ end
 
 function Rule:add_package(rule)
     jagen.debug2('%s+ %s', P.indent(), rule.name)
+
+    rule = Rule:new(rule)
 
     local pkg = packages[rule.name]
 
