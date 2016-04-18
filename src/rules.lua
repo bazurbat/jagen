@@ -47,8 +47,10 @@ function Rule:loadsingle(filename)
 end
 
 function Rule:loadall(filename)
-    local env = {}
-    setmetatable(env, { __index = _G })
+    local env = {
+        packages = packages
+    }
+    setmetatable(env, { __index = _G, })
     function env.package(rule)
         Rule:add_package(rule)
     end
