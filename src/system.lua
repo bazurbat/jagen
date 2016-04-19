@@ -61,6 +61,10 @@ function P.exists(path)
     return P.exec(string.format('test -e "%s"', path))
 end
 
+function P.file_exists(pathname)
+    return P.exec(string.format('test -f "%s"', pathname))
+end
+
 function P.is_empty(path)
     local pipe = assert(P.popen(string.format('cd "%s" && echo *', path)))
     local empty = assert(pipe:read()) == '*'
