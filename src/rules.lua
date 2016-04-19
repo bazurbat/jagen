@@ -20,11 +20,10 @@ local packages = {}
 
 local function import_paths(filename)
     local o = {}
+    local product = assert(os.getenv('jagen_product'))
+    table.insert(o, mkpath(jagen.dir, 'usr/product', product, filename))
+    table.insert(o, mkpath(jagen.dir, 'usr/vendor', filename))
     table.insert(o, mkpath(jagen.dir, 'lib', filename))
-    for _, overlay in ipairs(string.split(jagen.overlays, ' ')) do
-        table.insert(o, mkpath(jagen.dir, 'overlay', overlay, filename))
-    end
-    table.insert(o, mkpath(jagen.root, filename))
     return o
 end
 
@@ -77,9 +76,7 @@ function Rule:new_package(rule)
         pkg:add_target(Target:new(name, stage))
     end
 
-    local paths = import_paths('pkg/'..name..'.lua')
-    for i = #paths, 1, -1 do
-        local filename = paths[i]
+    for _, filename in ipairs(import_paths('pkg/'..name..'.lua')) do
         if system.file_exists(filename) then
             table.merge(pkg, Rule:new(Rule:loadsingle(filename)))
             break
@@ -342,7 +339,8 @@ end
 function P.load()
     local Source = require 'Source'
 
-    local filename = mkpath(jagen.root, 'rules.lua')
+    local product = assert(os.getenv('jagen_product'))
+    local filename = mkpath(jagen.dir, 'usr/product', product, 'rules.lua')
 
     local chunk = assert(loadfile(filename))
     if chunk  then

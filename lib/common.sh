@@ -41,7 +41,7 @@ include() {
     if [ -f "${pathname}" ]; then
         try_include "${pathname}"
     else
-        return 2
+        return 2 # stands for ENOENT
     fi
 }
 
@@ -76,14 +76,13 @@ jagen_find_path() {
 }
 
 import() {
-    local pathname="${1:?}.sh"
-    try_include "${jagen_dir:?}/lib/$pathname" || return
-    for overlay in $jagen_overlays; do
-        try_include "$jagen_dir/overlay/$overlay/$pathname" || return
-    done
-    if [ "$jagen_root" ]; then
-        try_include "$jagen_root/$pathname" || return
-    fi
+    local name="${1:?}" sts=
+    import "${jagen_dir:?}/usr/${jagen_product:?}/${name}"
+    sts=$?; [ $sts != 2 ] && return $sts
+    include "${jagen_dir:?}/vendor/${name}"
+    sts=$?; [ $sts != 2 ] && return $sts
+    include "${jagen_dir:?}/lib/${name}"
+    sts=$?; [ $sts != 2 ] && return $sts
 }
 
 use_env() {

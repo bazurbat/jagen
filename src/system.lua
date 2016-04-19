@@ -19,7 +19,7 @@ end
 
 function P.exec(...)
     local command = tocommand(...)
-    jagen.debug1(command)
+    jagen.debug2(command)
     local status = os.execute(command)
     return status == 0, status % 0xFF
 end

@@ -67,7 +67,7 @@ kernel_rule { 'ralink' }
 
 local rootfs_rule_template = {
     config  = 'target',
-    { 'configure', { 'rootfs', 'compile' } }
+    { 'configure', { 'rootfs', 'compile', 'target' } }
 }
 
 local function rootfs_rule(r)
