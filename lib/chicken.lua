@@ -1,6 +1,6 @@
 -- CHICKEN Scheme
 
-R = require 'rules'
+local R = require 'rules'
 
 R:add { 'chicken', 'host' }
 

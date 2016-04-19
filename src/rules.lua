@@ -357,8 +357,11 @@ end
 function P.load()
     local Source = require 'Source'
 
-    for filename in each(import_paths('rules.lua')) do
-        Rule:loadall(filename)
+    local filename = mkpath(jagen.root, 'rules.lua')
+
+    local chunk = assert(loadfile(filename))
+    if chunk  then
+        chunk()
     end
 
     for _, pkg in pairs(packages) do
