@@ -46,21 +46,6 @@ function Rule:loadsingle(filename)
     return o
 end
 
-function Rule:loadall(filename)
-    local env = {
-        packages = packages
-    }
-    setmetatable(env, { __index = _G, })
-    function env.rule(t)
-        Rule:add_package(t)
-    end
-    local chunk = loadfile(filename)
-    if chunk then
-        setfenv(chunk, env)
-        chunk()
-    end
-end
-
 function Rule:parse(rule)
     if type(rule[1]) == 'string' then
         rule.name = rule[1]
