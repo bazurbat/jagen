@@ -1,14 +1,16 @@
 -- CHICKEN Scheme
 
-rule { 'chicken', 'host' }
+R = require 'rules'
 
-rule { 'chicken-eggs', 'host' }
+R:add { 'chicken', 'host' }
 
-rule { 'chicken', 'target',
+R:add { 'chicken-eggs', 'host' }
+
+R:add { 'chicken', 'target',
     { 'configure', { 'chicken', 'install', 'host' } }
 }
 
-rule { 'chicken-eggs', 'target',
+R:add { 'chicken-eggs', 'target',
     { 'configure',
         requires = {
             'dbus',

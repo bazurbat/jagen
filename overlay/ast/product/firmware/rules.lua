@@ -1,5 +1,7 @@
 -- Sigma rules
 
+require 'chicken'
+
 -- base
 
 rule { 'ast-files' }

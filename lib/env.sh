@@ -39,7 +39,7 @@ export jagen_host_dir="$jagen_root/host"
 
 export jagen_target_dir="$jagen_root/target"
 
-export LUA_PATH="$jagen_dir/src/?.lua;;"
+export LUA_PATH="$jagen_dir/lib/?.lua;$jagen_dir/src/?.lua;;"
 
 add_PATH "$jagen_host_dir/bin"
 add_LD_LIBRARY_PATH "$jagen_host_dir/lib"

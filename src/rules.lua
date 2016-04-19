@@ -368,4 +368,8 @@ function P.load()
     return packages
 end
 
+function P:add(rule)
+    return Rule:add_package(rule)
+end
+
 return P
