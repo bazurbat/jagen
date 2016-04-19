@@ -1,4 +1,4 @@
-package {
+rule {
     source = {
         type     = 'repo',
         location = 'https://android.googlesource.com/platform/manifest',

@@ -1,31 +1,32 @@
 -- Android rules
 
-package { 'android-cmake' }
+rule { 'android-cmake' }
 
-package { 'cmake-modules' }
+rule { 'cmake-modules' }
 
-package { 'chicken', 'host',
+rule { 'chicken', 'host',
     { 'configure',
         { 'android-cmake', 'unpack' }
     }
 }
 
-package { 'chicken-eggs', 'host',
+rule { 'chicken-eggs', 'host',
     { 'install',
         { 'chicken', 'install', 'host' }
     }
 }
 
-local firmware_package_template = {
+local firmware_rule_template = {
     config = 'target',
     { 'install', { 'firmware', 'unpack' } }
 }
 
-local function firmware_package(rule)
-    package(rule, firmware_package_template)
+local function firmware_rule(r)
+    r.template = firmware_rule_template
+    rule(r)
 end
 
-package { 'firmware',
+rule { 'firmware',
     { 'compile',
         { 'hi-utils',       'install', 'target' },
         { 'chicken',        'install', 'target' },
@@ -37,20 +38,20 @@ package { 'firmware',
     { 'install' }
 }
 
-firmware_package { 'hi-utils',
+firmware_rule { 'hi-utils',
     { 'configure',
         { 'android-cmake', 'unpack' },
         { 'cmake-modules', 'unpack' },
     }
 }
 
-firmware_package { 'chicken',
+firmware_rule { 'chicken',
     { 'configure',
         { 'chicken', 'install', 'host' }
     }
 }
 
-firmware_package { 'chicken-eggs',
+firmware_rule { 'chicken-eggs',
     { 'install',
         { 'chicken-eggs', 'install', 'host'   },
         { 'chicken',      'install', 'target' },
@@ -58,11 +59,11 @@ firmware_package { 'chicken-eggs',
     }
 }
 
-firmware_package { 'sqlite' }
+firmware_rule { 'sqlite' }
 
-firmware_package { 'ffmpeg' }
+firmware_rule { 'ffmpeg' }
 
-firmware_package { 'karaoke-player',
+firmware_rule { 'karaoke-player',
     { 'configure',
         { 'astindex',      'unpack'            },
         { 'cmake-modules', 'unpack'            },
@@ -74,11 +75,11 @@ firmware_package { 'karaoke-player',
     { 'install' }
 }
 
-package { 'astindex',
+rule { 'astindex',
     { 'unpack', { 'karaoke-player', 'unpack' } }
 }
 
-firmware_package { 'libuv',
+firmware_rule { 'libuv',
     build  = {
         options = { '--disable-static' }
     }

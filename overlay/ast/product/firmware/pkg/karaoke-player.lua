@@ -1,3 +1,3 @@
-package {
+rule {
     source = { branch = 'stable' }
 }

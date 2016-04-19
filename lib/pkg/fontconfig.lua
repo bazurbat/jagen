@@ -1,4 +1,4 @@
-package {
+rule {
     source = 'fontconfig-2.11.1.tar.bz2',
     build  = {
         type = 'GNU',

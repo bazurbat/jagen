@@ -2,23 +2,23 @@
 
 -- base
 
-package { 'ast-files' }
+rule { 'ast-files' }
 
-package { 'cmake-modules' }
+rule { 'cmake-modules' }
 
-package { 'linux' }
+rule { 'linux' }
 
-package { 'xsdk' }
+rule { 'xsdk' }
 
-package { 'ucode',
+rule { 'ucode',
     { 'install' }
 }
 
 -- host
 
-package { 'utils', 'host' }
+rule { 'utils', 'host' }
 
-package { 'karaoke-player', 'host',
+rule { 'karaoke-player', 'host',
     { 'configure',
         requires = {
             'chicken-eggs',
@@ -29,23 +29,23 @@ package { 'karaoke-player', 'host',
     }
 }
 
-package { 'astindex',
+rule { 'astindex',
     { 'unpack', { 'karaoke-player', 'unpack' } }
 }
 
 -- kernel
 
-local kernel_package_template = {
+local kernel_rule_template = {
     config = 'target',
     { 'configure', { 'kernel', 'compile', 'target' } }
 }
 
-local function kernel_package(rule)
-    rule.template = kernel_package_template
-    package(rule)
+local function kernel_rule(r)
+    r.template = kernel_rule_template
+    rule(r)
 end
 
-package { 'kernel', 'target',
+rule { 'kernel', 'target',
     { 'configure',
         { 'linux',  'unpack'            },
         { 'rootfs', 'compile'           },
@@ -55,24 +55,24 @@ package { 'kernel', 'target',
     { 'image',  { 'rootfs', 'install' } }
 }
 
-kernel_package { 'loop-aes' }
+kernel_rule { 'loop-aes' }
 
-kernel_package { 'ralink' }
+kernel_rule { 'ralink' }
 
 -- rootfs
 
-local rootfs_package_template = {
+local rootfs_rule_template = {
     config  = 'target',
     { 'configure', { 'rootfs', 'compile' } }
 }
 
-local function rootfs_package(rule)
-    rule.template = rootfs_package_template
-    package(rule)
+local function rootfs_rule(r)
+    r.template = rootfs_rule_template
+    rule(r)
 end
 
-package { 'rootfs', 'target',
-    template = rootfs_package_template,
+rule { 'rootfs', 'target',
+    template = rootfs_rule_template,
     skip_template = true,
     { 'configure',
         { 'ast-files', 'unpack'            },
@@ -96,15 +96,15 @@ package { 'rootfs', 'target',
     { 'strip' }
 }
 
-package { 'mrua', 'target',
+rule { 'mrua', 'target',
     { 'compile',  { 'kernel', 'compile', 'target' } },
     { 'modules' },
     { 'install' },
 }
 
-rootfs_package { 'ezboot' }
+rootfs_rule { 'ezboot' }
 
-rootfs_package { 'busybox',
+rootfs_rule { 'busybox',
     install = {
         root = '$jagen_sdk_initfs_dir',
         prefix = ''
@@ -112,7 +112,7 @@ rootfs_package { 'busybox',
     { 'patch', { 'ast-files', 'unpack' } }
 }
 
-rootfs_package { 'utils',
+rootfs_rule { 'utils',
     { 'configure',
         requires = { 'gpgme' },
         { 'dbus', 'install', 'target' }
@@ -121,7 +121,7 @@ rootfs_package { 'utils',
 
 -- firmware
 
-local firmware_package_template = {
+local firmware_rule_template = {
     config = 'target',
     install = {
         prefix = '/firmware'
@@ -129,13 +129,13 @@ local firmware_package_template = {
     { 'install', { 'firmware', 'unpack' } }
 }
 
-local function firmware_package(rule)
-    rule.template = firmware_package_template
-    package(rule)
+local function firmware_rule(r)
+    r.template = firmware_rule_template
+    rule(r)
 end
 
-package { 'firmware',
-    template = firmware_package_template,
+rule { 'firmware',
+    template = firmware_rule_template,
     skip_template = true,
     { 'compile',
         { 'mrua', 'compile', 'target' }
@@ -154,7 +154,7 @@ package { 'firmware',
     { 'strip' }
 }
 
-firmware_package { 'karaoke-player',
+firmware_rule { 'karaoke-player',
     { 'configure',
         requires = {
             'chicken-eggs',

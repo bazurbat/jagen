@@ -1,4 +1,4 @@
-package {
+rule {
     source = 'ntpclient-2010.tar.gz',
     build  = {
         type = 'make',

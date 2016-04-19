@@ -1,4 +1,4 @@
-package {
+rule {
     source = 'gpgme-1.5.1.tar.bz2',
     build  = {
         type = 'GNU',

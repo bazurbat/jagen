@@ -1,4 +1,4 @@
-package {
+rule {
     source = {
         type = 'dist',
         location = 's6-2.2.4.3.tar.gz'

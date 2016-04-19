@@ -1,4 +1,4 @@
-package {
+rule {
     source = 'pixman-0.32.8.tar.bz2',
     build = {
         type    = 'GNU',

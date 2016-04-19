@@ -1,4 +1,4 @@
-package {
+rule {
     source = 'cairo-1.14.2.tar.xz',
     build = {
         type = 'GNU',

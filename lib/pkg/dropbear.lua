@@ -1,4 +1,4 @@
-package {
+rule {
     source = 'dropbear-2014.66.tar.bz2',
     build = {
         type    = 'GNU',

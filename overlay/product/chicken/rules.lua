@@ -1,14 +1,14 @@
 -- CHICKEN Scheme
 
-package { 'chicken', 'host' }
+rule { 'chicken', 'host' }
 
-package { 'chicken-eggs', 'host' }
+rule { 'chicken-eggs', 'host' }
 
-package { 'chicken', 'target',
+rule { 'chicken', 'target',
     { 'configure', { 'chicken', 'install', 'host' } }
 }
 
-package { 'chicken-eggs', 'target',
+rule { 'chicken-eggs', 'target',
     { 'configure',
         requires = {
             'dbus',

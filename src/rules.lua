@@ -35,8 +35,8 @@ end
 function Rule:loadsingle(filename)
     local o, env = {}, {}
     setmetatable(env, { __index = _G })
-    function env.package(rule)
-        o = rule
+    function env.rule(def)
+        o = def
     end
     local chunk = loadfile(filename)
     if chunk then
@@ -51,8 +51,8 @@ function Rule:loadall(filename)
         packages = packages
     }
     setmetatable(env, { __index = _G, })
-    function env.package(rule)
-        Rule:add_package(rule)
+    function env.rule(t)
+        Rule:add_package(t)
     end
     local chunk = loadfile(filename)
     if chunk then

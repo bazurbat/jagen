@@ -1,8 +1,8 @@
 -- AST HiSilicon Android
 
-package { 'hi-sdk-tools' }
+rule { 'hi-sdk-tools' }
 
-package { 'android',
+rule { 'android',
     env = { 'target' },
     { 'patch',
         { 'hi-sdk-tools', 'unpack' }

@@ -1,4 +1,4 @@
-package {
+rule {
     source = {
         type = 'dist',
         location = 'runit-2.1.2.tar.gz',

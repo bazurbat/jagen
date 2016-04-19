@@ -1,4 +1,4 @@
-package {
+rule {
     source = 'valgrind-3.10.1.tar.bz2',
     patches = {
         { 'valgrind-3.10.1-linux-4',            1 },

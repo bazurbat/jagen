@@ -1,10 +1,10 @@
 -- HiSilicon Linux SDK
 
-package { 'ast-files' }
+rule { 'ast-files' }
 
-package { 'hi-kernel' }
+rule { 'hi-kernel' }
 
-package { 'hi-sdk', 'target',
+rule { 'hi-sdk', 'target',
     { 'patch',
         { 'hi-kernel',    'unpack' },
     },
@@ -17,28 +17,28 @@ package { 'hi-sdk', 'target',
     { 'mkload'    },
 }
 
-package { 'hi-drivers', 'target',
+rule { 'hi-drivers', 'target',
     { 'configure',
         { 'hi-sdk', 'linux', 'target' }
     }
 }
 
-package { 'rtl8188eu', 'target',
+rule { 'rtl8188eu', 'target',
     { 'compile',
         { 'hi-sdk', 'linux', 'target' }
     }
 }
 
-package { 'cmake-modules' }
+rule { 'cmake-modules' }
 
-package { 'hi-utils', 'target',
+rule { 'hi-utils', 'target',
     { 'configure',
         { 'cmake-modules', 'unpack'              },
         { 'hi-sdk',        'component', 'target' }
     }
 }
 
-package { 'karaoke-player', 'target',
+rule { 'karaoke-player', 'target',
     { 'configure',
         requires = {
             'chicken-eggs',
@@ -53,7 +53,7 @@ package { 'karaoke-player', 'target',
     }
 }
 
-package { 'rootfs', 'target',
+rule { 'rootfs', 'target',
     { 'install',
         requires = {
             'busybox',
@@ -69,5 +69,5 @@ package { 'rootfs', 'target',
 }
 
 if jagen.flag 'debug' then
-    package { 'strace', 'target' }
+    rule { 'strace', 'target' }
 end

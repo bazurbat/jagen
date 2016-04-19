@@ -1,10 +1,10 @@
 -- Common Android rules
 
-package { 'make', 'host',
+rule { 'make', 'host',
     source = 'make-3.81.tar.bz2'
 }
 
-package { 'android',
+rule { 'android',
     env = { 'lunch' },
     { 'configure',
         requires = { { 'make', 'host' } }

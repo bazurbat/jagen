@@ -1,4 +1,4 @@
-package {
+rule {
     source = 'libffi-3.1.tar.gz',
     patches = {
         { 'libffi-3.1-execstack', 0 },
