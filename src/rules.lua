@@ -92,8 +92,13 @@ function Rule:new_package(rule)
         pkg:add_target(Target:new(name, stage))
     end
 
-    for filename in each(import_paths('pkg/'..name..'.lua')) do
-        table.merge(pkg, Rule:new(Rule:loadsingle(filename)))
+    local paths = import_paths('pkg/'..name..'.lua')
+    for i = #paths, 1, -1 do
+        local filename = paths[i]
+        if system.file_exists(filename) then
+            table.merge(pkg, Rule:new(Rule:loadsingle(filename)))
+            break
+        end
     end
 
     return pkg
