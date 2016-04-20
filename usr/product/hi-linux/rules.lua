@@ -1,10 +1,14 @@
 -- HiSilicon Linux SDK
 
-rule { 'ast-files' }
+local R = require 'rules'
 
-rule { 'hi-kernel' }
+require 'chicken'
 
-rule { 'hi-sdk', 'target',
+R:add { 'ast-files' }
+
+R:add { 'hi-kernel' }
+
+R:add { 'hi-sdk', 'target',
     { 'patch',
         { 'hi-kernel',    'unpack' },
     },
@@ -17,28 +21,28 @@ rule { 'hi-sdk', 'target',
     { 'mkload'    },
 }
 
-rule { 'hi-drivers', 'target',
+R:add { 'hi-drivers', 'target',
     { 'configure',
         { 'hi-sdk', 'linux', 'target' }
     }
 }
 
-rule { 'rtl8188eu', 'target',
+R:add { 'rtl8188eu', 'target',
     { 'compile',
         { 'hi-sdk', 'linux', 'target' }
     }
 }
 
-rule { 'cmake-modules' }
+R:add { 'cmake-modules' }
 
-rule { 'hi-utils', 'target',
+R:add { 'hi-utils', 'target',
     { 'configure',
         { 'cmake-modules', 'unpack'              },
         { 'hi-sdk',        'component', 'target' }
     }
 }
 
-rule { 'karaoke-player', 'target',
+R:add { 'karaoke-player', 'target',
     { 'configure',
         requires = {
             'chicken-eggs',
@@ -53,7 +57,7 @@ rule { 'karaoke-player', 'target',
     }
 }
 
-rule { 'rootfs', 'target',
+R:add { 'rootfs', 'target',
     { 'install',
         requires = {
             'busybox',
@@ -69,5 +73,5 @@ rule { 'rootfs', 'target',
 }
 
 if jagen.flag 'debug' then
-    rule { 'strace', 'target' }
+    R:add { 'strace', 'target' }
 end
