@@ -67,7 +67,7 @@ if [ "$jagen_board" ]; then
     LUA_PATH="$jagen_dir/usr/board/$jagen_board/?.lua;$LUA_PATH"
 fi
 
-if [ "$jagen_product" ]; then
+if [ "$jagen_product_dir" ]; then
     jagen_import_path="$jagen_product_dir $jagen_import_path"
     LUA_PATH="$jagen_product_dir/?.lua;$LUA_PATH"
 fi
