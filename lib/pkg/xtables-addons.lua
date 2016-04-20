@@ -1,4 +1,4 @@
-rule {
+return {
     source = 'xtables-addons-1.47.1.tar.xz',
     build  = {
         type    = 'GNU',

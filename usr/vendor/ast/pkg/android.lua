@@ -1,4 +1,4 @@
-rule {
+return {
     source = {
         type     = 'repo',
         location = 'git@bitbucket.org:art-system/hia-manifest.git',

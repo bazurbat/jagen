@@ -1,4 +1,4 @@
-rule {
+return {
     source = 'dbus-1.6.18.tar.gz',
     build  = {
         type = 'GNU',

@@ -1,4 +1,4 @@
-rule {
+return {
     source = {
         type = 'dist',
         location = 'runit-2.1.2.tar.gz',

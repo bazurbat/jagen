@@ -67,14 +67,7 @@ function Rule:new_package(rule)
         pkg:add_target(Target:new(name, stage))
     end
 
-    local import_path = assert(os.getenv('jagen_import_path'))
-    for path in string.gmatch(import_path, '%S+') do
-        local filename = mkpath(path, 'pkg/'..name..'.lua')
-        if system.file_exists(filename) then
-            table.merge(pkg, Rule:new(Rule:loadsingle(filename)))
-            break
-        end
-    end
+    table.merge(pkg, Rule:new(assert(require('pkg/'..name))))
 
     return pkg
 end

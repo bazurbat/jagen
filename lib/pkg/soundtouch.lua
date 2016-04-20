@@ -1,4 +1,4 @@
-rule {
+return {
     source = {
         type     = 'dist',
         location = 'soundtouch-1.9.2.tar.gz',

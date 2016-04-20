@@ -1,4 +1,4 @@
-rule {
+return {
     source = 'harfbuzz-0.9.41.tar.bz2',
     build = {
         type = 'GNU',

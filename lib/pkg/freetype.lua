@@ -1,4 +1,4 @@
-rule {
+return {
     source = 'freetype-2.5.0.1.tar.bz2',
     patches = {
         { 'freetype-2.3.2-enable-valid',   1 },

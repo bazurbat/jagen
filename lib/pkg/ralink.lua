@@ -1,4 +1,4 @@
-rule {
+return {
     source = 'DPO_RT5572_LinuxSTA_2.6.1.3_20121022.tar.bz2',
     patches = {
         { 'DPO_RT5572_LinuxSTA_2.6.1.3_20121022-no-tftpboot', 1 },

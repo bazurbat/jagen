@@ -1,4 +1,4 @@
-rule {
+return {
     source = 'SDL2-2.0.4.tar.gz',
     build = {
         type = 'GNU',

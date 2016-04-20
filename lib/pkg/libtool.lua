@@ -1,4 +1,4 @@
-rule {
+return {
     source = 'libtool-2.4.3.tar.xz',
     patches = {
         { 'libtool-2.4.3-no-clean-gnulib',   1 },

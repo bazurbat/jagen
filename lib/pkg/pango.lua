@@ -1,4 +1,4 @@
-rule {
+return {
     source = 'pango-1.36.8.tar.xz',
     build = {
         type = 'GNU',
