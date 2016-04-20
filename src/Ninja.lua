@@ -69,20 +69,25 @@ function Ninja:header()
 end
 
 function Ninja:build_stage(target)
+    local script = {}
     local shell = jagen.shell
-    local script = 'jagen-pkg '..target:__tostring(' ')
     if shell and #shell > 0 then
-        script = shell.." "..script
+        table.insert(script, shell)
     end
+    table.insert(script, 'jagen-pkg')
+    table.insert(script, assert(target.name))
+    table.insert(script, assert(target.stage))
+    table.insert(script, target.config or "''")
     if target.arg then
-        script = script.." '"..string.gsub(target.arg, '%$', '$$').."'"
+        table.insert(script, "'"..string.gsub(target.arg, '%$', '$$').."'")
     end
+
     return self:build({
             rule      = 'script',
             outputs   = { tostring(target) },
             inputs    = target.inputs,
             variables = {
-                script      = script,
+                script      = table.concat(script, ' '),
                 description = target:__tostring(' ')
             }
         })
