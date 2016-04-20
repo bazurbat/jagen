@@ -202,9 +202,9 @@ function Rule:add_stages(stages)
 end
 
 function Rule:add_package(rule)
-    jagen.debug2('%s+ %s', P.indent(), rule.name)
-
     rule = Rule:new(rule)
+
+    jagen.debug2('%s+ %s', P.indent(), rule.name)
 
     local pkg = packages[rule.name]
 
