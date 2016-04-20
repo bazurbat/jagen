@@ -52,11 +52,13 @@ end
 R:add { 'kernel', 'target',
     { 'configure',
         { 'linux',  'unpack'            },
-        { 'rootfs', 'compile'           },
+        { 'rootfs', 'compile', 'target' },
         { 'ezboot', 'compile', 'target' },
     },
     { 'install' },
-    { 'image',  { 'rootfs', 'install' } }
+    { 'image',
+        { 'rootfs', 'install', 'target' }
+    }
 }
 
 kernel_rule { 'loop-aes' }
