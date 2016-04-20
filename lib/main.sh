@@ -13,13 +13,6 @@ export jagen_shell=""
 export jagen_debug="${jagen_debug}"
 export jagen_flags=""
 
-export jagen_product=""
-export jagen_board=""
-export jagen_sdk=""
-export jagen_toolchain=""
-
-export jagen_import_path=""
-
 export jagen_lib_dir="${jagen_dir:?}/lib"
 
 export jagen_bin_dir="$jagen_root/bin"
@@ -27,6 +20,14 @@ export jagen_src_dir="$jagen_root/src"
 export jagen_build_dir="$jagen_root/build"
 export jagen_include_dir="$jagen_root/include"
 export jagen_log_dir="$jagen_build_dir"
+
+jagen_product=""
+jagen_board=""
+jagen_sdk=""
+jagen_toolchain=""
+jagen_vendor=""
+
+jagen_import_path=""
 
 export jagen_toolchain_dir
 export jagen_sdk_dir
@@ -41,16 +42,20 @@ if [ "$jagen_root" ]; then
 fi
 
 if [ "$jagen_product" ]; then
-    jagen_import_path="$jagen_dir/usr/product/$jagen_product"
+    export jagen_product_dir="$jagen_dir/usr/product/$jagen_product"
+    jagen_import_path="$jagen_import_path $jagen_product_dir"
 fi
 if [ "$jagen_board" ]; then
-    jagen_import_path="$jagen_dir/usr/board/$jagen_board"
+    jagen_import_path="$jagen_import_path $jagen_dir/usr/board/$jagen_board"
 fi
 if [ "$jagen_sdk" ]; then
-    jagen_import_path="$jagen_dir/usr/sdk/$jagen_sdk"
+    jagen_import_path="$jagen_import_path $jagen_dir/usr/sdk/$jagen_sdk"
 fi
 if [ "$jagen_toolchain" ]; then
-    jagen_import_path="$jagen_dir/usr/toolchain/$jagen_toolchain"
+    jagen_import_path="$jagen_import_path $jagen_dir/usr/toolchain/$jagen_toolchain"
+fi
+if [ "$jagen_vendor" ]; then
+    jagen_import_path="$jagen_import_path $jagen_dir/usr/vendor/$jagen_vendor"
 fi
 
 export jagen_host_dir="$jagen_root/host"

@@ -76,13 +76,13 @@ jagen_find_path() {
 }
 
 import() {
-    local name="${1:?}" sts=
-    import "${jagen_dir:?}/usr/${jagen_product:?}/${name}"
-    sts=$?; [ $sts != 2 ] && return $sts
-    include "${jagen_dir:?}/vendor/${name}"
-    sts=$?; [ $sts != 2 ] && return $sts
-    include "${jagen_dir:?}/lib/${name}"
-    sts=$?; [ $sts != 2 ] && return $sts
+    local name="${1:?}" path= sts=
+    for path in $jagen_import_path; do
+        include "$path/$name"; sts=$?
+        if [ $sts != 2 ]; then
+            return $sts
+        fi
+    done
 }
 
 use_env() {
