@@ -30,6 +30,7 @@ fi
 import "pkg/$pkg_name" || die
 
 pkg_install_dir="$pkg_sysroot$pkg_prefix"
+: ${pkg_install_dir:?}
 
 case $pkg_stage in
     unpack)
