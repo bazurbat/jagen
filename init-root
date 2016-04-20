@@ -88,7 +88,7 @@ jagen_dir=\$(cd "\$jagen_relative_dir"; pwd -P)
 jagen_root=\$(pwd -P)
 export jagen_dir jagen_root
 
-. "\$jagen_dir/lib/env.sh"; sts=\$?
+. "\$jagen_dir/lib/main.sh"; sts=\$?
 if [ \$sts != 0 ]; then
     echo "Error: failed to load jagen environment"
     return \$sts
