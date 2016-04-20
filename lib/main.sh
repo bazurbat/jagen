@@ -28,6 +28,7 @@ jagen_toolchain=""
 jagen_vendor=""
 
 export jagen_import_path="$jagen_dir/lib"
+export LUA_PATH="$jagen_dir/lib/?.lua;$jagen_dir/src/?.lua;;"
 
 export jagen_toolchain_dir
 export jagen_sdk_dir
@@ -43,34 +44,37 @@ fi
 
 if [ "$jagen_product" ]; then
     export jagen_product_dir="$jagen_dir/usr/product/$jagen_product"
-    include "$jagen_product_dir/env"
+    include "$jagen_product_dir/init"
 fi
 
 if [ "$jagen_vendor" ]; then
     jagen_import_path="$jagen_dir/usr/vendor/$jagen_vendor $jagen_import_path"
+    LUA_PATH="$jagen_dir/usr/vendor/$jagen_vendor/?.lua;$LUA_PATH"
 fi
 
 if [ "$jagen_toolchain" ]; then
     jagen_import_path="$jagen_dir/usr/toolchain/$jagen_toolchain $jagen_import_path"
+    LUA_PATH="$jagen_dir/usr/toolchain/$jagen_toolchain/?.lua;$LUA_PATH"
 fi
 
 if [ "$jagen_sdk" ]; then
     jagen_import_path="$jagen_dir/usr/sdk/$jagen_sdk $jagen_import_path"
+    LUA_PATH="$jagen_dir/usr/sdk/$jagen_sdk/?.lua;$LUA_PATH"
 fi
 
 if [ "$jagen_board" ]; then
     jagen_import_path="$jagen_dir/usr/board/$jagen_board $jagen_import_path"
+    LUA_PATH="$jagen_dir/usr/board/$jagen_board/?.lua;$LUA_PATH"
 fi
 
 if [ "$jagen_product" ]; then
     jagen_import_path="$jagen_product_dir $jagen_import_path"
+    LUA_PATH="$jagen_product_dir/?.lua;$LUA_PATH"
 fi
 
 export jagen_host_dir="$jagen_root/host"
 
 export jagen_target_dir="$jagen_root/target"
-
-export LUA_PATH="$jagen_dir/lib/?.lua;$jagen_dir/src/?.lua;;"
 
 add_PATH "$jagen_host_dir/bin"
 add_LD_LIBRARY_PATH "$jagen_host_dir/lib"
@@ -80,5 +84,7 @@ export LD_LIBRARY_PATH
 export LINGUAS=""
 
 in_flags ccache && use_env ccache
+
+import env || die
 
 return 0

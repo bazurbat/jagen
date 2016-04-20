@@ -38,25 +38,29 @@ include() {
 }
 
 jagen_find_path() {
-    local name="${1:?}" path= pathname=
-    for path in $jagen_import_path; do
-        pathname="$path/$name"
-        if [ -f "$pathname" ]; then
-            echo "$pathname"
+    local name="${1:?}" path= i=
+    for i in $jagen_import_path; do
+        path="$i/$name"
+        if [ -f "$path" ]; then
+            echo "$path"
             return
         fi
     done
 }
 
 import() {
-    local name="${1:?}" path= pathname=
-    for path in $jagen_import_path; do
-        pathname="$path/${name}.sh"
-        if [ -f "$pathname" ]; then
-            debug import $pathname
-            . "$pathname"
-            return
+    local name="${1:?}" path= i=
+
+    set -- $jagen_import_path
+    i=$#
+
+    while [ $i -gt 0 ]; do
+        path="$(eval echo \$$i)/${name}.sh"
+        if [ -f "$path" ]; then
+            debug import $path
+            . "$path"
         fi
+        i=$((i-1))
     done
 }
 

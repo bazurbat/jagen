@@ -72,7 +72,7 @@ EOF
 }
 
 list_configs() {
-    cd "$jagen_products_dir"
+    cd "$jagen_dir/usr/product"
     for cfg_dir in *; do
         echo $cfg_dir
     done
@@ -176,7 +176,6 @@ jagen_dir=$(dirname $0)
 jagen_root=''
 jagen_product=''
 jagen_flags=''
-jagen_products_dir="$jagen_dir/usr/product"
 
 if [ $# = 0 ]; then
     show_help
@@ -189,7 +188,7 @@ if ! [ "$jagen_product" ]; then
     die "no product specified"
 fi
 
-jagen_product_dir="$jagen_products_dir/$jagen_product"
+jagen_product_dir="$jagen_dir/usr/product/$jagen_product"
 
 if ! [ -d "$jagen_product_dir" ]; then
     die "no such product: $jagen_product"
@@ -201,7 +200,7 @@ else
     jagen_src_dir='$jagen_root/src'
 fi
 
-. "$jagen_product_dir/env.sh" || exit
+. "$jagen_product_dir/init.sh" || exit
 
 write_env || exit
 write_config "$config_file" || exit

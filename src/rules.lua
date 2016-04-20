@@ -333,7 +333,7 @@ function P.load()
     local Source = require 'Source'
 
     local product_dir = assert(os.getenv('jagen_product_dir'))
-    local filename = mkpath(product_dir, 'rules.lua')
+    local filename = mkpath(product_dir, 'pkg.lua')
 
     local chunk = assert(loadfile(filename))
     if chunk  then
