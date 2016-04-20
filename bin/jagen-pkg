@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. "${jagen_dir:?}/lib/main.sh" || die
+. "${jagen_dir:?}/lib/pkg.sh" || die
 
 pkg_name="${1:?}"
 pkg_stage="${2:?}"
