@@ -22,20 +22,6 @@ function Rule:__tostring()
     return string.format('%s__%s', self.name or '', self.config or '')
 end
 
-function Rule:loadsingle(filename)
-    local o, env = {}, {}
-    setmetatable(env, { __index = _G })
-    function env.rule(def)
-        o = def
-    end
-    local chunk = loadfile(filename)
-    if chunk then
-        setfenv(chunk, env)
-        chunk()
-    end
-    return o
-end
-
 function Rule:parse(rule)
     if type(rule[1]) == 'string' then
         rule.name = rule[1]
