@@ -18,15 +18,6 @@ Rule.__index = Rule
 
 local packages = {}
 
-local function import_paths(filename)
-    local o = {}
-    local product = assert(os.getenv('jagen_product'))
-    table.insert(o, mkpath(jagen.dir, 'usr/product', product, filename))
-    table.insert(o, mkpath(jagen.dir, 'usr/vendor', filename))
-    table.insert(o, mkpath(jagen.dir, 'lib', filename))
-    return o
-end
-
 function Rule:__tostring()
     return string.format('%s__%s', self.name or '', self.config or '')
 end
@@ -76,7 +67,9 @@ function Rule:new_package(rule)
         pkg:add_target(Target:new(name, stage))
     end
 
-    for _, filename in ipairs(import_paths('pkg/'..name..'.lua')) do
+    local import_path = assert(os.getenv('jagen_import_path'))
+    for path in string.gmatch(import_path, '%S+') do
+        local filename = mkpath(path, 'pkg/'..name..'.lua')
         if system.file_exists(filename) then
             table.merge(pkg, Rule:new(Rule:loadsingle(filename)))
             break
@@ -339,8 +332,8 @@ end
 function P.load()
     local Source = require 'Source'
 
-    local product = assert(os.getenv('jagen_product'))
-    local filename = mkpath(jagen.dir, 'usr/product', product, 'rules.lua')
+    local product_dir = assert(os.getenv('jagen_product_dir'))
+    local filename = mkpath(product_dir, 'rules.lua')
 
     local chunk = assert(loadfile(filename))
     if chunk  then

@@ -72,7 +72,7 @@ EOF
 }
 
 list_configs() {
-    cd "$jagen_init_dir"
+    cd "$jagen_products_dir"
     for cfg_dir in *; do
         echo $cfg_dir
     done
@@ -104,8 +104,8 @@ write_config() {
 # jagen_dir  - refers to the jagen project directory.
 # jagen_root - refers to the current build root (where this file is located).
 
-# Environment overlays used by this build root.
-jagen_overlays="$jagen_overlays"
+# A product id for this build root.
+jagen_product="$jagen_product"
 
 # Toplevel working directory.
 # Note: setting relative path allows to source this environment both from
@@ -126,10 +126,10 @@ jagen_src_dir="$jagen_src_dir"
 jagen_build_dir="\$jagen_root/build"
 
 # A directory containing target toolchain.
-jagen_toolchain_dir="$jagen_toolchain_dir"
+jagen_toolchain_dir="$jagen_init_toolchain_dir"
 
 # A directory containing SDK.
-jagen_sdk_dir="$jagen_sdk_dir"
+jagen_sdk_dir="$jagen_init_sdk_dir"
 
 # Space separated list of optional features.
 #   debug   - build debugging tools
@@ -166,7 +166,7 @@ parse_command_line() {
                 fi
                 shift ;;
             --) ;;
-             *) jagen_config="$1"; break ;;
+             *) jagen_product="$1"; break ;;
         esac
         shift
     done
@@ -174,9 +174,9 @@ parse_command_line() {
 
 jagen_dir=$(dirname $0)
 jagen_root=''
-jagen_config=''
+jagen_product=''
 jagen_flags=''
-jagen_init_dir="$jagen_dir/lib/init"
+jagen_products_dir="$jagen_dir/usr/product"
 
 if [ $# = 0 ]; then
     show_help
@@ -185,14 +185,14 @@ fi
 
 parse_command_line "$@"
 
-if ! [ "$jagen_config" ]; then
-    die "no configuration template specified"
+if ! [ "$jagen_product" ]; then
+    die "no product specified"
 fi
 
-jagen_config_dir="$jagen_init_dir/$jagen_config"
+jagen_product_dir="$jagen_products_dir/$jagen_product"
 
-if ! [ -d "$jagen_config_dir" ]; then
-    die "no such configuration template: $jagen_config"
+if ! [ -d "$jagen_product_dir" ]; then
+    die "no such product: $jagen_product"
 fi
 
 if [ "$share_sources" ]; then
@@ -201,7 +201,7 @@ else
     jagen_src_dir='$jagen_root/src'
 fi
 
-. "$jagen_config_dir/env.sh" || exit
+. "$jagen_product_dir/env.sh" || exit
 
 write_env || exit
 write_config "$config_file" || exit

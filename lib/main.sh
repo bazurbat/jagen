@@ -27,7 +27,7 @@ jagen_sdk=""
 jagen_toolchain=""
 jagen_vendor=""
 
-jagen_import_path=""
+export jagen_import_path="$jagen_dir/lib"
 
 export jagen_toolchain_dir
 export jagen_sdk_dir
@@ -43,19 +43,27 @@ fi
 
 if [ "$jagen_product" ]; then
     export jagen_product_dir="$jagen_dir/usr/product/$jagen_product"
-    jagen_import_path="$jagen_import_path $jagen_product_dir"
+    try_include "$jagen_product_dir/env.sh"
 fi
-if [ "$jagen_board" ]; then
-    jagen_import_path="$jagen_import_path $jagen_dir/usr/board/$jagen_board"
-fi
-if [ "$jagen_sdk" ]; then
-    jagen_import_path="$jagen_import_path $jagen_dir/usr/sdk/$jagen_sdk"
-fi
-if [ "$jagen_toolchain" ]; then
-    jagen_import_path="$jagen_import_path $jagen_dir/usr/toolchain/$jagen_toolchain"
-fi
+
 if [ "$jagen_vendor" ]; then
-    jagen_import_path="$jagen_import_path $jagen_dir/usr/vendor/$jagen_vendor"
+    jagen_import_path="$jagen_dir/usr/vendor/$jagen_vendor $jagen_import_path"
+fi
+
+if [ "$jagen_toolchain" ]; then
+    jagen_import_path="$jagen_dir/usr/toolchain/$jagen_toolchain $jagen_import_path"
+fi
+
+if [ "$jagen_sdk" ]; then
+    jagen_import_path="$jagen_dir/usr/sdk/$jagen_sdk $jagen_import_path"
+fi
+
+if [ "$jagen_board" ]; then
+    jagen_import_path="$jagen_dir/usr/board/$jagen_board $jagen_import_path"
+fi
+
+if [ "$jagen_product" ]; then
+    jagen_import_path="$jagen_product_dir $jagen_import_path"
 fi
 
 export jagen_host_dir="$jagen_root/host"
@@ -73,4 +81,4 @@ export LINGUAS=""
 
 in_flags ccache && use_env ccache
 
-import env
+return 0
