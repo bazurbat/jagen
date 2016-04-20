@@ -27,7 +27,7 @@ jagen_sdk=""
 jagen_toolchain=""
 jagen_vendor=""
 
-export jagen_import_path="$jagen_dir/lib"
+jagen_import_path="$jagen_dir/lib"
 export LUA_PATH="$jagen_dir/lib/?.lua;$jagen_dir/src/?.lua;;"
 
 export jagen_toolchain_dir
