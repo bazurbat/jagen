@@ -38,12 +38,12 @@ jagen_build_verbose="no"
 
 # Avoid import during init-root
 if [ "$jagen_root" ]; then
-    try_include "$jagen_root/config.sh"
+    include "$jagen_root/config"
 fi
 
 if [ "$jagen_product" ]; then
     export jagen_product_dir="$jagen_dir/usr/product/$jagen_product"
-    try_include "$jagen_product_dir/env.sh"
+    include "$jagen_product_dir/env"
 fi
 
 if [ "$jagen_vendor" ]; then

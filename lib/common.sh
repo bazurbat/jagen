@@ -29,58 +29,22 @@ die() {
     exit $ret
 }
 
-try_include() {
-    if [ -f "$1" ]; then
-        debug include "$1"
-        . "$1"
-    fi
-}
-
 include() {
     local pathname="${1:?}.sh"
-    if [ -f "${pathname}" ]; then
-        try_include "${pathname}"
-    else
-        return 2 # stands for ENOENT
-    fi
-}
-
-jagen_find_path() {
-    local path="${1:?}" result= i=
-    : ${jagen_dir:?}
-
-    if [ "$jagen_root" ]; then
-        result="$jagen_root/$path"
-        if [ -e "$result" ]; then
-            echo "$result"
-            return
-        fi
-    fi
-
-    set -- $jagen_overlays
-    i=$#
-
-    while [ "$i" -gt 0 ]; do
-        result="$jagen_dir/overlay/$(eval echo \$$i)/$path"
-        if [ -e "$result" ]; then
-            echo "$result"
-            return
-        fi
-        i=$((i-1))
-    done
-
-    result="$jagen_dir/lib/$path"
-    if [ -e "$result" ]; then
-        echo "$result"
+    if [ -f "$pathname" ]; then
+        debug include $pathname
+        . "$pathname"
     fi
 }
 
 import() {
-    local name="${1:?}" path= sts=
+    local name="${1:?}" path= pathname=
     for path in $jagen_import_path; do
-        include "$path/$name"; sts=$?
-        if [ $sts != 2 ]; then
-            return $sts
+        pathname="$path/${name}.sh"
+        if [ -f "$pathname" ]; then
+            debug import $pathname
+            . "$pathname"
+            return
         fi
     done
 }
