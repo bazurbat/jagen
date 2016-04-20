@@ -4,5 +4,7 @@ rule {
         location = 'ssh://hg@bitbucket.org/art-system/karaoke-player',
         branch   = 'master'
     },
-    build = { type = 'CMake' }
+    build = {
+        type = 'CMake'
+    }
 }
