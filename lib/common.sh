@@ -37,6 +37,17 @@ include() {
     fi
 }
 
+jagen_find_path() {
+    local name="${1:?}" path= pathname=
+    for path in $jagen_import_path; do
+        pathname="$path/$name"
+        if [ -f "$pathname" ]; then
+            echo "$pathname"
+            return
+        fi
+    done
+}
+
 import() {
     local name="${1:?}" path= pathname=
     for path in $jagen_import_path; do
