@@ -14,7 +14,7 @@ R:add { 'linux' }
 
 R:add { 'xsdk' }
 
-R:add { 'ucode',
+R:add { 'ucode', 'target',
     { 'install' }
 }
 
@@ -140,7 +140,7 @@ local function firmware_rule(r)
     R:add(r)
 end
 
-R:add { 'firmware',
+R:add { 'firmware', 'target',
     template = firmware_rule_template,
     skip_template = true,
     { 'compile',
@@ -154,7 +154,7 @@ R:add { 'firmware',
         },
         { 'kernel', 'image',   'target' },
         { 'mrua',   'install', 'target' },
-        { 'ucode',  'install'           },
+        { 'ucode',  'install', 'target' },
         { 'ezboot', 'install', 'target' },
     },
     { 'strip' }
