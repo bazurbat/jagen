@@ -138,7 +138,7 @@ pkg_is_release_with_debug() {
 # usings
 
 pkg_using_install_prefix() {
-    local prefix="${1:-${pkg_prefix:-/}}"
+    local prefix="${1:-${pkg_prefix:?}}"
     printf '%s' "-DCMAKE_INSTALL_PREFIX=$prefix"
 }
 
