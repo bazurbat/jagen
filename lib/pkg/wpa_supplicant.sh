@@ -1,6 +1,6 @@
 #!/bin/sh
 
-jagen_pkg_compile() {
+jagen_pkg_configure_target() {
     rm -f .config
 
     echo "BINDIR=$pkg_prefix/bin"              >> .config
@@ -31,6 +31,10 @@ jagen_pkg_compile() {
     echo "CONFIG_DELAYED_MIC_ERROR_REPORT=y" >> .config
 
     echo "CONFIG_IEEE8021X_EAPOL=y"          >> .config
+}
+
+jagen_pkg_compile_target() {
+    require target_toolchain
 
     pkg_run make
 }

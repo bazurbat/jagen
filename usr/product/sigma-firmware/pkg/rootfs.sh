@@ -1,6 +1,6 @@
 #!/bin/sh
 
-require nocflags
+require clean_cflags
 
 pkg_run_jobs=1
 

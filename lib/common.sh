@@ -81,7 +81,7 @@ use_env() {
 }
 
 require() {
-    importall "require/${1:?}"
+    importall "env/${1:?}"
 }
 
 in_list() {

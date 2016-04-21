@@ -1,8 +1,8 @@
 #!/bin/sh
 
-require bash || return
-require sdk_dir || return
-require u-boot-tools || return
+#require bash || return
+#require sdk_dir || return
+#require u-boot-tools || return
 
 : ${jagen_android_product:?}
 
