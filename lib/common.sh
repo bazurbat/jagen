@@ -61,6 +61,7 @@ import() {
 
 importall() {
     local name="${1:?}" path= i=
+    debug importall $1
 
     set -- $jagen_import_path
     i=$#
@@ -68,7 +69,7 @@ importall() {
     while [ $i -gt 0 ]; do
         path="$(eval echo \$$i)/${name}.sh"
         if [ -f "$path" ]; then
-            debug importall $path
+            debug "  using $path"
             . "$path"
         fi
         i=$((i-1))
