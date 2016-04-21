@@ -130,7 +130,7 @@ rootfs_rule { 'utils',
 local firmware_rule_template = {
     config = 'target',
     install = {
-        prefix = '/firmware'
+        prefix = '$jagen_firmware_install_prefix'
     },
     { 'install', { 'firmware', 'unpack' } }
 }
