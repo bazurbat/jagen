@@ -61,13 +61,13 @@ install_wpa_supplicant() {
 install_mrua() {
     local bin="ikc xkc gbus_read_bin_to_file gbus_read_uint32 rmfree rmmalloc"
 
-    ( cd "$pkg_source_dir/bin"
+    ( cd "$pkg_install_dir/bin"
       pkg_run install -vm755 $bin "$pkg_build_dir/bin"
     )
 }
 
 install_ucode() {
-    local src_dir="$pkg_source_dir/xload"
+    local src_dir="$pkg_install_dir/xload"
     local dst_dir="$pkg_build_dir/xload"
     pkg_run mkdir -p "$dst_dir"
     pkg_run cp -va "$src_dir"/* "$dst_dir"
