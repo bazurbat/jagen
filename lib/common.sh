@@ -39,7 +39,7 @@ include() {
 
 jagen_find_path() {
     local name="${1:?}" path= i=
-    for i in $jagen_import_path; do
+    for i in $jagen_path; do
         path="$i/$name"
         if [ -f "$path" ]; then
             echo "$path"
@@ -50,7 +50,7 @@ jagen_find_path() {
 
 require() {
     local name="${1:?}" path= i=
-    for i in $jagen_import_path; do
+    for i in $jagen_path; do
         path="$i/${name}.sh"
         if [ -f "$path" ]; then
             debug require $path
@@ -64,7 +64,7 @@ importall() {
     local name="${1:?}" path= i=
     debug importall $1
 
-    set -- $jagen_import_path
+    set -- $jagen_path
     i=$#
 
     while [ $i -gt 0 ]; do
