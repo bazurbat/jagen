@@ -69,40 +69,40 @@ install_ldconfig() {
 
 install_gnupg() {
     local dest="${1:?}"
-    : ${jagen_sdk_staging_dir:?}
+    : ${pkg_install_dir:?}
 
     pkg_run cp -a \
-        "$jagen_sdk_staging_dir/bin/gpg" \
+        "$pkg_install_dir/bin/gpg" \
         "$dest/bin"
     pkg_run cp -a \
-        "$jagen_sdk_staging_dir"/lib/libgpg*.so* \
-        "$jagen_sdk_staging_dir"/lib/libassuan.so* \
+        "$pkg_install_dir"/lib/libgpg*.so* \
+        "$pkg_install_dir"/lib/libassuan.so* \
         "$dest/lib"
 }
 
 install_ntpclient() {
     local dest="${1:?}"
-    : ${jagen_sdk_staging_dir:?}
+    : ${pkg_install_dir:?}
 
     pkg_run cp -a \
-        "$jagen_sdk_staging_dir/bin/ntpclient" \
+        "$pkg_install_dir/bin/ntpclient" \
         "$dest/bin"
 }
 
 install_util_linux() {
     local dest="${1:?}"
-    : ${jagen_sdk_staging_dir:?}
+    : ${pkg_install_dir:?}
 
     pkg_run cp -a \
-        "$jagen_sdk_staging_dir"/lib/libblkid.so* \
-        "$jagen_sdk_staging_dir"/lib/libmount.so* \
+        "$pkg_install_dir"/lib/libblkid.so* \
+        "$pkg_install_dir"/lib/libmount.so* \
         "$dest/lib"
 
     local programs="losetup mkswap swapoff swapon"
 
     for program in $programs; do
         pkg_run cp -a \
-            "$jagen_sdk_staging_dir/sbin/$program" \
+            "$pkg_install_dir/sbin/$program" \
             "$dest/sbin"
     done
 }
