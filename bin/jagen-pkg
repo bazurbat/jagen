@@ -16,7 +16,7 @@ pkg_work_dir="${jagen_build_dir:?}/$pkg_name"
 cd "$jagen_build_dir" || die
 
 if [ "$pkg_config" ]; then
-    import "config/$pkg_config" || die
+    importall "config/$pkg_config" || die
 fi
 
 pkg_build_dir="$pkg_work_dir${pkg_config:+/$pkg_config}"
