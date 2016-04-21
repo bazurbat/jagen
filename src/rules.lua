@@ -311,12 +311,9 @@ end
 function P.load()
     local Source = require 'Source'
 
-    local dirs = {
-        product_dir = assert(os.getenv('jagen_product_dir')),
-        root_dir = assert(os.getenv('jagen_root'))
-    }
-    for _, dir in pairs(dirs) do
-        local filename = mkpath(dir, 'pkg.lua')
+    local dirs = system.getenv { 'jagen_product_dir', 'jagen_root' }
+    for _, dir in ipairs(dirs) do
+        local filename = dir..'/pkg.lua'
         if system.file_exists(filename) then
             local chunk = assert(loadfile(filename))
             chunk()

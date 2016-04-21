@@ -43,7 +43,8 @@ function P.getenv(vars)
     local o = {}
     for _, v in ipairs(vars) do
         local value = os.getenv(v)
-        assert(value, string.format('the environment variable is not set: %s', v))
+        assert(value and #value > 0,
+            string.format("the environment variable '%s' is not set", v))
         table.insert(o, value)
     end
     return o
