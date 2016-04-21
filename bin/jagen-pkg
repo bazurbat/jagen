@@ -27,7 +27,7 @@ if ! [ "$pkg_stage" = "unpack" -o "$pkg_stage" = "patch" ]; then
     include "$jagen_include_dir/${pkg_name}__${pkg_config}" || die
 fi
 
-import "pkg/$pkg_name" || die
+require "pkg/$pkg_name" || die
 
 pkg_install_dir="${pkg_install_dir:-$pkg_sysroot$pkg_prefix}"
 

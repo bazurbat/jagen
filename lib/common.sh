@@ -48,12 +48,12 @@ jagen_find_path() {
     done
 }
 
-import() {
+require() {
     local name="${1:?}" path= i=
     for i in $jagen_import_path; do
         path="$i/${name}.sh"
         if [ -f "$path" ]; then
-            debug import $path
+            debug require $path
             . "$path"
             return
         fi

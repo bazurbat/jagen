@@ -11,7 +11,7 @@ install_sdk() {
 }
 
 jagen_pkg_install() {
-    import rootfs
+    require rootfs
 
     jagen_rootfs_init .
     jagen_toolchain_install_runtime .
