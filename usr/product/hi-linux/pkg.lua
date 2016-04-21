@@ -66,6 +66,7 @@ R:add { 'rootfs', 'target',
             'hi-utils',
             'karaoke-player',
             'rtl8188eu',
+            'wpa_supplicant',
         },
         { 'ast-files', 'unpack'           },
         { 'hi-sdk',    'mkload', 'target' }
