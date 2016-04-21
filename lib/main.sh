@@ -79,6 +79,6 @@ export LINGUAS=""
 
 in_flags ccache && using ccache
 
-importall env || die
+import env || die
 
 return 0

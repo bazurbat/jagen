@@ -60,9 +60,9 @@ require() {
     done
 }
 
-importall() {
+import() {
     local name="${1:?}" path= i=
-    debug importall $1
+    debug import $1
 
     set -- $jagen_path
     i=$#
@@ -70,7 +70,7 @@ importall() {
     while [ $i -gt 0 ]; do
         path="$(eval echo \$$i)/${name}.sh"
         if [ -f "$path" ]; then
-            debug "  using $path"
+            debug "  found $path"
             . "$path"
         fi
         i=$((i-1))
@@ -78,7 +78,7 @@ importall() {
 }
 
 using() {
-    importall "env/${1:?}"
+    import "env/${1:?}"
 }
 
 in_list() {
