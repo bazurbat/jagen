@@ -48,6 +48,17 @@ jagen_find_path() {
     done
 }
 
+import() {
+    local name="${1:?}" path= i=
+    for i in $jagen_import_path; do
+        path="$i/$name"
+        if [ -f "$path" ]; then
+            debug import $path
+            . "$path"
+        fi
+    done
+}
+
 importall() {
     local name="${1:?}" path= i=
 
