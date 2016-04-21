@@ -1,6 +1,6 @@
 #!/bin/sh
 
-use_env target
+using target
 
 workdir="gdb/gdbserver"
 

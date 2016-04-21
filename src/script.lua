@@ -57,7 +57,7 @@ function P:get(pkg, config)
 
     local env = pkg.env or { config }
     for _, e in ipairs(env or {}) do
-        w('use_env %s || return', e)
+        w('using %s || return', e)
     end
 
     -- put install variables before build to allow referencing them from

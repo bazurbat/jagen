@@ -34,7 +34,7 @@ jagen_pkg_configure_target() {
 }
 
 jagen_pkg_compile_target() {
-    require target_toolchain
+    using target_toolchain
 
     pkg_run make
 }

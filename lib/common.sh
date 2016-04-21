@@ -76,11 +76,7 @@ importall() {
     done
 }
 
-use_env() {
-    importall "env/${1:?}"
-}
-
-require() {
+using() {
     importall "env/${1:?}"
 }
 

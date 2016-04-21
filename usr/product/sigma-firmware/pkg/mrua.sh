@@ -2,8 +2,7 @@
 
 pkg_run_jobs=1
 
-use_env tools
-use_env target
+using target
 
 export ARCH=mips
 export KCFLAGS="-mhard-float -Wa,-mhard-float"

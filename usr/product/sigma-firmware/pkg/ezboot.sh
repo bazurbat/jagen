@@ -1,7 +1,5 @@
 #!/bin/sh
 
-use_env tools
-
 export RMCFLAGS="$RMCFLAGS \
 -DRMCHIP_ID=RMCHIP_ID_SMP8652 \
 -DRMCHIP_REVISION=3 \

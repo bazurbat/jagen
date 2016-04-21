@@ -122,7 +122,7 @@ jagen_pkg_install() {
 }
 
 jagen_pkg_strip() {
-    use_env target
+    using target
 
     pkg_run cd "$pkg_build_dir"
 
