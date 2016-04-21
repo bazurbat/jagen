@@ -70,6 +70,9 @@ function P:get(pkg, config)
             if install.prefix then
                 w('pkg_prefix="%s"', install.prefix)
             end
+            if install.config_script then
+                w("pkg_install_config_script='%s'", install.config_script)
+            end
         end
     end
 

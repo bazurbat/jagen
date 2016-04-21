@@ -4,5 +4,8 @@ return {
         type = 'GNU',
         options = { '--disable-rpath', '--disable-languages' },
         libs = { 'gpg-error' }
+    },
+    install = {
+        config_script = '/bin/gpg-error-config'
     }
 }

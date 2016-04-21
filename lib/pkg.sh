@@ -90,6 +90,13 @@ pkg_fix_la() {
     fi
 }
 
+pkg_fix_config_script() {
+    local filename="${1:?}"
+    if [ "$pkg_sysroot" -a -f "$filename" ]; then
+        pkg_run sed -ri "s|^(prefix=)$pkg_prefix$|\1$pkg_sysroot|" $filename
+    fi
+}
+
 pkg_link() {
     local src="${1:?}" dst="${2:?}"
 
@@ -305,6 +312,8 @@ pkg_compile() {
 }
 
 pkg_install() {
+    : ${pkg_install_dir:?}
+
     case $pkg_build_type in
         GNU|make|skarnet)
             pkg_run make ${pkg_sysroot:+DESTDIR="$pkg_sysroot"} "$@" install
@@ -312,6 +321,11 @@ pkg_install() {
             for name in $pkg_libs; do
                 pkg_fix_pc "$name"
                 # pkg_fix_la "$pkg_sysroot$pkg_prefix/lib/lib${name}.la" "$pkg_sysroot"
+
+                if [ -z "$pkg_install_config_script" ]; then
+                    pkg_install_config_script="/bin/${pkg_name}-config"
+                fi
+                pkg_fix_config_script "${pkg_install_dir}${pkg_install_config_script}"
             done
             ;;
         CMake)
