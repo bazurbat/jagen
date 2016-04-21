@@ -2,7 +2,7 @@
 
 jagen_pkg_patch() {
     if [ "$jagen_sdk" = "hi-linux" ]; then
-        case $jagen_target_board in
+        case ${jagen_target_board:?} in
             ast2*)
                 pkg_run cp configs/ast2xx_hi3719cv100_cfg.mak cfg.mak
                 ;;

@@ -22,7 +22,6 @@ export jagen_include_dir="$jagen_root/include"
 export jagen_log_dir="$jagen_build_dir"
 
 jagen_product=""
-jagen_board=""
 jagen_sdk=""
 jagen_toolchain=""
 jagen_vendor=""
@@ -60,11 +59,6 @@ fi
 if [ "$jagen_sdk" ]; then
     jagen_import_path="$jagen_dir/usr/sdk/$jagen_sdk $jagen_import_path"
     LUA_PATH="$jagen_dir/usr/sdk/$jagen_sdk/?.lua;$LUA_PATH"
-fi
-
-if [ "$jagen_board" ]; then
-    jagen_import_path="$jagen_dir/usr/board/$jagen_board $jagen_import_path"
-    LUA_PATH="$jagen_dir/usr/board/$jagen_board/?.lua;$LUA_PATH"
 fi
 
 if [ "$jagen_product_dir" ]; then

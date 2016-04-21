@@ -1,6 +1,5 @@
 #!/bin/sh
 
-jagen_board="ast100"
 jagen_sdk="sigma"
 jagen_toolchain="mipsel-linux-gnu"
 jagen_vendor="ast"

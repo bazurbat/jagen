@@ -1,6 +1,5 @@
 #!/bin/sh
 
-jagen_board="ast2xx"
 jagen_sdk="hi-linux"
 jagen_toolchain="arm-hisiv200-linux"
 jagen_vendor="ast"
