@@ -55,6 +55,7 @@ import() {
         if [ -f "$path" ]; then
             debug import $path
             . "$path"
+            return
         fi
     done
 }
