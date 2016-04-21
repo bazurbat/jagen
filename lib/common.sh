@@ -51,7 +51,7 @@ jagen_find_path() {
 import() {
     local name="${1:?}" path= i=
     for i in $jagen_import_path; do
-        path="$i/$name"
+        path="$i/${name}.sh"
         if [ -f "$path" ]; then
             debug import $path
             . "$path"
