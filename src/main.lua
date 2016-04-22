@@ -90,11 +90,14 @@ end
 -- rules
 
 local function load_rules()
+    local env = { Pkg = Pkg }
+    setmetatable(env, { __index = _G })
     local dirs = system.getenv { 'jagen_product_dir', 'jagen_root' }
     for _, dir in ipairs(dirs) do
         local filename = dir..'/rules.lua'
         if system.file_exists(filename) then
             local chunk = assert(loadfile(filename))
+            setfenv(chunk, env)
             chunk()
         end
     end

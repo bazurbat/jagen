@@ -1,7 +1,5 @@
 -- Sigma rules
 
-local Pkg = require 'Pkg'
-
 require 'chicken'
 
 -- base

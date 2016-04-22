@@ -1,7 +1,5 @@
 -- HiSilicon Linux SDK
 
-local Pkg = require 'Pkg'
-
 require 'chicken'
 
 Pkg:add { 'ast-files' }
