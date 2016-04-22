@@ -1,16 +1,16 @@
 -- CHICKEN Scheme
 
-local R = require 'rules'
+local Pkg = require 'Pkg'
 
-R:add { 'chicken', 'host' }
+Pkg:add { 'chicken', 'host' }
 
-R:add { 'chicken-eggs', 'host' }
+Pkg:add { 'chicken-eggs', 'host' }
 
-R:add { 'chicken', 'target',
+Pkg:add { 'chicken', 'target',
     { 'configure', { 'chicken', 'install', 'host' } }
 }
 
-R:add { 'chicken-eggs', 'target',
+Pkg:add { 'chicken-eggs', 'target',
     { 'configure',
         requires = {
             'dbus',

@@ -2,7 +2,8 @@ require 'common'
 require 'Ninja'
 
 local system = require 'system'
-local rules  = require 'rules'
+local Pkg = require 'Pkg'
+local Source = require 'Source'
 
 jagen =
 {
@@ -85,6 +86,25 @@ function jagen.show_help(section)
         jagen.error('no such help section: %s', section)
         return 2
     end
+end
+
+-- rules
+
+local function load_rules()
+    local dirs = system.getenv { 'jagen_product_dir', 'jagen_root' }
+    for _, dir in ipairs(dirs) do
+        local filename = dir..'/rules.lua'
+        if system.file_exists(filename) then
+            local chunk = assert(loadfile(filename))
+            chunk()
+        end
+    end
+
+    for _, pkg in pairs(Pkg.all) do
+        pkg.source = Source:create(pkg.source, pkg.name)
+    end
+
+    return Pkg.all
 end
 
 -- src
@@ -240,7 +260,7 @@ function jagen.command.refresh()
 
     prepare_root()
 
-    local packages = rules.load()
+    local packages = load_rules()
     local script = require 'script'
     local include_dir = assert(os.getenv('jagen_include_dir'))
     local log_dir = assert(os.getenv('jagen_log_dir'))
@@ -294,7 +314,7 @@ local function find_targets(packages, arg)
 end
 
 function jagen.command.build(options, rest)
-    local packages = rules.load()
+    local packages = load_rules()
 
     for _, arg in ipairs(rest) do
         for _, target in ipairs(find_targets(packages, arg)) do
@@ -307,7 +327,7 @@ function jagen.command.build(options, rest)
 end
 
 function jagen.command.rebuild(options, rest)
-    local packages = rules.load()
+    local packages = load_rules()
 
     for _, arg in ipairs(rest) do
         for _, target in ipairs(find_targets(packages, arg)) do
@@ -324,7 +344,7 @@ function jagen.command.status()
 end
 
 local function scm_packages(names)
-    local packages = rules.load()
+    local packages = load_rules()
     local o = {}
 
     if names and #names > 0 then

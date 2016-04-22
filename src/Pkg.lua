@@ -2,27 +2,23 @@ require 'Target'
 
 local system = require 'system'
 
-local mkpath = system.mkpath
+local level = 0
 
-local P = {}
-P.level = 0
-
-function P.indent()
-    return string.rep('  ', P.level)
+local function indent()
+    return string.rep('  ', level)
 end
 
-local Rule = {
+local Pkg = {
+    all = {},
     init_stages = { 'unpack', 'patch' }
 }
-Rule.__index = Rule
+Pkg.__index = Pkg
 
-local packages = {}
-
-function Rule:__tostring()
+function Pkg:__tostring()
     return string.format('%s__%s', self.name or '', self.config or '')
 end
 
-function Rule:parse(rule)
+function Pkg:parse(rule)
     if type(rule[1]) == 'string' then
         rule.name = rule[1]
         table.remove(rule, 1)
@@ -37,14 +33,14 @@ function Rule:parse(rule)
     return rule
 end
 
-function Rule:new(rule)
-    rule = Rule:parse(rule)
+function Pkg:new(rule)
+    rule = Pkg:parse(rule)
     setmetatable(rule, self)
     return rule
 end
 
-function Rule:new_package(rule)
-    local pkg  = Rule:new(rule)
+function Pkg:new_package(rule)
+    local pkg  = Pkg:new(rule)
     local name = pkg.name
 
     pkg.stages = pkg.stages or {}
@@ -53,12 +49,12 @@ function Rule:new_package(rule)
         pkg:add_target(Target:new(name, stage))
     end
 
-    table.merge(pkg, Rule:new(assert(require('pkg/'..name))))
+    table.merge(pkg, Pkg:new(assert(require('pkg/'..name))))
 
     return pkg
 end
 
-function Rule:merge(rule)
+function Pkg:merge(rule)
     -- do not append the same template again and again, just replace it
     if rule.template then
         self.template = nil
@@ -67,11 +63,11 @@ function Rule:merge(rule)
     return self
 end
 
-function Rule:has_config(name)
+function Pkg:has_config(name)
     return self.configs and self.configs[name]
 end
 
-function Rule:add_config(name)
+function Pkg:add_config(name)
     if not self.configs then
         self.configs = {}
     end
@@ -80,7 +76,7 @@ function Rule:add_config(name)
     end
 end
 
-function Rule:get(key, config)
+function Pkg:get(key, config)
     if config and self.configs and self.configs[config] then
         return self.configs[config][key]
     else
@@ -88,7 +84,7 @@ function Rule:get(key, config)
     end
 end
 
-function Rule:add_target(target)
+function Pkg:add_target(target)
     local name   = target.stage
     local config = target.config
     local shared = {
@@ -125,7 +121,7 @@ function Rule:add_target(target)
     return self
 end
 
-function Rule:add_stages(stages)
+function Pkg:add_stages(stages)
     local config = stages.config
     local template = stages.template
 
@@ -137,7 +133,7 @@ function Rule:add_stages(stages)
         local target_config = not stage.shared and self.config
         local target = Target:parse(stage, self.name, target_config)
 
-        jagen.debug2('%s| %s', P.indent(),
+        jagen.debug2('%s| %s', indent(),
             Target.__tostring(target, ':'))
 
         for item in each(stage.requires or {}) do
@@ -152,26 +148,26 @@ function Rule:add_stages(stages)
 
             target:append(Target:new(name, 'install', config))
 
-            P.level = P.level + 1
-            Rule:add_package {
+            level = level + 1
+            Pkg:add {
                 name = name,
                 config = config,
                 template = template
             }
-            P.level = P.level - 1
+            level = level - 1
         end
 
         for item in each(stage.depends or {}) do
             local stage = stage[1]
             target:append(Target:new(item, stage, config))
-            P.level = P.level + 1
-            Rule:add_package {
+            level = level + 1
+            Pkg:add {
                 name = item,
                 config = config,
                 template = template,
                 { 'deploy' }
             }
-            P.level = P.level - 1
+            level = level - 1
         end
 
         self:add_target(target)
@@ -180,16 +176,16 @@ function Rule:add_stages(stages)
     return self
 end
 
-function Rule:add_package(rule)
-    rule = Rule:new(rule)
+function Pkg:add(rule)
+    rule = Pkg:new(rule)
 
-    jagen.debug2('%s+ %s', P.indent(), rule.name)
+    jagen.debug2('%s+ %s', indent(), rule.name)
 
-    local pkg = packages[rule.name]
+    local pkg = self.all[rule.name]
 
     if not pkg then
-        pkg = Rule:new_package { rule.name }
-        packages[rule.name] = pkg
+        pkg = Pkg:new_package { rule.name }
+        self.all[rule.name] = pkg
     end
 
     local final = pkg.final
@@ -275,7 +271,7 @@ function Rule:add_package(rule)
     end
 end
 
-function Rule:add_ordering_dependencies()
+function Pkg:add_ordering_dependencies()
     local prev, common
 
     for s in self:each() do
@@ -295,7 +291,7 @@ function Rule:add_ordering_dependencies()
     end
 end
 
-function Rule:each()
+function Pkg:each()
     return coroutine.wrap(function ()
             for _, t in ipairs(self.stages) do
                 coroutine.yield(t)
@@ -308,27 +304,4 @@ function Rule:each()
         end)
 end
 
-function P.load()
-    local Source = require 'Source'
-
-    local dirs = system.getenv { 'jagen_product_dir', 'jagen_root' }
-    for _, dir in ipairs(dirs) do
-        local filename = dir..'/pkg.lua'
-        if system.file_exists(filename) then
-            local chunk = assert(loadfile(filename))
-            chunk()
-        end
-    end
-
-    for _, pkg in pairs(packages) do
-        pkg.source = Source:create(pkg.source, pkg.name)
-    end
-
-    return packages
-end
-
-function P:add(rule)
-    return Rule:add_package(rule)
-end
-
-return P
+return Pkg

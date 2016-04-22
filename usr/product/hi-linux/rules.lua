@@ -1,14 +1,14 @@
 -- HiSilicon Linux SDK
 
-local R = require 'rules'
+local Pkg = require 'Pkg'
 
 require 'chicken'
 
-R:add { 'ast-files' }
+Pkg:add { 'ast-files' }
 
-R:add { 'hi-kernel' }
+Pkg:add { 'hi-kernel' }
 
-R:add { 'hi-sdk', 'target',
+Pkg:add { 'hi-sdk', 'target',
     { 'patch',
         { 'hi-kernel',    'unpack' },
     },
@@ -21,28 +21,28 @@ R:add { 'hi-sdk', 'target',
     { 'mkload'    },
 }
 
-R:add { 'hi-drivers', 'target',
+Pkg:add { 'hi-drivers', 'target',
     { 'configure',
         { 'hi-sdk', 'linux', 'target' }
     }
 }
 
-R:add { 'rtl8188eu', 'target',
+Pkg:add { 'rtl8188eu', 'target',
     { 'compile',
         { 'hi-sdk', 'linux', 'target' }
     }
 }
 
-R:add { 'cmake-modules' }
+Pkg:add { 'cmake-modules' }
 
-R:add { 'hi-utils', 'target',
+Pkg:add { 'hi-utils', 'target',
     { 'configure',
         { 'cmake-modules', 'unpack'              },
         { 'hi-sdk',        'component', 'target' }
     }
 }
 
-R:add { 'karaoke-player', 'target',
+Pkg:add { 'karaoke-player', 'target',
     { 'configure',
         requires = {
             'chicken-eggs',
@@ -57,7 +57,7 @@ R:add { 'karaoke-player', 'target',
     }
 }
 
-R:add { 'rootfs', 'target',
+Pkg:add { 'rootfs', 'target',
     { 'install',
         requires = {
             'busybox',
@@ -74,5 +74,5 @@ R:add { 'rootfs', 'target',
 }
 
 if jagen.flag 'debug' then
-    R:add { 'strace', 'target' }
+    Pkg:add { 'strace', 'target' }
 end

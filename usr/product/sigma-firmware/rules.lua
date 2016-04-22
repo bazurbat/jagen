@@ -1,28 +1,28 @@
 -- Sigma rules
 
-local R = require 'rules'
+local Pkg = require 'Pkg'
 
 require 'chicken'
 
 -- base
 
-R:add { 'ast-files' }
+Pkg:add { 'ast-files' }
 
-R:add { 'cmake-modules' }
+Pkg:add { 'cmake-modules' }
 
-R:add { 'linux' }
+Pkg:add { 'linux' }
 
-R:add { 'xsdk' }
+Pkg:add { 'xsdk' }
 
-R:add { 'ucode', 'target',
+Pkg:add { 'ucode', 'target',
     { 'install' }
 }
 
 -- host
 
-R:add { 'utils', 'host' }
+Pkg:add { 'utils', 'host' }
 
-R:add { 'karaoke-player', 'host',
+Pkg:add { 'karaoke-player', 'host',
     { 'configure',
         requires = {
             'chicken-eggs',
@@ -33,7 +33,7 @@ R:add { 'karaoke-player', 'host',
     }
 }
 
-R:add { 'astindex',
+Pkg:add { 'astindex',
     { 'unpack', { 'karaoke-player', 'unpack' } }
 }
 
@@ -46,10 +46,10 @@ local kernel_rule_template = {
 
 local function kernel_rule(r)
     r.template = kernel_rule_template
-    R:add(r)
+    Pkg:add(r)
 end
 
-R:add { 'kernel', 'target',
+Pkg:add { 'kernel', 'target',
     { 'configure',
         { 'linux',  'unpack'            },
         { 'rootfs', 'compile', 'target' },
@@ -74,10 +74,10 @@ local rootfs_rule_template = {
 
 local function rootfs_rule(r)
     r.template = rootfs_rule_template
-    R:add(r)
+    Pkg:add(r)
 end
 
-R:add { 'rootfs', 'target',
+Pkg:add { 'rootfs', 'target',
     template = rootfs_rule_template,
     skip_template = true,
     { 'configure',
@@ -102,7 +102,7 @@ R:add { 'rootfs', 'target',
     { 'strip' }
 }
 
-R:add { 'mrua', 'target',
+Pkg:add { 'mrua', 'target',
     { 'compile',  { 'kernel', 'compile', 'target' } },
     { 'modules' },
     { 'install' },
@@ -137,10 +137,10 @@ local firmware_rule_template = {
 
 local function firmware_rule(r)
     r.template = firmware_rule_template
-    R:add(r)
+    Pkg:add(r)
 end
 
-R:add { 'firmware', 'target',
+Pkg:add { 'firmware', 'target',
     template = firmware_rule_template,
     skip_template = true,
     { 'compile',
