@@ -24,6 +24,13 @@ function P.exec(...)
     return status == 0, status % 0xFF
 end
 
+function P.fexec(format, ...)
+    local command = string.format(format, ...)
+    jagen.debug2(command)
+    local status = os.execute(command)
+    return status == 0, status % 0xFF
+end
+
 function P.popen(...)
     local command = tocommand(...)
     jagen.debug1(command)

@@ -221,6 +221,25 @@ function jagen.src.delete(packages)
     end
 end
 
+-- image
+
+jagen.image = {}
+
+function jagen.image.create(image_type)
+    local Image = require 'Image'
+
+    if image_type == 'rootfs' then
+        local target_dir = assert(os.getenv('jagen_target_dir'))
+        local out_file = '$jagen_build_dir/rootfs.ext4'
+
+        Image:create(target_dir, out_file)
+    elseif not image_type then
+        jagen.die('image type is not specified')
+    else
+        jagen.die('unsupported image type: %s', image_type)
+    end
+end
+
 -- these should return status number or nothing (nil)
 
 jagen.command = {}
@@ -384,6 +403,18 @@ function jagen.command.src(options, rest)
         return jagen.src[command](packages)
     else
         jagen.die("'%s' is not valid src command, use 'jagen src help'", command)
+    end
+end
+
+function jagen.command.image(options, rest)
+    local command = rest[1]
+
+    if not command then
+        jagen.die("command required, try 'jagen image help'")
+    elseif jagen.image[command] then
+        return jagen.image[command](rest[2])
+    else
+        jagen.die("'%s' is not valid image command, use 'jagen image help'", command)
     end
 end
 
