@@ -27,7 +27,8 @@ jagen_pkg_install() {
 
     rm -f "$pkg_source_dir/var/service/dropbear/down"
 
-    # if pkg_is_release; then
-    #     _jagen src status > heads || return
-    # fi
+    if pkg_is_release; then
+        pkg_strip_root "$pkg_install_dir"
+        # _jagen src status > heads || return
+    fi
 }
