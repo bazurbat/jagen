@@ -1,5 +1,4 @@
-
-Target = {}
+local Target = {}
 Target.__index = Target
 
 function Target:new(name, stage, config)
@@ -82,3 +81,5 @@ function Target:append(input)
     append(self.inputs, input)
     return self
 end
+
+return Target

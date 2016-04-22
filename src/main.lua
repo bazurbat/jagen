@@ -2,7 +2,8 @@ require 'common'
 require 'Ninja'
 
 local system = require 'system'
-local Pkg = require 'Pkg'
+local Pkg    = require 'Pkg'
+local Target = require 'Target'
 local Source = require 'Source'
 
 jagen =

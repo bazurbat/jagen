@@ -1,6 +1,5 @@
-require 'Target'
-
 local system = require 'system'
+local Target = require 'Target'
 
 local level = 0
 
