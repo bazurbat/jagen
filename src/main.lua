@@ -11,8 +11,6 @@ jagen =
     dir  = os.getenv('jagen_dir'),
     root = os.getenv('jagen_root'),
 
-    overlays = os.getenv('jagen_overlays'),
-
     shell = os.getenv('jagen_shell'),
 
     debug = os.getenv('jagen_debug'),
