@@ -158,6 +158,8 @@ Pkg:add { 'firmware', 'target',
     { 'strip' }
 }
 
+firmware_rule { 'mrua', 'target' }
+
 firmware_rule { 'karaoke-player',
     { 'configure',
         requires = {
