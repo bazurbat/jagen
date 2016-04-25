@@ -107,6 +107,17 @@ install_util_linux() {
     done
 }
 
+install_utils() {
+    local dest="${1:?}"
+    : ${pkg_install_dir:?}
+
+    ( pkg_run cd "$pkg_install_dir/sbin"
+      pkg_run install -m 755 \
+          sm smf sms mic_test spi_rw ddixcntup \
+          "$dest/sbin"
+    )
+}
+
 install_keys() {
     local dest="${1:?}"
     : ${jagen_private_dir:?}
@@ -147,6 +158,7 @@ jagen_pkg_install() {
     install_gnupg      "$dest" || return
     install_ntpclient  "$dest" || return
     install_util_linux "$dest" || return
+    install_utils      "$dest" || return
 
     install_keys  "$dest" || return
     install_files "$dest" || return
