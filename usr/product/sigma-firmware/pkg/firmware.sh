@@ -61,7 +61,7 @@ install_wpa_supplicant() {
 install_mrua() {
     local bin="ikc xkc gbus_read_bin_to_file gbus_read_uint32 rmfree rmmalloc"
 
-    ( cd "$pkg_install_dir/bin"
+    ( cd "$pkg_install_dir/$jagen_firmware_install_prefix/bin"
       pkg_run install -vm755 $bin "$pkg_build_dir/bin"
     )
 }
