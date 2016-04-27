@@ -25,7 +25,7 @@ jagen_pkg_install() {
     jagen_rootfs_install_hostname
     jagen_rootfs_fix_mtab
 
-    rm -f "$pkg_source_dir/var/service/dropbear/down"
+    rm -f "$pkg_install_dir/var/service/dropbear/down"
 
     if pkg_is_release; then
         pkg_strip_root "$pkg_install_dir"
