@@ -55,6 +55,14 @@ Pkg:add { 'karaoke-player', 'target',
     }
 }
 
+Pkg:add { 'hia-astdisplayservice', 'target',
+    { 'configure',
+        requires = {
+            'karaoke-player'
+        }
+    }
+}
+
 Pkg:add { 'rootfs', 'target',
     { 'install',
         requires = {
