@@ -36,3 +36,14 @@ jagen_pkg_install() {
         # _jagen src status > heads || return
     fi
 }
+
+jagen_pkg_deploy() {
+    local dst="$jagen_rootfs_deploy_dir"
+
+    [ -d "$dst" ] || return 0
+
+    pkg_run rsync -a "$pkg_install_dir/" "$dst"
+    pkg_run chmod 0700 "$dst/root"
+    pkg_run chmod 0700 "$dst/root/.ssh"
+    pkg_run chmod 0400 "$dst/root/.ssh/authorized_keys"
+}

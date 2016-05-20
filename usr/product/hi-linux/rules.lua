@@ -78,6 +78,7 @@ Pkg:add { 'rootfs', 'target',
         { 'ast-files', 'unpack'           },
         { 'hi-sdk',    'mkload', 'target' }
     },
+    { 'deploy' }
 }
 
 if jagen.flag 'debug' then
