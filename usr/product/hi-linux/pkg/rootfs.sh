@@ -22,6 +22,10 @@ jagen_pkg_install() {
     pkg_run rsync -aFF "$pkg_source_dir/hisi/" .
     pkg_run chmod 0700 root/.ssh
 
+    pkg_run mkdir -p lib/firmware
+    pkg_run rsync -t "$jagen_private_dir/c6747/2McASP_BEST.bin" \
+        "lib/firmware/c6747.bin"
+
     jagen_rootfs_install_hostname
     jagen_rootfs_fix_mtab
 
