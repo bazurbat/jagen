@@ -42,8 +42,9 @@ jagen_pkg_deploy() {
 
     [ -d "$dst" ] || return 0
 
-    pkg_run rsync -a "$pkg_install_dir/" "$dst"
-    pkg_run chmod 0700 "$dst/root"
-    pkg_run chmod 0700 "$dst/root/.ssh"
-    pkg_run chmod 0400 "$dst/root/.ssh/authorized_keys"
+    # HACK: will hang if there are password prompt
+    pkg_run sudo rsync -a "$pkg_install_dir/" "$dst"
+    pkg_run sudo chmod 0700 "$dst/root"
+    pkg_run sudo chmod 0700 "$dst/root/.ssh"
+    pkg_run sudo chmod 0400 "$dst/root/.ssh/authorized_keys"
 }
