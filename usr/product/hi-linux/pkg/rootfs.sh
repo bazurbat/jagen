@@ -42,9 +42,15 @@ jagen_pkg_deploy() {
 
     [ -d "$dst" ] || return 0
 
-    # HACK: will hang if there are password prompt
+    # HACK: this facilitates deploying on a booted rootfs but will hang if
+    # there is password prompt for sudo, works only in special docker image
+ 
     pkg_run sudo rsync -a "$pkg_install_dir/" "$dst"
+
+    pkg_run sudo chown -R 0:0 "$dst/root"
+
     pkg_run sudo chmod 0700 "$dst/root"
+
     pkg_run sudo chmod 0700 "$dst/root/.ssh"
     pkg_run sudo chmod 0400 "$dst/root/.ssh/authorized_keys"
 }
