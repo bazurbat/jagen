@@ -82,5 +82,6 @@ Pkg:add { 'rootfs', 'target',
 }
 
 if jagen.flag 'debug' then
+    Pkg:add { 'gdb', 'host' }
     Pkg:add { 'strace', 'target' }
 end
