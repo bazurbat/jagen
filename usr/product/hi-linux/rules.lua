@@ -45,6 +45,7 @@ Pkg:add { 'karaoke-player', 'target',
         requires = {
             'chicken-eggs',
             'connman',
+            'dbus',
             'ffmpeg',
             'libass',
             'libuv',
