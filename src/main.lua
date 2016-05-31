@@ -118,6 +118,12 @@ local function exists(pathname)
     return os.execute(string.format('test -e "%s"', pathname)) == 0
 end
 
+function jagen.src._touch(pkg)
+    local target = Target:new(pkg.name, 'unpack')
+    return system.fexec('cd "$jagen_build_dir" && touch "%s"',
+        tostring(target))
+end
+
 -- Should return 0 if true, 1 if false, for shell scripting.
 function jagen.src.dirty(packages)
     for _, pkg in ipairs(packages) do
@@ -168,6 +174,7 @@ function jagen.src.update(packages)
     end)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
+        local old_head = source:head()
         if exists(source.dir) then
             if not source:dirty() then
                 if offline then
@@ -205,6 +212,10 @@ function jagen.src.update(packages)
         if not offline and not source:fixup() then
             jagen.die('failed to fix up %s source in %s',
                 pkg.name, source.dir)
+        end
+
+        if source:head() ~= old_head then
+            jagen.src._touch(pkg)
         end
     end
 end
