@@ -10,6 +10,7 @@ return {
         }
     },
     build = {
+        type = 'custom',
         in_source = true
     }
 }

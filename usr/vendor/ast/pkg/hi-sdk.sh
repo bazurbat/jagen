@@ -16,34 +16,19 @@ jagen_pkg_patch() {
         "$pkg_source_dir/source/kernel/linux-3.4.y"
 }
 
-jagen_pkg_prepare() {
+jagen_pkg_configure() {
     pkg_run make prepare
 }
 
-jagen_pkg_hiboot() {
+jagen_pkg_compile() {
     pkg_run make hiboot_install
-}
-
-jagen_pkg_linux() {
     pkg_run make linux_install
     pkg_run make -C "$jagen_kernel_src_dir" \
         INSTALL_MOD_PATH="$pkg_install_dir" \
         modules_install
-}
-
-jagen_pkg_common() {
     pkg_run make common_install
-}
-
-jagen_pkg_msp() {
     pkg_run make msp_install
     pkg_run make msp_mod_install
-}
-
-jagen_pkg_component() {
     pkg_run make component_install
-}
-
-jagen_pkg_mkload() {
     pkg_run make -C scripts load_install
 }
