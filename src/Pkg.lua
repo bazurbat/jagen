@@ -144,21 +144,13 @@ function Pkg:add_requires(target, requires, config, template)
 end
 
 function Pkg:add_stages(stages)
-    local config = stages.config
     local template = stages.template
 
-    if not config and template then
-        config = template.config
-    end
+    for _, stage in ipairs(stages) do
+        local config = not stage.shared and self.config
+        local target = Target:parse(stage, self.name, config)
 
-    for stage in each(stages) do
-        local target_config = not stage.shared and self.config
-        local target = Target:parse(stage, self.name, target_config)
-
-        jagen.debug2('%s| %s', indent(),
-            Target.__tostring(target, ':'))
-
-        Pkg:add_requires(target, stage.requires, target_config, template)
+        Pkg:add_requires(target, stage.requires, config, template)
 
         self:add_target(target)
     end
