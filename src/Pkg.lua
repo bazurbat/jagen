@@ -168,20 +168,14 @@ function Pkg:add(rule)
         self.all[rule.name] = pkg
     end
 
-    local final = pkg.final
-
-    if not final then
-        local template = rule.template
-
-        if template then
-            if not rule.skip_template then
-                rule = table.merge(copy(template), rule)
-            end
-        end
+    if rule.template and not rule.skip_template and not pkg.final then
+        rule = table.merge(copy(rule.template), rule)
     end
 
     local config = rule.config
-    local stages = table.imove(rule, {})
+    local stages = table.imove(rule, {
+            template = rule.template
+        })
 
     pkg:merge(rule)
 
@@ -242,8 +236,6 @@ function Pkg:add(rule)
     end
 
     if not pkg.final then
-        stages.config = config
-        stages.template = pkg.template
         pkg:add_stages(stages)
     end
 end
