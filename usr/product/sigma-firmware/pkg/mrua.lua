@@ -5,6 +5,7 @@ return {
         branch   = '3.11.3'
     },
     build = {
+        type = 'custom',
         in_source = true
     }
 }

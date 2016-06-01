@@ -26,16 +26,10 @@ jagen_pkg_compile() {
     pkg_run make -C MRUA_src/splashscreen/utils
 }
 
-jagen_pkg_modules() {
-    local src_dir="$pkg_source_dir/modules/$jagen_kernel_release"
-
-    pkg_run cd "$src_dir"
-    pkg_install_modules em8xxx llad
-}
-
 jagen_pkg_install() {
     local bin_dir="$pkg_install_dir/bin"
     local lib_dir="$pkg_install_dir/lib"
+    local src_dir="$pkg_source_dir/modules/$jagen_kernel_release"
 
     pkg_run mkdir -p "$bin_dir" "$lib_dir"
 
@@ -67,4 +61,7 @@ jagen_pkg_install() {
     for lib in $libs; do
         pkg_run cp -va "$pkg_source_dir/lib/lib${lib}.so" "$lib_dir"
     done
+
+    pkg_run cd "$src_dir"
+    pkg_install_modules em8xxx llad
 }

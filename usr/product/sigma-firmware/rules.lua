@@ -88,21 +88,22 @@ Pkg:add { 'rootfs', 'target',
         requires = {
             'busybox',
             'gnupg',
+            'kernel',
+            'loop-aes',
+            'mrua',
             'ntpclient',
+            'ralink',
             'util-linux',
             'utils',
-        },
-        { 'kernel',   'install', 'target' },
-        { 'mrua',     'modules', 'target' },
-        { 'loop-aes', 'install', 'target' },
-        { 'ralink',   'install', 'target' },
+        }
     },
     { 'strip' }
 }
 
 Pkg:add { 'mrua', 'target',
-    { 'compile',  { 'kernel', 'compile', 'target' } },
-    { 'modules' },
+    { 'compile',
+        { 'kernel', 'compile', 'target' }
+    },
     { 'install' },
 }
 
@@ -141,24 +142,24 @@ end
 Pkg:add { 'firmware', 'target',
     template = firmware_rule_template,
     skip_template = true,
+    install = {
+        prefix = '$jagen_firmware_install_prefix'
+    },
     { 'compile',
-        { 'mrua', 'compile', 'target' }
+        requires = { 'mrua' }
     },
     { 'install',
         requires = {
+            'ezboot',
             'karaoke-player',
             'rsync',
+            'ucode',
             'wpa_supplicant',
         },
         { 'kernel', 'image',   'target' },
-        { 'mrua',   'install', 'target' },
-        { 'ucode',  'install', 'target' },
-        { 'ezboot', 'install', 'target' },
     },
     { 'strip' }
 }
-
-firmware_rule { 'mrua', 'target' }
 
 firmware_rule { 'karaoke-player',
     { 'configure',
