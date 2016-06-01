@@ -158,7 +158,7 @@ function Pkg:add_stages(stages)
         jagen.debug2('%s| %s', indent(),
             Target.__tostring(target, ':'))
 
-        Pkg:add_requires(target, stage.requires, config, template)
+        Pkg:add_requires(target, stage.requires, target_config, template)
 
         self:add_target(target)
     end
@@ -222,7 +222,6 @@ function Pkg:add(rule)
 
             if build.type then
                 pkg:add_stages {
-                    config = config,
                     template = rule.template,
                     { 'configure',
                         requires = { 'toolchain' }
@@ -246,7 +245,6 @@ function Pkg:add(rule)
     -- evaluate requires for every add to collect rules from all templates
     if pkg.requires then
         pkg:add_stages {
-            config = config,
             template = rule.template,
             { 'configure',
                 requires = pkg.requires
