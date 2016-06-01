@@ -144,13 +144,11 @@ function Pkg:add_requires(target, requires, config, template)
 end
 
 function Pkg:add_stages(stages)
-    local template = stages.template
-
     for _, stage in ipairs(stages) do
         local config = not stage.shared and self.config
         local target = Target:parse(stage, self.name, config)
 
-        Pkg:add_requires(target, stage.requires, config, template)
+        Pkg:add_requires(target, stage.requires, config, stages.template)
 
         self:add_target(target)
     end
@@ -179,7 +177,6 @@ function Pkg:add(rule)
             if not rule.skip_template then
                 rule = table.merge(copy(template), rule)
             end
-            rule.template = template
         end
     end
 
