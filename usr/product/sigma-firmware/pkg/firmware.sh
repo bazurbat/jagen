@@ -73,6 +73,33 @@ install_ucode() {
     pkg_run cp -va "$src_dir"/* "$dst_dir"
 }
 
+do_cleanup() {
+    using target
+
+    pkg_run cd "$pkg_build_dir"
+
+    pkg_run find lib -type f \
+        "(" -name "*.a" -o -name "*.la" ")" \
+        -print -delete
+
+    pkg_run find lib/chicken -type f "(" \
+        -name "*.o" \
+        -o -name "*.setup-info" \
+        -o -name "*.inline" \
+        -o -name "*.types" \
+        ")" -print -delete
+
+    if pkg_is_release; then
+        pkg_run find lib/chicken -type f "(" \
+            -name "*.import.*" \
+            -o -name "*.scm" \
+            -o -name "types.db" \
+            ")" -print -delete
+
+        pkg_strip_root "$pkg_build_dir"
+    fi
+}
+
 jagen_pkg_install() {
     local bin="audioplayer demo jabba midiplayer smplayer db-service \
         csi i2c_debug uart-shell ast-service pcf8563 agent-smith"
@@ -119,33 +146,8 @@ jagen_pkg_install() {
         "$pkg_build_dir"/lib/libnl-route*
 
     pkg_run cp -vaf "$jagen_private_dir"/firmware/* "$pkg_build_dir"
-}
 
-jagen_pkg_strip() {
-    using target
-
-    pkg_run cd "$pkg_build_dir"
-
-    pkg_run find lib -type f \
-        "(" -name "*.a" -o -name "*.la" ")" \
-        -print -delete
-
-    pkg_run find lib/chicken -type f "(" \
-        -name "*.o" \
-        -o -name "*.setup-info" \
-        -o -name "*.inline" \
-        -o -name "*.types" \
-        ")" -print -delete
-
-    if pkg_is_release; then
-        pkg_run find lib/chicken -type f "(" \
-            -name "*.import.*" \
-            -o -name "*.scm" \
-            -o -name "types.db" \
-            ")" -print -delete
-
-        pkg_strip_root "$pkg_build_dir"
-    fi
+    do_cleanup
 
     _jagen src status > "$pkg_build_dir/heads" || die
 }

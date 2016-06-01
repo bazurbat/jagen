@@ -162,9 +162,7 @@ jagen_pkg_install() {
 
     install_keys  "$dest" || return
     install_files "$dest" || return
-}
 
-jagen_pkg_strip() {
     using target
     pkg_strip_root "${jagen_sdk_initfs_dir:?}"
 }

@@ -96,8 +96,7 @@ Pkg:add { 'rootfs', 'target',
             'util-linux',
             'utils',
         }
-    },
-    { 'strip' }
+    }
 }
 
 Pkg:add { 'mrua', 'target',
@@ -157,8 +156,7 @@ Pkg:add { 'firmware', 'target',
             'wpa_supplicant',
         },
         { 'kernel', 'image',   'target' },
-    },
-    { 'strip' }
+    }
 }
 
 firmware_rule { 'karaoke-player',
