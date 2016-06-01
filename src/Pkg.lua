@@ -120,6 +120,29 @@ function Pkg:add_target(target)
     return self
 end
 
+function Pkg:add_requires(target, requires, config, template)
+    for item in each(requires or {}) do
+        local name, config = nil, config
+
+        if type(item) == 'string' then
+            name = item
+        else
+            name   = item[1]
+            config = item[2] or config
+        end
+
+        target:append(Target:new(name, 'install', config))
+
+        level = level + 1
+        Pkg:add {
+            name = name,
+            config = config,
+            template = template
+        }
+        level = level - 1
+    end
+end
+
 function Pkg:add_stages(stages)
     local config = stages.config
     local template = stages.template
@@ -135,26 +158,7 @@ function Pkg:add_stages(stages)
         jagen.debug2('%s| %s', indent(),
             Target.__tostring(target, ':'))
 
-        for item in each(stage.requires or {}) do
-            local name, config = nil, config
-
-            if type(item) == 'string' then
-                name = item
-            else
-                name   = item[1]
-                config = item[2] or config
-            end
-
-            target:append(Target:new(name, 'install', config))
-
-            level = level + 1
-            Pkg:add {
-                name = name,
-                config = config,
-                template = template
-            }
-            level = level - 1
-        end
+        Pkg:add_requires(target, stage.requires, config, template)
 
         self:add_target(target)
     end
