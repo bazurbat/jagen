@@ -156,19 +156,6 @@ function Pkg:add_stages(stages)
             level = level - 1
         end
 
-        for item in each(stage.depends or {}) do
-            local stage = stage[1]
-            target:append(Target:new(item, stage, config))
-            level = level + 1
-            Pkg:add {
-                name = item,
-                config = config,
-                template = template,
-                { 'deploy' }
-            }
-            level = level - 1
-        end
-
         self:add_target(target)
     end
 
