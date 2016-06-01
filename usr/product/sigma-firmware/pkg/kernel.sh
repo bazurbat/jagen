@@ -38,32 +38,12 @@ jagen_pkg_compile() {
     pkg_run $CROSS_MAKE -C "$protectordir"
 }
 
-jagen_pkg_install() {
-    cd linux || return $?
-
-    pkg_run $CROSS_MAKE modules_install
-
-    if [ $with_kernel_proprietary_modules = yes ]; then
-        pkg_run cd "$jagen_kernel_dir/proprietary"
-        pkg_run $CROSS_MAKE -C spinor modules_install
-        pkg_run $CROSS_MAKE -C sd_block modules_install
-    fi
-
-    if [ $with_kernel_extras = yes ]; then
-        pkg_run cd "$jagen_kernel_dir/extra"
-        pkg_run $CROSS_MAKE modules_install
-    fi
-
-    pkg_run cd "$jagen_kernel_modules_dir"
-    pkg_run rm -f "build" "source"
-}
-
 get_start_addr() {
     local NM="${jagen_toolchain_prefix}nm"
     echo 0x$($NM $1 | awk '/\<kernel_entry\>/ { print $1 }')
 }
 
-jagen_pkg_image() {
+create_image() {
     local genzbf="$jagen_sdk_staging_dir/bin/genzbf"
     local image_dir="$jagen_target_dir/kernel-image"
     local image="$jagen_target_dir/zbimage-linux-xload"
@@ -88,4 +68,26 @@ jagen_pkg_image() {
 
     pkg_run "$protectordir/zbprotector" "$image" "${image}.zbc"
     pkg_run chmod 644 "${image}.zbc"
+}
+
+jagen_pkg_install() {
+    cd linux || return $?
+
+    pkg_run $CROSS_MAKE modules_install
+
+    if [ $with_kernel_proprietary_modules = yes ]; then
+        pkg_run cd "$jagen_kernel_dir/proprietary"
+        pkg_run $CROSS_MAKE -C spinor modules_install
+        pkg_run $CROSS_MAKE -C sd_block modules_install
+    fi
+
+    if [ $with_kernel_extras = yes ]; then
+        pkg_run cd "$jagen_kernel_dir/extra"
+        pkg_run $CROSS_MAKE modules_install
+    fi
+
+    pkg_run cd "$jagen_kernel_modules_dir"
+    pkg_run rm -f "build" "source"
+
+    create_image
 }

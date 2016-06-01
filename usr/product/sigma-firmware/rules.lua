@@ -48,15 +48,12 @@ local function kernel_rule(r)
 end
 
 Pkg:add { 'kernel', 'target',
+    template = kernel_rule_template,
+    skip_template = true,
     { 'configure',
-        { 'linux',  'unpack'            },
-        { 'rootfs', 'compile', 'target' },
-        { 'ezboot', 'compile', 'target' },
+        { 'linux', 'unpack' },
     },
     { 'install' },
-    { 'image',
-        { 'rootfs', 'install', 'target' }
-    }
 }
 
 kernel_rule { 'loop-aes' }
