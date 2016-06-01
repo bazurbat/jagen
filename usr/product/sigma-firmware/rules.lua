@@ -148,11 +148,11 @@ Pkg:add { 'firmware', 'target',
         requires = {
             'ezboot',
             'karaoke-player',
+            'kernel',
             'rsync',
             'ucode',
             'wpa_supplicant',
-        },
-        { 'kernel', 'image',   'target' },
+        }
     }
 }
 
@@ -167,11 +167,11 @@ firmware_rule { 'karaoke-player',
             'libass',
             'libpng',
             'libuv',
+            'mrua',
             'soundtouch',
             'sqlite',
+            { 'chicken-eggs', 'host' },
         },
-        { 'astindex',     'unpack'            },
-        { 'mrua',         'compile', 'target' },
-        { 'chicken-eggs', 'install', 'host'   },
+        { 'astindex', 'unpack' }
     }
 }
