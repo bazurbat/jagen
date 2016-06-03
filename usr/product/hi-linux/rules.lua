@@ -13,64 +13,61 @@ Pkg:add { 'hi-sdk', 'target',
 }
 
 Pkg:add { 'hi-drivers', 'target',
-    { 'configure',
-        requires = { 'hi-sdk' }
-    }
+    requires = { 'hi-sdk' },
+    { 'configure' }
 }
 
 Pkg:add { 'rtl8188eu', 'target',
-    { 'compile',
-        requires = { 'hi-sdk' }
-    }
+    requires = { 'hi-sdk' },
+    { 'compile' }
 }
 
 Pkg:add { 'cmake-modules' }
 
 Pkg:add { 'hi-utils', 'target',
+    requires = { 'hi-sdk' },
     { 'configure',
-        requires = { 'hi-sdk' },
         { 'cmake-modules', 'unpack'              },
     }
 }
 
 Pkg:add { 'karaoke-player', 'target',
+    requires = {
+        'chicken-eggs',
+        'connman',
+        'dbus',
+        'ffmpeg',
+        'hi-sdk',
+        'libass',
+        'libuv',
+        'soundtouch',
+    },
     { 'configure',
-        requires = {
-            'chicken-eggs',
-            'connman',
-            'dbus',
-            'ffmpeg',
-            'hi-sdk',
-            'libass',
-            'libuv',
-            'soundtouch',
-        },
         { 'cmake-modules', 'unpack'              },
     }
 }
 
 Pkg:add { 'hia-astdisplayservice', 'target',
-    { 'configure',
-        requires = {
-            'karaoke-player'
-        }
-    }
+    requires = {
+        'karaoke-player'
+    },
+    { 'configure' }
 }
 
 Pkg:add { 'rootfs', 'target',
+    requires = {
+        'busybox',
+        'dropbear',
+        'hi-drivers',
+        'hi-sdk',
+        'hi-utils',
+        'hia-astdisplayservice',
+        'karaoke-player',
+        'rtl8188eu',
+        'wpa_supplicant',
+    },
     { 'install',
-        requires = {
-            'busybox',
-            'dropbear',
-            'hi-drivers',
-            'hi-sdk',
-            'hi-utils',
-            'hia-astdisplayservice',
-            'karaoke-player',
-            'rtl8188eu',
-            'wpa_supplicant',
-        },
-        { 'ast-files', 'unpack'           },
+        { 'ast-files', 'unpack' },
     },
     { 'deploy' }
 }
