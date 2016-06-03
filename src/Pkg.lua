@@ -174,16 +174,6 @@ function Pkg:add(rule)
 
     pkg:merge(rule)
 
-    do local source = pkg.source
-        if source and source.type == 'repo' then
-            pkg:add_stages {
-                { 'unpack',
-                    requires = { { 'repo', 'host' } }
-                }
-            }
-        end
-    end
-
     do local build = pkg.build
         if build and config and not pkg:has_config(config) then
             pkg:add_config(config)
