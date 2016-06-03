@@ -170,8 +170,8 @@ firmware_rule { 'karaoke-player',
             'mrua',
             'soundtouch',
             'sqlite',
-            { 'chicken-eggs', 'host' },
         },
-        { 'astindex', 'unpack' }
+        { 'astindex', 'unpack' },
+        { 'chicken-eggs', 'install', 'host' }
     }
 }
