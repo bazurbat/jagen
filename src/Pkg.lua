@@ -1,12 +1,6 @@
 local system = require 'system'
 local Target = require 'Target'
 
-local level = 0
-
-local function indent()
-    return string.rep('  ', level)
-end
-
 local Pkg = {
     all = {},
     init_stages = { 'unpack', 'patch' }
@@ -133,13 +127,11 @@ function Pkg:add_requires(target, requires, config, template)
 
         target:append(Target:new(name, 'install', config))
 
-        level = level + 1
         Pkg:add {
             name = name,
             config = config,
             template = template
         }
-        level = level - 1
     end
 end
 
