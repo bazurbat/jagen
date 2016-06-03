@@ -21,12 +21,12 @@ Pkg:add { 'ucode', 'target',
 Pkg:add { 'utils', 'host' }
 
 Pkg:add { 'karaoke-player', 'host',
+    requires = {
+        'chicken-eggs',
+        'ffmpeg',
+        'libuv',
+    },
     { 'configure',
-        requires = {
-            'chicken-eggs',
-            'ffmpeg',
-            'libuv',
-        },
         { 'astindex', 'unpack' },
     }
 }
@@ -114,8 +114,8 @@ rootfs_rule { 'busybox',
 }
 
 rootfs_rule { 'utils',
+    requires = { 'gpgme' },
     { 'configure',
-        requires = { 'gpgme' },
         { 'dbus', 'install', 'target' }
     }
 }
@@ -156,21 +156,25 @@ Pkg:add { 'firmware', 'target',
     }
 }
 
+Pkg:add { 'chicken-eggs', 'target',
+    requires = { 'dbus', 'sqlite' }
+}
+
 firmware_rule { 'karaoke-player',
+    requires = {
+        'chicken-eggs',
+        'connman',
+        'dbus',
+        'ffmpeg',
+        'freetype',
+        'libass',
+        'libpng',
+        'libuv',
+        'mrua',
+        'soundtouch',
+        'sqlite',
+    },
     { 'configure',
-        requires = {
-            'chicken-eggs',
-            'connman',
-            'dbus',
-            'ffmpeg',
-            'freetype',
-            'libass',
-            'libpng',
-            'libuv',
-            'mrua',
-            'soundtouch',
-            'sqlite',
-        },
         { 'astindex', 'unpack' },
         { 'chicken-eggs', 'install', 'host' }
     }
