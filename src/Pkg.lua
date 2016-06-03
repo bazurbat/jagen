@@ -197,6 +197,13 @@ function Pkg:add(rule)
         pkg:add_target(Target:parse(stage, pkg.name, config))
     end
 
+    for _, item in ipairs(requires or {}) do
+        local req = Pkg:add_req(item, config, rule.template)
+        pkg:add_target(Target:parse({ 'configure',
+                    { req.name, 'install', req.config }
+            }, pkg.name, config))
+    end
+
     -- evaluate requires for every add to collect rules from all templates
     for _, item in ipairs(pkg.requires or {}) do
         local req = Pkg:add_req(item, config, rule.template)
