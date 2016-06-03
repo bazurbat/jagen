@@ -137,7 +137,7 @@ end
 
 function Pkg:add_stages(stages)
     for _, stage in ipairs(stages) do
-        local config = not stage.shared and stages.config
+        local config = stages.config
         local target = Target:parse(stage, self.name, config)
 
         Pkg:add_requires(target, stage.requires, config, stages.template)
@@ -176,15 +176,13 @@ function Pkg:add(rule)
 
     do local build = pkg.build
         if build and config and not pkg:has_config(config) then
-            pkg:add_config(config)
-
             if build.type == 'GNU' then
                 if build.generate or build.autoreconf then
-                    pkg:add_stages {
-                        { 'autoreconf', shared = true,
-                            requires = { { 'libtool', 'host' } }
-                        }
-                    }
+                    local autoreconf_t = Target:parse({ 'autoreconf',
+                            { 'libtool', 'install', 'host' }
+                        }, pkg.name)
+                    pkg:add_target(autoreconf_t)
+                    Pkg:add { 'libtool', 'host' }
                 end
             end
 
