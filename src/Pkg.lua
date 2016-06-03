@@ -145,7 +145,7 @@ end
 
 function Pkg:add_stages(stages)
     for _, stage in ipairs(stages) do
-        local config = not stage.shared and self.config
+        local config = not stage.shared and stages.config
         local target = Target:parse(stage, self.name, config)
 
         Pkg:add_requires(target, stage.requires, config, stages.template)
@@ -158,8 +158,6 @@ end
 
 function Pkg:add(rule)
     rule = Pkg:new(rule)
-
-    jagen.debug2('%s+ %s', indent(), rule.name)
 
     local pkg = self.all[rule.name]
 
@@ -174,8 +172,13 @@ function Pkg:add(rule)
 
     local config = rule.config
     local stages = table.imove(rule, {
+            config   = config,
             template = rule.template
         })
+    local requires = rule.requires
+
+    rule.config   = nil
+    rule.requires = nil
 
     pkg:merge(rule)
 
@@ -205,6 +208,7 @@ function Pkg:add(rule)
 
             if build.type then
                 pkg:add_stages {
+                    config = config,
                     template = rule.template,
                     { 'configure',
                         requires = { 'toolchain' }
@@ -228,6 +232,7 @@ function Pkg:add(rule)
     -- evaluate requires for every add to collect rules from all templates
     if pkg.requires then
         pkg:add_stages {
+            config = config,
             template = rule.template,
             { 'configure',
                 requires = pkg.requires
