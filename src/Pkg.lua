@@ -187,15 +187,17 @@ function Pkg:add(rule)
             end
 
             if build.type then
-                pkg:add_stages {
-                    config = config,
-                    template = rule.template,
+                local stages = {
                     { 'configure',
-                        requires = { 'toolchain' }
+                        { 'toolchain', 'install', config }
                     },
                     { 'compile' },
                     { 'install' }
                 }
+                for _, stage in ipairs(stages) do
+                    pkg:add_target(Target:parse(stage, pkg.name, config))
+                end
+                Pkg:add { 'toolchain', config }
             end
         end
     end
