@@ -209,7 +209,9 @@ function Pkg:add(rule)
     end
 
     -- add global stages specified in pkg file regardless of config or build
-    pkg:add_stages(pkg)
+    for _, stage in ipairs(pkg) do
+        pkg:add_target(Target:parse(stage, pkg.name, config))
+    end
 
     -- evaluate requires for every add to collect rules from all templates
     if pkg.requires then
