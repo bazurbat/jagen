@@ -63,8 +63,7 @@ kernel_rule { 'ralink' }
 -- rootfs
 
 local rootfs_rule_template = {
-    config  = 'target',
-    { 'configure', { 'rootfs', 'compile', 'target' } }
+    config  = 'target'
 }
 
 local function rootfs_rule(r)
@@ -75,25 +74,23 @@ end
 Pkg:add { 'rootfs', 'target',
     template = rootfs_rule_template,
     skip_template = true,
+    requires = {
+        'busybox',
+        'gnupg',
+        'loop-aes',
+        'mrua',
+        'ntpclient',
+        'ralink',
+        'util-linux',
+        'utils',
+    },
     { 'configure',
         { 'ast-files', 'unpack'            },
         { 'xsdk',      'unpack'            },
         { 'toolchain', 'install', 'target' },
     },
     { 'compile' },
-    { 'install',
-        requires = {
-            'busybox',
-            'gnupg',
-            'kernel',
-            'loop-aes',
-            'mrua',
-            'ntpclient',
-            'ralink',
-            'util-linux',
-            'utils',
-        }
-    }
+    { 'install' }
 }
 
 Pkg:add { 'mrua', 'target',
@@ -102,8 +99,6 @@ Pkg:add { 'mrua', 'target',
     },
     { 'install' },
 }
-
-rootfs_rule { 'ezboot' }
 
 rootfs_rule { 'busybox',
     install = {
@@ -118,6 +113,10 @@ rootfs_rule { 'utils',
     { 'configure',
         { 'dbus', 'install', 'target' }
     }
+}
+
+Pkg:add { 'ezboot', 'target',
+    requires = { 'rootfs' }
 }
 
 -- firmware
@@ -138,22 +137,20 @@ end
 Pkg:add { 'firmware', 'target',
     template = firmware_rule_template,
     skip_template = true,
+    requires = {
+        'ezboot',
+        'karaoke-player',
+        'kernel',
+        'mrua',
+        'rsync',
+        'ucode',
+        'wpa_supplicant',
+    },
     install = {
         prefix = '$jagen_firmware_install_prefix'
     },
-    { 'compile',
-        requires = { 'mrua' }
-    },
-    { 'install',
-        requires = {
-            'ezboot',
-            'karaoke-player',
-            'kernel',
-            'rsync',
-            'ucode',
-            'wpa_supplicant',
-        }
-    }
+    { 'compile' },
+    { 'install' }
 }
 
 Pkg:add { 'chicken-eggs', 'target',
