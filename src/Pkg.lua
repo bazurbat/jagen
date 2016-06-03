@@ -114,38 +114,22 @@ function Pkg:add_target(target)
     return self
 end
 
-function Pkg:add_requires(target, requires, config, template)
-    for item in each(requires or {}) do
-        local name, config = nil, config
-
-        if type(item) == 'string' then
-            name = item
-        else
-            name   = item[1]
-            config = item[2] or config
-        end
-
-        target:append(Target:new(name, 'install', config))
-
-        Pkg:add {
-            name = name,
-            config = config,
-            template = template
-        }
-    end
-end
-
-function Pkg:add_stages(stages)
-    for _, stage in ipairs(stages) do
-        local config = stages.config
-        local target = Target:parse(stage, self.name, config)
-
-        Pkg:add_requires(target, stage.requires, config, stages.template)
-
-        self:add_target(target)
+function Pkg:add_req(req, config, template)
+    local name, config = nil, config
+    if type(req) == 'string' then
+        name = req
+    else
+        name   = req[1]
+        config = req[2] or config
     end
 
-    return self
+    Pkg:add {
+        name = name,
+        config = config,
+        template = template
+    }
+
+    return { name = name, config = config }
 end
 
 function Pkg:add(rule)
@@ -214,18 +198,22 @@ function Pkg:add(rule)
     end
 
     -- evaluate requires for every add to collect rules from all templates
-    if pkg.requires then
-        pkg:add_stages {
-            config = config,
-            template = rule.template,
-            { 'configure',
-                requires = pkg.requires
-            }
-        }
+    for _, item in ipairs(pkg.requires or {}) do
+        local req = Pkg:add_req(item, config, rule.template)
+        pkg:add_target(Target:parse({ 'configure',
+                    { req.name, 'install', req.config }
+                }, pkg.name, config))
     end
 
     if not pkg.final then
-        pkg:add_stages(stages)
+        for _, stage in ipairs(stages) do
+            local t = Target:parse(stage, pkg.name, config)
+            for _, item in ipairs(stage.requires or {}) do
+                local req = Pkg:add_req(item, config, rule.template)
+                t:append(Target:new(req.name, 'install', req.config))
+            end
+            pkg:add_target(t)
+        end
     end
 end
 
