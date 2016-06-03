@@ -11,11 +11,11 @@ Pkg:add { 'chicken', 'target',
 }
 
 Pkg:add { 'chicken-eggs', 'target',
+    requires = {
+        'dbus',
+        'sqlite',
+    },
     { 'configure',
-        requires = {
-            'dbus',
-            'sqlite',
-        },
         { 'chicken-eggs', 'install', 'host' }
     }
 }

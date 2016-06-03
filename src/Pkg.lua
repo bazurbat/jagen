@@ -214,12 +214,7 @@ function Pkg:add(rule)
 
     if not pkg.final then
         for _, stage in ipairs(stages) do
-            local t = Target:parse(stage, pkg.name, config)
-            for _, item in ipairs(stage.requires or {}) do
-                local req = Pkg:add_req(item, config, rule.template)
-                t:append(Target:new(req.name, 'install', req.config))
-            end
-            pkg:add_target(t)
+            pkg:add_target(Target:parse(stage, pkg.name, config))
         end
     end
 end

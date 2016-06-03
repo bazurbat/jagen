@@ -50,6 +50,7 @@ end
 Pkg:add { 'kernel', 'target',
     template = kernel_rule_template,
     skip_template = true,
+    requires = { 'rootfs' },
     { 'configure',
         { 'linux', 'unpack' },
     },
