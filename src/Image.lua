@@ -8,7 +8,7 @@ local function calculate_size(dir)
 end
 
 local function run(format, ...)
-    if not system.fexec(format, ...) then
+    if not system.exec(format, ...) then
         local command = string.format(format, ...)
         error('failed to run: '..command, 2)
     end

@@ -76,12 +76,12 @@ function jagen.flag(f)
 end
 
 function jagen.touch(target)
-    return system.fexec('cd "$jagen_build_dir" && touch "%s"',
+    return system.exec('cd "$jagen_build_dir" && touch "%s"',
         tostring(target))
 end
 
 function jagen.remove(target)
-    return system.fexec('cd "$jagen_build_dir" && rm -f "%s"',
+    return system.exec('cd "$jagen_build_dir" && rm -f "%s"',
         tostring(target))
 end
 
@@ -118,7 +118,7 @@ end
 
 function jagen.src._touch(pkg)
     local target = Target:new(pkg.name, 'unpack')
-    return system.fexec('cd "$jagen_build_dir" && touch "%s"',
+    return system.exec('cd "$jagen_build_dir" && touch "%s"',
         tostring(target))
 end
 
@@ -415,7 +415,8 @@ function jagen.command.build(args)
         end
     end
 
-    local err, status = system.exec(jagen.cmd, 'build', unpack(options))
+    local err, status = system.exec('%s build %s', jagen.cmd,
+        table.concat(table.imap(options, tostring), ' '))
 
     return status
 end

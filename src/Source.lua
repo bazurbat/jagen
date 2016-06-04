@@ -86,7 +86,7 @@ function GitSource:new(o)
 end
 
 function GitSource:exec(...)
-    return system.exec('git', '-C', assert(self.dir), ...)
+    return system.exec('git -C "%s" ', self.dir, ...)
 end
 
 function GitSource:pread(format, command, ...)
@@ -157,8 +157,8 @@ function GitSource:switch()
 end
 
 function GitSource:clone()
-    return system.exec('git', 'clone', '--branch', assert(self.branch),
-        '--depth', 1, assert(self.location), assert(self.dir))
+    return system.exec('git clone --depth 1 --branch "%s" "%s" "%s"',
+        assert(self.branch), assert(self.location), assert(self.dir))
 end
 
 function GitSource:fixup()
@@ -178,7 +178,7 @@ function HgSource:new(o)
 end
 
 function HgSource:exec(...)
-    return system.exec('hg', '-R', assert(self.dir), ...)
+    return system.exec('hg -R "%s" ', self.dir, ...)
 end
 
 function HgSource:pread(format, command, ...)
@@ -237,8 +237,8 @@ function HgSource:switch()
 end
 
 function HgSource:clone()
-    return system.exec('hg', 'clone', '-r', assert(self.branch),
-        assert(self.location), assert(self.dir))
+    return system.exec('hg clone -r "%s" "%s" "%s"',
+        assert(self.branch), assert(self.location), assert(self.dir))
 end
 
 -- RepoSource
@@ -250,18 +250,16 @@ function RepoSource:new(o)
 end
 
 function RepoSource:exec(...)
-    local cmd = { 'cd', '"'..assert(self.dir)..'"', '&&', 'repo', ... }
-    return system.exec(unpack(cmd))
+    return system.exec('cd "%s" && repo ', self.dir, ...)
 end
 
 function RepoSource:pread(format, command, ...)
-    local cmd = { 'cd', '"'..assert(self.dir)..'"', '&&', 'repo', ... }
-    return system.pread(unpack(cmd))
+    return system.pread(format, 'cd "%s" && repo '..command, ...)
 end
 
 function RepoSource:_load_projects(...)
     local o = {}
-    local list = self:popen('list', ...)
+    local list = self:pread('*a', 'list', ...)
     while true do
         local line = list:read()
         if not line then break end
@@ -282,7 +280,7 @@ function RepoSource:_is_dirty(path)
 end
 
 function RepoSource:head()
-    return self:popen('status', '-j', 1, '--orphans'):read('*all')
+    return self:pread('*a', 'status -j1 --orphans')
 end
 
 function RepoSource:dirty()
@@ -318,10 +316,8 @@ function RepoSource:clean()
 end
 
 function RepoSource:update()
-    local sync = string.format([[
-sync -j %d --current-branch --no-tags --optimized-fetch]],
+    return self:exec('sync -j%d --current-branch --no-tags --optimized-fetch',
         self.jobs)
-    return self:exec(sync)
 end
 
 function RepoSource:switch()
@@ -331,11 +327,10 @@ function RepoSource:switch()
 end
 
 function RepoSource:clone()
-    local mkdir = { 'mkdir -p "'..self.dir..'"' }
-    local init = { 'init', '-u', assert(self.location),
-        '-b', assert(self.branch), '-p', 'linux', '--depth', 1
-    }
-    return system.exec(unpack(mkdir)) and self:exec(unpack(init)) and self:update()
+    return system.exec('mkdir -p "%s"', self.dir) and
+           system.exec('init -u "%s" -b "%s" -p linux --depth 1',
+               self.location, self.branch) and
+           self:update()
 end
 
 return Source

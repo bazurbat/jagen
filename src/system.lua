@@ -9,22 +9,7 @@ function P.mkpath(...)
     return table.concat(path, sep)
 end
 
-local function tocommand(...)
-    local command = {}
-    for _, arg in ipairs({...}) do
-        table.insert(command, string.format('%s', tostring(arg)))
-    end
-    return table.concat(command, ' ')
-end
-
-function P.exec(...)
-    local command = tocommand(...)
-    jagen.debug2(command)
-    local status = os.execute(command)
-    return status == 0, status % 0xFF
-end
-
-function P.fexec(cmdline, ...)
+function P.exec(cmdline, ...)
     local command = string.format(cmdline, ...)
     jagen.debug2(command)
     local status = os.execute(command)
@@ -51,20 +36,20 @@ function P.getenv(vars)
     return o
 end
 
-function P.rmrf(...)
-    return P.exec('rm', '-rf', ...)
+function P.rmrf(path)
+    return P.exec('rm -rf "%s"', path)
 end
 
-function P.mkdir(...)
-    return P.exec('mkdir', '-p', ...)
+function P.mkdir(path)
+    return P.exec('mkdir -p "%s"', path)
 end
 
 function P.exists(path)
-    return P.exec(string.format('test -e "%s"', path))
+    return P.exec('test -e "%s"', path)
 end
 
 function P.file_exists(pathname)
-    return P.exec(string.format('test -f "%s"', pathname))
+    return P.exec('test -f "%s"', pathname)
 end
 
 function P.is_empty(path)
