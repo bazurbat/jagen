@@ -55,8 +55,8 @@ function P.exists(path)
     return P.exec('test -e "%s"', path)
 end
 
-function P.file_exists(pathname)
-    return P.exec('test -f "%s"', pathname)
+function P.file_exists(path)
+    return P.exec('test -f "%s"', path)
 end
 
 function P.is_empty(path)
