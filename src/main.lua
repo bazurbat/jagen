@@ -340,12 +340,6 @@ function jagen.command.refresh(args)
         return jagen.command['help'] { 'refresh' }
     end
 
-    -- during development naming scheme was changed, user might have older
-    -- scripts lying around after update
-    if not system.rmrf(jagen.include_dir) then
-        return 2
-    end
-
     prepare_root()
 
     local packages = load_rules()
@@ -416,7 +410,7 @@ function jagen.command.build(args)
     end
 
     local err, status = system.exec('%s build %s', jagen.cmd,
-        table.concat(table.imap(options, tostring), ' '))
+        system.quote(unpack(options)))
 
     return status
 end

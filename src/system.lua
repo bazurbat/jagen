@@ -1,5 +1,12 @@
 local P = {}
 
+function P.quote(...)
+    local function quote(arg)
+        return string.format('%q', tostring(arg))
+    end
+    return table.concat(table.imap({...}, quote), ' ')
+end
+
 function P.mkpath(...)
     local sep = '/'
     local path = {}
@@ -36,12 +43,12 @@ function P.getenv(vars)
     return o
 end
 
-function P.rmrf(path)
-    return P.exec('rm -rf "%s"', path)
+function P.rmrf(...)
+    return P.exec('rm -rf %s', P.quote(...))
 end
 
-function P.mkdir(path)
-    return P.exec('mkdir -p "%s"', path)
+function P.mkdir(...)
+    return P.exec('mkdir -p %s', P.quote(...))
 end
 
 function P.exists(path)
