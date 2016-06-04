@@ -37,15 +37,6 @@ function P.popen(...)
     return io.popen(command)
 end
 
-function P.pipe(func, ...)
-    local command = tocommand(...)
-    jagen.debug1(command)
-    local file = assert(io.popen(command))
-    local o = { func(file) }
-    file:close()
-    return unpack(o)
-end
-
 function P.pread(format, command, ...)
     local prog = string.format(command, ...)
     jagen.debug2(prog)

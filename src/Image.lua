@@ -4,9 +4,7 @@ local Image = {}
 local padding = 8
 
 local function calculate_size(dir)
-    return tonumber(
-        system.pipe(function (f) return string.match(f:read(), '%d+') end,
-        string.format('du -sm "%s"', dir)))
+    return system.pread('*n', 'du -sm "%s"', dir)
 end
 
 local function run(format, ...)
