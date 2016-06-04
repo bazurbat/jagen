@@ -74,22 +74,22 @@ function table.rest(t, start)
     return o
 end
 
-function table.merge(a, b)
-    assert_arg('merge', 1, 'table', a)
-    assert_arg('merge', 2, 'table', b)
-    for k, v in pairs(b) do
+function table.merge(to, from)
+    assert_arg('merge', 1, 'table', to)
+    assert_arg('merge', 2, 'table', from)
+    for k, v in pairs(from) do
         if type(k) ~= 'number' then
             if type(v) == 'table' then
-                a[k] = table.merge(a[k] or {}, v)
+                to[k] = table.merge(to[k] or {}, v)
             else
-                a[k] = v
+                to[k] = v
             end
         end
     end
-    for _, v in ipairs(b) do
-        table.insert(a, v)
+    for _, v in ipairs(from) do
+        table.insert(to, v)
     end
-    return a
+    return to
 end
 
 function table.imove(from, to)
