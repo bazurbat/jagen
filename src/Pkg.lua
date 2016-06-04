@@ -32,15 +32,6 @@ function Pkg:new(rule)
     return rule
 end
 
-function Pkg:merge(rule)
-    -- do not append the same template again and again, just replace it
-    if rule.template then
-        self.template = nil
-    end
-    table.merge(self, rule)
-    return self
-end
-
 function Pkg:has_config(name)
     return self.configs and self.configs[name]
 end
@@ -134,21 +125,24 @@ function Pkg:add(rule)
         self.all[rule.name] = pkg
     end
 
-    if rule.template and not rule.skip_template and not pkg.final then
-        rule = table.merge(copy(rule.template), rule)
+    local template = rule.template
+    rule.template = nil
+
+    if template and not rule.skip_template and not pkg.final then
+        rule = table.merge(copy(template), rule)
     end
 
     local config = rule.config
     local stages = table.imove(rule, {
             config   = config,
-            template = rule.template
+            template = template
         })
     local requires = rule.requires
 
     rule.config   = nil
     rule.requires = nil
 
-    pkg:merge(rule)
+    table.merge(pkg, rule)
 
     do local build = pkg.build
         if build and config and not pkg:has_config(config) then
@@ -190,7 +184,7 @@ function Pkg:add(rule)
     end
 
     for _, item in ipairs(requires or {}) do
-        local req = Pkg:add_req(item, config, rule.template)
+        local req = Pkg:add_req(item, config, template)
         pkg:add_target(Target:parse({ 'configure',
                     { req.name, 'install', req.config }
             }, pkg.name, config))
@@ -198,7 +192,7 @@ function Pkg:add(rule)
 
     -- evaluate requires for every add to collect rules from all templates
     for _, item in ipairs(pkg.requires or {}) do
-        local req = Pkg:add_req(item, config, rule.template)
+        local req = Pkg:add_req(item, config, template)
         pkg:add_target(Target:parse({ 'configure',
                     { req.name, 'install', req.config }
                 }, pkg.name, config))
