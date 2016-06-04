@@ -243,34 +243,29 @@ function RepoSource:new(o)
     return source
 end
 
-function RepoSource:exec(...)
-    return system.exec('cd "%s" && repo ', self.dir, ...)
+function RepoSource:exec(command, ...)
+    return system.exec('cd "%s" && repo '..command, assert(self.dir), ...)
 end
 
 function RepoSource:pread(format, command, ...)
-    return system.pread(format, 'cd "%s" && repo '..command, ...)
+    return system.pread(format, 'cd "%s" && repo '..command, assert(self.dir), ...)
 end
 
 function RepoSource:_load_projects(...)
     local o = {}
-    local list = self:pread('*a', 'list', ...)
-    while true do
-        local line = list:read()
-        if not line then break end
-        local path, name = string.match(line, "(.+)%s:%s(.+)")
+    local file = system.popen('cd "%s" && repo list', assert(self.dir))
+    for line in file:lines() do
+        local path, name = string.match(line, '(.+)%s:%s(.+)')
         if name then
             o[name] = path
         end
     end
+    file:close()
     return o
 end
 
 function RepoSource:_is_dirty(path)
-    local cmd   = string.format('git -C "%s" status --porcelain', path)
-    local pipe  = assert(system.popen(cmd))
-    local dirty = pipe:read() ~= nil
-    pipe:close()
-    return dirty
+    return system.pread('*l', 'git -C "%s" status --porcelain', path) ~= nil
 end
 
 function RepoSource:head()
@@ -295,14 +290,8 @@ function RepoSource:clean()
         local path = system.mkpath(assert(self.dir), p)
         if system.exists(path) then
             if self:_is_dirty(path) then
-                local checkout = string.format('git -C "%s" checkout HEAD .', path)
-                if not system.exec(checkout) then
-                    return false
-                end
-            end
-            local clean = string.format('git -C "%s" clean -fxd', path)
-            if not system.exec(clean) then
-                return false
+                return system.exec('git -C "%s" checkout HEAD .', path) and
+                       system.exec('git -C "%s" clean -fxd', path)
             end
         end
     end
@@ -322,8 +311,8 @@ end
 
 function RepoSource:clone()
     return system.exec('mkdir -p "%s"', self.dir) and
-           system.exec('init -u "%s" -b "%s" -p linux --depth 1',
-               self.location, self.branch) and
+           self:exec('init -u "%s" -b "%s" -p linux --depth 1',
+               assert(self.location), assert(self.branch)) and
            self:update()
 end
 
