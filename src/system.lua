@@ -46,6 +46,15 @@ function P.pipe(func, ...)
     return unpack(o)
 end
 
+function P.fpipe(func, format, ...)
+    local command = string.format(format, ...)
+    jagen.debug2(command)
+    local file = assert(io.popen(command))
+    local o = { func(file) }
+    file:close()
+    return unpack(o)
+end
+
 function P.getenv(vars)
     local o = {}
     for _, v in ipairs(vars) do
