@@ -1,6 +1,3 @@
 #!/bin/sh
 
-jagen_target_board='ast2xx'
-
-jagen_target_platform="android-17"
-jagen_android_product="Hi3719CV100"
+jagen_sdk_tools_dir="${jagen_build_dir:?}/hi-sdk-tools/tools"

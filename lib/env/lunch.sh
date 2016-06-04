@@ -1,9 +1,5 @@
 #!/bin/sh
 
-#require bash || return
-#require sdk_dir || return
-#require u-boot-tools || return
-
 : ${jagen_android_product:?}
 
 message "Changing current directory to: $jagen_sdk_dir"
