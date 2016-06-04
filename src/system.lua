@@ -23,10 +23,14 @@ function P.exec(cmdline, ...)
     return status == 0, status % 0xFF
 end
 
-function P.pread(format, cmdline, ...)
+function P.popen(cmdline, ...)
     local prog = string.format(cmdline, ...)
     jagen.debug2(prog)
-    local file = assert(io.popen(prog))
+    return assert(io.popen(prog))
+end
+
+function P.pread(format, cmdline, ...)
+    local file = P.popen(cmdline, ...)
     local out = file:read(format)
     file:close()
     return out
@@ -60,10 +64,7 @@ function P.file_exists(path)
 end
 
 function P.is_empty(path)
-    local pipe = assert(P.popen(string.format('cd "%s" && echo *', path)))
-    local empty = assert(pipe:read()) == '*'
-    pipe:close()
-    return empty
+    return P.pread('*l', 'cd "%s" && echo *', path) == '*'
 end
 
 return P
