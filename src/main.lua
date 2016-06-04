@@ -75,18 +75,6 @@ function jagen.flag(f)
     return false
 end
 
-function jagen.show_help(section)
-    section = section or 'usage'
-    local help = require 'help'
-
-    if help[section] then
-        io.write(help[section])
-    else
-        jagen.error('no such help section: %s', section)
-        return 2
-    end
-end
-
 -- rules
 
 local function load_rules()
@@ -255,6 +243,54 @@ end
 
 jagen.command = {}
 
+local function is_option(arg)
+    return string.sub(arg, 1, 1) == '-'
+end
+
+local function help_requested(args)
+    return args and args[1] == '-h' or string.match(args[1] or '', '\--help$')
+end
+
+local function find_options(args)
+    local options, rest = {}, {}
+    for i = 1, #args do
+        local arg = args[i]
+        if is_option(arg) then
+            table.insert(options, arg)
+        else
+            table.insert(rest, arg)
+        end
+    end
+    return options, rest
+end
+
+local function parse_args(args)
+    local cmd, options, rest = nil, {}, {}
+    for i = 1, #args do
+        local arg = args[i]
+        if is_option(arg) then
+            table.insert(options, arg)
+        elseif cmd then
+            table.insert(rest, arg)
+        else
+            cmd = arg
+        end
+    end
+    return cmd, options, rest
+end
+
+function jagen.command.help(args)
+    section = args[1] or 'usage'
+    local help = require 'help'
+
+    if help[section] then
+        io.write(help[section])
+    else
+        jagen.error('no such help section: %s', section)
+        return 2
+    end
+end
+
 function jagen.command.clean(args, i)
     local vars = {
         'jagen_bin_dir',
@@ -345,8 +381,14 @@ local function find_targets(packages, arg)
     return targets
 end
 
-function jagen.command.build(options, rest)
+function jagen.command.build(args)
     local packages = load_rules()
+
+    if help_requested(args) then
+        return jagen.command['help'] { 'build' }
+    end
+
+    local options, rest = find_options(args)
 
     for _, arg in ipairs(rest) do
         for _, target in ipairs(find_targets(packages, arg)) do
@@ -355,19 +397,7 @@ function jagen.command.build(options, rest)
     end
 
     local err, status = system.exec(jagen.cmd, 'build', unpack(options))
-    return status
-end
 
-function jagen.command.rebuild(options, rest)
-    local packages = load_rules()
-
-    for _, arg in ipairs(rest) do
-        for _, target in ipairs(find_targets(packages, arg)) do
-            table.insert(options, target)
-        end
-    end
-
-    local err, status = system.exec(jagen.cmd, 'rebuild', unpack(options))
     return status
 end
 
@@ -429,24 +459,6 @@ function jagen.command.image(options, rest)
     end
 end
 
-function jagen.parse_args(args)
-    local cmd, options, rest = nil, {}, {}
-    local function is_option(arg)
-        return string.sub(arg, 1, 1) == '-'
-    end
-    for i = 1, #args do
-        local arg = args[i]
-        if is_option(arg) then
-            table.insert(options, arg)
-        elseif cmd then
-            table.insert(rest, arg)
-        else
-            cmd = arg
-        end
-    end
-    return cmd, options, rest
-end
-
 function jagen:_nproc()
     local function read(f)
         return f:read()
@@ -461,30 +473,17 @@ function jagen:_nproc()
 end
 
 function jagen:run(args)
-    local cmd, options, rest = self.parse_args(args)
-    local first = options[1]
+    local cmd = args[1]
 
     jagen.nproc = jagen:_nproc()
 
-    --[[ Handling the following cases:
-    --   jagen
-    --   jagen --help [cmd] 
-    --   jagen help [cmd]
-    --   jagen <cmd> help
-    --   jagen <cmd> --help (effectively the second case) ]]
-
-    if not cmd then
-        return self.show_help('usage')
-    elseif first == '-h' or first == '--help' then
-        return self.show_help(cmd)
-    elseif cmd == 'help' then
-        return self.show_help(rest[1])
-    elseif cmd and rest[1] == 'help' then
-        return self.show_help(cmd)
+    if #args == 0 or help_requested(args) then
+        return jagen.command['help']({ args[2] })
     elseif jagen.command[cmd] then
-        return jagen.command[cmd](options, rest)
+        table.remove(args, 1)
+        return jagen.command[cmd](args)
     else
-        jagen.die("invalid command '%s', try 'jagen help'", cmd)
+        jagen.die("invalid command or argument '%s', try 'jagen help'", cmd)
     end
 end
 

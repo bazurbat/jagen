@@ -28,21 +28,38 @@ maybe_sync() {
 cmd_build() {
     local IFS="$(printf '\n\t')"
     local dry_run show_progress show_all
-    local targets logs sts
+    local targets logs sts arg i
     local cmd_log="$jagen_log_dir/$mode.log"
 
     assert_ninja_found
 
     while [ $# -gt 0 ]; do
         case $1 in
-            -n) dry_run=1       ;;
-            -p) show_progress=1 ;;
-            -P) show_all=1      ;;
-            -*) if [ "$mode" = 'rebuild' -a "$1" = '-a' ]; then
-                    build_all=1
-                else
-                    die "invalid option '$1', try 'jagen $mode --help'"
-                fi ;;
+            -dry-run|--dry-run)
+                dry_run=1 ;;
+            -progress|--progress)
+                show_progress=1 ;;
+            -all-progress|--all-progress)
+                show_all=1 ;;
+            -from|--from)
+                build_from=1 ;;
+            -only|--only)
+                build_only=1 ;;
+            --*)
+                die "invalid option '$1'" ;;
+            -*) arg="${1#-}"
+                while [ "$arg" ]; do
+                    i=$(echo $arg | cut -c1)
+                    case $i in
+                        n) dry_run=1 ;;
+                        p) show_progress=1 ;;
+                        P) show_all=1 ;;
+                        f) build_from=1 ;;
+                        o) build_only=1 ;;
+                        *) die "invalid flag '$i' in '$1'" ;;
+                    esac
+                    arg=${arg#$i}
+                done ;;
              *) targets="${targets}${S}${1}"
                 logs="${logs}${S}${jagen_log_dir}/${1}.log" ;;
         esac
@@ -51,9 +68,7 @@ cmd_build() {
 
     if [ "$dry_run" ]; then
         set -- $targets
-        if [ $# = 0 ]; then
-            printf "default\n"
-        else
+        if [ $# != 0 ]; then
             printf "$*\n"
         fi
         return 0
@@ -66,7 +81,7 @@ cmd_build() {
         : > "$log" || return
     done
 
-    if [ "$mode" = 'rebuild' ]; then
+    if [ "$build_from" ]; then
         rm -f $targets || return
     fi
 
@@ -87,10 +102,10 @@ cmd_build() {
     # (build server) not caring about console logs that much.
 
     maybe_sync
-    if [ "$build_all" ]; then
-        ninja > "$cmd_log"; sts=$?
-    else
+    if [ "$build_only" ]; then
         ninja $targets > "$cmd_log"; sts=$?
+    else
+        ninja > "$cmd_log"; sts=$?
     fi
     maybe_sync
 
@@ -101,13 +116,7 @@ cmd_build() {
 
 case $1 in
     build)
-        mode="$1"
-        shift
-        cmd_build "$@"
-        ;;
-    rebuild)
-        mode="$1"
-        shift
+        mode="$1"; shift
         cmd_build "$@"
         ;;
     *)

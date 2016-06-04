@@ -8,8 +8,7 @@ COMMANDS
   help      Show jagen usage information
   clean     Clean up build root
   refresh   Regenerate the build system
-  build     Ensure that targets are up to date
-  rebuild   Rebuild targets with dependencies
+  build     Build or rebuild the specified targets
   src       Manage SCM package sources
 
   Use 'jagen help <command>' to get help about individual commands.
@@ -65,44 +64,42 @@ Usage: jagen refresh
 local build = [[
 Usage: jagen build [OPTION...] [TARGET...]
 
-  Builds the specified targets or everything out of date.
+  Builds or rebuilds the specified targets.
 
 OPTIONS
 
-  -n  Print expanded value of TARGET... arguments and exit.
-  -p  Show build progress for the specified targets.
-  -P  Show all build output.
+  -h, --help          print this help message
+  -n, --dry-run       print expanded value of TARGET... arguments and exit
+  -p, --progress      show TARGET's build progress
+  -P, --all-progress  show all build output
+  -f, --from          rebuild starting from the specified targets
+  -o, --only          build only matching targets
 
   Use command 'jagen help targets' for information about targets.
 
 SYNOPSIS
 
-  If no targets were specified it builds everything not already built;
+  If no targets were specified the command builds everything not already built;
   otherwise it expands TARGET... arguments and builds the resulting targets if
-  they are out of date.
+  they are out of date. The '--from' option causes the specified targets to be
+  rebuilt unconditionally following by their dependencies until everything is
+  up to date, use '--only' option to skip rebuilding dependencies.
 
-]]
+  Short options can be combined into a single argument, for example:
 
-local rebuild = [[
-Usage: jagen rebuild [OPTIONS...] [TARGETS...]
+    jagen build -fop libuv
 
-  Rebuilds the specified targets and optionally their dependencies.
+  will rebuild libuv package from scratch, but nothing else, showing progress
+  on console. This will make targets depending on libuv out of date, so the
+  next 'jagen build' invocation will rebuild them too.
 
-OPTIONS
+  For development and testing it can be more convenient to select specific
+  targets, like:
 
-  -n  Print expanded value of TARGET... arguments and exit.
-  -p  Show build progress for the specified targets.
-  -P  Show all build output.
-  -a  Also build dependencies.
+    jagen build -fp libuv:compile:target
 
-  Use command 'jagen help targets' for information about targets.
-
-SYNOPSIS
-
-  If no targets were specified it builds everything not already built;
-  otherwise it expands TARGET... arguments and rebuilds the resulting targets
-  unconditionally. Use the '-a' option to continue until everything is up to
-  date (build all).
+  This will recompile libuv for target configuration if needed, then reinstall
+  it to rootfs or firmware image according to the rules currently in effect.
 
 ]]
 
@@ -169,7 +166,6 @@ return {
     clean   = clean,
     refresh = refresh,
     build   = build,
-    rebuild = rebuild,
     src     = src,
     targets = targets
 }
