@@ -127,7 +127,7 @@ function Pkg:add(rule)
 
     local template = rule.template; rule.template = nil
     -- let rule-specific config override template if set
-    if template and not rule.skip_template and not pkg.final then
+    if template and not rule.skip_template then
         rule = table.merge(copy(template), rule)
     end
 
@@ -195,10 +195,8 @@ function Pkg:add(rule)
                 }, pkg.name, config))
     end
 
-    if not pkg.final then
-        for _, stage in ipairs(stages) do
-            pkg:add_target(Target:parse(stage, pkg.name, config))
-        end
+    for _, stage in ipairs(stages) do
+        pkg:add_target(Target:parse(stage, pkg.name, config))
     end
 end
 

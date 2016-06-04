@@ -1,5 +1,4 @@
 return {
-    final = true,
     source = {
         dir = '$jagen_target_dir'
     },
