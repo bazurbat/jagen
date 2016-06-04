@@ -89,16 +89,16 @@ function GitSource:exec(...)
     return system.exec('git', '-C', assert(self.dir), ...)
 end
 
-function GitSource:popen(...)
-    return system.popen('git', '-C', assert(self.dir), ...):read()
+function GitSource:pread(format, command, ...)
+    return system.pread(format, 'git -C "%s" '..command, self.dir, ...)
 end
 
 function GitSource:head()
-    return self:popen('rev-parse', 'HEAD')
+    return self:pread('*l', 'rev-parse HEAD')
 end
 
 function GitSource:dirty()
-    return self:popen('status', '--porcelain') ~= nil
+    return self:pread('*l', 'status --porcelain') ~= nil
 end
 
 function GitSource:clean()
@@ -114,7 +114,7 @@ function GitSource:update()
 end
 
 function GitSource:_is_branch(pattern)
-    local branch = self:popen('branch', '-a', '--list', pattern)
+    local branch = self:pread('*l', 'branch -a --list', pattern)
     local exists, active = false, false
 
     if branch and #branch > 0 then
@@ -254,9 +254,9 @@ function RepoSource:exec(...)
     return system.exec(unpack(cmd))
 end
 
-function RepoSource:popen(...)
+function RepoSource:pread(format, command, ...)
     local cmd = { 'cd', '"'..assert(self.dir)..'"', '&&', 'repo', ... }
-    return system.popen(unpack(cmd))
+    return system.pread(unpack(cmd))
 end
 
 function RepoSource:_load_projects(...)

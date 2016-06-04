@@ -24,26 +24,20 @@ function P.exec(...)
     return status == 0, status % 0xFF
 end
 
-function P.fexec(format, ...)
-    local command = string.format(format, ...)
+function P.fexec(cmdline, ...)
+    local command = string.format(cmdline, ...)
     jagen.debug2(command)
     local status = os.execute(command)
     return status == 0, status % 0xFF
 end
 
-function P.popen(...)
-    local command = tocommand(...)
-    jagen.debug1(command)
-    return io.popen(command)
-end
-
-function P.pread(format, command, ...)
-    local prog = string.format(command, ...)
+function P.pread(format, cmdline, ...)
+    local prog = string.format(cmdline, ...)
     jagen.debug2(prog)
     local file = assert(io.popen(prog))
-    local o = file:read(format)
+    local out = file:read(format)
     file:close()
-    return o
+    return out
 end
 
 function P.getenv(vars)
