@@ -74,6 +74,14 @@ function table.rest(t, start)
     return o
 end
 
+function table.imap(arr, func)
+    local out = {}
+    for _, i in ipairs(arr) do
+        table.insert(out, func(i))
+    end
+    return out
+end
+
 function table.merge(to, from)
     assert_arg('merge', 1, 'table', to)
     assert_arg('merge', 2, 'table', from)
