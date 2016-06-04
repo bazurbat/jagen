@@ -2,11 +2,18 @@
 
 . "${jagen_dir:?}/lib/pkg.sh" || die
 
-pkg_name="${1:?}"
-pkg_stage="${2:?}"
-pkg_config="$3"
-shift 3
-pkg_args="$@"
+if [ "$1" = '-q' ]; then
+    shift
+    pkg_query="${1:?}"
+    pkg_name="${2:?}"
+    pkg_config="$3"
+else
+    pkg_name="${1:?}"
+    pkg_stage="${2:?}"
+    pkg_config="$3"
+    shift 3
+    pkg_args="$@"
+fi
 
 pkg_log="${jagen_log_dir:?}/${pkg_name}__${pkg_stage}${pkg_config:+__${pkg_config}}.log"
 pkg_work_dir="${jagen_build_dir:?}/$pkg_name"
@@ -30,6 +37,20 @@ fi
 require "pkg/$pkg_name" || die
 
 pkg_install_dir="${pkg_install_dir:-$pkg_sysroot$pkg_prefix}"
+
+if [ "$pkg_query" ]; then
+    case $pkg_query in
+        work_dir)
+            printf '%s\n' "$pkg_work_dir" ;;
+        source_dir)
+            printf '%s\n' "$pkg_source_dir" ;;
+        build_dir)
+            printf '%s\n' "$pkg_build_dir" ;;
+        install_dir)
+            printf '%s\n' "$pkg_install_dir" ;;
+    esac
+    exit 0
+fi
 
 case $pkg_stage in
     unpack)
