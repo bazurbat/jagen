@@ -75,6 +75,11 @@ function jagen.flag(f)
     return false
 end
 
+function jagen.touch(target)
+    return system.fexec('cd "$jagen_build_dir" && touch "%s"',
+        tostring(target))
+end
+
 -- rules
 
 local function load_rules()
@@ -279,6 +284,29 @@ end
 function jagen.command.clean(args)
     if help_requested(args) then
         return jagen.command['help'] { 'clean' }
+    end
+
+    if #args > 0 then
+        local packages = load_rules()
+        local function read(f)
+            return f:read()
+        end
+        for _, arg in ipairs(args) do
+            local m = string.gmatch(arg, '[^:]+')
+            local n, c = m(), m()
+            local p = packages[n]
+            if not p then
+                jagen.die('no such package: %s', n)
+            end
+            if c and not p:has_config(c) then
+                jagen.die("package '%s' does not have config: %s", n, c)
+            end
+            local build_dir = system.fpipe(read,
+                'jagen-pkg -q build_dir %s %s', n, c or '')
+            assert(system.rmrf(assert(build_dir)))
+            assert(jagen.touch(Target:new(n, 'patch')))
+        end
+        return 0
     end
 
     local vars = {
