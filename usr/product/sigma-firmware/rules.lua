@@ -48,9 +48,6 @@ local function kernel_rule(r)
 end
 
 Pkg:add { 'kernel', 'target',
-    template = kernel_rule_template,
-    skip_template = true,
-    requires = { 'rootfs' },
     { 'configure',
         { 'linux', 'unpack' },
     },
@@ -63,18 +60,7 @@ kernel_rule { 'ralink' }
 
 -- rootfs
 
-local rootfs_rule_template = {
-    config  = 'target'
-}
-
-local function rootfs_rule(r)
-    r.template = rootfs_rule_template
-    Pkg:add(r)
-end
-
 Pkg:add { 'rootfs', 'target',
-    template = rootfs_rule_template,
-    skip_template = true,
     requires = {
         'busybox',
         'gnupg',
@@ -101,7 +87,7 @@ Pkg:add { 'mrua', 'target',
     { 'install' },
 }
 
-rootfs_rule { 'busybox',
+Pkg:add { 'busybox', 'target',
     install = {
         root = '$jagen_sdk_initfs_dir',
         prefix = ''
@@ -109,7 +95,7 @@ rootfs_rule { 'busybox',
     { 'patch', { 'ast-files', 'unpack' } }
 }
 
-rootfs_rule { 'utils',
+Pkg:add { 'utils', 'target',
     requires = { 'gpgme' },
     { 'configure',
         { 'dbus', 'install', 'target' }
@@ -136,8 +122,7 @@ local function firmware_rule(r)
 end
 
 Pkg:add { 'firmware', 'target',
-    template = firmware_rule_template,
-    skip_template = true,
+    pass_template = firmware_rule_template,
     requires = {
         'ezboot',
         'karaoke-player',
