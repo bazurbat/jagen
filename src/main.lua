@@ -485,15 +485,11 @@ function jagen.command.image(options, rest)
 end
 
 function jagen:_nproc()
-    local function read(f)
-        return f:read()
-    end
-
-    local name = system.pipe(read, 'uname -s')
+    local name = system.pread('*l', 'uname -s')
     if name == 'Darwin' then
-        return system.pipe(read, 'sysctl -n hw.ncpu')
+        return system.pread('*l', 'sysctl -n hw.ncpu')
     else
-        return system.pipe(read, 'nproc')
+        return system.pread('*l', 'nproc')
     end
 end
 

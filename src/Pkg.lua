@@ -249,11 +249,8 @@ end
 
 function Pkg:build_dirs(config)
     local o = {}
-    local function read(f)
-        return f:read()
-    end
     local function get_dir(config)
-        return system.fpipe(read,
+        return system.pread('*l',
             'jagen-pkg -q build_dir %s %s', self.name, config)
     end
     if config then

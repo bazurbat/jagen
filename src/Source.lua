@@ -181,24 +181,16 @@ function HgSource:exec(...)
     return system.exec('hg', '-R', assert(self.dir), ...)
 end
 
-function HgSource:pipe(func, ...)
-    return system.pipe(func, 'hg', '-R', assert(self.dir), ...)
-end
-
-function HgSource:pipe_line(...)
-    return self:pipe(self._read_line, ...)
-end
-
-function HgSource:pipe_all(...)
-    return self:pipe(self._read_all, ...)
+function HgSource:pread(format, command, ...)
+    return system.pread(format, 'hg -R "%s" '..command, self.dir, ...)
 end
 
 function HgSource:head()
-    return self:pipe_line('id', '-i')
+    return self:pread('*l', 'id -i')
 end
 
 function HgSource:dirty()
-    return self:pipe_line('status') ~= nil
+    return self:pread('*l', 'status') ~= nil
 end
 
 function HgSource:clean()
@@ -212,14 +204,14 @@ function HgSource:update()
 end
 
 function HgSource:_branch()
-    local s = self:pipe_line('branch')
+    local s = self:pread('*l', 'branch')
     if s then
         return string.match(s, '^[%w_-]+')
     end
 end
 
 function HgSource:_is_bookmark(pattern)
-    local bm = self:pipe_all("bookmarks | grep '^..."..pattern.."\\s'")
+    local bm = self:pread('*a', "bookmarks | grep '^..."..pattern.."\\s'")
     local exists, active = false, false
 
     if bm and #bm > 0 then

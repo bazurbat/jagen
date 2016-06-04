@@ -46,13 +46,13 @@ function P.pipe(func, ...)
     return unpack(o)
 end
 
-function P.fpipe(func, format, ...)
-    local command = string.format(format, ...)
-    jagen.debug2(command)
-    local file = assert(io.popen(command))
-    local o = { func(file) }
+function P.pread(format, command, ...)
+    local prog = string.format(command, ...)
+    jagen.debug2(prog)
+    local file = assert(io.popen(prog))
+    local o = file:read(format)
     file:close()
-    return unpack(o)
+    return o
 end
 
 function P.getenv(vars)
