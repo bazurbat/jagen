@@ -111,11 +111,6 @@ end
 
 jagen.src = {}
 
-local function exists(pathname)
-    assert(type(pathname) == 'string')
-    return os.execute(string.format('test -e "%s"', pathname)) == 0
-end
-
 function jagen.src._touch(pkg)
     local target = Target:new(pkg.name, 'unpack')
     return system.exec('cd "$jagen_build_dir" && touch "%s"',
@@ -126,7 +121,7 @@ end
 function jagen.src.dirty(packages)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
-        if exists(source.dir) and source:dirty() then
+        if system.exists(source.dir) and source:dirty() then
             return 0
         end
     end
@@ -136,7 +131,7 @@ end
 function jagen.src.status(packages)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
-        if exists(source.dir) then
+        if system.exists(source.dir) then
             local dirty = source:dirty() and 'dirty' or ''
             local head = source:head()
             if not head then
@@ -172,8 +167,9 @@ function jagen.src.update(packages)
     end)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
-        local old_head = source:head()
-        if exists(source.dir) then
+        local old_head
+        if system.exists(source.dir) then
+            old_head = source:head()
             if not source:dirty() then
                 if offline then
                     jagen.message('switch %s to %s in %s',
@@ -221,7 +217,7 @@ end
 function jagen.src.delete(packages)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
-        if exists(source.dir) then
+        if system.exists(source.dir) then
             if not system.rmrf(source.dir) then
                 jagen.die('failed to delete %s source directory %s',
                     pkg.name, source.dir)
