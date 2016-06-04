@@ -248,7 +248,7 @@ local function is_option(arg)
 end
 
 local function help_requested(args)
-    return args and args[1] == '-h' or string.match(args[1] or '', '\--help$')
+    return args and (args[1] == '-h' or string.match(args[1] or '', '\--help$'))
 end
 
 local function find_options(args)
@@ -264,21 +264,6 @@ local function find_options(args)
     return options, rest
 end
 
-local function parse_args(args)
-    local cmd, options, rest = nil, {}, {}
-    for i = 1, #args do
-        local arg = args[i]
-        if is_option(arg) then
-            table.insert(options, arg)
-        elseif cmd then
-            table.insert(rest, arg)
-        else
-            cmd = arg
-        end
-    end
-    return cmd, options, rest
-end
-
 function jagen.command.help(args)
     section = args[1] or 'usage'
     local help = require 'help'
@@ -291,7 +276,11 @@ function jagen.command.help(args)
     end
 end
 
-function jagen.command.clean(args, i)
+function jagen.command.clean(args)
+    if help_requested(args) then
+        return jagen.command['help'] { 'clean' }
+    end
+
     local vars = {
         'jagen_bin_dir',
         'jagen_build_dir',
@@ -319,7 +308,11 @@ local function prepare_root()
     assert(system.mkdir(unpack(dirs)))
 end
 
-function jagen.command.refresh()
+function jagen.command.refresh(args)
+    if help_requested(args) then
+        return jagen.command['help'] { 'refresh' }
+    end
+
     -- during development naming scheme was changed, user might have older
     -- scripts lying around after update
     if not system.rmrf(jagen.include_dir) then
@@ -382,12 +375,11 @@ local function find_targets(packages, arg)
 end
 
 function jagen.command.build(args)
-    local packages = load_rules()
-
     if help_requested(args) then
         return jagen.command['help'] { 'build' }
     end
 
+    local packages = load_rules()
     local options, rest = find_options(args)
 
     for _, arg in ipairs(rest) do
@@ -434,13 +426,19 @@ local function scm_packages(names)
     return o
 end
 
-function jagen.command.src(options, rest)
+function jagen.command.src(args)
+    if help_requested(args) then
+        return jagen.command['help'] { 'src' }
+    end
+
+    local options, rest = find_options(args)
     local command = rest[1]
+    table.remove(rest, 1)
 
     if not command then
         jagen.die("command required, try 'jagen src help'")
     elseif jagen.src[command] then
-        local packages = scm_packages(table.rest(rest, 2))
+        local packages = scm_packages(rest)
         return jagen.src[command](packages)
     else
         jagen.die("'%s' is not valid src command, use 'jagen src help'", command)
