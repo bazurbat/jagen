@@ -125,22 +125,19 @@ function Pkg:add(rule)
         self.all[rule.name] = pkg
     end
 
-    local template = rule.template
-    rule.template = nil
-
+    local template = rule.template; rule.template = nil
+    -- let rule-specific config override template if set
     if template and not rule.skip_template and not pkg.final then
         rule = table.merge(copy(template), rule)
     end
 
-    local config = rule.config
+    local config = rule.config; rule.config = nil
+    local requires = rule.requires; rule.requires = nil
+
     local stages = table.imove({
             config   = config,
             template = template
         }, rule)
-    local requires = rule.requires
-
-    rule.config   = nil
-    rule.requires = nil
 
     table.merge(pkg, rule)
 
