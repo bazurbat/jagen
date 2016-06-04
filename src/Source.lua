@@ -85,8 +85,8 @@ function GitSource:new(o)
     return source
 end
 
-function GitSource:exec(...)
-    return system.exec('git -C "%s" ', self.dir, ...)
+function GitSource:exec(command, ...)
+    return system.exec('git -C "%s" '..command, self.dir, ...)
 end
 
 function GitSource:pread(format, command, ...)
@@ -102,15 +102,12 @@ function GitSource:dirty()
 end
 
 function GitSource:clean()
-    return self:exec('checkout', 'HEAD', '.') and self:exec('clean', '-fxd')
+    return self:exec('checkout HEAD .') and self:exec('clean -fxd')
 end
 
 function GitSource:update()
-    local branch = assert(self.branch)
-    local cmd = { 'fetch', '--prune', '--no-tags', 'origin',
-        string.format('+refs/heads/%s:refs/remotes/origin/%s', branch, branch)
-    }
-    return self:exec(unpack(cmd))
+    return self:exec('fetch --prune --no-tags origin '..
+        '"+refs/heads/%s:refs/remotes/origin/%s"', self.branch, self.branch)
 end
 
 function GitSource:_is_branch(pattern)
@@ -136,9 +133,8 @@ function GitSource:_checkout()
         local start_point = 'origin/'..branch
         exists = self:_is_branch(start_point)
         if exists then
-            local add = { 'remote', 'set-branches', 'origin', branch }
-            local checkout = { 'checkout', '-b', branch, start_point }
-            return self:exec(unpack(add)) and self:exec(unpack(checkout))
+            return self:exec('remote set-branches origin "%s"', branch) and
+                   self:exec('checkout -b "%s" "%s"', branch, start_point)
         else
             jagen.error("could not find branch '%s' in local repository", branch)
             return false
@@ -147,9 +143,7 @@ function GitSource:_checkout()
 end
 
 function GitSource:_merge()
-    local branch = assert(self.branch)
-    local cmd = { 'merge', '--ff-only', string.format('origin/%s', branch) }
-    return self:exec(unpack(cmd))
+    return self:exec('merge --ff-only "origin/%s"', self.branch)
 end
 
 function GitSource:switch()
