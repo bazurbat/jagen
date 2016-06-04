@@ -49,7 +49,10 @@ Pkg:add { 'kernel', 'target',
     { 'configure',
         { 'linux', 'unpack' },
     },
-    { 'install' },
+    { 'install',
+        -- for genzbf and other utils
+        { 'rootfs', 'compile', 'target' }
+    },
 }
 
 kernel_rule { 'loop-aes' }
