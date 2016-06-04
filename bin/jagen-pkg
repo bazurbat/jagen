@@ -1,12 +1,12 @@
 #!/bin/sh
 
-. "${jagen_dir:?}/lib/pkg.sh" || die
-
 if [ "$1" = '-q' ]; then
     shift
     pkg_query="${1:?}"
     pkg_name="${2:?}"
     pkg_config="$3"
+    # do not print anything else to allow usage in scripts
+    jagen_debug=
 else
     pkg_name="${1:?}"
     pkg_stage="${2:?}"
@@ -15,10 +15,14 @@ else
     pkg_args="$@"
 fi
 
+. "${jagen_dir:?}/lib/pkg.sh" || die
+
 pkg_log="${jagen_log_dir:?}/${pkg_name}__${pkg_stage}${pkg_config:+__${pkg_config}}.log"
 pkg_work_dir="${jagen_build_dir:?}/$pkg_name"
 
-: >"$pkg_log"
+if [ -z "$pkg_query" ]; then
+    : >"$pkg_log"
+fi
 
 cd "$jagen_build_dir" || die
 
