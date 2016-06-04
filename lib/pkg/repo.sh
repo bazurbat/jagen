@@ -1,7 +1,7 @@
 #!/bin/sh
 
 jagen_pkg_install() {
-    local dest="$pkg_install_dir/bin"
+    local dest="${pkg_install_dir:?}/bin"
     set -- ${pkg_source:?}
 
     pkg_run mkdir -p "$dest"
