@@ -80,6 +80,11 @@ function jagen.touch(target)
         tostring(target))
 end
 
+function jagen.remove(target)
+    return system.fexec('cd "$jagen_build_dir" && rm -f "%s"',
+        tostring(target))
+end
+
 -- rules
 
 local function load_rules()
@@ -288,23 +293,17 @@ function jagen.command.clean(args)
 
     if #args > 0 then
         local packages = load_rules()
-        local function read(f)
-            return f:read()
-        end
         for _, arg in ipairs(args) do
-            local m = string.gmatch(arg, '[^:]+')
-            local n, c = m(), m()
-            local p = packages[n]
-            if not p then
-                jagen.die('no such package: %s', n)
+            local match = string.gmatch(arg, '[^:]+')
+            local name, config = match(), match()
+            local pkg = packages[name]
+            if not pkg then
+                jagen.die('no such package: %s', name)
             end
-            if c and not p:has_config(c) then
-                jagen.die("package '%s' does not have config: %s", n, c)
+            for config, dir in pairs(pkg:build_dirs(config)) do
+                assert(system.rmrf(dir))
+                assert(jagen.remove(Target:new(name, 'configure', config)))
             end
-            local build_dir = system.fpipe(read,
-                'jagen-pkg -q build_dir %s %s', n, c or '')
-            assert(system.rmrf(assert(build_dir)))
-            assert(jagen.touch(Target:new(n, 'patch')))
         end
         return 0
     end

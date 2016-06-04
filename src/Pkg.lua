@@ -247,4 +247,26 @@ function Pkg:each()
         end)
 end
 
+function Pkg:build_dirs(config)
+    local o = {}
+    local function read(f)
+        return f:read()
+    end
+    local function get_dir(config)
+        return system.fpipe(read,
+            'jagen-pkg -q build_dir %s %s', self.name, config)
+    end
+    if config then
+        if not self:has_config(config) then
+            jagen.die("package '%s' does not have config: %s", self.name, config)
+        end
+        o[config] = assert(get_dir(config))
+    elseif self.configs then
+        for k, v in pairs(self.configs) do
+            o[k] = assert(get_dir(k))
+        end
+    end
+    return o
+end
+
 return Pkg
