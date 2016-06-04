@@ -155,6 +155,13 @@ function Pkg:add(rule)
 
     table.merge(pkg, rule)
 
+    if pkg.source.type == 'repo' then
+        pkg:add_target(Target:parse({ 'unpack',
+                    { 'repo', 'install', 'host' }
+                }))
+        Pkg:add { 'repo', 'host' }
+    end
+
     do local build = pkg.build
         if build and config then
             if build.type == 'GNU' then
