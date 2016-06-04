@@ -1,7 +1,5 @@
 -- Sigma rules
 
-require 'chicken'
-
 -- base
 
 Pkg:add { 'ast-files' }
@@ -139,10 +137,6 @@ Pkg:add { 'firmware', 'target',
     { 'install' }
 }
 
-Pkg:add { 'chicken-eggs', 'target',
-    requires = { 'dbus', 'sqlite' }
-}
-
 firmware_rule { 'karaoke-player',
     requires = {
         'chicken-eggs',
@@ -162,3 +156,7 @@ firmware_rule { 'karaoke-player',
         { 'chicken-eggs', 'install', 'host' }
     }
 }
+
+-- additional packages should come last to apply all templates defined here
+
+require 'chicken'

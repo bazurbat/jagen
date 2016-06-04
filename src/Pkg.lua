@@ -53,6 +53,16 @@ function Pkg:get(key, config)
     end
 end
 
+function Pkg:set(key, value, config)
+    if config then
+        self.configs = self.configs or {}
+        self.configs[config] = self.configs[config] or {}
+        self.configs[config][key] = value
+    else
+        self[key] = value
+    end
+end
+
 function Pkg:add_target(target)
     local name   = target.stage
     local config = target.config
@@ -129,11 +139,14 @@ function Pkg:add(rule)
         rule = table.merge(copy(rule.template), rule)
     end
 
-    local template = rule.template or rule.pass_template
-    rule.template, rule.pass_template = nil, nil
-
     local config = rule.config; rule.config = nil
     local requires = rule.requires; rule.requires = nil
+
+    local template = rule.template or rule.pass_template
+                     or pkg:get('template', config)
+    rule.template, rule.pass_template = nil, nil
+
+    pkg:set('template', template, config)
 
     local stages = table.imove({
             config   = config,
@@ -143,7 +156,7 @@ function Pkg:add(rule)
     table.merge(pkg, rule)
 
     do local build = pkg.build
-        if build and config and not pkg:has_config(config) then
+        if build and config then
             if build.type == 'GNU' then
                 if build.generate or build.autoreconf then
                     local autoreconf_t = Target:parse({ 'autoreconf',

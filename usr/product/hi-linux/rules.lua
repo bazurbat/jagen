@@ -1,7 +1,5 @@
 -- HiSilicon Linux SDK
 
-require 'chicken'
-
 Pkg:add { 'ast-files' }
 
 Pkg:add { 'hi-kernel' }
@@ -76,3 +74,5 @@ if jagen.flag 'debug' then
     Pkg:add { 'gdb', 'host' }
     Pkg:add { 'strace', 'target' }
 end
+
+require 'chicken'
