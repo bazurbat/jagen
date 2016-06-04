@@ -133,10 +133,10 @@ function Pkg:add(rule)
     end
 
     local config = rule.config
-    local stages = table.imove(rule, {
+    local stages = table.imove({
             config   = config,
             template = template
-        })
+        }, rule)
     local requires = rule.requires
 
     rule.config   = nil

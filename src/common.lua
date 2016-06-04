@@ -92,7 +92,9 @@ function table.merge(to, from)
     return to
 end
 
-function table.imove(from, to)
+function table.imove(to, from)
+    assert_arg('imove', 1, 'table', to)
+    assert_arg('imove', 2, 'table', from)
     for i, v in ipairs(from) do
         table.insert(to, v)
         from[i] = nil
