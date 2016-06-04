@@ -32,21 +32,6 @@ function Pkg:new(rule)
     return rule
 end
 
-function Pkg:new_package(rule)
-    local pkg  = Pkg:new(rule)
-    local name = pkg.name
-
-    pkg.stages = pkg.stages or {}
-
-    for stage in each(self.init_stages) do
-        pkg:add_target(Target:new(name, stage))
-    end
-
-    table.merge(pkg, Pkg:new(assert(require('pkg/'..name))))
-
-    return pkg
-end
-
 function Pkg:merge(rule)
     -- do not append the same template again and again, just replace it
     if rule.template then
@@ -138,7 +123,14 @@ function Pkg:add(rule)
     local pkg = self.all[rule.name]
 
     if not pkg then
-        pkg = Pkg:new_package { rule.name }
+        pkg = Pkg:new { rule.name }
+
+        for stage in each(self.init_stages) do
+            pkg:add_target(Target:new(rule.name, stage))
+        end
+
+        table.merge(pkg, Pkg:new(assert(require('pkg/'..rule.name))))
+
         self.all[rule.name] = pkg
     end
 
