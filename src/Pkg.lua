@@ -63,7 +63,8 @@ function Pkg:set(key, value, config)
     end
 end
 
-function Pkg:add_target(target)
+function Pkg:add_target(rule, config)
+    local target = Target:parse(rule, self.name, config)
     local name   = target.stage
     local config = target.config
     local shared = {
@@ -127,7 +128,7 @@ function Pkg:add(rule)
         pkg = Pkg:new { rule.name }
 
         for stage in each(self.init_stages) do
-            pkg:add_target(Target:new(rule.name, stage))
+            pkg:add_target { stage }
         end
 
         table.merge(pkg, Pkg:new(assert(require('pkg/'..rule.name))))
@@ -157,9 +158,9 @@ function Pkg:add(rule)
     table.merge(pkg, rule)
 
     if pkg.source.type == 'repo' then
-        pkg:add_target(Target:parse({ 'unpack',
-                    { 'repo', 'install', 'host' }
-                }))
+        pkg:add_target { 'unpack',
+            { 'repo', 'install', 'host' }
+        }
         table.insert(depends, { 'repo', 'host' })
     end
 
@@ -167,10 +168,9 @@ function Pkg:add(rule)
         if build and config then
             if build.type == 'GNU' then
                 if build.generate or build.autoreconf then
-                    local autoreconf_t = Target:parse({ 'autoreconf',
-                            { 'libtool', 'install', 'host' }
-                        }, pkg.name)
-                    pkg:add_target(autoreconf_t)
+                    pkg:add_target { 'autoreconf',
+                        { 'libtool', 'install', 'host' }
+                    }
                     table.insert(depends, { 'libtool', 'host' })
                 end
             end
@@ -184,7 +184,7 @@ function Pkg:add(rule)
                     { 'install' }
                 }
                 for _, stage in ipairs(stages) do
-                    pkg:add_target(Target:parse(stage, pkg.name, config))
+                    pkg:add_target(stage, config)
                 end
                 table.insert(depends, { 'toolchain', config })
             end
@@ -199,26 +199,26 @@ function Pkg:add(rule)
 
     -- add global stages specified in pkg file regardless of config or build
     for _, stage in ipairs(pkg) do
-        pkg:add_target(Target:parse(stage, pkg.name, config))
+        pkg:add_target(stage, config)
     end
 
     for _, item in ipairs(requires or {}) do
         local req = Pkg:add_req(item, config, template)
-        pkg:add_target(Target:parse({ 'configure',
-                    { req.name, 'install', req.config }
-            }, pkg.name, config))
+        pkg:add_target({ 'configure',
+                { req.name, 'install', req.config }
+            }, config)
     end
 
     -- evaluate requires for every add to collect rules from all templates
     for _, item in ipairs(pkg.requires or {}) do
         local req = Pkg:add_req(item, config, template)
-        pkg:add_target(Target:parse({ 'configure',
-                    { req.name, 'install', req.config }
-                }, pkg.name, config))
+        pkg:add_target({ 'configure',
+                { req.name, 'install', req.config }
+            }, config)
     end
 
     for _, stage in ipairs(stages) do
-        pkg:add_target(Target:parse(stage, pkg.name, config))
+        pkg:add_target(stage, config)
     end
 
     for _, rule in ipairs(depends) do
