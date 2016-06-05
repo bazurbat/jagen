@@ -9,10 +9,6 @@ Pkg.__index = Pkg
 
 local packages = {}
 
-function define_rule(rule)
-    return Pkg:add(rule)
-end
-
 function Pkg:__tostring()
     return string.format('%s__%s', self.name or '', self.config or '')
 end
@@ -116,7 +112,7 @@ function Pkg:add_req(req, config, template)
         config = req[2] or config
     end
 
-    Pkg:add {
+    define_rule {
         name = name,
         config = config,
         template = template
@@ -125,7 +121,82 @@ function Pkg:add_req(req, config, template)
     return { name = name, config = config }
 end
 
-function Pkg:add(rule)
+function Pkg:add_ordering_dependencies()
+    local prev, common
+
+    for s in self:each() do
+        if prev then
+            s.inputs = s.inputs or {}
+            if common and s.config ~= prev.config then
+                append(s.inputs, common)
+            else
+                append(s.inputs, prev)
+            end
+        end
+
+        prev = s
+        if not s.config then
+            common = s
+        end
+    end
+end
+
+function Pkg:each()
+    return coroutine.wrap(function ()
+            for _, t in ipairs(self.stages) do
+                coroutine.yield(t)
+            end
+            for k, c in pairs(self.configs or {}) do
+                for _, t in ipairs(c.stages or {}) do
+                    coroutine.yield(t)
+                end
+            end
+        end)
+end
+
+function Pkg:build_dirs(config)
+    local o = {}
+    local function get_dir(config)
+        return system.pread('*l',
+            'jagen-pkg -q build_dir %s %s', self.name, config)
+    end
+    if config then
+        if not self:has_config(config) then
+            jagen.die("package '%s' does not have config: %s", self.name, config)
+        end
+        o[config] = assert(get_dir(config))
+    elseif self.configs then
+        for k, v in pairs(self.configs) do
+            o[k] = assert(get_dir(k))
+        end
+    end
+    return o
+end
+
+function Pkg.load_rules(full)
+    local env = { Pkg = Pkg }
+    setmetatable(env, { __index = _G })
+    local dirs = system.getenv { 'jagen_product_dir', 'jagen_root' }
+    for _, dir in ipairs(dirs) do
+        local filename = dir..'/rules.lua'
+        if system.file_exists(filename) then
+            local chunk = assert(loadfile(filename))
+            setfenv(chunk, env)
+            chunk()
+        end
+    end
+
+    for _, pkg in pairs(packages) do
+        pkg.source = Source:create(pkg.source, pkg.name)
+        if full then
+            pkg:add_ordering_dependencies()
+        end
+    end
+
+    return packages
+end
+
+function define_rule(rule)
     rule = Pkg:new(rule)
 
     local pkg = packages[rule.name]
@@ -133,7 +204,7 @@ function Pkg:add(rule)
     if not pkg then
         pkg = Pkg:new { rule.name }
 
-        for stage in each(self.init_stages) do
+        for stage in each(Pkg.init_stages) do
             pkg:add_target { stage }
         end
 
@@ -228,80 +299,8 @@ function Pkg:add(rule)
     end
 
     for _, rule in ipairs(depends) do
-        Pkg:add(rule)
+        define_rule(rule)
     end
-end
-
-function Pkg:add_ordering_dependencies()
-    local prev, common
-
-    for s in self:each() do
-        if prev then
-            s.inputs = s.inputs or {}
-            if common and s.config ~= prev.config then
-                append(s.inputs, common)
-            else
-                append(s.inputs, prev)
-            end
-        end
-
-        prev = s
-        if not s.config then
-            common = s
-        end
-    end
-end
-
-function Pkg:each()
-    return coroutine.wrap(function ()
-            for _, t in ipairs(self.stages) do
-                coroutine.yield(t)
-            end
-            for k, c in pairs(self.configs or {}) do
-                for _, t in ipairs(c.stages or {}) do
-                    coroutine.yield(t)
-                end
-            end
-        end)
-end
-
-function Pkg:build_dirs(config)
-    local o = {}
-    local function get_dir(config)
-        return system.pread('*l',
-            'jagen-pkg -q build_dir %s %s', self.name, config)
-    end
-    if config then
-        if not self:has_config(config) then
-            jagen.die("package '%s' does not have config: %s", self.name, config)
-        end
-        o[config] = assert(get_dir(config))
-    elseif self.configs then
-        for k, v in pairs(self.configs) do
-            o[k] = assert(get_dir(k))
-        end
-    end
-    return o
-end
-
-function Pkg.load_rules()
-    local env = { Pkg = Pkg }
-    setmetatable(env, { __index = _G })
-    local dirs = system.getenv { 'jagen_product_dir', 'jagen_root' }
-    for _, dir in ipairs(dirs) do
-        local filename = dir..'/rules.lua'
-        if system.file_exists(filename) then
-            local chunk = assert(loadfile(filename))
-            setfenv(chunk, env)
-            chunk()
-        end
-    end
-
-    for _, pkg in pairs(packages) do
-        pkg.source = Source:create(pkg.source, pkg.name)
-    end
-
-    return packages
 end
 
 return Pkg

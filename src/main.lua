@@ -316,14 +316,12 @@ function jagen.command.refresh(args)
 
     prepare_root()
 
-    local packages = Pkg.load_rules()
+    local packages = Pkg.load_rules(true)
     local script = require 'script'
     local include_dir = assert(os.getenv('jagen_include_dir'))
     local log_dir = assert(os.getenv('jagen_log_dir'))
 
     for _, pkg in pairs(packages) do
-        pkg:add_ordering_dependencies()
-
         script:write(pkg, include_dir)
 
         -- create/truncate all log files beforehand to allow tail following
