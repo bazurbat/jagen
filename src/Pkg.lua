@@ -3,7 +3,6 @@ local Target = require 'Target'
 local Source = require 'Source'
 
 local Pkg = {
-    all = {},
     init_stages = { 'unpack', 'patch' }
 }
 Pkg.__index = Pkg
@@ -129,7 +128,7 @@ end
 function Pkg:add(rule)
     rule = Pkg:new(rule)
 
-    local pkg = self.all[rule.name]
+    local pkg = packages[rule.name]
 
     if not pkg then
         pkg = Pkg:new { rule.name }
@@ -140,7 +139,7 @@ function Pkg:add(rule)
 
         table.merge(pkg, Pkg:new(assert(require('pkg/'..rule.name))))
 
-        self.all[rule.name] = pkg
+        packages[rule.name] = pkg
     end
 
     if rule.template then
@@ -298,11 +297,11 @@ function Pkg.load_rules()
         end
     end
 
-    for _, pkg in pairs(Pkg.all) do
+    for _, pkg in pairs(packages) do
         pkg.source = Source:create(pkg.source, pkg.name)
     end
 
-    return Pkg.all
+    return packages
 end
 
 return Pkg
