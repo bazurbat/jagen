@@ -5,6 +5,7 @@ local System  = require 'System'
 local Package = require 'Package'
 local Target  = require 'Target'
 local Source  = require 'Source'
+local Log     = require 'Log'
 
 Jagen =
 {
@@ -13,7 +14,6 @@ Jagen =
 
     shell = os.getenv('jagen_shell'),
 
-    debug = os.getenv('jagen_debug'),
     flags = os.getenv('jagen_flags'),
 
     lib_dir     = os.getenv('jagen_lib_dir'),
@@ -25,44 +25,8 @@ Jagen =
 Jagen.cmd = System.mkpath(Jagen.lib_dir, 'cmd.sh')
 Jagen.build_file = System.mkpath(Jagen.build_dir, 'build.ninja')
 
-function Jagen.message(...)
-    io.write('(I) ', string.format(...), '\n')
-    io.flush()
-end
-
-function Jagen.warning(...)
-    io.stderr:write('(W) ', string.format(...), '\n')
-    io.stderr:flush()
-end
-
-function Jagen.error(...)
-    io.stderr:write('(E) ', string.format(...), '\n')
-    io.stderr:flush()
-end
-
-function Jagen.debug0(...)
-    if Jagen.debug then
-        io.write('(D) ', string.format(...), '\n')
-        io.flush()
-    end
-end
-
-function Jagen.debug1(...)
-    if Jagen.debug >= '1' then
-        io.write('(D) ', string.format(...), '\n')
-        io.flush()
-    end
-end
-
-function Jagen.debug2(...)
-    if Jagen.debug >= '2' then
-        io.write('(D) ', string.format(...), '\n')
-        io.flush()
-    end
-end
-
 function Jagen.die(...)
-    Jagen.error(...)
+    Log.error(...)
     os.exit(1)
 end
 
@@ -126,7 +90,7 @@ end
 function Jagen.src.clean(packages)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
-        Jagen.message('clean %s in %s', pkg.name, source.dir)
+        Log.message('clean %s in %s', pkg.name, source.dir)
         if not pkg.source:clean() then
             Jagen.die('failed to clean %s (%s) in %s',
                 pkg.name, source.branch, source.dir)
@@ -150,10 +114,10 @@ function Jagen.src.update(packages)
             old_head = source:head()
             if not source:dirty() then
                 if offline then
-                    Jagen.message('switch %s to %s in %s',
+                    Log.message('switch %s to %s in %s',
                         pkg.name, source.branch, source.dir)
                 else
-                    Jagen.message('update %s from %s to %s in %s',
+                    Log.message('update %s from %s to %s in %s',
                         pkg.name, source.location, source.branch, source.dir)
                 end
 
@@ -169,7 +133,7 @@ function Jagen.src.update(packages)
                         pkg.name, source.branch, source.dir)
                 end
             else
-                Jagen.warning("skip update of %s because working directory '%s' is dirty",
+                Log.warning("skip update of %s because working directory '%s' is dirty",
                     pkg.name, source.dir)
             end
         else
@@ -255,7 +219,7 @@ function Jagen.command.help(args)
     if help[section] then
         io.write(help[section])
     else
-        Jagen.error('no such help section: %s', section)
+        Log.error('no such help section: %s', section)
         return 2
     end
 end

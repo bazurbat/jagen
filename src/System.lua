@@ -1,5 +1,7 @@
 local P = {}
 
+local Log = require 'Log'
+
 function P.quote(...)
     local function quote(arg)
         return string.format('%q', tostring(arg))
@@ -18,14 +20,14 @@ end
 
 function P.exec(cmdline, ...)
     local command = string.format(cmdline, ...)
-    Jagen.debug2(command)
+    Log.debug2(command)
     local status = os.execute(command)
     return status == 0, status % 0xFF
 end
 
 function P.popen(cmdline, ...)
     local prog = string.format(cmdline, ...)
-    Jagen.debug2(prog)
+    Log.debug2(prog)
     return assert(io.popen(prog))
 end
 
