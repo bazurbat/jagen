@@ -18,14 +18,14 @@ end
 
 function P.exec(cmdline, ...)
     local command = string.format(cmdline, ...)
-    jagen.debug2(command)
+    Jagen.debug2(command)
     local status = os.execute(command)
     return status == 0, status % 0xFF
 end
 
 function P.popen(cmdline, ...)
     local prog = string.format(cmdline, ...)
-    jagen.debug2(prog)
+    Jagen.debug2(prog)
     return assert(io.popen(prog))
 end
 

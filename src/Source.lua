@@ -136,7 +136,7 @@ function GitSource:_checkout()
             return self:exec('remote set-branches origin "%s"', branch) and
                    self:exec('checkout -b "%s" "%s"', branch, start_point)
         else
-            jagen.error("could not find branch '%s' in local repository", branch)
+            Jagen.error("could not find branch '%s' in local repository", branch)
             return false
         end
     end
@@ -225,7 +225,7 @@ function HgSource:switch()
     elseif branch == self:_branch() then
         return true
     else
-        jagen.error("could not find bookmark '%s' in local repository", branch)
+        Jagen.error("could not find bookmark '%s' in local repository", branch)
         return false
     end
 end
@@ -239,7 +239,7 @@ end
 
 function RepoSource:new(o)
     local source = Source.new(RepoSource, o)
-    source.jobs = jagen.nproc * 2
+    source.jobs = Jagen.nproc * 2
     return source
 end
 
@@ -305,7 +305,7 @@ end
 
 function RepoSource:switch()
     -- Not doing Android development at the time.
-    jagen.warning('branch switching is not implemented for repo sources')
+    Jagen.warning('branch switching is not implemented for repo sources')
     return true
 end
 

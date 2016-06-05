@@ -70,7 +70,7 @@ define_rule { 'rootfs', 'target',
     { 'deploy' }
 }
 
-if jagen.flag 'debug' then
+if Jagen.flag 'debug' then
     define_rule { 'gdb', 'host' }
     define_rule { 'strace', 'target' }
 end

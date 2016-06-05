@@ -55,7 +55,7 @@ end
 
 function Ninja:header()
     local o = {
-        self:variable('builddir', jagen.build_dir),
+        self:variable('builddir', Jagen.build_dir),
         self:rule({
                 name    = 'command',
                 command = '$command'
@@ -70,7 +70,7 @@ end
 
 function Ninja:build_stage(target)
     local script = {}
-    local shell = jagen.shell
+    local shell = Jagen.shell
     if shell and #shell > 0 then
         table.insert(script, shell)
     end

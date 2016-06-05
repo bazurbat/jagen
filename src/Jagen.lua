@@ -6,7 +6,7 @@ local Package = require 'Package'
 local Target  = require 'Target'
 local Source  = require 'Source'
 
-jagen =
+Jagen =
 {
     dir  = os.getenv('jagen_dir'),
     root = os.getenv('jagen_root'),
@@ -22,52 +22,52 @@ jagen =
     include_dir = os.getenv('jagen_include_dir'),
 }
 
-jagen.cmd = System.mkpath(jagen.lib_dir, 'cmd.sh')
-jagen.build_file = System.mkpath(jagen.build_dir, 'build.ninja')
+Jagen.cmd = System.mkpath(Jagen.lib_dir, 'cmd.sh')
+Jagen.build_file = System.mkpath(Jagen.build_dir, 'build.ninja')
 
-function jagen.message(...)
+function Jagen.message(...)
     io.write('(I) ', string.format(...), '\n')
     io.flush()
 end
 
-function jagen.warning(...)
+function Jagen.warning(...)
     io.stderr:write('(W) ', string.format(...), '\n')
     io.stderr:flush()
 end
 
-function jagen.error(...)
+function Jagen.error(...)
     io.stderr:write('(E) ', string.format(...), '\n')
     io.stderr:flush()
 end
 
-function jagen.debug0(...)
-    if jagen.debug then
+function Jagen.debug0(...)
+    if Jagen.debug then
         io.write('(D) ', string.format(...), '\n')
         io.flush()
     end
 end
 
-function jagen.debug1(...)
-    if jagen.debug >= '1' then
+function Jagen.debug1(...)
+    if Jagen.debug >= '1' then
         io.write('(D) ', string.format(...), '\n')
         io.flush()
     end
 end
 
-function jagen.debug2(...)
-    if jagen.debug >= '2' then
+function Jagen.debug2(...)
+    if Jagen.debug >= '2' then
         io.write('(D) ', string.format(...), '\n')
         io.flush()
     end
 end
 
-function jagen.die(...)
-    jagen.error(...)
+function Jagen.die(...)
+    Jagen.error(...)
     os.exit(1)
 end
 
-function jagen.flag(f)
-    for w in string.gmatch(jagen.flags, "[_%w]+") do
+function Jagen.flag(f)
+    for w in string.gmatch(Jagen.flags, "[_%w]+") do
         if w == f then
             return true
         end
@@ -75,28 +75,28 @@ function jagen.flag(f)
     return false
 end
 
-function jagen.touch(target)
+function Jagen.touch(target)
     return System.exec('cd "$jagen_build_dir" && touch "%s"',
         tostring(target))
 end
 
-function jagen.remove(target)
+function Jagen.remove(target)
     return System.exec('cd "$jagen_build_dir" && rm -f "%s"',
         tostring(target))
 end
 
 -- src
 
-jagen.src = {}
+Jagen.src = {}
 
-function jagen.src._touch(pkg)
+function Jagen.src._touch(pkg)
     local target = Target:new(pkg.name, 'unpack')
     return System.exec('cd "$jagen_build_dir" && touch "%s"',
         tostring(target))
 end
 
 -- Should return 0 if true, 1 if false, for shell scripting.
-function jagen.src.dirty(packages)
+function Jagen.src.dirty(packages)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
         if System.exists(source.dir) and source:dirty() then
@@ -106,14 +106,14 @@ function jagen.src.dirty(packages)
     return 1
 end
 
-function jagen.src.status(packages)
+function Jagen.src.status(packages)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
         if System.exists(source.dir) then
             local dirty = source:dirty() and 'dirty' or ''
             local head = source:head()
             if not head then
-                jagen.die('failed to get source head for %s in %s',
+                Jagen.die('failed to get source head for %s in %s',
                     pkg.name, source.dir)
             end
             print(string.format("%s (%s): %s %s", pkg.name, source.location, head, dirty))
@@ -123,19 +123,19 @@ function jagen.src.status(packages)
     end
 end
 
-function jagen.src.clean(packages)
+function Jagen.src.clean(packages)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
-        jagen.message('clean %s in %s', pkg.name, source.dir)
+        Jagen.message('clean %s in %s', pkg.name, source.dir)
         if not pkg.source:clean() then
-            jagen.die('failed to clean %s (%s) in %s',
+            Jagen.die('failed to clean %s (%s) in %s',
                 pkg.name, source.branch, source.dir)
         end
     end
 end
 
-function jagen.src.update(packages)
-    local offline = jagen.flag 'offline'
+function Jagen.src.update(packages)
+    local offline = Jagen.flag 'offline'
     -- Sorting from the shortest to the longest is needed for a case when the
     -- source directories are specified inside each other and we need to clone
     -- both, deeper one is cloned first, then clone complains about already
@@ -150,54 +150,54 @@ function jagen.src.update(packages)
             old_head = source:head()
             if not source:dirty() then
                 if offline then
-                    jagen.message('switch %s to %s in %s',
+                    Jagen.message('switch %s to %s in %s',
                         pkg.name, source.branch, source.dir)
                 else
-                    jagen.message('update %s from %s to %s in %s',
+                    Jagen.message('update %s from %s to %s in %s',
                         pkg.name, source.location, source.branch, source.dir)
                 end
 
                 if not offline then
                     if not source:update() then
-                        jagen.die('failed to update %s from %s in %s',
+                        Jagen.die('failed to update %s from %s in %s',
                             pkg.name, source.location, source.dir)
                     end
                 end
 
                 if not source:switch() then
-                    jagen.die('failed to switch %s to the latest %s in %s',
+                    Jagen.die('failed to switch %s to the latest %s in %s',
                         pkg.name, source.branch, source.dir)
                 end
             else
-                jagen.warning("skip update of %s because working directory '%s' is dirty",
+                Jagen.warning("skip update of %s because working directory '%s' is dirty",
                     pkg.name, source.dir)
             end
         else
             if offline then
-                jagen.die("could not clone '%s' in offline mode", pkg.name)
+                Jagen.die("could not clone '%s' in offline mode", pkg.name)
             elseif not source:clone() then
-                jagen.die('failed to clone %s from %s to %s',
+                Jagen.die('failed to clone %s from %s to %s',
                     pkg.name, source.location, source.dir)
             end
         end
 
         if not offline and not source:fixup() then
-            jagen.die('failed to fix up %s source in %s',
+            Jagen.die('failed to fix up %s source in %s',
                 pkg.name, source.dir)
         end
 
         if source:head() ~= old_head then
-            jagen.src._touch(pkg)
+            Jagen.src._touch(pkg)
         end
     end
 end
 
-function jagen.src.delete(packages)
+function Jagen.src.delete(packages)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
         if System.exists(source.dir) then
             if not System.rmrf(source.dir) then
-                jagen.die('failed to delete %s source directory %s',
+                Jagen.die('failed to delete %s source directory %s',
                     pkg.name, source.dir)
             end
         end
@@ -206,9 +206,9 @@ end
 
 -- image
 
-jagen.image = {}
+Jagen.image = {}
 
-function jagen.image.create(image_type)
+function Jagen.image.create(image_type)
     local Image = require 'Image'
 
     if image_type == 'rootfs' then
@@ -217,15 +217,15 @@ function jagen.image.create(image_type)
 
         Image:create(target_dir, out_file)
     elseif not image_type then
-        jagen.die('image type is not specified')
+        Jagen.die('image type is not specified')
     else
-        jagen.die('unsupported image type: %s', image_type)
+        Jagen.die('unsupported image type: %s', image_type)
     end
 end
 
 -- these should return status number or nothing (nil)
 
-jagen.command = {}
+Jagen.command = {}
 
 local function is_option(arg)
     return string.sub(arg, 1, 1) == '-'
@@ -248,21 +248,21 @@ local function find_options(args)
     return options, rest
 end
 
-function jagen.command.help(args)
+function Jagen.command.help(args)
     section = args[1] or 'usage'
     local help = require 'help'
 
     if help[section] then
         io.write(help[section])
     else
-        jagen.error('no such help section: %s', section)
+        Jagen.error('no such help section: %s', section)
         return 2
     end
 end
 
-function jagen.command.clean(args)
+function Jagen.command.clean(args)
     if help_requested(args) then
-        return jagen.command['help'] { 'clean' }
+        return Jagen.command['help'] { 'clean' }
     end
 
     if #args > 0 then
@@ -272,11 +272,11 @@ function jagen.command.clean(args)
             local name, config = match(), match()
             local pkg = packages[name]
             if not pkg then
-                jagen.die('no such package: %s', name)
+                Jagen.die('no such package: %s', name)
             end
             for config, dir in pairs(pkg:build_dirs(config)) do
                 assert(System.rmrf(dir))
-                assert(jagen.remove(Target:new(name, 'configure', config)))
+                assert(Jagen.remove(Target:new(name, 'configure', config)))
             end
         end
         return 0
@@ -294,7 +294,7 @@ function jagen.command.clean(args)
 
     assert(System.rmrf(unpack(dirs)))
 
-    return jagen.command.refresh()
+    return Jagen.command.refresh()
 end
 
 local function prepare_root()
@@ -309,9 +309,9 @@ local function prepare_root()
     assert(System.mkdir(unpack(dirs)))
 end
 
-function jagen.command.refresh(args)
+function Jagen.command.refresh(args)
     if help_requested(args) then
-        return jagen.command['help'] { 'refresh' }
+        return Jagen.command['help'] { 'refresh' }
     end
 
     prepare_root()
@@ -333,7 +333,7 @@ function jagen.command.refresh(args)
     end
 
     local ninja = Ninja:new()
-    ninja:generate(jagen.build_file, packages)
+    ninja:generate(Jagen.build_file, packages)
 end
 
 local function find_targets(packages, arg)
@@ -361,15 +361,15 @@ local function find_targets(packages, arg)
     end
 
     if #targets == 0 then
-        jagen.die('could not find targets matching argument: %s', arg)
+        Jagen.die('could not find targets matching argument: %s', arg)
     end
 
     return targets
 end
 
-function jagen.command.build(args)
+function Jagen.command.build(args)
     if help_requested(args) then
-        return jagen.command['help'] { 'build' }
+        return Jagen.command['help'] { 'build' }
     end
 
     local packages = Package.load_rules()
@@ -381,14 +381,14 @@ function jagen.command.build(args)
         end
     end
 
-    local err, status = System.exec('%s build %s', jagen.cmd,
+    local err, status = System.exec('%s build %s', Jagen.cmd,
         System.quote(unpack(options)))
 
     return status
 end
 
-function jagen.command.status()
-    return jagen.command.src({}, { 'status' })
+function Jagen.command.status()
+    return Jagen.command.src({}, { 'status' })
 end
 
 local function scm_packages(names)
@@ -398,10 +398,10 @@ local function scm_packages(names)
     if names and #names > 0 then
         for _, name in ipairs(names) do
             if not packages[name] then
-                jagen.die('no such package: %s', name)
+                Jagen.die('no such package: %s', name)
             end
             if not packages[name].source:is_scm() then
-                jagen.die('not scm package: %s', name)
+                Jagen.die('not scm package: %s', name)
             end
             table.insert(o, packages[name])
         end
@@ -420,9 +420,9 @@ local function scm_packages(names)
     return o
 end
 
-function jagen.command.src(args)
+function Jagen.command.src(args)
     if help_requested(args) then
-        return jagen.command['help'] { 'src' }
+        return Jagen.command['help'] { 'src' }
     end
 
     local options, rest = find_options(args)
@@ -430,28 +430,28 @@ function jagen.command.src(args)
     table.remove(rest, 1)
 
     if not command then
-        jagen.die("command required, try 'jagen src help'")
-    elseif jagen.src[command] then
+        Jagen.die("command required, try 'Jagen src help'")
+    elseif Jagen.src[command] then
         local packages = scm_packages(rest)
-        return jagen.src[command](packages)
+        return Jagen.src[command](packages)
     else
-        jagen.die("'%s' is not valid src command, use 'jagen src help'", command)
+        Jagen.die("'%s' is not valid src command, use 'Jagen src help'", command)
     end
 end
 
-function jagen.command.image(options, rest)
+function Jagen.command.image(options, rest)
     local command = rest[1]
 
     if not command then
-        jagen.die("command required, try 'jagen image help'")
-    elseif jagen.image[command] then
-        return jagen.image[command](rest[2])
+        Jagen.die("command required, try 'Jagen image help'")
+    elseif Jagen.image[command] then
+        return Jagen.image[command](rest[2])
     else
-        jagen.die("'%s' is not valid image command, use 'jagen image help'", command)
+        Jagen.die("'%s' is not valid image command, use 'Jagen image help'", command)
     end
 end
 
-function jagen:_nproc()
+function Jagen:_nproc()
     local name = System.pread('*l', 'uname -s')
     if name == 'Darwin' then
         return System.pread('*l', 'sysctl -n hw.ncpu')
@@ -460,19 +460,19 @@ function jagen:_nproc()
     end
 end
 
-function jagen:run(args)
+function Jagen:run(args)
     local cmd = args[1]
 
-    jagen.nproc = jagen:_nproc()
+    Jagen.nproc = Jagen:_nproc()
 
     if #args == 0 or help_requested(args) then
-        return jagen.command['help']({ args[2] })
-    elseif jagen.command[cmd] then
+        return Jagen.command['help']({ args[2] })
+    elseif Jagen.command[cmd] then
         table.remove(args, 1)
-        return jagen.command[cmd](args)
+        return Jagen.command[cmd](args)
     else
-        jagen.die("invalid command or argument '%s', try 'jagen help'", cmd)
+        Jagen.die("invalid command or argument '%s', try 'Jagen help'", cmd)
     end
 end
 
-os.exit(jagen:run(arg) or 0)
+os.exit(Jagen:run(arg) or 0)

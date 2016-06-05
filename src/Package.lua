@@ -162,7 +162,7 @@ function Package:build_dirs(config)
     end
     if config then
         if not self:has_config(config) then
-            jagen.die("package '%s' does not have config: %s", self.name, config)
+            Jagen.die("package '%s' does not have config: %s", self.name, config)
         end
         o[config] = assert(get_dir(config))
     elseif self.configs then
