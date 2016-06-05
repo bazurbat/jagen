@@ -8,14 +8,38 @@ multiple interdependent software packages with non standard toolchains,
 cross-compilation and complex build dependencies. Based on ideas from Gentoo
 Portage, GNU Guix and Nix package managers.
 
+In contrast to [Buildroot](https://buildroot.org/) the workflow is organized
+around development of the rootfs/firmware itself rather than just building it
+from distribution packages. There are commands available to rebuild/cleanup
+only parts of the tree or only specific targets with dependency tracking. It is
+possible to have separate build roots with different configurations/toolchains
+building from the same sources. The sources are kept checked out and out of
+tree build is setup by default, so there are no intermediate archive/rsync
+step.
+
+Built-in functions are provided to ease integrating of packages using common
+build systems like autotools and CMake with their own sets of workarounds. It
+is trivial to override any built-in stages with local customizations. It is
+also easy to hook up foreign build systems facilitating integration of
+proprietary packages.
+
+The concept of vendor layers is supported. It is possible to override
+everything provided upstream, add your own toolchains, SDKs, BSPs, etc. Every
+build root can have local customizations.
+
+The build system itself is generated from layered set of declarative of rules
+represented as Lua tables. You can also run arbitrary Lua code during
+generation to provide the rules.
+
 ## Requirements
 
-POSIX compatible shell, Lua 5.1, [Ninja](https://ninja-build.org/)
+POSIX compatible shell, Lua 5.1, [Ninja](https://ninja-build.org/).
 
 ## Usage
 
-### Build
+### Building packages
 
+```
 Usage: jagen build [OPTION...] [TARGET...]
 
   Builds or rebuilds the specified targets.
@@ -54,9 +78,11 @@ SYNOPSIS
 
   This will recompile libuv for target configuration if needed, then reinstall
   it to rootfs or firmware image according to the rules currently in effect.
+```
 
-### Clean
+### Cleaning
 
+```
 Usage: jagen clean
 
   Deletes all generated files and directories inside the current build root.
@@ -73,15 +99,19 @@ SYNOPSIS
 
   Actual paths depend on configuration. After the deletion regenerates the
   build system using the 'jagen refresh' command.
+```
 
 ### Refresh
 
+```
 Usage: jagen refresh
 
   Regenerates the build system from rules according to configuration.
+```
 
 ### Targets
 
+```
   Targets are specified as '<name>:<stage>:<config>'. Available package stages
   are filtered with the given expression. Omitted component means 'all'.  For
   example:
@@ -97,9 +127,11 @@ Usage: jagen refresh
   determine if the target is up to date. Deleting it will cause the
   corresponding target to be rebuilt unconditionally next time the build system
   runs.
+```
 
-### Sources
+### Working with source packages
 
+```
 Usage: jagen src <command> [PACKAGES...]
 
   Manage SCM package sources.
@@ -133,3 +165,4 @@ COMMANDS
   The 'clone' command clones the specified packages.
 
   The 'delete' command deletes packages source directories.
+```
