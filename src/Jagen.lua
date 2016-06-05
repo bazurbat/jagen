@@ -398,7 +398,7 @@ function Jagen.command.image(options, rest)
     end
 end
 
-function Jagen:_nproc()
+local function nproc()
     local name = System.pread('*l', 'uname -s')
     if name == 'Darwin' then
         return System.pread('*l', 'sysctl -n hw.ncpu')
@@ -410,7 +410,7 @@ end
 function Jagen:run(args)
     local cmd = args[1]
 
-    Jagen.nproc = Jagen:_nproc()
+    Jagen.nproc = nproc()
 
     if #args == 0 or help_requested(args) then
         return Jagen.command['help']({ args[2] })
