@@ -1,3 +1,5 @@
+local System = require 'System'
+
 local Target = {}
 Target.__index = Target
 
@@ -80,6 +82,16 @@ function Target:append(input)
     self.inputs = self.inputs or {}
     append(self.inputs, input)
     return self
+end
+
+function Target:touch(target)
+    return System.exec('cd "$jagen_build_dir" && touch "%s"',
+        tostring(target))
+end
+
+function Target:remove(target)
+    return System.exec('cd "$jagen_build_dir" && rm -f "%s"',
+        tostring(target))
 end
 
 return Target

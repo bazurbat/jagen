@@ -22,9 +22,6 @@ Jagen =
     include_dir = os.getenv('jagen_include_dir'),
 }
 
-Jagen.cmd = System.mkpath(Jagen.lib_dir, 'cmd.sh')
-Jagen.build_file = System.mkpath(Jagen.build_dir, 'build.ninja')
-
 function Jagen.die(...)
     Log.error(...)
     os.exit(1)
@@ -39,25 +36,9 @@ function Jagen.flag(f)
     return false
 end
 
-function Jagen.touch(target)
-    return System.exec('cd "$jagen_build_dir" && touch "%s"',
-        tostring(target))
-end
-
-function Jagen.remove(target)
-    return System.exec('cd "$jagen_build_dir" && rm -f "%s"',
-        tostring(target))
-end
-
 -- src
 
 Jagen.src = {}
-
-function Jagen.src._touch(pkg)
-    local target = Target:new(pkg.name, 'unpack')
-    return System.exec('cd "$jagen_build_dir" && touch "%s"',
-        tostring(target))
-end
 
 -- Should return 0 if true, 1 if false, for shell scripting.
 function Jagen.src.dirty(packages)
@@ -151,7 +132,7 @@ function Jagen.src.update(packages)
         end
 
         if source:head() ~= old_head then
-            Jagen.src._touch(pkg)
+            assert(Target:new(pkg.name, 'unpack'):touch())
         end
     end
 end
@@ -240,7 +221,7 @@ function Jagen.command.clean(args)
             end
             for config, dir in pairs(pkg:build_dirs(config)) do
                 assert(System.rmrf(dir))
-                assert(Jagen.remove(Target:new(name, 'configure', config)))
+                assert(Target:new(name, 'configure', config):remove())
             end
         end
         return 0
@@ -297,7 +278,8 @@ function Jagen.command.refresh(args)
     end
 
     local ninja = Ninja:new()
-    ninja:generate(Jagen.build_file, packages)
+    local build_file = System.mkpath(Jagen.build_dir, 'build.ninja')
+    ninja:generate(build_file, packages)
 end
 
 local function find_targets(packages, arg)
@@ -345,7 +327,8 @@ function Jagen.command.build(args)
         end
     end
 
-    local err, status = System.exec('%s build %s', Jagen.cmd,
+    local cmd = System.mkpath(Jagen.lib_dir, 'cmd.sh')
+    local err, status = System.exec('%s build %s', cmd,
         System.quote(unpack(options)))
 
     return status
