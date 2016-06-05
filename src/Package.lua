@@ -161,9 +161,7 @@ function Package:build_dirs(config)
             'jagen-pkg -q build_dir %s %s', self.name, config)
     end
     if config then
-        if not self:has_config(config) then
-            Jagen.die("package '%s' does not have config: %s", self.name, config)
-        end
+        assert(self:has_config(config))
         o[config] = assert(get_dir(config))
     elseif self.configs then
         for k, v in pairs(self.configs) do
