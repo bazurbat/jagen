@@ -85,28 +85,6 @@ function jagen.remove(target)
         tostring(target))
 end
 
--- rules
-
-local function load_rules()
-    local env = { Pkg = Pkg }
-    setmetatable(env, { __index = _G })
-    local dirs = system.getenv { 'jagen_product_dir', 'jagen_root' }
-    for _, dir in ipairs(dirs) do
-        local filename = dir..'/rules.lua'
-        if system.file_exists(filename) then
-            local chunk = assert(loadfile(filename))
-            setfenv(chunk, env)
-            chunk()
-        end
-    end
-
-    for _, pkg in pairs(Pkg.all) do
-        pkg.source = Source:create(pkg.source, pkg.name)
-    end
-
-    return Pkg.all
-end
-
 -- src
 
 jagen.src = {}
@@ -288,7 +266,7 @@ function jagen.command.clean(args)
     end
 
     if #args > 0 then
-        local packages = load_rules()
+        local packages = Pkg.load_rules()
         for _, arg in ipairs(args) do
             local match = string.gmatch(arg, '[^:]+')
             local name, config = match(), match()
@@ -338,7 +316,7 @@ function jagen.command.refresh(args)
 
     prepare_root()
 
-    local packages = load_rules()
+    local packages = Pkg.load_rules()
     local script = require 'script'
     local include_dir = assert(os.getenv('jagen_include_dir'))
     local log_dir = assert(os.getenv('jagen_log_dir'))
@@ -396,7 +374,7 @@ function jagen.command.build(args)
         return jagen.command['help'] { 'build' }
     end
 
-    local packages = load_rules()
+    local packages = Pkg.load_rules()
     local options, rest = find_options(args)
 
     for _, arg in ipairs(rest) do
@@ -416,7 +394,7 @@ function jagen.command.status()
 end
 
 local function scm_packages(names)
-    local packages = load_rules()
+    local packages = Pkg.load_rules()
     local o = {}
 
     if names and #names > 0 then

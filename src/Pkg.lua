@@ -1,11 +1,14 @@
 local system = require 'system'
 local Target = require 'Target'
+local Source = require 'Source'
 
 local Pkg = {
     all = {},
     init_stages = { 'unpack', 'patch' }
 }
 Pkg.__index = Pkg
+
+local packages = {}
 
 function define_rule(rule)
     return Pkg:add(rule)
@@ -280,6 +283,26 @@ function Pkg:build_dirs(config)
         end
     end
     return o
+end
+
+function Pkg.load_rules()
+    local env = { Pkg = Pkg }
+    setmetatable(env, { __index = _G })
+    local dirs = system.getenv { 'jagen_product_dir', 'jagen_root' }
+    for _, dir in ipairs(dirs) do
+        local filename = dir..'/rules.lua'
+        if system.file_exists(filename) then
+            local chunk = assert(loadfile(filename))
+            setfenv(chunk, env)
+            chunk()
+        end
+    end
+
+    for _, pkg in pairs(Pkg.all) do
+        pkg.source = Source:create(pkg.source, pkg.name)
+    end
+
+    return Pkg.all
 end
 
 return Pkg
