@@ -2,18 +2,18 @@ local system = require 'system'
 local Target = require 'Target'
 local Source = require 'Source'
 
-local Pkg = {
+local Package = {
     init_stages = { 'unpack', 'patch' }
 }
-Pkg.__index = Pkg
+Package.__index = Package
 
 local packages = {}
 
-function Pkg:__tostring()
+function Package:__tostring()
     return string.format('%s__%s', self.name or '', self.config or '')
 end
 
-function Pkg:parse(rule)
+function Package:parse(rule)
     if type(rule[1]) == 'string' then
         rule.name = rule[1]
         table.remove(rule, 1)
@@ -28,17 +28,17 @@ function Pkg:parse(rule)
     return rule
 end
 
-function Pkg:new(rule)
-    rule = Pkg:parse(rule)
+function Package:new(rule)
+    rule = Package:parse(rule)
     setmetatable(rule, self)
     return rule
 end
 
-function Pkg:has_config(name)
+function Package:has_config(name)
     return self.configs and self.configs[name]
 end
 
-function Pkg:add_config(name)
+function Package:add_config(name)
     if not self.configs then
         self.configs = {}
     end
@@ -47,7 +47,7 @@ function Pkg:add_config(name)
     end
 end
 
-function Pkg:get(key, config)
+function Package:get(key, config)
     if config and self.configs and self.configs[config] then
         return self.configs[config][key]
     else
@@ -55,7 +55,7 @@ function Pkg:get(key, config)
     end
 end
 
-function Pkg:set(key, value, config)
+function Package:set(key, value, config)
     if config then
         self.configs = self.configs or {}
         self.configs[config] = self.configs[config] or {}
@@ -65,7 +65,7 @@ function Pkg:set(key, value, config)
     end
 end
 
-function Pkg:add_target(rule, config)
+function Package:add_target(rule, config)
     local target = Target:parse(rule, self.name, config)
     local name   = target.stage
     local config = target.config
@@ -103,7 +103,7 @@ function Pkg:add_target(rule, config)
     return self
 end
 
-function Pkg:add_req(req, config, template)
+function Package:add_req(req, config, template)
     local name, config = nil, config
     if type(req) == 'string' then
         name = req
@@ -121,7 +121,7 @@ function Pkg:add_req(req, config, template)
     return { name = name, config = config }
 end
 
-function Pkg:add_ordering_dependencies()
+function Package:add_ordering_dependencies()
     local prev, common
 
     for s in self:each() do
@@ -141,7 +141,7 @@ function Pkg:add_ordering_dependencies()
     end
 end
 
-function Pkg:each()
+function Package:each()
     return coroutine.wrap(function ()
             for _, t in ipairs(self.stages) do
                 coroutine.yield(t)
@@ -154,7 +154,7 @@ function Pkg:each()
         end)
 end
 
-function Pkg:build_dirs(config)
+function Package:build_dirs(config)
     local o = {}
     local function get_dir(config)
         return system.pread('*l',
@@ -173,8 +173,8 @@ function Pkg:build_dirs(config)
     return o
 end
 
-function Pkg.load_rules(full)
-    local env = { Pkg = Pkg }
+function Package.load_rules(full)
+    local env = { Package = Package }
     setmetatable(env, { __index = _G })
     local dirs = system.getenv { 'jagen_product_dir', 'jagen_root' }
     for _, dir in ipairs(dirs) do
@@ -197,18 +197,18 @@ function Pkg.load_rules(full)
 end
 
 function define_rule(rule)
-    rule = Pkg:new(rule)
+    rule = Package:new(rule)
 
     local pkg = packages[rule.name]
 
     if not pkg then
-        pkg = Pkg:new { rule.name }
+        pkg = Package:new { rule.name }
 
-        for stage in each(Pkg.init_stages) do
+        for stage in each(Package.init_stages) do
             pkg:add_target { stage }
         end
 
-        table.merge(pkg, Pkg:new(assert(require('pkg/'..rule.name))))
+        table.merge(pkg, Package:new(assert(require('pkg/'..rule.name))))
 
         packages[rule.name] = pkg
     end
@@ -280,7 +280,7 @@ function define_rule(rule)
     end
 
     for _, item in ipairs(requires or {}) do
-        local req = Pkg:add_req(item, config, template)
+        local req = Package:add_req(item, config, template)
         pkg:add_target({ 'configure',
                 { req.name, 'install', req.config }
             }, config)
@@ -288,7 +288,7 @@ function define_rule(rule)
 
     -- evaluate requires for every add to collect rules from all templates
     for _, item in ipairs(pkg.requires or {}) do
-        local req = Pkg:add_req(item, config, template)
+        local req = Package:add_req(item, config, template)
         pkg:add_target({ 'configure',
                 { req.name, 'install', req.config }
             }, config)
@@ -303,4 +303,4 @@ function define_rule(rule)
     end
 end
 
-return Pkg
+return Package

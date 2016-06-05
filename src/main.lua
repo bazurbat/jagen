@@ -1,10 +1,10 @@
 require 'common'
 require 'Ninja'
 
-local system = require 'system'
-local Pkg    = require 'Pkg'
-local Target = require 'Target'
-local Source = require 'Source'
+local system  = require 'system'
+local Package = require 'Package'
+local Target  = require 'Target'
+local Source  = require 'Source'
 
 jagen =
 {
@@ -266,7 +266,7 @@ function jagen.command.clean(args)
     end
 
     if #args > 0 then
-        local packages = Pkg.load_rules()
+        local packages = Package.load_rules()
         for _, arg in ipairs(args) do
             local match = string.gmatch(arg, '[^:]+')
             local name, config = match(), match()
@@ -316,7 +316,7 @@ function jagen.command.refresh(args)
 
     prepare_root()
 
-    local packages = Pkg.load_rules(true)
+    local packages = Package.load_rules(true)
     local script = require 'script'
     local include_dir = assert(os.getenv('jagen_include_dir'))
     local log_dir = assert(os.getenv('jagen_log_dir'))
@@ -372,7 +372,7 @@ function jagen.command.build(args)
         return jagen.command['help'] { 'build' }
     end
 
-    local packages = Pkg.load_rules()
+    local packages = Package.load_rules()
     local options, rest = find_options(args)
 
     for _, arg in ipairs(rest) do
@@ -392,7 +392,7 @@ function jagen.command.status()
 end
 
 local function scm_packages(names)
-    local packages = Pkg.load_rules()
+    local packages = Package.load_rules()
     local o = {}
 
     if names and #names > 0 then
