@@ -1,5 +1,5 @@
 
-local system = require 'system'
+local System = require 'System'
 
 local Source = {}
 
@@ -65,9 +65,9 @@ function Source:create(source, name)
         if source:is_scm() then
             dir = src_dir
         else
-            dir = system.mkpath(work_dir, name or basename)
+            dir = System.mkpath(work_dir, name or basename)
         end
-        source.dir = system.mkpath(dir, source.dir or basename)
+        source.dir = System.mkpath(dir, source.dir or basename)
     end
 
     return source
@@ -86,11 +86,11 @@ function GitSource:new(o)
 end
 
 function GitSource:exec(command, ...)
-    return system.exec('git -C "%s" '..command, self.dir, ...)
+    return System.exec('git -C "%s" '..command, self.dir, ...)
 end
 
 function GitSource:pread(format, command, ...)
-    return system.pread(format, 'git -C "%s" '..command, self.dir, ...)
+    return System.pread(format, 'git -C "%s" '..command, self.dir, ...)
 end
 
 function GitSource:head()
@@ -151,7 +151,7 @@ function GitSource:switch()
 end
 
 function GitSource:clone()
-    return system.exec('git clone --depth 1 --branch "%s" "%s" "%s"',
+    return System.exec('git clone --depth 1 --branch "%s" "%s" "%s"',
         assert(self.branch), assert(self.location), assert(self.dir))
 end
 
@@ -172,11 +172,11 @@ function HgSource:new(o)
 end
 
 function HgSource:exec(...)
-    return system.exec('hg -R "%s" ', self.dir, ...)
+    return System.exec('hg -R "%s" ', self.dir, ...)
 end
 
 function HgSource:pread(format, command, ...)
-    return system.pread(format, 'hg -R "%s" '..command, self.dir, ...)
+    return System.pread(format, 'hg -R "%s" '..command, self.dir, ...)
 end
 
 function HgSource:head()
@@ -231,7 +231,7 @@ function HgSource:switch()
 end
 
 function HgSource:clone()
-    return system.exec('hg clone -r "%s" "%s" "%s"',
+    return System.exec('hg clone -r "%s" "%s" "%s"',
         assert(self.branch), assert(self.location), assert(self.dir))
 end
 
@@ -244,16 +244,16 @@ function RepoSource:new(o)
 end
 
 function RepoSource:exec(command, ...)
-    return system.exec('cd "%s" && repo '..command, assert(self.dir), ...)
+    return System.exec('cd "%s" && repo '..command, assert(self.dir), ...)
 end
 
 function RepoSource:pread(format, command, ...)
-    return system.pread(format, 'cd "%s" && repo '..command, assert(self.dir), ...)
+    return System.pread(format, 'cd "%s" && repo '..command, assert(self.dir), ...)
 end
 
 function RepoSource:_load_projects(...)
     local o = {}
-    local file = system.popen('cd "%s" && repo list', assert(self.dir))
+    local file = System.popen('cd "%s" && repo list', assert(self.dir))
     for line in file:lines() do
         local path, name = string.match(line, '(.+)%s:%s(.+)')
         if name then
@@ -265,7 +265,7 @@ function RepoSource:_load_projects(...)
 end
 
 function RepoSource:_is_dirty(path)
-    return system.pread('*l', 'git -C "%s" status --porcelain', path) ~= nil
+    return System.pread('*l', 'git -C "%s" status --porcelain', path) ~= nil
 end
 
 function RepoSource:head()
@@ -275,8 +275,8 @@ end
 function RepoSource:dirty()
     local projects = self:_load_projects()
     for n, p in pairs(projects) do
-        local path = system.mkpath(assert(self.dir), p)
-        if system.exists(path) and not system.is_empty(path)
+        local path = System.mkpath(assert(self.dir), p)
+        if System.exists(path) and not System.is_empty(path)
                 and self:_is_dirty(path) then
             return true
         end
@@ -287,11 +287,11 @@ end
 function RepoSource:clean()
     local projects = self:_load_projects()
     for n, p in pairs(projects) do
-        local path = system.mkpath(assert(self.dir), p)
-        if system.exists(path) then
+        local path = System.mkpath(assert(self.dir), p)
+        if System.exists(path) then
             if self:_is_dirty(path) then
-                return system.exec('git -C "%s" checkout HEAD .', path) and
-                       system.exec('git -C "%s" clean -fxd', path)
+                return System.exec('git -C "%s" checkout HEAD .', path) and
+                       System.exec('git -C "%s" clean -fxd', path)
             end
         end
     end
@@ -310,7 +310,7 @@ function RepoSource:switch()
 end
 
 function RepoSource:clone()
-    return system.exec('mkdir -p "%s"', self.dir) and
+    return System.exec('mkdir -p "%s"', self.dir) and
            self:exec('init -u "%s" -b "%s" -p linux --depth 1',
                assert(self.location), assert(self.branch)) and
            self:update()

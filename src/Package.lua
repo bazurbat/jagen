@@ -1,4 +1,4 @@
-local system = require 'system'
+local System = require 'System'
 local Target = require 'Target'
 local Source = require 'Source'
 
@@ -157,7 +157,7 @@ end
 function Package:build_dirs(config)
     local o = {}
     local function get_dir(config)
-        return system.pread('*l',
+        return System.pread('*l',
             'jagen-pkg -q build_dir %s %s', self.name, config)
     end
     if config then
@@ -176,10 +176,10 @@ end
 function Package.load_rules(full)
     local env = { Package = Package }
     setmetatable(env, { __index = _G })
-    local dirs = system.getenv { 'jagen_product_dir', 'jagen_root' }
+    local dirs = System.getenv { 'jagen_product_dir', 'jagen_root' }
     for _, dir in ipairs(dirs) do
         local filename = dir..'/rules.lua'
-        if system.file_exists(filename) then
+        if System.file_exists(filename) then
             local chunk = assert(loadfile(filename))
             setfenv(chunk, env)
             chunk()

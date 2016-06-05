@@ -1,14 +1,14 @@
-local system = require 'system'
+local System = require 'System'
 
 local Image = {}
 local padding = 8
 
 local function calculate_size(dir)
-    return system.pread('*n', 'du -sm "%s"', dir)
+    return System.pread('*n', 'du -sm "%s"', dir)
 end
 
 local function run(format, ...)
-    if not system.exec(format, ...) then
+    if not System.exec(format, ...) then
         local command = string.format(format, ...)
         error('failed to run: '..command, 2)
     end

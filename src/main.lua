@@ -1,7 +1,7 @@
 require 'common'
 require 'Ninja'
 
-local system  = require 'system'
+local System  = require 'System'
 local Package = require 'Package'
 local Target  = require 'Target'
 local Source  = require 'Source'
@@ -22,8 +22,8 @@ jagen =
     include_dir = os.getenv('jagen_include_dir'),
 }
 
-jagen.cmd = system.mkpath(jagen.lib_dir, 'cmd.sh')
-jagen.build_file = system.mkpath(jagen.build_dir, 'build.ninja')
+jagen.cmd = System.mkpath(jagen.lib_dir, 'cmd.sh')
+jagen.build_file = System.mkpath(jagen.build_dir, 'build.ninja')
 
 function jagen.message(...)
     io.write('(I) ', string.format(...), '\n')
@@ -76,12 +76,12 @@ function jagen.flag(f)
 end
 
 function jagen.touch(target)
-    return system.exec('cd "$jagen_build_dir" && touch "%s"',
+    return System.exec('cd "$jagen_build_dir" && touch "%s"',
         tostring(target))
 end
 
 function jagen.remove(target)
-    return system.exec('cd "$jagen_build_dir" && rm -f "%s"',
+    return System.exec('cd "$jagen_build_dir" && rm -f "%s"',
         tostring(target))
 end
 
@@ -91,7 +91,7 @@ jagen.src = {}
 
 function jagen.src._touch(pkg)
     local target = Target:new(pkg.name, 'unpack')
-    return system.exec('cd "$jagen_build_dir" && touch "%s"',
+    return System.exec('cd "$jagen_build_dir" && touch "%s"',
         tostring(target))
 end
 
@@ -99,7 +99,7 @@ end
 function jagen.src.dirty(packages)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
-        if system.exists(source.dir) and source:dirty() then
+        if System.exists(source.dir) and source:dirty() then
             return 0
         end
     end
@@ -109,7 +109,7 @@ end
 function jagen.src.status(packages)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
-        if system.exists(source.dir) then
+        if System.exists(source.dir) then
             local dirty = source:dirty() and 'dirty' or ''
             local head = source:head()
             if not head then
@@ -146,7 +146,7 @@ function jagen.src.update(packages)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
         local old_head
-        if system.exists(source.dir) then
+        if System.exists(source.dir) then
             old_head = source:head()
             if not source:dirty() then
                 if offline then
@@ -195,8 +195,8 @@ end
 function jagen.src.delete(packages)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
-        if system.exists(source.dir) then
-            if not system.rmrf(source.dir) then
+        if System.exists(source.dir) then
+            if not System.rmrf(source.dir) then
                 jagen.die('failed to delete %s source directory %s',
                     pkg.name, source.dir)
             end
@@ -275,7 +275,7 @@ function jagen.command.clean(args)
                 jagen.die('no such package: %s', name)
             end
             for config, dir in pairs(pkg:build_dirs(config)) do
-                assert(system.rmrf(dir))
+                assert(System.rmrf(dir))
                 assert(jagen.remove(Target:new(name, 'configure', config)))
             end
         end
@@ -290,9 +290,9 @@ function jagen.command.clean(args)
         'jagen_host_dir',
         'jagen_target_dir',
     }
-    local dirs = system.getenv(vars)
+    local dirs = System.getenv(vars)
 
-    assert(system.rmrf(unpack(dirs)))
+    assert(System.rmrf(unpack(dirs)))
 
     return jagen.command.refresh()
 end
@@ -304,9 +304,9 @@ local function prepare_root()
         'jagen_include_dir',
         'jagen_log_dir'
     }
-    local dirs = system.getenv(vars)
+    local dirs = System.getenv(vars)
 
-    assert(system.mkdir(unpack(dirs)))
+    assert(System.mkdir(unpack(dirs)))
 end
 
 function jagen.command.refresh(args)
@@ -381,8 +381,8 @@ function jagen.command.build(args)
         end
     end
 
-    local err, status = system.exec('%s build %s', jagen.cmd,
-        system.quote(unpack(options)))
+    local err, status = System.exec('%s build %s', jagen.cmd,
+        System.quote(unpack(options)))
 
     return status
 end
@@ -452,11 +452,11 @@ function jagen.command.image(options, rest)
 end
 
 function jagen:_nproc()
-    local name = system.pread('*l', 'uname -s')
+    local name = System.pread('*l', 'uname -s')
     if name == 'Darwin' then
-        return system.pread('*l', 'sysctl -n hw.ncpu')
+        return System.pread('*l', 'sysctl -n hw.ncpu')
     else
-        return system.pread('*l', 'nproc')
+        return System.pread('*l', 'nproc')
     end
 end
 

@@ -1,4 +1,4 @@
-local system = require 'system'
+local System = require 'System'
 
 local P = {}
 
@@ -123,18 +123,18 @@ end
 
 function P:write(pkg, dir)
     local name = pkg.name
-    local s = system.mkpath(dir, string.format('%s.sh', name))
+    local s = System.mkpath(dir, string.format('%s.sh', name))
     P:_write(P:get_shared(pkg), s)
 
     if pkg.configs then
         for name, config in pairs(pkg.configs) do
             local filename = string.format('%s__%s.sh', pkg.name, name)
-            local path = system.mkpath(dir, filename)
+            local path = System.mkpath(dir, filename)
             P:_write(P:get(pkg, name), path)
         end
     else
         local filename = string.format('%s__.sh', pkg.name)
-        local path = system.mkpath(dir, filename)
+        local path = System.mkpath(dir, filename)
         P:_write(P:get(pkg), path)
     end
 end
