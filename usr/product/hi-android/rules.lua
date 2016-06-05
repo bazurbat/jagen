@@ -1,12 +1,12 @@
 -- Android rules
 
-Pkg:add { 'android-cmake' }
+define_rule { 'android-cmake' }
 
-Pkg:add { 'cmake-modules' }
+define_rule { 'cmake-modules' }
 
-Pkg:add { 'hi-sdk-tools' }
+define_rule { 'hi-sdk-tools' }
 
-Pkg:add { 'android', 'target',
+define_rule { 'android', 'target',
     env = { 'target', 'lunch' },
     { 'patch',
         { 'hi-sdk-tools', 'unpack' }

@@ -1,16 +1,14 @@
 -- CHICKEN Scheme
 
-local Pkg = require 'Pkg'
+define_rule { 'chicken', 'host' }
 
-Pkg:add { 'chicken', 'host' }
+define_rule { 'chicken-eggs', 'host' }
 
-Pkg:add { 'chicken-eggs', 'host' }
-
-Pkg:add { 'chicken', 'target',
+define_rule { 'chicken', 'target',
     { 'configure', { 'chicken', 'install', 'host' } }
 }
 
-Pkg:add { 'chicken-eggs', 'target',
+define_rule { 'chicken-eggs', 'target',
     requires = {
         'dbus',
         'sqlite',

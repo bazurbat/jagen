@@ -7,6 +7,10 @@ local Pkg = {
 }
 Pkg.__index = Pkg
 
+function define_rule(rule)
+    return Pkg:add(rule)
+end
+
 function Pkg:__tostring()
     return string.format('%s__%s', self.name or '', self.config or '')
 end

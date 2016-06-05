@@ -1,35 +1,35 @@
 -- HiSilicon Linux SDK
 
-Pkg:add { 'ast-files' }
+define_rule { 'ast-files' }
 
-Pkg:add { 'hi-kernel' }
+define_rule { 'hi-kernel' }
 
-Pkg:add { 'hi-sdk', 'target',
+define_rule { 'hi-sdk', 'target',
     { 'patch',
         { 'hi-kernel',    'unpack' },
     }
 }
 
-Pkg:add { 'hi-drivers', 'target',
+define_rule { 'hi-drivers', 'target',
     requires = { 'hi-sdk' },
     { 'configure' }
 }
 
-Pkg:add { 'rtl8188eu', 'target',
+define_rule { 'rtl8188eu', 'target',
     requires = { 'hi-sdk' },
     { 'compile' }
 }
 
-Pkg:add { 'cmake-modules' }
+define_rule { 'cmake-modules' }
 
-Pkg:add { 'hi-utils', 'target',
+define_rule { 'hi-utils', 'target',
     requires = { 'hi-sdk' },
     { 'configure',
         { 'cmake-modules', 'unpack'              },
     }
 }
 
-Pkg:add { 'karaoke-player', 'target',
+define_rule { 'karaoke-player', 'target',
     requires = {
         'chicken-eggs',
         'connman',
@@ -45,14 +45,14 @@ Pkg:add { 'karaoke-player', 'target',
     }
 }
 
-Pkg:add { 'hia-astdisplayservice', 'target',
+define_rule { 'hia-astdisplayservice', 'target',
     requires = {
         'karaoke-player'
     },
     { 'configure' }
 }
 
-Pkg:add { 'rootfs', 'target',
+define_rule { 'rootfs', 'target',
     requires = {
         'busybox',
         'dropbear',
@@ -71,8 +71,8 @@ Pkg:add { 'rootfs', 'target',
 }
 
 if jagen.flag 'debug' then
-    Pkg:add { 'gdb', 'host' }
-    Pkg:add { 'strace', 'target' }
+    define_rule { 'gdb', 'host' }
+    define_rule { 'strace', 'target' }
 end
 
 require 'chicken'

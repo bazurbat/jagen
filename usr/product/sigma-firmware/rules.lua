@@ -2,23 +2,23 @@
 
 -- base
 
-Pkg:add { 'ast-files' }
+define_rule { 'ast-files' }
 
-Pkg:add { 'cmake-modules' }
+define_rule { 'cmake-modules' }
 
-Pkg:add { 'linux' }
+define_rule { 'linux' }
 
-Pkg:add { 'xsdk' }
+define_rule { 'xsdk' }
 
-Pkg:add { 'ucode', 'target',
+define_rule { 'ucode', 'target',
     { 'install' }
 }
 
 -- host
 
-Pkg:add { 'utils', 'host' }
+define_rule { 'utils', 'host' }
 
-Pkg:add { 'karaoke-player', 'host',
+define_rule { 'karaoke-player', 'host',
     requires = {
         'chicken-eggs',
         'ffmpeg',
@@ -29,7 +29,7 @@ Pkg:add { 'karaoke-player', 'host',
     }
 }
 
-Pkg:add { 'astindex',
+define_rule { 'astindex',
     { 'unpack', { 'karaoke-player', 'unpack' } }
 }
 
@@ -40,12 +40,12 @@ local kernel_rule_template = {
     { 'configure', { 'kernel', 'compile', 'target' } }
 }
 
-local function kernel_rule(r)
+local function define_kernel_rule(r)
     r.template = kernel_rule_template
-    Pkg:add(r)
+    define_rule(r)
 end
 
-Pkg:add { 'kernel', 'target',
+define_rule { 'kernel', 'target',
     { 'configure',
         { 'linux', 'unpack' },
     },
@@ -55,13 +55,13 @@ Pkg:add { 'kernel', 'target',
     },
 }
 
-kernel_rule { 'loop-aes' }
+define_kernel_rule { 'loop-aes' }
 
-kernel_rule { 'ralink' }
+define_kernel_rule { 'ralink' }
 
 -- rootfs
 
-Pkg:add { 'rootfs', 'target',
+define_rule { 'rootfs', 'target',
     requires = {
         'busybox',
         'gnupg',
@@ -81,14 +81,14 @@ Pkg:add { 'rootfs', 'target',
     { 'install' }
 }
 
-Pkg:add { 'mrua', 'target',
+define_rule { 'mrua', 'target',
     { 'compile',
         { 'kernel', 'compile', 'target' }
     },
     { 'install' },
 }
 
-Pkg:add { 'busybox', 'target',
+define_rule { 'busybox', 'target',
     install = {
         root = '$jagen_sdk_initfs_dir',
         prefix = ''
@@ -96,14 +96,14 @@ Pkg:add { 'busybox', 'target',
     { 'patch', { 'ast-files', 'unpack' } }
 }
 
-Pkg:add { 'utils', 'target',
+define_rule { 'utils', 'target',
     requires = { 'gpgme' },
     { 'configure',
         { 'dbus', 'install', 'target' }
     }
 }
 
-Pkg:add { 'ezboot', 'target',
+define_rule { 'ezboot', 'target',
     requires = { 'rootfs' }
 }
 
@@ -117,12 +117,12 @@ local firmware_rule_template = {
     { 'install', { 'firmware', 'unpack' } }
 }
 
-local function firmware_rule(r)
+local function define_firmware_rule(r)
     r.template = firmware_rule_template
-    Pkg:add(r)
+    define_rule(r)
 end
 
-Pkg:add { 'firmware', 'target',
+define_rule { 'firmware', 'target',
     pass_template = firmware_rule_template,
     requires = {
         'ezboot',
@@ -140,7 +140,7 @@ Pkg:add { 'firmware', 'target',
     { 'install' }
 }
 
-firmware_rule { 'karaoke-player',
+define_firmware_rule { 'karaoke-player',
     requires = {
         'chicken-eggs',
         'connman',
