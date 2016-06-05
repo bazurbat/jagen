@@ -140,6 +140,7 @@ function Pkg:add(rule)
     end
 
     local config = rule.config; rule.config = nil
+    local depends = rule.depends or {}; rule.depends = nil
     local requires = rule.requires; rule.requires = nil
 
     local template = rule.template or rule.pass_template
@@ -159,7 +160,7 @@ function Pkg:add(rule)
         pkg:add_target(Target:parse({ 'unpack',
                     { 'repo', 'install', 'host' }
                 }))
-        Pkg:add { 'repo', 'host' }
+        table.insert(depends, { 'repo', 'host' })
     end
 
     do local build = pkg.build
@@ -170,7 +171,7 @@ function Pkg:add(rule)
                             { 'libtool', 'install', 'host' }
                         }, pkg.name)
                     pkg:add_target(autoreconf_t)
-                    Pkg:add { 'libtool', 'host' }
+                    table.insert(depends, { 'libtool', 'host' })
                 end
             end
 
@@ -185,7 +186,7 @@ function Pkg:add(rule)
                 for _, stage in ipairs(stages) do
                     pkg:add_target(Target:parse(stage, pkg.name, config))
                 end
-                Pkg:add { 'toolchain', config }
+                table.insert(depends, { 'toolchain', config })
             end
         end
     end
@@ -218,6 +219,10 @@ function Pkg:add(rule)
 
     for _, stage in ipairs(stages) do
         pkg:add_target(Target:parse(stage, pkg.name, config))
+    end
+
+    for _, rule in ipairs(depends) do
+        Pkg:add(rule)
     end
 end
 
