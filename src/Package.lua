@@ -216,10 +216,7 @@ function define_rule(rule)
 
     pkg:set('template', template, config)
 
-    local stages = table.imove({
-            config   = config,
-            template = template
-        }, rule)
+    local stages = table.imove({}, rule)
 
     table.merge(pkg, rule)
 
@@ -277,14 +274,24 @@ function define_rule(rule)
         pkg:add_target({ 'configure',
                 { req.name, 'install', req.config }
             }, config)
-        define_rule {
-            name = req.name,
-            config = req.config,
-            template = template
-        }
+        table.insert(depends, {
+                name = req.name,
+                config = req.config,
+                template = template
+            })
     end
 
     for _, stage in ipairs(stages) do
+        for _, item in ipairs(stage.requires or {}) do
+            local req = Package:parse(item)
+            req.config = req.config or config
+            table.insert(stage, { req.name, 'install', req.config })
+            table.insert(depends, {
+                    name = req.name,
+                    config = req.config,
+                    template = template
+                })
+        end
         pkg:add_target(stage, config)
     end
 
