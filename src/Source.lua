@@ -172,8 +172,8 @@ function HgSource:new(o)
     return source
 end
 
-function HgSource:exec(...)
-    return System.exec('hg -R "%s" ', self.dir, ...)
+function HgSource:exec(command, ...)
+    return System.exec('hg -R "%s" '..command, self.dir, ...)
 end
 
 function HgSource:pread(format, command, ...)
@@ -189,13 +189,12 @@ function HgSource:dirty()
 end
 
 function HgSource:clean()
-    return self:exec('update', '-C', assert(self.branch)) and
-           self:exec('purge', '--all')
+    return self:exec('update -C "%s"', assert(self.branch)) and
+           self:exec('purge --all')
 end
 
 function HgSource:update()
-    local cmd = { 'pull', '-r', assert(self.branch) }
-    return self:exec(unpack(cmd))
+    return self:exec('pull -r "%s"', assert(self.branch))
 end
 
 function HgSource:_branch()
@@ -221,8 +220,7 @@ function HgSource:switch()
     local branch = assert(self.branch)
     local exists = self:_is_bookmark(branch)
     if exists then
-        local cmd = { 'update', '-r', assert(self.branch) }
-        return self:exec(unpack(cmd))
+        return self:exec('update -r "%s"', branch)
     elseif branch == self:_branch() then
         return true
     else
