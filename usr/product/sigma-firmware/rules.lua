@@ -37,7 +37,12 @@ define_rule { 'astindex',
 
 local kernel_rule_template = {
     config = 'target',
-    { 'configure', { 'kernel', 'compile', 'target' } }
+    { 'configure',
+        { 'kernel', 'compile', 'target' }
+    },
+    { 'install',
+        { 'kernel', 'install', 'target' }
+    }
 }
 
 local function define_kernel_rule(r)
@@ -53,7 +58,9 @@ define_rule { 'kernel', 'target',
         -- for genzbf and other utils
         { 'rootfs', 'compile', 'target' }
     },
-    { 'image' }
+    { 'image',
+        requires = { 'rootfs' }
+    }
 }
 
 define_kernel_rule { 'loop-aes' }
@@ -66,10 +73,8 @@ define_rule { 'rootfs', 'target',
     requires = {
         'busybox',
         'gnupg',
-        'loop-aes',
         'mrua',
         'ntpclient',
-        'ralink',
         'util-linux',
         'utils',
     },
@@ -79,7 +84,12 @@ define_rule { 'rootfs', 'target',
         { 'toolchain', 'install', 'target' },
     },
     { 'compile' },
-    { 'install' }
+    { 'install',
+        requires = {
+            'loop-aes',
+            'ralink',
+        }
+    }
 }
 
 define_rule { 'mrua', 'target',
