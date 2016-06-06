@@ -12,6 +12,9 @@ jagen_pkg_patch() {
 jagen_pkg_compile() {
     PATH="$SMP86XX_TOOLCHAIN_PATH/bin:$PATH"
 
+    # Fix cp: not writing through dangling symlink '.../build_mipsel/root/init'
+    pkg_run rm -f "$jagen_sdk_initfs_dir/init"
+
     pkg_run make
 }
 
