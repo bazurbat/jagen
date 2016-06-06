@@ -14,6 +14,10 @@ function Package:__tostring()
 end
 
 function Package:parse(rule)
+    if type(rule) == 'string' then
+        return { name = rule }
+    end
+
     if type(rule[1]) == 'string' then
         rule.name = rule[1]
         table.remove(rule, 1)
@@ -22,6 +26,7 @@ function Package:parse(rule)
         rule.config = rule[1]
         table.remove(rule, 1)
     end
+
     if type(rule.source) == 'string' then
         if string.match(rule.source, '^https?://') then
             rule.source = { type = 'curl', location = rule.source }
@@ -105,24 +110,6 @@ function Package:add_target(rule, config)
     end
 
     return self
-end
-
-function Package:add_req(req, config, template)
-    local name, config = nil, config
-    if type(req) == 'string' then
-        name = req
-    else
-        name   = req[1]
-        config = req[2] or config
-    end
-
-    define_rule {
-        name = name,
-        config = config,
-        template = template
-    }
-
-    return { name = name, config = config }
 end
 
 function Package:add_ordering_dependencies()
@@ -221,7 +208,7 @@ function define_rule(rule)
 
     local config = rule.config; rule.config = nil
     local depends = rule.depends or {}; rule.depends = nil
-    local requires = rule.requires; rule.requires = nil
+    local requires = rule.requires or {}; rule.requires = nil
 
     local template = rule.template or rule.pass_template
                      or pkg:get('template', config)
@@ -281,19 +268,20 @@ function define_rule(rule)
         pkg:add_target(stage, config)
     end
 
-    for _, item in ipairs(requires or {}) do
-        local req = Package:add_req(item, config, template)
-        pkg:add_target({ 'configure',
-                { req.name, 'install', req.config }
-            }, config)
-    end
+    -- evaluate pkg requires for every add to collect rules from all templates
+    table.iextend(requires, pkg.requires or {})
 
-    -- evaluate requires for every add to collect rules from all templates
-    for _, item in ipairs(pkg.requires or {}) do
-        local req = Package:add_req(item, config, template)
+    for _, item in ipairs(requires) do
+        local req = Package:parse(item)
+        req.config = req.config or config
         pkg:add_target({ 'configure',
                 { req.name, 'install', req.config }
             }, config)
+        define_rule {
+            name = req.name,
+            config = req.config,
+            template = template
+        }
     end
 
     for _, stage in ipairs(stages) do
