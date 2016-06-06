@@ -84,14 +84,14 @@ function Target:append(input)
     return self
 end
 
-function Target:touch(target)
+function Target:touch()
     return System.exec('cd "$jagen_build_dir" && touch "%s"',
-        tostring(target))
+        tostring(self))
 end
 
-function Target:remove(target)
+function Target:remove()
     return System.exec('cd "$jagen_build_dir" && rm -f "%s"',
-        tostring(target))
+        tostring(self))
 end
 
 return Target
