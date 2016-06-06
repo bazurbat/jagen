@@ -53,6 +53,7 @@ define_rule { 'kernel', 'target',
         -- for genzbf and other utils
         { 'rootfs', 'compile', 'target' }
     },
+    { 'image' }
 }
 
 define_kernel_rule { 'loop-aes' }
