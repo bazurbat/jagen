@@ -74,6 +74,15 @@ function table.rest(t, start)
     return o
 end
 
+function table.iextend(t, other)
+    assert_arg('iextend', 1, 'table', t)
+    assert_arg('iextend', 2, 'table', other)
+    for _, i in ipairs(other) do
+        table.insert(t, i)
+    end
+    return t
+end
+
 function table.imap(arr, func)
     local out = {}
     for _, i in ipairs(arr) do
