@@ -209,7 +209,6 @@ function define_rule(rule)
     end
 
     local config = rule.config; rule.config = nil
-    local depends = rule.depends or {}; rule.depends = nil
     local requires = rule.requires or {}; rule.requires = nil
 
     local template = rule.template or rule.pass_template
@@ -226,7 +225,7 @@ function define_rule(rule)
         pkg:add_target { 'unpack',
             { 'repo', 'install', 'host' }
         }
-        table.insert(depends, { 'repo', 'host' })
+        define_rule { 'repo', 'host' }
     end
 
     do local build = pkg.build
@@ -236,7 +235,7 @@ function define_rule(rule)
                     pkg:add_target { 'autoreconf',
                         { 'libtool', 'install', 'host' }
                     }
-                    table.insert(depends, { 'libtool', 'host' })
+                    define_rule { 'libtool', 'host' }
                 end
             end
 
@@ -251,7 +250,7 @@ function define_rule(rule)
                 for _, stage in ipairs(stages) do
                     pkg:add_target(stage, config)
                 end
-                table.insert(depends, { 'toolchain', config })
+                define_rule { 'toolchain', config }
             end
         end
     end
@@ -275,28 +274,24 @@ function define_rule(rule)
         pkg:add_target({ 'configure',
                 { req.name, 'install', req.config }
             }, config)
-        table.insert(depends, {
-                name = req.name,
-                config = req.config,
-                template = template
-            })
+        define_rule {
+            name = req.name,
+            config = req.config,
+            template = template
+        }
     end
 
     for _, stage in ipairs(stages) do
         for _, item in ipairs(stage.requires or {}) do
             local req = Package:parse(item, config)
             table.insert(stage, { req.name, 'install', req.config })
-            table.insert(depends, {
-                    name = req.name,
-                    config = req.config,
-                    template = template
-                })
+            define_rule {
+                name = req.name,
+                config = req.config,
+                template = template
+            }
         end
         pkg:add_target(stage, config)
-    end
-
-    for _, rule in ipairs(depends) do
-        define_rule(rule)
     end
 end
 
