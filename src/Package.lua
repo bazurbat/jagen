@@ -23,7 +23,11 @@ function Package:parse(rule)
         table.remove(rule, 1)
     end
     if type(rule.source) == 'string' then
-        rule.source = { type = 'dist', location = rule.source }
+        if string.match(rule.source, '^https?://') then
+            rule.source = { type = 'curl', location = rule.source }
+        else
+            rule.source = { type = 'dist', location = rule.source }
+        end
     end
     return rule
 end

@@ -191,6 +191,14 @@ pkg_unpack() {
             pkg_run mkdir -p "$pkg_work_dir"
             pkg_run tar -C "$pkg_work_dir" -xf "$src_path"
             ;;
+        curl)
+            local install_dir="${pkg_install_dir:-$jagen_host_dir}/bin"
+            local dest="$install_dir/$pkg_name"
+            pkg_run mkdir -p "$install_dir"
+            curl -L "$src_path" > "$dest" ||
+                die "failed to download $pkg_name from $src_path"
+            pkg_run chmod +x "$dest"
+            ;;
         *)
             if [ "$pkg_source_dir" ]; then
                 pkg_run mkdir -p "$pkg_source_dir"
