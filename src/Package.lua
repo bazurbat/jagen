@@ -13,19 +13,21 @@ function Package:__tostring()
     return string.format('%s__%s', self.name or '', self.config or '')
 end
 
-function Package:parse(rule)
+function Package:parse(rule, config)
     if type(rule) == 'string' then
-        return { name = rule }
+        return { name = rule, config = config }
     end
 
     if type(rule[1]) == 'string' then
         rule.name = rule[1]
         table.remove(rule, 1)
     end
+
     if type(rule[1]) == 'string' then
         rule.config = rule[1]
         table.remove(rule, 1)
     end
+    rule.config = rule.config or config
 
     if type(rule.source) == 'string' then
         if string.match(rule.source, '^https?://') then
@@ -269,8 +271,7 @@ function define_rule(rule)
     table.iextend(requires, pkg.requires or {})
 
     for _, item in ipairs(requires) do
-        local req = Package:parse(item)
-        req.config = req.config or config
+        local req = Package:parse(item, config)
         pkg:add_target({ 'configure',
                 { req.name, 'install', req.config }
             }, config)
@@ -283,8 +284,7 @@ function define_rule(rule)
 
     for _, stage in ipairs(stages) do
         for _, item in ipairs(stage.requires or {}) do
-            local req = Package:parse(item)
-            req.config = req.config or config
+            local req = Package:parse(item, config)
             table.insert(stage, { req.name, 'install', req.config })
             table.insert(depends, {
                     name = req.name,
