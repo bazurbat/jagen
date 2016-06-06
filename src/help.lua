@@ -35,13 +35,20 @@ SYNOPSIS
 ]]
 
 local clean = [[
-Usage: jagen clean
+Usage: jagen clean [package[:config]...]
 
-  Deletes all generated files and directories inside the current build root.
+  Deletes package build directories or all generated files and directories
+  inside the current build root.
 
 SYNOPSIS
 
-  The following directories are recursively deleted:
+  There can be multiple arguments in the form of: <name> or <name>:<config>.
+  Build directories of given packages will be removed. If <config> is supplied
+  the corresponding build directory will be removed, if only <name> is supplied
+  all build directories will be removed.
+
+  If no arguments are given, than everything in the current build root is
+  cleaned up. The following directories are recursively deleted:
 
     jagen_build_dir
     jagen_include_dir
