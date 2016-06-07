@@ -66,6 +66,8 @@ jagen_kernel_extra_modules_dir="$jagen_kernel_modules_dir/extra"
 export LINUX_KERNEL="$jagen_src_dir/linux"
 export UCLINUX_KERNEL="$LINUX_KERNEL"
 
+KDIR="$LINUX_KERNEL"
+
 pkg_using_sigma_sdk() {
     local S="$jagen_FS" A=
     A="$A$S-DSIGMA_SDK_DIR=$jagen_src_dir/sigma-mrua"
