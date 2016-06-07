@@ -2,6 +2,28 @@ local System = require 'System'
 
 local P = {}
 
+local function write_install_script(w, install)
+    if not install then return end
+
+    if install.type then
+        w('pkg_install_type="%s"', install.type)
+    end
+    if install.root then
+        w('pkg_sysroot="%s"', install.root)
+    end
+    if install.prefix then
+        w('pkg_prefix="%s"', install.prefix)
+    end
+    if install.config_script then
+        w("pkg_install_config_script='%s'", install.config_script)
+    end
+    if install.modules then
+        if type(install.modules) == 'string' then
+            w("pkg_install_modules_dir='%s'", install.modules)
+        end
+    end
+end
+
 function P:get_shared(pkg)
     local o = {}
     local function w(format, ...)
@@ -33,6 +55,8 @@ function P:get_shared(pkg)
         w('}')
     end
 
+    write_install_script(w, pkg.install)
+
     if pkg.build then
         local build = pkg.build
         if build.type then
@@ -62,18 +86,8 @@ function P:get(pkg, config)
 
     -- put install variables before build to allow referencing them from
     -- configure options
-    do local install = pkg:get('install', config)
-        if install then
-            if install.root then
-                w('pkg_sysroot="%s"', install.root)
-            end
-            if install.prefix then
-                w('pkg_prefix="%s"', install.prefix)
-            end
-            if install.config_script then
-                w("pkg_install_config_script='%s'", install.config_script)
-            end
-        end
+    if pkg:has_config(config) then
+        write_install_script(w, pkg:get('install', config))
     end
 
     local build_dir

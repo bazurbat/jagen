@@ -6,8 +6,3 @@ jagen_pkg_compile() {
         KBUILD_OUTPUT="$LINUX_KERNEL" \
         USE_KBUILD=y MODINST=n RUNDM=n
 }
-
-jagen_pkg_install() {
-    cd "tmp-d-kbuild" &&
-    pkg_install_modules "loop"
-}

@@ -7,5 +7,8 @@ return {
     build = {
         type = 'make',
         in_source = true
+    },
+    install = {
+        modules = 'os/linux'
     }
 }

@@ -48,27 +48,6 @@ pkg_strip_root() {
     done
 }
 
-pkg_install_modules() {
-    mkdir -p "$jagen_kernel_extra_modules_dir"
-    touch "$jagen_kernel_modules_dir/modules.order"
-    touch "$jagen_kernel_modules_dir/modules.builtin"
-    for m in "$@"; do
-        local f="$PWD/${m}.ko"
-        cp "$f" "$jagen_kernel_extra_modules_dir"
-    done &&
-        (
-    cd $jagen_kernel_dir/linux && \
-        /sbin/depmod -ae -F System.map -b $INSTALL_MOD_PATH $jagen_kernel_release
-    )
-}
-
-pkg_run_depmod() {
-    pkg_run /sbin/depmod -ae \
-        -F "$LINUX_KERNEL/System.map" \
-        -b "$INSTALL_MOD_PATH" \
-        "$jagen_kernel_release"
-}
-
 # Some packages write full paths with sysroot prepended to their pc files which
 # causes the sysroot to be prepended twice in build flags of packages which
 # actually support it. Namely fontconfig does this. It is easier to patch
@@ -321,8 +300,9 @@ pkg_compile() {
 
 pkg_install() {
     : ${pkg_install_dir:?}
+    local pkg_install_type="${pkg_install_type:-$pkg_build_type}"
 
-    case $pkg_build_type in
+    case $pkg_install_type in
         GNU|make|skarnet)
             pkg_run make ${pkg_sysroot:+DESTDIR="$pkg_sysroot"} "$@" install
 
@@ -342,7 +322,13 @@ pkg_install() {
         linux_module)
             pkg_run make INSTALL_MOD_PATH="$pkg_install_dir" "$@" modules_install
             ;;
+        none)
+            ;;
     esac
+}
+
+pkg_install_modules() {
+    pkg_run make -C "${KDIR:?}" M="$PWD${1:+/$1}" modules_install
 }
 
 # stages
@@ -369,4 +355,8 @@ jagen_pkg_compile() {
 
 jagen_pkg_install() {
     pkg_install
+}
+
+jagen_pkg_install_modules() {
+    pkg_install_modules $pkg_install_modules_dir
 }

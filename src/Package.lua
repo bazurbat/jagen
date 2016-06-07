@@ -210,6 +210,7 @@ function define_rule(rule)
 
     local config = rule.config; rule.config = nil
     local requires = rule.requires or {}; rule.requires = nil
+    local install = rule.install or {}; rule.install = nil
 
     local template = rule.template or rule.pass_template
                      or pkg:get('template', config)
@@ -255,10 +256,15 @@ function define_rule(rule)
         end
     end
 
-    if pkg.install and config then
-        pkg:add_config(config)
-        pkg.configs[config].install = pkg.install
-        pkg.install = nil
+    if install and config then
+        local existing = pkg:get('install', config) or {}
+        local install = table.merge(existing, install)
+
+        if pkg.install and pkg.install.modules or install.modules then
+            pkg:add_target({ 'install_modules' }, config)
+        end
+
+        pkg:set('install', install, config)
     end
 
     -- add global stages specified in pkg file regardless of config or build

@@ -61,7 +61,4 @@ jagen_pkg_install() {
     for lib in $libs; do
         pkg_run cp -va "$pkg_source_dir/lib/lib${lib}.so" "$lib_dir"
     done
-
-    pkg_run cd "$src_dir"
-    pkg_install_modules em8xxx llad
 }

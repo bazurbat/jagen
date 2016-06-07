@@ -7,5 +7,8 @@ return {
     build = {
         type = 'custom',
         in_source = true
+    },
+    install = {
+        modules = '$pkg_source_dir/modules/$jagen_kernel_release'
     }
 }

@@ -11,14 +11,7 @@ jagen_pkg_compile() {
 }
 
 jagen_pkg_install() {
-    local dest="$jagen_kernel_modules_dir/kernel/drivers/net/wireless"
     local cfg_dest="$jagen_sdk_rootfs_root/etc/Wireless/RT2870STA"
-
-    pkg_run mkdir -p "$dest"
-
-    pkg_run install -vm644 os/linux/rt5370sta.ko "$dest"
-
-    pkg_run_depmod || return $?
 
     pkg_run install -vd "$cfg_dest"
     pkg_run install -vm644 RT2870STA.dat "$cfg_dest"

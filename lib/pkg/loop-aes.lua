@@ -3,5 +3,9 @@ return {
     build  = {
         type = 'make',
         in_source = true
+    },
+    install = {
+        type = 'none',
+        modules = 'tmp-d-kbuild'
     }
 }
