@@ -108,7 +108,10 @@ is_function() { type "$1" 2>/dev/null | grep -q 'function'; }
 
 in_path() { $(which "$1" >/dev/null 2>&1); }
 
-in_flags() { in_list "$1" $jagen_flags; }
+in_flags() {
+    local IFS; unset IFS
+    in_list "$1" $jagen_flags
+}
 
 add_PATH() {
     : ${1:?}
