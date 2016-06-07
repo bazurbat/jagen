@@ -9,6 +9,10 @@ return {
         in_source = true
     },
     install = {
-        modules = '$pkg_source_dir/modules/$jagen_kernel_release'
+        modules = {
+            -- order matters to avoid warnings from depmod
+            'MRUA_src/llad/direct/kernel_src',
+            'MRUA_src/rua/emhwlib_kernel/kernel_src',
+        }
     }
 }

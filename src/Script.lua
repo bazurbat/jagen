@@ -19,7 +19,10 @@ local function write_install_script(w, install)
     end
     if install.modules then
         if type(install.modules) == 'string' then
-            w("pkg_install_modules_dir='%s'", install.modules)
+            w("pkg_install_modules_dirs='%s'", install.modules)
+        elseif type(install.modules) == 'table' then
+            w('pkg_install_modules_dirs="%s"',
+                table.concat(install.modules, ' '))
         end
     end
 end

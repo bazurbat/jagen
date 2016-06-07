@@ -328,7 +328,10 @@ pkg_install() {
 }
 
 pkg_install_modules() {
-    pkg_run make -C "${KDIR:?}" M="$PWD${1:+/$1}" modules_install
+    local dir
+    for dir do
+        pkg_run make -C "${KDIR:?}" M="$PWD/$dir" modules_install
+    done
 }
 
 # stages
@@ -358,5 +361,5 @@ jagen_pkg_install() {
 }
 
 jagen_pkg_install_modules() {
-    pkg_install_modules $pkg_install_modules_dir
+    pkg_install_modules $pkg_install_modules_dirs
 }
