@@ -69,25 +69,29 @@ define_kernel_rule { 'ralink' }
 
 -- rootfs
 
+local rootfs_template = {
+    config = 'target',
+    { 'install',
+        { 'rootfs', 'compile', 'target' }
+    }
+}
+
 define_rule { 'rootfs', 'target',
-    requires = {
-        'busybox',
-        'gnupg',
-        'mrua',
-        'ntpclient',
-        'util-linux',
-        'utils',
-    },
+    pass_template = rootfs_template,
     { 'configure',
-        { 'ast-files', 'unpack'            },
-        { 'xsdk',      'unpack'            },
-        { 'toolchain', 'install', 'target' },
+        { 'ast-files', 'unpack' },
+        { 'xsdk',      'unpack' },
     },
-    { 'compile' },
     { 'install',
         requires = {
+            'busybox',
+            'gnupg',
             'loop-aes',
+            'mrua',
+            'ntpclient',
             'ralink',
+            'util-linux',
+            'utils',
         }
     }
 }
