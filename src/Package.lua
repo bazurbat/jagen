@@ -41,6 +41,7 @@ end
 
 function Package:new(rule)
     rule = Package:parse(rule)
+    rule.configs = rule.configs or {}
     setmetatable(rule, self)
     return rule
 end
@@ -298,6 +299,10 @@ function define_rule(rule)
             }
         end
         pkg:add_target(stage, config)
+    end
+
+    if config then
+        pkg.configs[config].config = config
     end
 end
 
