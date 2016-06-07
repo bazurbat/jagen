@@ -112,7 +112,7 @@ function GitSource:update()
 end
 
 function GitSource:_is_branch(pattern)
-    local branch = self:pread('*l', 'branch -a --list', pattern)
+    local branch = self:pread('*l', 'branch -a --list "%s"', pattern)
     local exists, active = false, false
 
     if branch and #branch > 0 then
