@@ -54,8 +54,7 @@ define_rule { 'kernel', 'target',
     { 'configure',
         { 'linux', 'unpack' },
     },
-    { 'install',
-        -- for genzbf and other utils
+    { 'compile',
         { 'rootfs', 'compile', 'target' }
     },
     { 'image',
