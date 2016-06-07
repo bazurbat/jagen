@@ -17,3 +17,9 @@ define_rule { 'chicken-eggs', 'target',
         { 'chicken-eggs', 'install', 'host' }
     }
 }
+
+if Jagen.flag('new_chicken') then
+    define_rule { 'chicken', 'host',
+        requires = { 'chicken-boot' }
+    }
+end
