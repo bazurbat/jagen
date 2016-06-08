@@ -4,6 +4,5 @@ return {
     },
     build = {
         in_source = true
-    },
-    { 'install' }
+    }
 }
