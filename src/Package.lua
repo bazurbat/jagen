@@ -41,7 +41,6 @@ end
 
 function Package:new(rule)
     rule = Package:parse(rule)
-    rule.configs = rule.configs or {}
     setmetatable(rule, self)
     return rule
 end
@@ -195,33 +194,37 @@ function define_rule(rule)
 
     if not pkg then
         pkg = Package:new { rule.name }
-
         for stage in each(Package.init_stages) do
             pkg:add_target { stage }
         end
-
         table.merge(pkg, Package:new(assert(require('pkg/'..rule.name))))
-
         packages[rule.name] = pkg
+        pkg.configs = pkg.configs or {}
     end
 
     if rule.template then
         rule = table.merge(copy(rule.template), rule)
     end
 
-    local config = rule.config; rule.config = nil
-    local requires = rule.requires or {}; rule.requires = nil
-    local install = rule.install or {}; rule.install = nil
+    local config = rule.config
+    local this
 
-    local template = rule.template or rule.pass_template
-                     or pkg:get('template', config)
-    rule.template, rule.pass_template = nil, nil
-
-    pkg:set('template', template, config)
+    if config then
+        this = pkg.configs[config]
+        if not this then
+            this = {}
+            pkg.configs[config] = this
+        end
+    else
+        this = pkg
+    end
 
     local stages = table.imove({}, rule)
+    local template = rule.template or rule.pass_template or this.template
 
-    table.merge(pkg, rule)
+    rule.template, rule.pass_template = nil, nil
+    table.merge(this, rule)
+    this.template = template
 
     if pkg.source.type == 'repo' then
         pkg:add_target { 'unpack',
@@ -257,22 +260,17 @@ function define_rule(rule)
         end
     end
 
-    if install and config then
-        local existing = pkg:get('install', config) or {}
-        local install = table.merge(existing, install)
-
-        if pkg.install and pkg.install.modules or install.modules then
-            pkg:add_target({ 'install_modules' }, config)
-        end
-
-        pkg:set('install', install, config)
+    if pkg.install and pkg.install.modules or
+            this.install and this.install.modules then
+        pkg:add_target({ 'install_modules' }, config)
     end
 
-    -- add global stages specified in pkg file regardless of config or build
+    -- add global stages to every config
     for _, stage in ipairs(pkg) do
         pkg:add_target(stage, config)
     end
 
+    local requires = rule.requires or {}
     -- evaluate pkg requires for every add to collect rules from all templates
     table.iextend(requires, pkg.requires or {})
 
@@ -288,6 +286,7 @@ function define_rule(rule)
         }
     end
 
+    -- stages collected from this rule should go last to maintain ordering
     for _, stage in ipairs(stages) do
         for _, item in ipairs(stage.requires or {}) do
             local req = Package:parse(item, config)
@@ -299,10 +298,6 @@ function define_rule(rule)
             }
         end
         pkg:add_target(stage, config)
-    end
-
-    if config then
-        pkg.configs[config].config = config
     end
 end
 
