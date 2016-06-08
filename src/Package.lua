@@ -233,8 +233,18 @@ function define_rule(rule)
         define_rule { 'repo', 'host' }
     end
 
-    do local build = pkg.build
-        if build and config then
+    if config then
+        if this.build and pkg.build and not getmetatable(this.build) then
+            setmetatable(this.build, { __index = pkg.build })
+        end
+
+        local build = this.build or pkg.build
+
+        if build then
+            if pkg.name ~= 'toolchain' then
+                define_rule { 'toolchain', config }
+            end
+
             if build.type == 'GNU' then
                 if build.generate or build.autoreconf then
                     pkg:add_target { 'autoreconf',
@@ -244,25 +254,29 @@ function define_rule(rule)
                 end
             end
 
-            if build.type then
-                local stages = {
-                    { 'configure',
-                        { 'toolchain', 'install', config }
-                    },
-                    { 'compile' },
-                    { 'install' }
-                }
-                for _, stage in ipairs(stages) do
-                    pkg:add_target(stage, config)
-                end
-                define_rule { 'toolchain', config }
+            local build_stages = {
+                { 'configure',
+                    { 'toolchain', 'install', config }
+                },
+                { 'compile' },
+                { 'install' }
+            }
+            for _, stage in ipairs(build_stages) do
+                pkg:add_target(stage, config)
             end
+        end
+
+        if this.install and pkg.install and not getmetatable(this.install) then
+            setmetatable(this.install, { __index = pkg.install })
         end
     end
 
-    if pkg.install and pkg.install.modules or
-            this.install and this.install.modules then
-        pkg:add_target({ 'install_modules' }, config)
+    do local install = this.install or pkg.install
+        if install then
+            if install.modules then
+                pkg:add_target({ 'install_modules' }, config)
+            end
+        end
     end
 
     -- add global stages to every config
