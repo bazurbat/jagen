@@ -74,13 +74,13 @@ function table.rest(t, start)
     return o
 end
 
-function table.iextend(t, other)
-    assert_arg('iextend', 1, 'table', t)
+function table.iextend(this, other)
+    assert_arg('iextend', 1, 'table', this)
     assert_arg('iextend', 2, 'table', other)
     for _, i in ipairs(other) do
-        table.insert(t, i)
+        table.insert(this, i)
     end
-    return t
+    return this
 end
 
 function table.imap(arr, func)
