@@ -254,16 +254,16 @@ function define_rule(rule)
                 end
             end
 
-            local build_stages = {
-                { 'configure',
-                    { 'toolchain', 'install', config }
-                },
-                { 'compile' },
-                { 'install' }
-            }
-            for _, stage in ipairs(build_stages) do
-                pkg:add_target(stage, config)
+            if pkg.name ~= 'toolchain' then
+                pkg:add_target({ 'configure',
+                        { 'toolchain', 'install', config }
+                    }, config)
+            else
+                pkg:add_target({ 'configure' }, config)
             end
+
+            pkg:add_target({ 'compile' }, config)
+            pkg:add_target({ 'install' }, config)
         end
 
         if this.install and pkg.install and not getmetatable(this.install) then
