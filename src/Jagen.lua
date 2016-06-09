@@ -377,7 +377,7 @@ function Jagen.command.src(args)
     table.remove(rest, 1)
 
     if not command then
-        die("command required, try 'Jagen src help'")
+        die("command required, try 'jagen src help'")
     elseif Jagen.src[command] then
         local packages = scm_packages(rest)
         return Jagen.src[command](packages)
@@ -390,7 +390,7 @@ function Jagen.command.image(options, rest)
     local command = rest[1]
 
     if not command then
-        die("command required, try 'Jagen image help'")
+        die("command required, try 'jagen image help'")
     elseif Jagen.image[command] then
         return Jagen.image[command](rest[2])
     else
@@ -418,7 +418,7 @@ function Jagen:run(args)
         table.remove(args, 1)
         return Jagen.command[cmd](args)
     else
-        die("invalid command or argument '%s', try 'Jagen help'", cmd)
+        die("invalid command or argument '%s', try 'jagen help'", cmd)
     end
 end
 
