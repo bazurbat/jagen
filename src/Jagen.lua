@@ -267,7 +267,7 @@ function Jagen.command.refresh(args)
     local log_dir = assert(os.getenv('jagen_log_dir'))
 
     for _, pkg in pairs(packages) do
-        Script:write(pkg, include_dir)
+        Script:generate(pkg, include_dir)
 
         -- create/truncate all log files beforehand to allow tail following
         -- them on interactive rebuild

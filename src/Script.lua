@@ -108,11 +108,11 @@ local function write_install(w, pkg)
     end
 end
 
--- TODO: should just serialize everything, need to adjust sh scripts
-function P:get(pkg)
-    local o = {}
+local function generate_script(filename, pkg)
+    local file = assert(io.open(filename, 'w+'))
+
     local function w(format, ...)
-        table.insert(o, string.format(format, ...))
+        file:write(string.format(format..'\n', ...))
     end
 
     write_env(w, pkg)
@@ -122,27 +122,15 @@ function P:get(pkg)
     write_install(w, pkg)
     write_build(w, pkg)
 
-    return o
+    file:close()
 end
 
-function P:_write(script, filename)
-    if script and #script > 0 then
-        local file = assert(io.open(filename, 'w+'))
-        file:write(table.concat(script, '\n'))
-        file:close()
-    end
-end
-
-function P:write(pkg, dir)
-    local name = pkg.name
-    local s = System.mkpath(dir, string.format('%s.sh', name))
-
-    P:_write(P:get(pkg), s)
-
+function P:generate(pkg, dir)
+    local filename = System.mkpath(dir, string.format('%s.sh', pkg.name))
+    generate_script(filename, pkg)
     for name, config in pairs(pkg.configs) do
-        local filename = string.format('%s__%s.sh', pkg.name, name)
-        local path = System.mkpath(dir, filename)
-        P:_write(P:get(config), path)
+        filename = System.mkpath(dir, string.format('%s__%s.sh', pkg.name, name))
+        generate_script(filename, config)
     end
 end
 
