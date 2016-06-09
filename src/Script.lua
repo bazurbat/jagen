@@ -16,12 +16,15 @@ local function write_source(w, pkg)
     if source.type and source.location then
         w('pkg_source="%s %s"', source.type, source.location)
     end
+
     if source.branch then
         w('pkg_source_branch="%s"', source.branch)
     end
+
     if source.dir then
         w('pkg_source_dir="%s"', source.dir)
     end
+
     if source.exclude then
         w("pkg_source_exclude='yes'")
     end
@@ -46,9 +49,11 @@ local function write_build(w, pkg)
     if build.type then
         w("pkg_build_type='%s'", build.type)
     end
+
     if build.generate then
         w("pkg_build_generate='yes'")
     end
+
     if build.configure_needs_install_dir then
         w("pkg_configure_needs_install_dir='yes'")
     end
@@ -64,15 +69,19 @@ local function write_build(w, pkg)
         end
         w('pkg_options="%s"', table.concat(o, '\n'))
     end
+
     if build.libs then
         w("pkg_libs='%s'", table.concat(build.libs, ' '))
     end
+
     if build.work_dir then
         w('pkg_work_dir="%s"', build.work_dir)
     end
+
     if build.in_source then
         build_dir = '$pkg_source_dir'
     end
+
     if build.dir then
         build_dir = build.dir
     end
@@ -89,15 +98,19 @@ local function write_install(w, pkg)
     if install.type then
         w('pkg_install_type="%s"', install.type)
     end
+
     if install.root then
         w('pkg_sysroot="%s"', install.root)
     end
+
     if install.prefix then
         w('pkg_prefix="%s"', install.prefix)
     end
+
     if install.config_script then
         w("pkg_install_config_script='%s'", install.config_script)
     end
+
     if install.modules then
         if type(install.modules) == 'string' then
             w("pkg_install_modules_dirs='%s'", install.modules)
