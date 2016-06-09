@@ -70,7 +70,7 @@ local function write_build(w, pkg)
     if build.work_dir then
         w('pkg_work_dir="%s"', build.work_dir)
     end
-    if build.in_source or build.type == 'skarnet' then
+    if build.in_source then
         build_dir = '$pkg_source_dir'
     end
     if build.dir then
