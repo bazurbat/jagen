@@ -129,7 +129,7 @@ function GitSource:_checkout()
     if active then
         return true
     elseif exists then
-        return self:exec('checkout', branch)
+        return self:exec('checkout "%s"', branch)
     else
         local start_point = 'origin/'..branch
         exists = self:_is_branch(start_point)
@@ -158,8 +158,8 @@ end
 
 function GitSource:fixup()
     if self.assume_unchanged then
-        return self:exec('update-index', '--assume-unchanged',
-            unpack(self.assume_unchanged))
+        return self:exec('update-index --assume-unchanged %s',
+            System.quote(unpack(self.assume_unchanged)))
     end
     return true
 end
