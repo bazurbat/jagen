@@ -5,6 +5,7 @@ return {
         branch   = 'master',
         assume_unchanged = {
             'pub/include/hi_go_bliter.h',
+            'source/boot/fastboot/include/configs/s40_config.h',
             'source/msp/api/higo/include/hi_go_bliter.h',
             'source/msp/api/pvr/lib/libhi_pvrsmooth.a',
         }
