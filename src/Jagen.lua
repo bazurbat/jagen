@@ -126,7 +126,7 @@ function Jagen.src.update(packages)
             end
         end
 
-        if not offline and not source:fixup() then
+        if not source:fixup() then
             die('failed to fix up %s source in %s',
                 pkg.name, source.dir)
         end
