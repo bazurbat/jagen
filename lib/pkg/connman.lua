@@ -1,12 +1,13 @@
 return {
-    source = 'connman-1.28.tar.xz',
+    source = 'connman-1.32.tar.xz',
+    patches = {
+        { 'connman-1.32-add-missing-gnu-source', 1 }
+    },
     build  = {
         type = 'GNU',
-        autoreconf = true,
         options = {
             '--sysconfdir=/etc',
             '--localstatedir=/settings',
-            '--enable-pie',
             '--disable-gadget',
             '--disable-bluetooth',
             '--disable-ofono',
@@ -14,8 +15,14 @@ return {
             '--disable-pacrunner',
             '--disable-neard',
             '--disable-wispr',
-            '--disable-client'
+            '--disable-tools',
+            '--disable-client',
+            '--disable-datafiles',
         }
     },
-    requires = { 'dbus', 'glib', 'xtables-addons' }
+    requires = {
+        'dbus',
+        'glib',
+        'xtables-addons',
+    }
 }
