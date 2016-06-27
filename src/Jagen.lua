@@ -386,13 +386,19 @@ function Jagen.command.src(args)
     end
 end
 
-function Jagen.command.image(options, rest)
+function Jagen.command.image(args)
+    if help_requested(args) then
+        return Jagen.command['help'] { 'image' }
+    end
+
+    local options, rest = find_options(args)
     local command = rest[1]
+    table.remove(rest, 1)
 
     if not command then
         die("command required, try 'jagen image help'")
     elseif Jagen.image[command] then
-        return Jagen.image[command](rest[2])
+        return Jagen.image[command](rest[1])
     else
         die("'%s' is not valid image command, use 'Jagen image help'", command)
     end
