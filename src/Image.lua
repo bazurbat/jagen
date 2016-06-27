@@ -1,4 +1,5 @@
 local System = require 'System'
+local Log = require 'Log'
 
 local Image = {}
 local padding = 8
@@ -33,6 +34,8 @@ function Image:create(src_dir, out_file)
     if not ok then
         error(err)
     end
+
+    Log.message('Image created: %s', out_file)
 end
 
 return Image
