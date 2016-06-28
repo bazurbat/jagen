@@ -227,3 +227,16 @@ COMMANDS
 
   The 'delete' command deletes packages source directories.
 ```
+
+### Install Bash completions
+
+  1. Make sure you are sourcing `bash_completion` in your `.bashrc` (necessary
+     in Ubunty, not necessary in Gentoo).
+
+     source "/usr/share/bash-completion/bash_completion"
+
+  2. Add contents of `<jagen_dir>/misc/bash_completion` to `~/.bash_completion`
+     file (or `~/.config/bash_completion` in Gentoo).
+
+Completions are defined to `jagen` command only, e.g. work only when
+environment is sourced from build root.
