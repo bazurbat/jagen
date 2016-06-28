@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# See '/usr/share/bash-completion/bash_completion' for definitions of special
+# functions.
+# Also: http://stackoverflow.com/questions/10528695/how-to-reset-comp-wordbreaks-without-effecting-other-completion-script
+
+_jagen_complete() {
+    local cur prev
+    local jagen_command
+
+    local top_cmds='help clean refresh build src'
+    local src_cmds='dirty status clean update delete'
+    local help_opt='-h --help'
+    local build_opt='-n --dry-run -p --progress -P --allprogress -f --from -o --only'
+
+    _get_comp_words_by_ref -n : cur prev
+
+    # Special case to avoid a level of nesting
+    if [[ "$prev" == "jagen" ]]; then
+        jagen_command="jagen"
+    else
+        jagen_command=${COMP_WORDS[1]}
+    fi
+
+    case $jagen_command in
+        jagen)
+            COMPREPLY=($(compgen -W "$help_opt $top_cmds" -- "$cur")) ;;
+        clean)
+            if [[ "$prev" == "clean" ]]; then
+                COMPREPLY=($(compgen -W "$help_opt $(jagen list package_configs)" -- "$cur"))
+            else
+                COMPREPLY=($(compgen -W "$(jagen list package_configs)"))
+            fi
+            ;;
+        refresh)
+            COMPREPLY=($(compgen -W "$help_opt" -- "$cur")) ;;
+        build)
+            COMPREPLY=($(compgen -W "$help_opt $build_opt $(jagen list targets)" -- "$cur")) ;;
+        src)
+            if [[ "$prev" == "src" ]]; then
+                COMPREPLY=($(compgen -W "$help_opt $src_cmds" -- "$cur"))
+            else
+                COMPREPLY=($(compgen -W "$(jagen list src_packages)" -- "$cur"))
+            fi
+            ;;
+    esac
+
+    __ltrim_colon_completions "$cur"
+}
+
+complete -F _jagen_complete jagen
