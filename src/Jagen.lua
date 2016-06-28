@@ -334,10 +334,6 @@ function Jagen.command.build(args)
     return status
 end
 
-function Jagen.command.status()
-    return Jagen.command.src({}, { 'status' })
-end
-
 local function scm_packages(names)
     local packages = Package.load_rules()
     local o = {}
@@ -401,6 +397,40 @@ function Jagen.command.image(args)
         return Jagen.image[command](rest[1])
     else
         die("'%s' is not valid image command, use 'Jagen image help'", command)
+    end
+end
+
+function Jagen.command.list(args)
+    local options, rest = find_options(args)
+    local cmd = rest[1]
+    local packages = Package.load_rules()
+
+    if cmd == 'packages' then
+        for k, v in pairs(packages) do
+            print(k)
+        end
+    elseif cmd == 'src_packages' then
+        for name, pkg in pairs(packages) do
+            if pkg.source:is_scm() then
+                print(name)
+            end
+        end
+    elseif cmd == 'package_configs' then
+        for name, pkg in pairs(packages) do
+            if pkg.configs then
+                for config, _ in pairs(pkg.configs) do
+                    print(string.format("%s:%s", name, config))
+                end
+            else
+                print(name)
+            end
+        end
+    elseif cmd == 'targets' then
+        for _, pkg in pairs(packages) do
+            for target in pkg:each() do
+                print(target:__tostring(':'))
+            end
+        end
     end
 end
 
