@@ -123,11 +123,6 @@ pkg_is_release_with_debug() {
 
 # usings
 
-pkg_using_install_prefix() {
-    local prefix="${1:-${pkg_prefix:?}}"
-    printf '%s' "-DCMAKE_INSTALL_PREFIX=$prefix"
-}
-
 pkg_using_host_chicken() {
     local S="$jagen_FS" A=
     A="$A$S-DCHICKEN_COMPILER=$jagen_host_dir/bin/chicken"
@@ -265,7 +260,7 @@ pkg_configure() {
 
             pkg_run cmake -G"${jagen_cmake_generator:?}" \
                 -DCMAKE_BUILD_TYPE="$(pkg_cmake_build_type)" \
-                -DCMAKE_INSTALL_PREFIX="$pkg_install_dir" \
+                -DCMAKE_INSTALL_PREFIX="$pkg_prefix" \
                 $A $jagen_cmake_options "$@" "$pkg_source_dir"
             ;;
         skarnet)
@@ -347,7 +342,11 @@ pkg_install() {
             done
             ;;
         CMake)
+            if [ "$pkg_sysroot" ]; then
+                export DESTDIR="$pkg_sysroot"
+            fi
             pkg_run cmake --build . --target install -- "$@"
+            unset DESTDIR
             ;;
         linux_module)
             pkg_run make INSTALL_MOD_PATH="$pkg_install_dir" "$@" modules_install
