@@ -21,7 +21,7 @@ return {
         }
     },
     install = {
-        dbus_configs = {
+        dbus_system_configs = {
             "src/connman-dbus.conf"
         },
     },
