@@ -16,8 +16,7 @@ define_rule { 'hi-drivers', 'target',
 }
 
 define_rule { 'rtl8188eu', 'target',
-    requires = { 'hi-sdk' },
-    { 'compile' }
+    requires = { 'hi-sdk' }
 }
 
 define_rule { 'cmake-modules' }
