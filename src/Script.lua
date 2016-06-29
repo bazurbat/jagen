@@ -120,9 +120,21 @@ local function write_install(w, pkg)
         end
     end
 
-    if install.dbus_configs then
-        w("pkg_install_dbus_configs='%s'",
-            table.concat(install.dbus_configs, ' '))
+    if install.dbus_session_configs then
+        w("pkg_install_dbus_session_configs='%s'",
+            table.concat(install.dbus_session_configs, ' '))
+    end
+    if install.dbus_system_configs then
+        w("pkg_install_dbus_system_configs='%s'",
+            table.concat(install.dbus_system_configs, ' '))
+    end
+    if install.dbus_services then
+        w("pkg_install_dbus_services='%s'",
+            table.concat(install.dbus_services, ' '))
+    end
+    if install.dbus_system_services then
+        w("pkg_install_dbus_system_services='%s'",
+            table.concat(install.dbus_system_services, ' '))
     end
 end
 

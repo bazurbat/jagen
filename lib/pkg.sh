@@ -298,16 +298,34 @@ pkg_compile() {
     esac
 }
 
-pkg__install_dbus_configs() {
-    local dest="$pkg_install_dir/etc/dbus-1/system.d"
+pkg__install_files() {
+    local dest_dir="$1"; shift
 
-    [ "$pkg_install_dbus_configs" ] || return 0
+    [ $# -gt 0 ] || return 0
 
-    pkg_run mkdir -vp "$dest"
+    pkg_run mkdir -vp "$dest_dir"
 
-    for filename in $pkg_install_dbus_configs; do
-        pkg_run install -vm644 "$pkg_source_dir/$filename" "$dest"
+    for filename; do
+        if [ -r "$pkg_source_dir/$filename" ]; then
+            pkg_run install -vm644 "$pkg_source_dir/$filename" "$dest_dir"
+        elif [ -r "$pkg_build_dir/$filename" ]; then
+            pkg_run install -vm644 "$pkg_build_dir/$filename" "$dest_dir"
+        else
+            die "Could not find dbus config file: $filename"
+        fi
     done
+}
+
+pkg__install_dbus_configs() {
+    local session_conf_dir="$pkg_install_dir/etc/dbus-1/session.d"
+    local system_conf_dir="$pkg_install_dir/etc/dbus-1/system.d"
+    local service_dir="$pkg_install_dir/share/dbus-1/services"
+    local system_service_dir="$pkg_install_dir/share/dbus-1/system-services"
+
+    pkg__install_files "$session_conf_dir" $pkg_install_dbus_session_configs
+    pkg__install_files "$system_conf_dir" $pkg_install_dbus_system_configs
+    pkg__install_files "$service_dir" $pkg_install_dbus_services
+    pkg__install_files "$system_service_dir" $pkg_install_dbus_system_services
 }
 
 pkg_install() {
