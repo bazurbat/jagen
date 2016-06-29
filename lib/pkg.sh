@@ -298,6 +298,18 @@ pkg_compile() {
     esac
 }
 
+pkg__install_dbus_configs() {
+    local dest="$pkg_install_dir/etc/dbus-1/system.d"
+
+    [ "$pkg_install_dbus_configs" ] || return 0
+
+    pkg_run mkdir -vp "$dest"
+
+    for filename in $pkg_install_dbus_configs; do
+        pkg_run install -vm644 "$pkg_source_dir/$filename" "$dest"
+    done
+}
+
 pkg_install() {
     : ${pkg_install_dir:?}
     local pkg_install_type="${pkg_install_type:-$pkg_build_type}"
@@ -325,6 +337,8 @@ pkg_install() {
         none)
             ;;
     esac
+
+    pkg__install_dbus_configs
 }
 
 pkg_install_modules() {

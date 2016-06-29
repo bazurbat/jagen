@@ -119,6 +119,11 @@ local function write_install(w, pkg)
                 table.concat(install.modules, ' '))
         end
     end
+
+    if install.dbus_configs then
+        w("pkg_install_dbus_configs='%s'",
+            table.concat(install.dbus_configs, ' '))
+    end
 end
 
 local function generate_script(filename, pkg)

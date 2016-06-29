@@ -20,6 +20,11 @@ return {
             '--disable-datafiles',
         }
     },
+    install = {
+        dbus_configs = {
+            "src/connman-dbus.conf"
+        },
+    },
     requires = {
         'dbus',
         'glib',
