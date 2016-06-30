@@ -38,6 +38,7 @@ include() {
 }
 
 jagen_find_path() {
+    local IFS; unset IFS
     local name="${1:?}" path= i=
     for i in $jagen_path; do
         path="$i/$name"
@@ -49,6 +50,7 @@ jagen_find_path() {
 }
 
 require() {
+    local IFS; unset IFS
     local name="${1:?}" path= i=
     for i in $jagen_path; do
         path="$i/${name}.sh"
@@ -61,6 +63,7 @@ require() {
 }
 
 import() {
+    local IFS; unset IFS
     local name="${1:?}" path= i=
     debug import $1
 
