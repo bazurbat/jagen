@@ -79,6 +79,7 @@ local function write_build(w, pkg)
     end
 
     if build.in_source then
+        w("pkg_build_in_source='yes'")
         build_dir = '$pkg_source_dir'
     end
 
