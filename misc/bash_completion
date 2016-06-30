@@ -1,8 +1,31 @@
-#!/bin/bash
+### Jagen Bash completion definitions ###
 
-# See '/usr/share/bash-completion/bash_completion' for definitions of special
-# functions.
-# Also: http://stackoverflow.com/questions/10528695/how-to-reset-comp-wordbreaks-without-effecting-other-completion-script
+_jagen_complete__list_products() {
+    local dir="${1:?}"
+
+    ( cd "$dir/usr/product" &&
+      for d in *; do
+          echo $d
+      done )
+}
+
+_jagen_complete_init_root() {
+    local cur prev
+    local this_cmd jagen_dir
+
+    local opts='-a -h -l -s'
+
+    _get_comp_words_by_ref cur prev
+
+    this_cmd="${COMP_WORDS[0]}"
+    # chop off command name, if any
+    jagen_dir="${this_cmd%/*}"
+
+    case $prev in
+        -a) ;; # expecting flag name, freeform, no completions for them for now
+         *) COMPREPLY=($(compgen -W "$opts $(_jagen_complete__list_products "$jagen_dir")" -- "$cur")) ;;
+     esac
+}
 
 _jagen_complete() {
     local cur prev
@@ -48,4 +71,7 @@ _jagen_complete() {
     __ltrim_colon_completions "$cur"
 }
 
+complete -F _jagen_complete_init_root init-root
 complete -F _jagen_complete jagen
+
+### End of Jagen Bash completion definitions ###
