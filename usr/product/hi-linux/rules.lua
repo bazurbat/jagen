@@ -2,17 +2,21 @@
 
 define_rule { 'ast-files' }
 
-define_rule { 'hi-kernel' }
+define_rule { 'hi-kernel', 'target' }
+
+define_rule { 'hi-drivers', 'target',
+    requires = { 'hi-kernel' },
+}
 
 define_rule { 'hi-sdk', 'target',
     { 'patch',
-        { 'hi-kernel',    'unpack' },
+        -- to create source/kernel/linux-3.4.y symlink
+        { 'hi-kernel', 'unpack' }
+    },
+    { 'compile',
+        -- msp modules expect to find compiled kernel in source tree
+        { 'hi-kernel', 'compile', 'target' }
     }
-}
-
-define_rule { 'hi-drivers', 'target',
-    requires = { 'hi-sdk' },
-    { 'configure' }
 }
 
 define_rule { 'rtl8188eu', 'target',
