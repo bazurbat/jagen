@@ -263,6 +263,11 @@ pkg_configure() {
                 -DCMAKE_INSTALL_PREFIX="$pkg_prefix" \
                 $A $jagen_cmake_options "$@" "$pkg_source_dir"
             ;;
+        linux_kernel)
+            using kbuild
+            pkg_run cd "$pkg_source_dir"
+            pkg_run make "${jagen_linux_kernel_config:?}"
+            ;;
         skarnet)
             pkg_run ./configure \
                 ${pkg_system:+--host="$pkg_system"} \
@@ -286,6 +291,11 @@ pkg_compile() {
             ;;
         CMake)
             pkg_run cmake --build . -- $jagen_cmake_build_options "$@"
+            ;;
+        linux_kernel)
+            using kbuild
+            pkg_run cd "$pkg_source_dir"
+            pkg_run make "${jagen_linux_kernel_image:?}" modules
             ;;
         linux_module)
             pkg_run make "$@" modules
@@ -347,6 +357,11 @@ pkg_install() {
             fi
             pkg_run cmake --build . --target install -- "$@"
             unset DESTDIR
+            ;;
+        linux_kernel)
+            using kbuild
+            pkg_run cd "$pkg_source_dir"
+            pkg_run make INSTALL_MOD_PATH="$pkg_install_dir" modules_install
             ;;
         linux_module)
             pkg_run make INSTALL_MOD_PATH="$pkg_install_dir" "$@" modules_install
