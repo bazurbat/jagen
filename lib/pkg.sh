@@ -265,9 +265,10 @@ pkg_configure() {
                 $A $jagen_cmake_options "$@" "$pkg_source_dir"
             ;;
         linux_kernel)
+            require kernel
             using kbuild
             pkg_run cd "$pkg_source_dir"
-            pkg_run make "${jagen_linux_kernel_config:?}"
+            pkg_run make "${jagen_kernel_config:?}"
             ;;
         skarnet)
             pkg_run ./configure \
@@ -294,9 +295,10 @@ pkg_compile() {
             pkg_run cmake --build . -- $jagen_cmake_build_options "$@"
             ;;
         linux_kernel)
+            require kernel
             using kbuild
             pkg_run cd "$pkg_source_dir"
-            pkg_run make "${jagen_linux_kernel_image:?}" modules
+            pkg_run make "${jagen_kernel_image:?}" modules
             ;;
         linux_module)
             pkg_run make "$@" modules
@@ -360,6 +362,7 @@ pkg_install() {
             unset DESTDIR
             ;;
         linux_kernel)
+            require kernel
             using kbuild
             pkg_run cd "$pkg_source_dir"
             pkg_run make INSTALL_MOD_PATH="$pkg_install_dir" modules_install
