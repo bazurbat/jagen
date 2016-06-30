@@ -240,5 +240,6 @@ COMMANDS
   2. Add contents of `<jagen_dir>/misc/bash_completion` to `~/.bash_completion`
      file (or `~/.config/bash_completion` in Gentoo).
 
-Completions are defined to `jagen` command only, e.g. work only when
-environment is sourced from build root.
+Completions defined for `jagen` command will work only when environment is
+sourced from build root. Freeform target patterns such as `::host` or
+`:install:` are not currently completed.
