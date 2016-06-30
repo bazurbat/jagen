@@ -8,6 +8,7 @@
 : ${jagen_cmake_generator:=Ninja}
 
 pkg_run() {
+    local IFS; unset IFS
     local cmd="$1"
     debug "$*"
     shift
