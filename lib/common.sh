@@ -52,10 +52,12 @@ jagen_find_path() {
 require() {
     local IFS; unset IFS
     local name="${1:?}" path= i=
+    debug require $1
+
     for i in $jagen_path; do
         path="$i/${name}.sh"
         if [ -f "$path" ]; then
-            debug require $path
+            debug "  using $path"
             . "$path"
             return
         fi
@@ -73,7 +75,7 @@ import() {
     while [ $i -gt 0 ]; do
         path="$(eval echo \$$i)/${name}.sh"
         if [ -f "$path" ]; then
-            debug "  found $path"
+            debug "  using $path"
             . "$path"
         fi
         i=$((i-1))
