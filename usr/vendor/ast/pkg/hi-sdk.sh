@@ -17,7 +17,7 @@ jagen_pkg_patch() {
 }
 
 jagen_pkg_configure() {
-    pkg_run make prepare
+    pkg_run make msp_prepare
 }
 
 jagen_pkg_compile() {
