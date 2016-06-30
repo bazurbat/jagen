@@ -22,10 +22,6 @@ jagen_pkg_configure() {
 
 jagen_pkg_compile() {
     pkg_run make hiboot_install
-    pkg_run make linux_install
-    pkg_run make -C "$jagen_kernel_src_dir" \
-        INSTALL_MOD_PATH="$pkg_install_dir" \
-        modules_install
     pkg_run make common_install
     pkg_run make msp_install
     pkg_run make msp_mod_install
