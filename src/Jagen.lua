@@ -120,7 +120,10 @@ function Jagen.src.update(packages)
         else
             if offline then
                 die("could not clone '%s' in offline mode", pkg.name)
-            elseif not source:clone() then
+            end
+            Log.message('clone %s from %s to %s',
+                pkg.name, source.location, source.dir)
+            if not source:clone() then
                 die('failed to clone %s from %s to %s',
                     pkg.name, source.location, source.dir)
             end
