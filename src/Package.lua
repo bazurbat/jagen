@@ -2,9 +2,7 @@ local System = require 'System'
 local Target = require 'Target'
 local Source = require 'Source'
 
-local Package = {
-    init_stages = { 'unpack', 'patch' }
-}
+local Package = {}
 Package.__index = Package
 
 local packages = {}
@@ -194,12 +192,14 @@ function define_rule(rule)
 
     if not pkg then
         pkg = Package:new { rule.name }
-        for stage in each(Package.init_stages) do
-            pkg:add_target { stage }
-        end
+        pkg:add_target { 'unpack' }
+        pkg:add_target { 'patch',
+            { 'patches', 'unpack' }
+        }
         table.merge(pkg, Package:new(assert(require('pkg/'..rule.name))))
         packages[rule.name] = pkg
         pkg.configs = pkg.configs or {}
+        define_rule { 'patches' }
     end
 
     if rule.template then

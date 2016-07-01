@@ -4,6 +4,8 @@ jagen_private_dir="${jagen_src_dir:?}/files"
 
 jagen_cmake_module_path="$jagen_src_dir/cmake-modules"
 
+jagen_dist_patches_dir="$jagen_src_dir/patches"
+
 pkg_using_android_toolchain() {
     local S="$jagen_FS" A=
     A="$A$S-DCMAKE_TOOLCHAIN_FILE=${jagen_src_dir:?}/android-cmake/android.toolchain.cmake"
