@@ -69,6 +69,10 @@ function P.file_exists(path)
     return P.exec('test -f "%s"', path)
 end
 
+function P.dir_exists(path)
+    return P.exec('test -d "%s"', path)
+end
+
 function P.is_empty(path)
     return P.pread('*l', 'cd "%s" && echo *', path) == '*'
 end
