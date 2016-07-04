@@ -138,6 +138,7 @@ pkg_using_target_board() {
 # default stages
 
 pkg_unpack() {
+    local IFS; unset IFS
     set -- $pkg_source
     local src_type="$1"
     local src_path="$2"
