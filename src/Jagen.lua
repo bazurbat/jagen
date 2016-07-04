@@ -191,14 +191,18 @@ end
 Jagen.image = {}
 
 function Jagen.image.create(args)
+    local sdk = assert(os.getenv('jagen_sdk'))
+    if sdk ~= 'hi-linux' then
+        die('image creation is not supported for the current SDK: %s', sdk)
+    end
+
     local image_type = args[1]
     local Image = require 'Image'
 
     if image_type == 'rootfs' then
-        local target_dir = assert(os.getenv('jagen_target_dir'))
-        local out_file = '$jagen_build_dir/rootfs.ext4'
-
-        Image:create(target_dir, out_file)
+        local src_dir = assert(os.getenv('jagen_target_dir'))
+        local out_file = assert(System.expand('$jagen_build_dir/rootfs.ext4'))
+        return Image:create(src_dir, out_file)
     elseif not image_type then
         die('image type is not specified')
     else
