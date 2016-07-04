@@ -26,7 +26,10 @@ define_rule { 'rtl8188eu', 'target',
 define_rule { 'cmake-modules' }
 
 define_rule { 'hi-utils', 'target',
-    requires = { 'hi-sdk' },
+    requires = {
+        'glib',
+        'hi-sdk',
+    },
     { 'configure',
         { 'cmake-modules', 'unpack'              },
     }
