@@ -154,7 +154,9 @@ pkg_unpack() {
                 if [ "$pkg_source_exclude" ] ||
                     in_list "$pkg_name" $jagen_source_exclude
                 then
-                    message "not updating $pkg_name: excluded"
+                    message "skipping unpack of $pkg_name: excluded by configuration"
+                elif _jagen src dirty "$pkg_name"; then
+                    message "skipping unpack of $pkg_name: the source directory '$pkg_source_dir' is dirty"
                 else
                     _jagen src clean "$pkg_name"  || return
                     _jagen src update "$pkg_name" || return

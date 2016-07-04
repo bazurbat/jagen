@@ -114,7 +114,7 @@ function Jagen.src.update(packages)
                         pkg.name, source.branch, source.dir)
                 end
             else
-                Log.warning("skip update of %s because working directory '%s' is dirty",
+                Log.warning("not updating %s because source directory '%s' is dirty",
                     pkg.name, source.dir)
             end
         else
