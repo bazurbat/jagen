@@ -38,10 +38,40 @@ end
 
 -- src
 
+local function scm_packages(names)
+    local packages = Package.load_rules()
+    local o = {}
+
+    if names and #names > 0 then
+        for _, name in ipairs(names) do
+            if not packages[name] then
+                die('no such package: %s', name)
+            end
+            if not packages[name].source:is_scm() then
+                die('not scm package: %s', name)
+            end
+            table.insert(o, packages[name])
+        end
+    else
+        for _, pkg in pairs(packages) do
+            if pkg.source:is_scm() then
+                table.insert(o, pkg)
+            end
+        end
+    end
+
+    table.sort(o, function (a, b)
+            return a.name < b.name
+        end)
+
+    return o
+end
+
 Jagen.src = {}
 
 -- Should return 0 if true, 1 if false, for shell scripting.
-function Jagen.src.dirty(packages)
+function Jagen.src.dirty(args)
+    local packages = scm_packages(args)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
         if System.exists(source.dir) and source:dirty() then
@@ -51,7 +81,8 @@ function Jagen.src.dirty(packages)
     return 1
 end
 
-function Jagen.src.status(packages)
+function Jagen.src.status(args)
+    local packages = scm_packages(args)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
         if System.exists(source.dir) then
@@ -68,7 +99,8 @@ function Jagen.src.status(packages)
     end
 end
 
-function Jagen.src.clean(packages)
+function Jagen.src.clean(args)
+    local packages = scm_packages(args)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
         Log.message('clean %s in %s', pkg.name, source.dir)
@@ -79,7 +111,8 @@ function Jagen.src.clean(packages)
     end
 end
 
-function Jagen.src.update(packages)
+function Jagen.src.update(args)
+    local packages = scm_packages(args)
     local offline = Jagen.flag 'offline'
     -- Sorting from the shortest to the longest is needed for a case when the
     -- source directories are specified inside each other and we need to clone
@@ -140,7 +173,8 @@ function Jagen.src.update(packages)
     end
 end
 
-function Jagen.src.delete(packages)
+function Jagen.src.delete(args)
+    local packages = scm_packages(args)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
         if System.exists(source.dir) then
@@ -156,7 +190,8 @@ end
 
 Jagen.image = {}
 
-function Jagen.image.create(image_type)
+function Jagen.image.create(args)
+    local image_type = args[1]
     local Image = require 'Image'
 
     if image_type == 'rootfs' then
@@ -180,7 +215,8 @@ local function is_option(arg)
 end
 
 local function help_requested(args)
-    return args and (args[1] == '-h' or string.match(args[1] or '', '\--help$'))
+    return args and args[1] and
+        (args[1] == '-h' or string.match(args[1], '\--help$'))
 end
 
 local function find_options(args)
@@ -194,6 +230,24 @@ local function find_options(args)
         end
     end
     return options, rest
+end
+
+local function complex_command(command, args)
+    if help_requested(args) then
+        return Jagen.command['help'] { command }
+    end
+
+    local subcommand = args[1]
+    table.remove(args, 1)
+
+    if not subcommand then
+        die("command required, try 'jagen %s help'", command)
+    elseif Jagen[command][subcommand] then
+        return Jagen[command][subcommand](args)
+    else
+        die("'%s' is not valid %s command, try 'jagen %s help'",
+            subcommand, command, command)
+    end
 end
 
 function Jagen.command.help(args)
@@ -337,70 +391,12 @@ function Jagen.command.build(args)
     return status
 end
 
-local function scm_packages(names)
-    local packages = Package.load_rules()
-    local o = {}
-
-    if names and #names > 0 then
-        for _, name in ipairs(names) do
-            if not packages[name] then
-                die('no such package: %s', name)
-            end
-            if not packages[name].source:is_scm() then
-                die('not scm package: %s', name)
-            end
-            table.insert(o, packages[name])
-        end
-    else
-        for _, pkg in pairs(packages) do
-            if pkg.source:is_scm() then
-                table.insert(o, pkg)
-            end
-        end
-    end
-
-    table.sort(o, function (a, b)
-            return a.name < b.name
-        end)
-
-    return o
-end
-
 function Jagen.command.src(args)
-    if help_requested(args) then
-        return Jagen.command['help'] { 'src' }
-    end
-
-    local options, rest = find_options(args)
-    local command = rest[1]
-    table.remove(rest, 1)
-
-    if not command then
-        die("command required, try 'jagen src help'")
-    elseif Jagen.src[command] then
-        local packages = scm_packages(rest)
-        return Jagen.src[command](packages)
-    else
-        die("'%s' is not valid src command, use 'Jagen src help'", command)
-    end
+    return complex_command('src', args)
 end
 
 function Jagen.command.image(args)
-    if help_requested(args) then
-        return Jagen.command['help'] { 'image' }
-    end
-
-    local options, rest = find_options(args)
-    local command = rest[1]
-    table.remove(rest, 1)
-
-    if not command then
-        die("command required, try 'jagen image help'")
-    elseif Jagen.image[command] then
-        return Jagen.image[command](rest[1])
-    else
-        die("'%s' is not valid image command, use 'Jagen image help'", command)
-    end
+    return complex_command('image', args)
 end
 
 function Jagen.command.list(args)
