@@ -9,6 +9,10 @@ function P.quote(...)
     return table.concat(table.imap({...}, quote), ' ')
 end
 
+function P.expand(...)
+    return P.pread('*a', 'printf "%s" '..P.quote(...), '%s')
+end
+
 function P.mkpath(...)
     local sep = '/'
     local path = {}
@@ -19,15 +23,15 @@ function P.mkpath(...)
 end
 
 function P.exec(cmdline, ...)
+    Log.debug2(cmdline, ...)
     local command = string.format(cmdline, ...)
-    Log.debug2(command)
     local status = os.execute(command)
     return status == 0, status % 0xFF
 end
 
 function P.popen(cmdline, ...)
+    Log.debug2(cmdline, ...)
     local prog = string.format(cmdline, ...)
-    Log.debug2(prog)
     return assert(io.popen(prog))
 end
 
