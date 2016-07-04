@@ -129,9 +129,18 @@ SYNOPSIS
 
     jagen build -fop libuv
 
-  will rebuild libuv package from scratch, but nothing else, showing progress
-  on console. This will make targets depending on libuv out of date, so the
-  next 'jagen build' invocation will rebuild them too.
+  will rebuild all targets of libuv package (starting from 'unpack', see below)
+  but nothing else, showing progress on console. This will make targets
+  depending on libuv out of date, so the next 'jagen build' invocation will
+  rebuild them too.
+
+  Note that all packages start with 'unpack' stage which removes working
+  directories from previous builds, cleans sources from extra files, unpacks
+  distributions and updates the sources from scm. It does not touch scm sources
+  if there are changes detected (jagen src dirty returns true) but still
+  removes build directory if it is separate from source directory. This is
+  especially important to remember when working on packages with in source
+  builds.
 
   For development and testing it can be more convenient to select specific
   targets, like:
@@ -221,7 +230,9 @@ COMMANDS
   all extra files in packages source directories.
 
   The 'update' command fetches the latest sources from upstream and tries to
-  merge them with the current source directories.
+  merge them. It does nothing if there are modifications in the working
+  directory (dirty returns true); commit, stash or clean changes before issuing
+  the 'update' command in this case.
 
   The 'clone' command clones the specified packages.
 
