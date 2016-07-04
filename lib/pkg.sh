@@ -89,7 +89,7 @@ pkg_link() {
 pkg_get_build_profile() {
     local profile="${pkg_build_profile:-$jagen_build_profile}"
     case $profile in
-        release|debug|release_with_debug)
+        production|release|debug|release_with_debug)
             echo $profile ;;
         *)
             echo release ;;
@@ -99,7 +99,7 @@ pkg_get_build_profile() {
 pkg_cmake_build_type() {
     local profile="$(pkg_get_build_profile)"
     case $profile in
-        release)
+        production|release)
             echo "Release" ;;
         debug)
             echo "Debug" ;;
@@ -108,6 +108,10 @@ pkg_cmake_build_type() {
         *)
             echo "Release" ;;
     esac
+}
+
+pkg_is_production() {
+    test "$(pkg_get_build_profile)" = "production"
 }
 
 pkg_is_release() {
