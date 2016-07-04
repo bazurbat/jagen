@@ -29,11 +29,12 @@ jagen_pkg_install() {
     jagen_rootfs_install_hostname
     jagen_rootfs_fix_mtab
 
-    rm -f "$pkg_install_dir/var/service/dropbear/down"
-
-    if pkg_is_release; then
+    if pkg_is_production; then
         pkg_strip_root "$pkg_install_dir"
-        # _jagen src status > heads || return
+        _jagen src status > heads || return
+    else
+        pkg_run touch "$pkg_install_dir/var/service/connman/down"
+        pkg_run rm -f "$pkg_install_dir/var/service/dropbear/down"
     fi
 }
 
