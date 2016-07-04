@@ -178,6 +178,19 @@ COMMANDS
 
 ]]
 
+local image = [[
+Usage: jagen image <command> <options...>
+
+  Manage filesystem images.
+
+SYNOPSIS
+
+COMMANDS
+
+  create  
+
+]]
+
 return {
     usage   = usage,
     help    = help,
@@ -185,5 +198,6 @@ return {
     refresh = refresh,
     build   = build,
     src     = src,
+    image   = image,
     targets = targets
 }
