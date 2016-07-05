@@ -36,6 +36,9 @@ _jagen_complete() {
     local help_opt='-h --help'
     local build_opt='-n --dry-run -p --progress -P --allprogress -f --from -o --only'
 
+    # environment is not sourced
+    [ "$jagen_dir" ] || return 2
+
     _get_comp_words_by_ref -n : cur prev
 
     # Special case to avoid a level of nesting
