@@ -13,6 +13,8 @@ if ! [ -d "$jagen_sysdeps_cfg" ]; then
     jagen_sysdeps_cfg=''
 fi
 
+export ARCH_CFLAGS="-march=armv7-a -mcpu=cortex-a9 -mfpu=vfpv3-d16 -mfloat-abi=softfp"
+
 jagen_toolchain_install_runtime() {
     local dest="${1:?}"
     # local abi="armv5te_soft"
