@@ -3,11 +3,8 @@
 jagen_pkg_configure_host() {
     local IFS="$jagen_IFS" S="$jagen_FS" A=
 
-    # If an executable has RUNPATH set, LD_LIBRARY_PATH is searched first,
-    # which is the case with csi on gentoo. This prevents automatic dependency
-    # generation to work once compiled libchicken becomes available in the
-    # build directory.
-
+    # Make sure possibly already installed libchicken will not be found in host
+    # prefix because this will break bootstrapping.
     unset LD_LIBRARY_PATH
 
     # Ignore already installed CHICKEN in the pacakge prefix for clean rebuild.
@@ -22,6 +19,16 @@ jagen_pkg_configure_host() {
     fi
 
     pkg_configure $A
+}
+
+jagen_pkg_compile_host() {
+    unset LD_LIBRARY_PATH
+    pkg_compile
+}
+
+jagen_pkg_install_host() {
+    unset LD_LIBRARY_PATH
+    pkg_install
 }
 
 jagen_pkg_configure_target() {
