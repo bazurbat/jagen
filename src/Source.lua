@@ -62,13 +62,15 @@ function Source:create(source, name)
         local basename = source:basename(source.location)
         local src_dir = assert(os.getenv('jagen_src_dir'))
         local work_dir = assert(os.getenv('jagen_build_dir'))
-        local dir
-        if source:is_scm() then
-            dir = src_dir
-        else
-            dir = System.mkpath(work_dir, name or basename)
+        local base_dir = source.base_dir
+        if not base_dir then
+            if source:is_scm() then
+                base_dir = src_dir
+            else
+                base_dir = System.mkpath(work_dir, name or basename)
+            end
         end
-        source.dir = System.mkpath(dir, source.dir or basename)
+        source.dir = System.mkpath(base_dir, source.dir or basename)
     end
 
     return source
