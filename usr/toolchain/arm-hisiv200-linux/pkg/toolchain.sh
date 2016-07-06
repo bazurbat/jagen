@@ -1,7 +1,5 @@
 #!/bin/sh
 
-require toolchain
-
 jagen_pkg_install_target() {
     : ${jagen_toolchain_dir:?}
 

@@ -80,5 +80,6 @@ export LINGUAS=""
 in_flags ccache && using ccache
 
 import env || die
+require toolchain || die
 
 return 0
