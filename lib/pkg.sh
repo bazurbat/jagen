@@ -390,7 +390,7 @@ pkg_install() {
 pkg_install_modules() {
     local dir
     for dir do
-        pkg_run make -C "${KDIR:?}" M="$PWD/$dir" modules_install
+        pkg_run make -C "${KERNEL_SRC:?}" M="$PWD/$dir" modules_install
     done
 }
 
