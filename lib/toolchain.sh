@@ -58,3 +58,34 @@ toolchain_copy_sysroot() {
         pkg_run rsync -a "$support_lib_dir/" "$dest_dir/lib"
     fi
 }
+
+toolchain_install_runtime() {
+    local dest_dir="${1:-${jagen_target_dir:?}}/lib"
+    local sysroot_dir="$(toolchain_get_arch_sysroot)"
+    local lib_dir="$(toolchain_get_support_lib_dir)"
+    local includes_file="$(jagen_find_path toolchain_lib_includes.txt)"
+    local excludes_file="$(jagen_find_path toolchain_lib_excludes.txt)"
+
+    : ${sysroot_dir:?}
+    : ${lib_dir:?}
+    : ${includes_file:?}
+    : ${excludes_file:?}
+
+    message "install toolchain runtime: $sysroot_dir, $lib_dir to $dest_dir"
+
+    pkg_run rsync -a \
+        --chmod=F0755 \
+        --exclude-from="$excludes_file" \
+        --include-from="$includes_file" \
+        --exclude="*" \
+        "$sysroot_dir/lib/" "$dest_dir"
+
+    if [ "$sysroot_dir" != "$lib_dir" ]; then
+        pkg_run rsync -a \
+            --chmod=F0755 \
+            --exclude-from="$excludes_file" \
+            --include-from="$includes_file" \
+            --exclude="*" \
+            "$lib_dir/" "$dest_dir"
+    fi
+}

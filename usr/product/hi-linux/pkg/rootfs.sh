@@ -14,6 +14,7 @@ jagen_pkg_install() {
     require rootfs
 
     jagen_rootfs_init .
+    toolchain_install_runtime
 
     install_sdk
 

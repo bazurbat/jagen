@@ -1,0 +1,13 @@
+ld*.so*
+libc*.so*
+libcrypt*.so*
+libdl*.so*
+libgcc_s*.so*
+libm*.so*
+libnsl*.so*
+libnss_dns*.so*
+libnss_files*.so*
+libpthread*.so*
+libresolv*.so*
+librt*.so*
+libutil*.so*

@@ -15,6 +15,4 @@ exec \$jagen_ccache "\$jagen_toolchain_dir/bin/$bin" "\$@"
 EOF
         chmod +x "$path" || return
     done
-
-    toolchain_copy_sysroot
 }
