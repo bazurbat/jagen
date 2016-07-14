@@ -141,12 +141,24 @@ pkg_using_target_board() {
 
 # default stages
 
+pkg__on_download_exit() {
+   if [ "$pkg__current_download" ]; then
+       pkg_run rm -f "$pkg__current_download"
+   fi
+}
+
 pkg__download() {
     local src_path="${1:?}"
     local dest_path="${2:?}"
 
+    pkg__current_download="$dest_path"
+
+    trap pkg__on_download_exit EXIT
+
     curl -L "$src_path" -o "$dest_path" ||
         die "failed to download $src_path"
+
+    trap - EXIT
 }
 
 pkg__unpack_dist() {
