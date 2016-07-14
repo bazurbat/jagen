@@ -141,6 +141,39 @@ pkg_using_target_board() {
 
 # default stages
 
+pkg__download() {
+    local src_path="${1:?}"
+    local dest_path="${2:?}"
+
+    curl -L "$src_path" -o "$dest_path" ||
+        die "failed to download $src_path"
+}
+
+pkg__unpack_dist() {
+    local src_path="${1:?}"
+    local work_dir="${2:?}"
+    local dist_path="${jagen_dist_dir:?}/${pkg_source_filename:?}"
+
+    if ! [ -f "$dist_path" ]; then
+        if in_flags offline; then
+            die "could not download required source for $pkg_name in offline mode"
+        else
+            pkg__download "$src_path" "$dist_path"
+        fi
+    fi
+
+    if [ "$pkg_source_sha256sum" ]; then
+        echo "$pkg_source_sha256sum $dist_path" | sha256sum -c - ||
+            die "failed to verify checksum of $dist_path"
+    fi
+
+    [ -f "$dist_path" ] ||
+        die "could not find $dist_path for unpacking"
+
+    pkg_run mkdir -p "$work_dir"
+    pkg_run tar -C "$work_dir" -xf "$dist_path"
+}
+
 pkg_unpack() {
     local IFS; unset IFS
     set -- $pkg_source
@@ -153,6 +186,9 @@ pkg_unpack() {
     pkg_run rm -rf "$pkg_work_dir"
 
     case $src_type in
+        dist)
+            pkg__unpack_dist "$src_path" "$pkg_work_dir"
+            ;;
         git|hg|repo)
             if [ -d "$pkg_source_dir" ]; then
                 if [ "$pkg_source_exclude" ] ||
@@ -168,10 +204,6 @@ pkg_unpack() {
             else
                 _jagen src update "$pkg_name" || return
             fi
-            ;;
-        dist)
-            pkg_run mkdir -p "$pkg_work_dir"
-            pkg_run tar -C "$pkg_work_dir" -xf "$src_path"
             ;;
         curl)
             local install_dir="${pkg_install_dir:-$jagen_host_dir}/bin"

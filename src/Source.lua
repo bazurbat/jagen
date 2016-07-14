@@ -30,6 +30,10 @@ function Source:is_scm()
     return self.type == 'git' or self.type == 'hg' or self.type == 'repo'
 end
 
+function Source:filename(filename)
+    return string.match(filename, '^.*/(.+)') or filename
+end
+
 function Source:basename(filename)
     local name = string.match(filename, '^.*/(.+)') or filename
     local exts = { '%.git', '%.tar', '%.tgz', '%.txz', '%.tbz2',
@@ -84,7 +88,6 @@ end
 
 function DistSource:new(o)
     local source = Source.new(DistSource, o)
-    source.location = '$jagen_dist_dir/'..source.location
     return source
 end
 

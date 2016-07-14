@@ -17,6 +17,15 @@ local function write_source(w, pkg)
         w('pkg_source="%s %s"', source.type, source.location)
     end
 
+    if source.location then
+        w('pkg_source_filename="%s"', source:filename(source.location))
+        w('pkg_source_basename="%s"', source:basename(source.location))
+    end
+
+    if source.sha256sum then
+        w('pkg_source_sha256sum="%s"', source.sha256sum)
+    end
+
     if source.branch then
         w('pkg_source_branch="%s"', source.branch)
     end
