@@ -15,7 +15,7 @@ return {
             '--disable-static',
             '--disable-rpath',
             '--disable-most-builds',
-            '--disable-libuuid',
+            '--enable-libuuid',
             '--enable-libblkid',
             '--enable-libmount',
             '--disable-mount',

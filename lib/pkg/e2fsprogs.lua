@@ -11,11 +11,16 @@ return {
         { 'e2fsprogs-1.43-sysmacros', 1 },
     },
     build = {
-        type    = 'GNU',
+        type = 'GNU',
+        -- fails to find external libuuid otherwise
+        configure_needs_install_dir = true,
         options = {
             '--enable-symlink-install',
             '--enable-relative-symlinks',
+            '--disable-elf-shlibs',
             '--disable-testio-debug',
+            '--disable-libuuid',
+            '--disable-libblkid',
             '--disable-backtrace',
             '--disable-debugfs',
             '--disable-imager',
@@ -26,6 +31,11 @@ return {
             '--disable-uuidd',
             '--disable-rpath',
             '--disable-fuse2fs',
+            -- workaround to disable updating of system ld.so.cache on install
+            'ac_cv_path_LDCONFIG=:'
         }
+    },
+    requires = {
+        'util-linux'
     }
 }
