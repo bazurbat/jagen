@@ -62,6 +62,7 @@ define_rule { 'rootfs', 'target',
     requires = {
         'busybox',
         'dropbear',
+        'e2fsprogs',
         'hi-drivers',
         'hi-sdk',
         'hi-utils',
