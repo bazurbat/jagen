@@ -1,5 +1,9 @@
 return {
-    source = 'util-linux-2.23.2.tar.xz',
+    source = {
+        type      = 'dist',
+        location  = 'https://www.kernel.org/pub/linux/utils/util-linux/v2.23/util-linux-2.23.2.tar.xz',
+        sha256sum = '7c4042bd91f621250d7b3b2f34e3b11921a32c7f080c149dcc0c7ce62a8a7cac'
+    },
     patches = {
         { 'util-linux-2.23.2', 1 }
     },

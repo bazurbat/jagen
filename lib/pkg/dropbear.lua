@@ -1,5 +1,9 @@
 return {
-    source = 'dropbear-2014.66.tar.bz2',
+    source = {
+        type      = 'dist',
+        location  = 'https://matt.ucc.asn.au/dropbear/releases/dropbear-2014.66.tar.bz2',
+        sha256sum = 'ab3fe2670a517cc0bbe398ff5d15e9ca12cd14f2fc18930a8111ae2baa64ab76'
+    },
     build = {
         type    = 'GNU',
         options = {

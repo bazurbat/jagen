@@ -1,5 +1,9 @@
 return {
-    source = 'cairo-1.14.2.tar.xz',
+    source = {
+        type      = 'dist',
+        location  = 'https://cairographics.org/releases/cairo-1.14.2.tar.xz',
+        sha256sum = 'c919d999ddb1bbbecd4bbe65299ca2abd2079c7e13d224577895afa7005ecceb'
+    },
     build = {
         type = 'GNU',
         -- fails to find lz otherwise and other build failures assuming zlib in

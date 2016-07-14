@@ -1,5 +1,9 @@
 return {
-    source = 'dbus-1.6.18.tar.gz',
+    source = {
+        type      = 'dist',
+        location  = 'https://dbus.freedesktop.org/releases/dbus/dbus-1.6.18.tar.gz',
+        sha256sum = '7085a0895a9eb11a952394cdbea6d8b4358e17cb991fed0e8fb85e2b9e686dcd'
+    },
     build  = {
         type = 'GNU',
         -- fails to find lexpat otherwise

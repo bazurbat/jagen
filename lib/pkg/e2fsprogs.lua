@@ -1,7 +1,7 @@
 return {
     source = {
-        type = 'dist',
-        location = 'https://www.kernel.org/pub/linux/kernel/people/tytso/e2fsprogs/v1.43.1/e2fsprogs-1.43.1.tar.xz',
+        type      = 'dist',
+        location  = 'https://www.kernel.org/pub/linux/kernel/people/tytso/e2fsprogs/v1.43.1/e2fsprogs-1.43.1.tar.xz',
         sha256sum = '97e36a029224e2606baa6e9ea693b04a4d192ccd714572a1b50a2df9c687b23d'
     },
     patches = {

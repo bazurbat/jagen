@@ -1,5 +1,9 @@
 return {
-    source = 'freetype-2.5.0.1.tar.bz2',
+    source = {
+        type      = 'dist',
+        location  = 'http://download.savannah.gnu.org/releases/freetype/freetype-2.5.0.1.tar.bz2',
+        sha256sum = '57bce5b37989577aa8b4a588426839f6bf39bcc3869748cb18f6827df251f4e5'
+    },
     patches = {
         { 'freetype-2.3.2-enable-valid',   1 },
         { 'freetype-2.4.11-sizeof-types',  1 },

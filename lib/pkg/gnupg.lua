@@ -1,5 +1,9 @@
 return {
-    source = 'gnupg-1.4.18.tar.bz2',
+    source = {
+        type      = 'dist',
+        location  = 'https://www.gnupg.org/ftp/gcrypt/gnupg/gnupg-1.4.18.tar.bz2',
+        sha256sum = 'b7b5fdda78849955e0cdbc5a085f3a08f8b7fba126c622085debb62def5d6388'
+    },
     build  = {
         type = 'GNU',
         options = {

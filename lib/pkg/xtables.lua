@@ -1,5 +1,9 @@
 return {
-    source = 'iptables-1.4.21.tar.bz2',
+    source = {
+        type     = 'dist',
+        location = 'http://www.netfilter.org/projects/iptables/files/iptables-1.4.21.tar.bz2',
+        md5sum   = '536d048c8e8eeebcd9757d0863ebb0c0'
+    },
     build  = {
         type    = 'GNU',
         options = {
