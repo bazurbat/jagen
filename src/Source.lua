@@ -11,6 +11,7 @@ function Source:new(o)
     return o
 end
 
+local DistSource = Source:new()
 local GitSource  = Source:new()
 local HgSource   = Source:new()
 local RepoSource = Source:new()
@@ -45,15 +46,14 @@ end
 function Source:create(source, name)
     local source = source or {}
 
-    if source.type == 'git' then
+    if source.type == 'dist' then
+        source = DistSource:new(source)
+    elseif source.type == 'git' then
         source = GitSource:new(source)
     elseif source.type == 'hg' then
         source = HgSource:new(source)
     elseif source.type == 'repo' then
         source = RepoSource:new(source)
-    elseif source.type == 'dist' then
-        source.location = '$jagen_dist_dir/'..source.location
-        source = Source:new(source)
     else
         source = Source:new(source)
     end
@@ -78,6 +78,14 @@ end
 
 function Source:fixup()
     return true
+end
+
+-- DistSource
+
+function DistSource:new(o)
+    local source = Source.new(DistSource, o)
+    source.location = '$jagen_dist_dir/'..source.location
+    return source
 end
 
 -- GitSource
