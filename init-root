@@ -104,17 +104,13 @@ write_config() {
 # jagen_dir  - refers to the jagen project directory.
 # jagen_root - refers to the current build root (where this file is located).
 
-# A product id for this build root.
-jagen_product="$jagen_product"
-
 # Toplevel working directory.
-# Note: setting relative path allows to source this environment both from
+# Note: setting relative path allows sourcing this environment both from
 # outside and inside the chrooted container.
 jagen_base_dir=\$(real_path "\$jagen_dir/..")
 
-# Common output directory outside of build root for easier sharing of
-# byproducts.
-jagen_out_dir="\$jagen_base_dir/out"
+# Layers used by this build root.
+jagen_layers="$jagen_layers"
 
 # A directory containing software distributions and patches.
 jagen_dist_dir="\$jagen_base_dir/dist"
@@ -124,12 +120,6 @@ jagen_src_dir="$jagen_src_dir"
 
 # A directory where build products will be stored.
 jagen_build_dir="\$jagen_root/build"
-
-# A directory containing target toolchain.
-jagen_toolchain_dir="$jagen_init_toolchain_dir"
-
-# A directory containing SDK.
-jagen_sdk_dir="$jagen_init_sdk_dir"
 
 # Space separated list of optional features.
 #   debug   - build debugging tools
