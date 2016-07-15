@@ -68,14 +68,12 @@ function Source:create(source, name)
     end
 
     if source.location and source.type ~= 'curl' then
-        local src_dir = assert(os.getenv('jagen_src_dir'))
-        local work_dir = assert(os.getenv('jagen_build_dir'))
         local base_dir = source.base_dir
         if not base_dir then
             if source:is_scm() then
-                base_dir = src_dir
+                base_dir = '$jagen_src_dir'
             else
-                base_dir = System.mkpath(work_dir, name or source.basename)
+                base_dir = System.mkpath('$jagen_build_dir', name or source.basename)
             end
         end
         source.dir = System.mkpath(base_dir, source.dir or source.basename)
