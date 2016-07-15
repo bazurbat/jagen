@@ -37,7 +37,7 @@ include() {
     fi
 }
 
-jagen_find_path() {
+find_file() {
     local IFS="$jagen_IFS"
     local name="${1:?}" path= i=
 

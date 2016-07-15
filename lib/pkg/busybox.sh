@@ -1,7 +1,7 @@
 #!/bin/sh
 
 jagen_pkg_patch() {
-    local config="$(jagen_find_path config/busybox.config)"
+    local config="$(find_file config/busybox.config)"
 
     if [ -f "$config" ]; then
         pkg_run cp -vf "$config" .config
