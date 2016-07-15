@@ -1,6 +1,8 @@
 # jagen
 
-A straightforward build system generator.
+Jagen is a tool which eases development of multiple interdependent software
+packages. It abstracts peculiarities of individual packages build systems and
+provides means to manage them as a whole.
 
 Aimed for cases when OpenEmbedded is too magical and hard to configure for
 obscure vendor SDK of choice. Intended to ease the pain of development of
