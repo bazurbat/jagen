@@ -5,6 +5,7 @@ return {
         sha256sum = 'aa10eeed8ec7c7ff794683ff9c3e4c36fb327798db7d4616355bf02d43da24ba',
     },
     build = {
-        in_source = true
+        in_source = true,
+        toolchain = false
     }
 }
