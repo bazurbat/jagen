@@ -17,9 +17,11 @@ local function write_source(w, pkg)
         w('pkg_source="%s %s"', source.type, source.location)
     end
 
-    if source.location then
-        w('pkg_source_filename="%s"', source:filename(source.location))
-        w('pkg_source_basename="%s"', source:basename(source.location))
+    if source.filename then
+        w('pkg_source_filename="%s"', source.filename)
+    end
+    if source.basename then
+        w('pkg_source_basename="%s"', source.basename)
     end
 
     if source.sha1sum then

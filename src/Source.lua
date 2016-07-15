@@ -30,11 +30,7 @@ function Source:is_scm()
     return self.type == 'git' or self.type == 'hg' or self.type == 'repo'
 end
 
-function Source:filename(filename)
-    return string.match(filename, '^.*/(.+)') or filename
-end
-
-function Source:basename(filename)
+function Source:_basename(filename)
     local name = string.match(filename, '^.*/(.+)') or filename
     local exts = { '%.git', '%.tar', '%.tgz', '%.txz', '%.tbz2',
         '%.zip', '%.rar', ''
@@ -62,8 +58,16 @@ function Source:create(source, name)
         source = Source:new(source)
     end
 
+    if source.location then
+        if not source.filename then
+            source.filename = string.match(source.location, '^.*/(.+)') or source.location
+        end
+        if not source.basename then
+            source.basename = source:_basename(source.filename)
+        end
+    end
+
     if source.location and source.type ~= 'curl' then
-        local basename = source:basename(source.location)
         local src_dir = assert(os.getenv('jagen_src_dir'))
         local work_dir = assert(os.getenv('jagen_build_dir'))
         local base_dir = source.base_dir
@@ -71,10 +75,10 @@ function Source:create(source, name)
             if source:is_scm() then
                 base_dir = src_dir
             else
-                base_dir = System.mkpath(work_dir, name or basename)
+                base_dir = System.mkpath(work_dir, name or source.basename)
             end
         end
-        source.dir = System.mkpath(base_dir, source.dir or basename)
+        source.dir = System.mkpath(base_dir, source.dir or source.basename)
     end
 
     return source
