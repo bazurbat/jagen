@@ -21,16 +21,8 @@ export jagen_build_dir="$jagen_root/build"
 export jagen_include_dir="$jagen_root/include"
 export jagen_log_dir="$jagen_build_dir"
 
-export jagen_product=""
-export jagen_sdk=""
-export jagen_toolchain=""
-export jagen_vendor=""
-
-jagen_path="$jagen_dir/lib"
+export jagen_path="$jagen_dir/lib"
 export LUA_PATH="$jagen_dir/lib/?.lua;$jagen_dir/src/?.lua;;"
-
-export jagen_toolchain_dir
-export jagen_sdk_dir
 
 jagen_build_verbose="no"
 
@@ -41,33 +33,17 @@ if [ "$jagen_root" ]; then
     include "$jagen_root/config"
 fi
 
-if [ "$jagen_product" ]; then
-    export jagen_product_dir="$jagen_dir/usr/product/$jagen_product"
-    include "$jagen_product_dir/init"
-fi
+set_jagen_path() {
+    local path IFS="$jagen_IFS" FS="$jagen_FS"
 
-if [ "$jagen_vendor" ]; then
-    jagen_path="$jagen_dir/usr/vendor/$jagen_vendor $jagen_path"
-    LUA_PATH="$jagen_dir/usr/vendor/$jagen_vendor/?.lua;$LUA_PATH"
-fi
-
-if [ "$jagen_toolchain" ]; then
-    jagen_path="$jagen_dir/usr/toolchain/$jagen_toolchain $jagen_path"
-    LUA_PATH="$jagen_dir/usr/toolchain/$jagen_toolchain/?.lua;$LUA_PATH"
-fi
-
-if [ "$jagen_sdk" ]; then
-    jagen_path="$jagen_dir/usr/sdk/$jagen_sdk $jagen_path"
-    LUA_PATH="$jagen_dir/usr/sdk/$jagen_sdk/?.lua;$LUA_PATH"
-fi
-
-if [ "$jagen_product_dir" ]; then
-    jagen_path="$jagen_product_dir $jagen_path"
-    LUA_PATH="$jagen_product_dir/?.lua;$LUA_PATH"
-fi
+    for path in $jagen_layers; do
+        jagen_path="$path${FS}$jagen_path"
+        LUA_PATH="$path/?.lua;$LUA_PATH"
+    done
+}
+set_jagen_path
 
 export jagen_host_dir="$jagen_root/host"
-
 export jagen_target_dir="$jagen_root/target"
 
 add_PATH "$jagen_host_dir/bin"

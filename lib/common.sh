@@ -38,7 +38,7 @@ include() {
 }
 
 jagen_find_path() {
-    local IFS; unset IFS
+    local IFS="$jagen_IFS"
     local name="${1:?}" path= i=
     for i in $jagen_path; do
         path="$i/$name"
@@ -50,9 +50,9 @@ jagen_find_path() {
 }
 
 require() {
-    local IFS; unset IFS
+    local IFS="$jagen_IFS"
     local name="${1:?}" path= i=
-    debug require $1
+    debug "require $1"
 
     for i in $jagen_path; do
         path="$i/${name}.sh"
@@ -65,9 +65,9 @@ require() {
 }
 
 import() {
-    local IFS; unset IFS
+    local IFS="$jagen_IFS"
     local name="${1:?}" path= i=
-    debug import $1
+    debug "import $1"
 
     set -- $jagen_path
     i=$#
@@ -84,10 +84,6 @@ import() {
 
 use_env() {
     import "env/${1:?}"
-}
-
-use_toolchain() {
-    import "toolchain/${1:?}"
 }
 
 in_list() {
