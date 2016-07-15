@@ -86,6 +86,10 @@ using() {
     import "env/${1:?}"
 }
 
+use_toolchain() {
+    import "toolchain/${1:?}"
+}
+
 in_list() {
     local value="${1:?}"; shift
     for item; do
