@@ -74,7 +74,7 @@ install_ucode() {
 }
 
 do_cleanup() {
-    using target
+    use_env target
 
     pkg_run cd "$pkg_build_dir"
 

@@ -6,7 +6,7 @@ jagen_pkg_patch() {
 }
 
 jagen_pkg_compile_target() {
-    using target_toolchain
+    use_env target_toolchain
     pkg_run make
 }
 

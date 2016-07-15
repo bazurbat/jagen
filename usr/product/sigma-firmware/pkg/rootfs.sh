@@ -1,6 +1,6 @@
 #!/bin/sh
 
-using clean_cflags
+use_env clean_cflags
 
 pkg_run_jobs=1
 
@@ -166,6 +166,6 @@ jagen_pkg_install() {
     install_keys  "$dest" || return
     install_files "$dest" || return
 
-    using target
+    use_env target
     pkg_strip_root "${jagen_sdk_initfs_dir:?}"
 }

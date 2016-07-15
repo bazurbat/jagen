@@ -77,7 +77,7 @@ export PATH
 export LD_LIBRARY_PATH
 export LINGUAS=""
 
-in_flags ccache && using ccache
+in_flags ccache && use_env ccache
 
 import env || die
 require toolchain || die

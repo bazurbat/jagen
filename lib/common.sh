@@ -82,7 +82,7 @@ import() {
     done
 }
 
-using() {
+use_env() {
     import "env/${1:?}"
 }
 

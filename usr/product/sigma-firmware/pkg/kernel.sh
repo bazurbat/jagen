@@ -1,6 +1,6 @@
 #!/bin/sh
 
-using target
+use_env target
 
 : ${with_kernel_config_default:=yes}
 : ${with_kernel_proprietary_modules:=yes}

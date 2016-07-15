@@ -323,7 +323,7 @@ pkg_configure() {
             ;;
         linux_kernel)
             require kernel
-            using kbuild
+            use_env kbuild
             pkg_run cd "$pkg_source_dir"
             pkg_run make "${jagen_kernel_config:?}"
             ;;
@@ -347,7 +347,7 @@ pkg_compile() {
             ;;
         linux_kernel)
             require kernel
-            using kbuild
+            use_env kbuild
             pkg_run cd "$pkg_source_dir"
             pkg_run make "${jagen_kernel_image:?}" modules
             ;;
@@ -414,7 +414,7 @@ pkg_install() {
             ;;
         linux_kernel)
             require kernel
-            using kbuild
+            use_env kbuild
             pkg_run cd "$pkg_source_dir"
             pkg_run install -vm644 \
                 "$pkg_build_dir/arch/$jagen_target_arch/boot/$jagen_kernel_image" \
