@@ -66,6 +66,14 @@ function string.split(s, sep)
     return o
 end
 
+function string.split2(s, sep)
+    local o = {}
+    for val in string.gmatch(s, '[^'..sep..']+') do
+        table.insert(o, val)
+    end
+    return o
+end
+
 function table.rest(t, start)
     local o = {}
     for i = start, #t do
