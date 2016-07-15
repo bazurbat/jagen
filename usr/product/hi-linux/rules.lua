@@ -1,5 +1,11 @@
 -- HiSilicon Linux SDK
 
+define_rule { 'arm-hisiv200-linux', 'target' }
+
+define_rule { 'toolchain', 'target',
+    requires = { 'arm-hisiv200-linux' }
+}
+
 define_rule { 'ast-files' }
 
 define_rule { 'hi-kernel', 'target' }
