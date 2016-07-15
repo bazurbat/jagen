@@ -345,11 +345,14 @@ pkg_compile() {
     [ "$pkg_source_dir" ] || return 0
 
     case $pkg_build_type in
-        GNU|make|KBuild|skarnet)
+        GNU|KBuild|skarnet)
             pkg_run make "$@"
             ;;
         CMake)
             pkg_run cmake --build . -- $jagen_cmake_build_options "$@"
+            ;;
+        make)
+            pkg_run make $pkg_options "$@"
             ;;
         linux_kernel)
             require kernel
