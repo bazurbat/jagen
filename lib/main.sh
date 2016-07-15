@@ -15,6 +15,7 @@ export jagen_flags=""
 
 export jagen_lib_dir="${jagen_dir:?}/lib"
 
+export jagen_base_dir="$jagen_root"
 export jagen_bin_dir="$jagen_root/bin"
 export jagen_src_dir="$jagen_root/src"
 export jagen_build_dir="$jagen_root/build"
@@ -32,6 +33,8 @@ jagen_build_verbose="no"
 if [ "$jagen_root" ]; then
     include "$jagen_root/config"
 fi
+
+export jagen_toolchains_dir="${jagen_base_dir:?}/toolchain"
 
 set_jagen_path() {
     local path IFS="$jagen_IFS" FS="$jagen_FS"
