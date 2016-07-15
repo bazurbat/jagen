@@ -10,3 +10,6 @@ jagen_kernel_modules_install_dir="/lib/modules/$jagen_kernel_release"
 jagen_kernel_extra_modules_install_dir="$jagen_kernel_modules_install_dir/extra"
 
 export KERNEL_SRC="$jagen_kernel_dir"
+
+jagen_target_board="${jagen_target_board:-ast2xx}"
+
