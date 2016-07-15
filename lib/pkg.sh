@@ -327,15 +327,6 @@ pkg_configure() {
             pkg_run cd "$pkg_source_dir"
             pkg_run make "${jagen_kernel_config:?}"
             ;;
-        skarnet)
-            pkg_run ./configure \
-                ${pkg_system:+--host="$pkg_system"} \
-                ${pkg_prefix:+--prefix="$pkg_prefix"} \
-                ${jagen_sysdeps_cfg:+--with-sysdeps="$jagen_sysdeps_cfg"} \
-                --with-include="$pkg_install_dir/include" \
-                --with-dynlib="$pkg_install_dir/lib" \
-                "$@"
-            ;;
         *)
             ;;
     esac
@@ -345,7 +336,7 @@ pkg_compile() {
     [ "$pkg_source_dir" ] || return 0
 
     case $pkg_build_type in
-        GNU|KBuild|skarnet)
+        GNU|KBuild)
             pkg_run make "$@"
             ;;
         CMake)
@@ -401,7 +392,7 @@ pkg_install() {
     local pkg_install_type="${pkg_install_type:-$pkg_build_type}"
 
     case $pkg_install_type in
-        GNU|make|skarnet)
+        GNU|make)
             pkg_run make ${pkg_sysroot:+DESTDIR="$pkg_sysroot"} "$@" install
 
             for name in $pkg_libs; do
