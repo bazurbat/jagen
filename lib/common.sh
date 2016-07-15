@@ -40,10 +40,11 @@ include() {
 jagen_find_path() {
     local IFS="$jagen_IFS"
     local name="${1:?}" path= i=
+
     for i in $jagen_path; do
         path="$i/$name"
         if [ -f "$path" ]; then
-            echo "$path"
+            printf "$path"
             return
         fi
     done
@@ -62,11 +63,13 @@ require() {
             return
         fi
     done
+
+    die "require: could not find '$name' in import path"
 }
 
 import() {
     local IFS="$jagen_IFS"
-    local name="${1:?}" path= i=
+    local name="${1:?}" path= i= found=
     debug "import $1"
 
     set -- $jagen_path
@@ -77,9 +80,12 @@ import() {
         if [ -f "$path" ]; then
             debug "  using $path"
             . "$path"
+            found=1
         fi
         i=$((i-1))
     done
+
+    [ "$found" ] || die "import: could not find '$name' in import path"
 }
 
 use_env() {
