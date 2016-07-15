@@ -26,6 +26,22 @@ toolchain_get_support_lib_dir() {
     fi
 }
 
+toolchain_unpack() {
+	: ${jagen_toolchains_dir:?}
+	local name="${1:?}"
+	local source_dir="${2:?}"
+	local target_dir="$jagen_toolchains_dir/$name"
+	local work_dir="$pkg_work_dir"
+	local pkg_work_dir="$jagen_toolchains_dir"
+
+	if ! [ -d "$target_dir" ]; then
+		pkg_unpack
+	fi
+
+	pkg_run mkdir -p "$work_dir"
+	pkg_link "$target_dir" "$source_dir"
+}
+
 # The logic here is taken from Buildroot external toolchain helpers.
 toolchain_copy_sysroot() {
     local dest_dir="${1:-${jagen_target_dir:?}}"
