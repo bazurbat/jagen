@@ -148,7 +148,7 @@ function Package:each()
                 table.sort(names)
                 for _, name in ipairs(names) do
                     local config = self.configs[name]
-                    for _, target in ipairs(config.stages) do
+                    for _, target in ipairs(config.stages or {}) do
                         coroutine.yield(target)
                     end
                 end
