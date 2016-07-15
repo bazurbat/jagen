@@ -198,11 +198,6 @@ pkg_unpack() {
     local src_type="$1"
     local src_path="$2"
 
-    : ${pkg_name:?}
-    : ${pkg_work_dir:?}
-
-    pkg_run rm -rf "$pkg_work_dir"
-
     case $src_type in
         dist)
             pkg__unpack_dist "$src_path" "$pkg_work_dir"
@@ -441,6 +436,7 @@ pkg_install_modules() {
 # stages
 
 jagen_pkg_unpack() {
+	pkg_run rm -rf "${pkg_work_dir:?}"
     pkg_unpack
 }
 
