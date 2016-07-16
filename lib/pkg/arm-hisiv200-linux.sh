@@ -1,7 +1,7 @@
 #!/bin/sh
 
 jagen_pkg_unpack() {
-	toolchain_unpack "$pkg_name" "$pkg_source_dir"
+    toolchain_unpack "$pkg_name" "$pkg_source_dir"
 }
 
 jagen_pkg_install_target() {
