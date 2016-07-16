@@ -13,7 +13,7 @@ jagen_pkg_install_target() {
 
     for src_name in *; do
         name=$(printf "$src_name" | cut -d- -f5-)
-        path="${jagen_bin_dir:?}/arm-hisiv200-linux-${name}"
+        path="${jagen_bin_dir:?}/${jagen_target_system}-${name}"
         cat >"$path" <<EOF || return
 exec \$jagen_ccache "$src_dir/$src_name" "\$@"
 EOF
