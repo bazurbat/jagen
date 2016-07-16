@@ -4,12 +4,12 @@ jagen_sdk='hi-linux'
 
 jagen_shell='/bin/bash'
 
-jagen_kernel_release="3.4.67_s40"
-jagen_kernel_dir="$jagen_src_dir/hi-kernel"
-jagen_kernel_modules_install_dir="/lib/modules/$jagen_kernel_release"
-jagen_kernel_extra_modules_install_dir="$jagen_kernel_modules_install_dir/extra"
-
-export KERNEL_SRC="$jagen_kernel_dir"
-
 jagen_target_board="${jagen_target_board:-ast2xx}"
 
+jagen_sdk_dir="${jagen_src_dir:?}/hi-sdk"
+
+jagen_kernel_dir="${jagen_src_dir:?}/hi-kernel"
+jagen_kernel_config='ast2xx_hi3719cv100_defconfig'
+jagen_kernel_image='uImage'
+
+export KERNEL_SRC="$jagen_kernel_dir"

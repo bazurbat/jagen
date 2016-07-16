@@ -12,7 +12,7 @@ jagen_pkg_patch() {
         esac
     fi
 
-    pkg_link "${jagen_kernel_src_dir:?}" \
+    pkg_link "${jagen_kernel_dir:?}" \
         "$pkg_source_dir/source/kernel/linux-3.4.y"
 }
 
