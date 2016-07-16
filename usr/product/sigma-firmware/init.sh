@@ -1,8 +1,8 @@
 #!/bin/sh
 
-jagen_sdk="sigma"
-jagen_vendor="ast"
-
-jagen_init_sdk_dir='$jagen_src_dir/sigma-mrua'
-
-jagen_target_board="${jagen_target_board:-ast100}"
+jagen_layers='
+$jagen_dir/usr/target/mipsel-linux-gnu
+$jagen_dir/usr/sdk/sigma
+$jagen_dir/usr/vendor/ast
+$jagen_dir/usr/product/sigma-firmware
+'

@@ -126,7 +126,7 @@ define_rule { 'ezboot', 'target',
 local firmware_rule_template = {
     config = 'target',
     install = {
-        prefix = '$jagen_firmware_install_prefix'
+        prefix = '/firmware'
     },
     { 'install', { 'firmware', 'unpack' } }
 }
@@ -148,7 +148,7 @@ define_rule { 'firmware', 'target',
         'wpa_supplicant',
     },
     install = {
-        prefix = '$jagen_firmware_install_prefix'
+        prefix = '/firmware'
     },
     { 'compile' },
     { 'install' }
