@@ -30,9 +30,12 @@ die() {
 }
 
 include() {
-    local pathname="${1:?}.sh"
-    if [ -f "$pathname" ]; then
-        debug include $pathname
+    local pathname="${1:?}"
+    if [ -f "${pathname}.sh" ]; then
+        debug "include ${pathname}.sh"
+        . "${pathname}.sh"
+    elif [ -f "$pathname" ]; then
+        debug "include $pathname"
         . "$pathname"
     fi
 }
