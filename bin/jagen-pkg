@@ -38,7 +38,7 @@ if ! [ "$pkg_stage" = "unpack" -o "$pkg_stage" = "patch" ]; then
     include "$jagen_include_dir/${pkg_name}__${pkg_config}" || die
 fi
 
-_pkg_file=$(find_file "pkg/$pkg_name")
+_pkg_file=$(find_file "pkg/${pkg_name}.sh")
 if [ "$_pkg_file" ]; then
 	include "$_pkg_file"
 fi
