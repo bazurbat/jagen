@@ -30,7 +30,7 @@ toolchain_unpack() {
 	: ${jagen_toolchains_dir:?}
 	local name="${1:?}"
 	local source_dir="${2:?}"
-	local target_dir="$jagen_toolchains_dir/$name"
+        local target_dir="$jagen_toolchains_dir/$(basename "$source_dir")"
 	local work_dir="$pkg_work_dir"
 	local pkg_work_dir="$jagen_toolchains_dir"
 
