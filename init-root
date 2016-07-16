@@ -112,14 +112,8 @@ jagen_base_dir=\$(real_path "\$jagen_dir/..")
 # Layers used by this build root.
 jagen_layers="$jagen_layers"
 
-# A directory containing software distributions and patches.
-jagen_dist_dir="\$jagen_base_dir/dist"
-
 # A directory where source packages will be checked out.
 jagen_src_dir="$jagen_src_dir"
-
-# A directory where build products will be stored.
-jagen_build_dir="\$jagen_root/build"
 
 # Space separated list of optional features.
 #   debug   - build debugging tools
