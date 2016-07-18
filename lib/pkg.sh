@@ -136,7 +136,7 @@ pkg_using_host_chicken() {
 }
 
 pkg_using_target_board() {
-    printf '%s' "-DTARGET_BOARD=${jagen_target_board:?}"
+    printf '%s' "-DTARGET_BOARD=${jagen_target_board:-unknown}"
 }
 
 # default stages
