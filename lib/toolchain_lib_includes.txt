@@ -10,4 +10,5 @@ libnss_files*.so*
 libpthread*.so*
 libresolv*.so*
 librt*.so*
+libstdc++*.so*
 libutil*.so*
