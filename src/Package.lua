@@ -188,6 +188,17 @@ function Package.load_rules(full)
         end
     end
 
+    local target_toolchain = os.getenv('jagen_target_toolchain')
+    if target_toolchain then
+        define_rule {
+            name = target_toolchain,
+            config = 'target'
+        }
+        define_rule { 'toolchain', 'target',
+            requires = { target_toolchain }
+        }
+    end
+
     for _, pkg in pairs(packages) do
         pkg.source = Source:create(pkg.source, pkg.name)
         if full then

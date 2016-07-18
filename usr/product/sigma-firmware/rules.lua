@@ -1,11 +1,5 @@
 -- Sigma rules
 
-define_rule { 'mips-2012.03', 'target' }
-
-define_rule { 'toolchain', 'target',
-    requires = { 'mips-2012.03' }
-}
-
 -- base
 
 define_rule { 'ast-files' }
