@@ -317,7 +317,6 @@ pkg_configure() {
                 $A $jagen_cmake_options "$@" "$pkg_source_dir"
             ;;
         linux_kernel)
-            require kernel
             use_env kbuild
             pkg_run cd "$pkg_source_dir"
             pkg_run make "${jagen_kernel_config:?}"
@@ -341,7 +340,6 @@ pkg_compile() {
             pkg_run make $pkg_options "$@"
             ;;
         linux_kernel)
-            require kernel
             use_env kbuild
             pkg_run cd "$pkg_source_dir"
             pkg_run make "${jagen_kernel_image:?}" modules
@@ -408,7 +406,6 @@ pkg_install() {
             unset DESTDIR
             ;;
         linux_kernel)
-            require kernel
             use_env kbuild
             pkg_run cd "$pkg_source_dir"
             pkg_run install -vm644 \
