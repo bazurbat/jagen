@@ -4,8 +4,6 @@ jagen_sdk='hi-linux'
 
 jagen_shell='/bin/bash'
 
-jagen_target_board="${jagen_target_board:-ast2xx}"
-
 jagen_sdk_dir="${jagen_src_dir:?}/hi-sdk"
 
 jagen_kernel_dir="${jagen_src_dir:?}/hi-kernel"
