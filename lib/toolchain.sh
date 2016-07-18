@@ -5,7 +5,7 @@ toolchain_get_sysroot() {
 }
 
 toolchain_get_arch_sysroot() {
-    real_path $("${1:-${CC:?}}" $ARCH_CFLAGS --print-sysroot)
+    real_path $("${1:-${CC:?}}" $jagen_target_cflags --print-sysroot)
 }
 
 toolchain_sysroot_get_arch_subdir() {
@@ -20,7 +20,7 @@ toolchain_get_arch_lib_dir() {
 }
 
 toolchain_get_support_lib_dir() {
-    local libstdc="$("${1:-${CC:?}}" $ARCH_CFLAGS --print-file-name=libstdc++.a)"
+    local libstdc="$("${1:-${CC:?}}" $jagen_target_cflags --print-file-name=libstdc++.a)"
     if [ "$libstdc" ]; then
         real_path $(dirname "$libstdc")
     fi
