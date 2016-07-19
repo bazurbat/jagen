@@ -40,6 +40,7 @@ OPTIONS:
   -h  show this help
   -l  list config templates
   -s  share sources between build roots
+  -f  use force
 
   In the default configuration a location of software distributions, patches
   and toolchains is set relative to a base directory (\$jagen_dir/..) to
@@ -48,6 +49,9 @@ OPTIONS:
   set a location of source packages relative to the base directory too. Note
   that 'jagen clean' command does not touch the source packages location even
   if it is inside the build root.
+
+  The command refuses to initialize non-empty directories by default. Use '-f'
+  option to override the check.
 
   The generated environment binds the build root to the corresponding jagen
   project directory. If one or the other is moved it will become invalid. Use
