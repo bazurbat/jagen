@@ -92,6 +92,24 @@ toolchain_generate_wrappers() {
     done
 }
 
+toolchain_create_alias() {
+    local source="${1:?}"
+    local target="${2:?}"
+    local from="$(basename "$target")"
+    local to="$(basename "$source")"
+    local name
+
+    cd $(dirname "$target")
+
+    for name in ${toolchain_programs:?}; do
+        if [ -x "$from$name" ]; then
+            ln -snfr $from$name $to$name
+        fi
+    done
+
+    cd "$OLDPWD"
+}
+
 # The logic here is taken from Buildroot external toolchain helpers.
 toolchain_copy_sysroot() {
     local dest_dir="${1:-${jagen_target_dir:?}}"
