@@ -3,8 +3,12 @@
 env_file="env.sh"
 config_file="config.sh"
 
+message() {
+    echo init-root: $*
+}
+
 die() {
-    echo "init-root: $*"
+    message $*
     exit 1
 }
 
@@ -134,7 +138,7 @@ EOF
 parse_command_line() {
     local arg
 
-    arg=$(getopt hlsa: "$@")
+    arg=$(getopt hlsfa: "$@")
     [ $? = 0 ] || die "failed to parse command line options"
     set -- $arg
 
@@ -143,6 +147,7 @@ parse_command_line() {
             -h) show_help; exit 0 ;;
             -l) list_configs; exit 0 ;;
             -s) share_sources=1 ;;
+            -f) use_force=1 ;;
             -a) if [ "$jagen_flags" ]; then
                     jagen_flags="$jagen_flags $2"
                 else
@@ -169,7 +174,12 @@ fi
 parse_command_line "$@"
 
 if ! [ "$jagen_product" ]; then
-    die "no product specified"
+    message "no product specified, assuming custom native build"
+    jagen_product='native'
+fi
+
+if [ -z "$use_force" -a "$(printf *)" != '*' ]; then
+    die "not initializing non-empty directory without force"
 fi
 
 jagen_product_dir="$jagen_dir/usr/product/$jagen_product"
