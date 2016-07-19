@@ -7,5 +7,9 @@ return {
     build = {
         in_source = true,
         toolchain = false
+    },
+    requires = {
+        'gcc-linaro-4.8-runtime',
+        'gcc-linaro-4.8-sysroot'
     }
 }
