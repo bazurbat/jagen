@@ -51,27 +51,45 @@ toolchain_get_support_lib_dir() {
 }
 
 toolchain_unpack() {
-	: ${jagen_toolchains_dir:?}
-	local name="${1:?}"
-	local source_dir="${2:?}"
-        local target_dir="$jagen_toolchains_dir/$(basename "$source_dir")"
-	local work_dir="$pkg_work_dir"
-	local pkg_work_dir="$jagen_toolchains_dir"
+    : ${jagen_toolchains_dir:?}
+    local name="${1:?}"
+    local source_dir="${2:?}"
+    local target_dir="$jagen_toolchains_dir/$(basename "$source_dir")"
+    local work_dir="$pkg_work_dir"
+    local pkg_work_dir="$jagen_toolchains_dir"
 
-	if ! [ -d "$target_dir" ]; then
-		pkg_unpack
-	fi
+    if ! [ -d "$target_dir" ]; then
+        pkg_unpack
+    fi
 
-	pkg_run mkdir -p "$work_dir"
-	pkg_link "$target_dir" "$source_dir"
+    pkg_run mkdir -p "$work_dir"
+    pkg_link "$target_dir" "$source_dir"
 }
 
 toolchain_generate_wrapper() {
-    local wrapper="${1:?}" filepath="${2:?}" 
+    local wrapper="${1:?}" filepath="${2:?}"
     cat >"$wrapper" <<EOF || return
 exec \$jagen_ccache "$filepath" "\$@"
 EOF
     chmod +x "$wrapper"
+}
+
+toolchain_generate_wrappers() {
+    local dest_dir="${1:?}"
+    local src_dir="${2:?}"
+    local prefix="$3"
+    local name src_path dest_path
+
+    for name in ${toolchain_programs:?}; do
+        dest_path="${dest_dir}/${prefix:+$prefix-}${name}"
+        src_path="${src_dir}/${prefix:+$prefix-}${name}"
+        if [ -x "$src_path" ]; then
+            toolchain_generate_wrapper "$dest_path" "$src_path" || return
+            chmod +x "$dest_path" || return
+        else
+            warning "$src_path is not found"
+        fi
+    done
 }
 
 # The logic here is taken from Buildroot external toolchain helpers.
