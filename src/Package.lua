@@ -188,6 +188,10 @@ function Package.load_rules(full)
         end
     end
 
+    define_rule { 'toolchain', 'host',
+        requires = { 'gcc-native' }
+    }
+
     local target_toolchain = os.getenv('jagen_target_toolchain')
     if target_toolchain then
         define_rule {
