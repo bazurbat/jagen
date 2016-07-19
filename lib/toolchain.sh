@@ -1,5 +1,29 @@
 #!/bin/sh
 
+toolchain_programs='
+addr2line
+ar
+as
+c++
+c++filt
+cpp
+g++
+gcc
+gccbug
+gcov
+gdb
+gprof
+ld
+nm
+objcopy
+objdump
+ranlib
+readelf
+size
+strings
+strip
+'
+
 toolchain_get_sysroot() {
     real_path $("${1:-${CC:?}}" --print-sysroot)
 }
@@ -40,6 +64,14 @@ toolchain_unpack() {
 
 	pkg_run mkdir -p "$work_dir"
 	pkg_link "$target_dir" "$source_dir"
+}
+
+toolchain_generate_wrapper() {
+    local wrapper="${1:?}" filepath="${2:?}" 
+    cat >"$wrapper" <<EOF || return
+exec \$jagen_ccache "$filepath" "\$@"
+EOF
+    chmod +x "$wrapper"
 }
 
 # The logic here is taken from Buildroot external toolchain helpers.
