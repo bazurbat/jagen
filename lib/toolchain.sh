@@ -99,6 +99,8 @@ toolchain_create_alias() {
     local to="$(basename "$source")"
     local name
 
+    [ "$source" = "$target" ] && return
+
     cd $(dirname "$target")
 
     for name in ${toolchain_programs:?}; do
