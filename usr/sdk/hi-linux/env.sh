@@ -2,8 +2,6 @@
 
 jagen_sdk='hi-linux'
 
-jagen_shell='/bin/bash'
-
 jagen_sdk_dir="${jagen_src_dir:?}/hi-sdk"
 
 jagen_kernel_dir="${jagen_src_dir:?}/hi-kernel"
