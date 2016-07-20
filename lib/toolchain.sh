@@ -114,6 +114,7 @@ toolchain_create_alias() {
 
 # The logic here is taken from Buildroot external toolchain helpers.
 toolchain_copy_sysroot() {
+    local CC="${CC:-${jagen_target_system:+$jagen_target_system-}gcc}"
     local dest_dir="${1:-${jagen_target_dir:?}}"
     local sysroot_dir="$(toolchain_get_sysroot)"
     local arch_sysroot_dir="$(toolchain_get_arch_sysroot)"
@@ -146,6 +147,7 @@ toolchain_copy_sysroot() {
 }
 
 toolchain_install_runtime() {
+    local CC="${CC:-${jagen_target_system:+$jagen_target_system-}gcc}"
     local dest_dir="${1:-${jagen_target_dir:?}}/lib"
     local sysroot_dir="$(toolchain_get_arch_sysroot)"
     local lib_dir="$(toolchain_get_support_lib_dir)"
