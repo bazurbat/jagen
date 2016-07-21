@@ -19,10 +19,6 @@ define_rule { 'hi-drivers', 'target',
 
 define_rule { 'hi-sdk', 'target',
     template = firmware_rule,
-    { 'patch',
-        -- to create source/kernel/linux-3.4.y symlink
-        { 'hi-kernel', 'unpack' }
-    },
     { 'compile',
         -- msp modules expect to find compiled kernel in source tree
         { 'hi-kernel', 'compile', 'target' }
