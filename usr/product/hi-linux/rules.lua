@@ -1,5 +1,14 @@
 -- HiSilicon Linux SDK
 
+local firmware_rule = {
+    config = 'target',
+    install = {
+        prefix = '/usr'
+    }
+}
+
+define_rule { 'cmake-modules' }
+
 define_rule { 'ast-files' }
 
 define_rule { 'hi-kernel', 'target' }
@@ -9,6 +18,7 @@ define_rule { 'hi-drivers', 'target',
 }
 
 define_rule { 'hi-sdk', 'target',
+    template = firmware_rule,
     { 'patch',
         -- to create source/kernel/linux-3.4.y symlink
         { 'hi-kernel', 'unpack' }
@@ -20,10 +30,11 @@ define_rule { 'hi-sdk', 'target',
 }
 
 define_rule { 'rtl8188eu', 'target',
-    requires = { 'hi-sdk' }
+    requires = {
+        'hi-kernel',
+        'hi-sdk',
+    }
 }
-
-define_rule { 'cmake-modules' }
 
 define_rule { 'hi-utils', 'target',
     requires = {
@@ -36,6 +47,7 @@ define_rule { 'hi-utils', 'target',
 }
 
 define_rule { 'karaoke-player', 'target',
+    template = firmware_rule,
     requires = {
         'chicken-eggs',
         'connman',
@@ -45,6 +57,7 @@ define_rule { 'karaoke-player', 'target',
         'libass',
         'libuv',
         'soundtouch',
+        'wpa_supplicant',
     },
     { 'configure',
         { 'cmake-modules', 'unpack'              },
@@ -68,9 +81,7 @@ define_rule { 'rootfs', 'target',
         'hi-sdk',
         'hi-utils',
         'hia-astdisplayservice',
-        'karaoke-player',
         'rtl8188eu',
-        'wpa_supplicant',
     },
     { 'install',
         { 'ast-files', 'unpack' },
