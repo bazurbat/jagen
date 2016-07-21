@@ -2,7 +2,6 @@ local System = require 'System'
 local Log = require 'Log'
 
 local Image = {}
-local padding = 8
 
 local function calculate_size(dir)
     return System.pread('*n', 'du -sm "%s"', dir)
@@ -20,7 +19,9 @@ local function srun(format, ...)
 end
 
 function Image:create(src_dir, out_file)
-    local size = calculate_size(src_dir) + padding
+    local size = calculate_size(src_dir)
+    -- add some padding for filesystem structures
+    size = size + math.ceil(size / 12)
     assert(size > 0)
 
     run('dd if=/dev/zero of="%s" bs=1M count=0 seek=%s 2>/dev/null', out_file, size)
