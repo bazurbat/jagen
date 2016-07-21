@@ -254,7 +254,7 @@ function define_rule(rule)
     table.merge(this, rule)
     this.template = template
 
-    if pkg.source.type == 'repo' then
+    if pkg.source and pkg.source.type == 'repo' then
         pkg:add_target { 'unpack',
             { 'repo', 'install', 'host' }
         }
