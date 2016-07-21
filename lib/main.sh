@@ -53,6 +53,7 @@ export jagen_target_dir="$jagen_root/target"
 add_PATH "$jagen_host_dir/bin"
 add_LD_LIBRARY_PATH "$jagen_host_dir/lib"
 
+export jagen_sdk
 export jagen_target_toolchain
 
 export PATH
