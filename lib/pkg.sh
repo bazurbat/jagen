@@ -411,7 +411,7 @@ pkg_install() {
             pkg_run cd "$pkg_source_dir"
             pkg_run install -vm644 \
                 "$pkg_build_dir/arch/$jagen_target_arch/boot/$jagen_kernel_image" \
-                "$pkg_install_dir"
+                "$jagen_build_dir"
             pkg_run make INSTALL_MOD_PATH="$pkg_install_dir" modules_install
             ;;
         linux_module)
