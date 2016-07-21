@@ -132,6 +132,7 @@ pkg_using_host_chicken() {
     local S="$jagen_FS" A=
     A="$A$S-DCHICKEN_COMPILER=$jagen_host_dir/bin/chicken"
     A="$A$S-DCHICKEN_INTERPRETER=$jagen_host_dir/bin/csi"
+    A="$A$S-DCHICKEN_SYSROOT=$jagen_target_dir"
     printf '%s' "$A"
 }
 
