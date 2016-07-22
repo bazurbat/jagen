@@ -1,7 +1,9 @@
 #!/bin/sh
 
+jagen_target_system="arm-hisiv200-linux-gnueabi"
+
 jagen_target_arch="arm"
-jagen_target_system="${jagen_target_arch}-hisiv200-linux-gnueabi"
+jagen_target_cpu="cortex-a9"
 
 jagen_target_toolchain="arm-hisiv200-linux"
 jagen_target_toolchain_dir="${jagen_toolchains_dir:?}/${jagen_target_toolchain:?}"
