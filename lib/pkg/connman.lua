@@ -12,6 +12,8 @@ return {
         options = {
             '--sysconfdir=/etc',
             '--localstatedir=/settings',
+            -- connmand SEGVs on start without pie
+            '--enable-pie',
             '--disable-gadget',
             '--disable-bluetooth',
             '--disable-ofono',
