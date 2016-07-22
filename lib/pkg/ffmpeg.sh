@@ -13,6 +13,7 @@ mjpeg
 mp2float
 mp3float
 pcm_s16le
+pcm_s24le
 srt
 vorbis
 "
