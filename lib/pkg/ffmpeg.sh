@@ -36,19 +36,6 @@ protocols="file pipe rtp tcp"
 
 filters="afade aresample volume"
 
-jagen_pkg_patch() {
-    # TODO: check if this is required
-    # if [ "$jagen_sdk" = "hisilicon" ]; then
-    #     sed -ri "s/^(SLIBNAME_WITH_MAJOR)='.*'$/\\1='\$(SLIBNAME)'/g" \
-    #         "$pkg_source_dir/configure"
-    #     sed -ri "s/^(SLIB_INSTALL_NAME)='.*'$/\\1='\$(SLIBNAME)'/g" \
-    #         "$pkg_source_dir/configure"
-    #     sed -ri "s/^(SLIB_INSTALL_LINKS)='.*'$/\\1=''/g" \
-    #         "$pkg_source_dir/configure"
-    # fi
-    :
-}
-
 jagen_pkg_configure() {
     local cross_options
 
@@ -59,9 +46,6 @@ jagen_pkg_configure() {
         cross_options="--target-os=linux --enable-cross-compile"
         if [ "$jagen_toolchain_prefix" ]; then
             cross_options="$cross_options --cross-prefix=$jagen_toolchain_prefix"
-        fi
-        if [ "$jagen_toolchain_sysroot" ]; then
-            cross_options="$cross_options --sysroot=$jagen_toolchain_sysroot"
         fi
         if [ "$jagen_target_arch" ]; then
             cross_options="$cross_options --arch=$jagen_target_arch"
@@ -116,11 +100,8 @@ jagen_pkg_configure() {
         --enable-demuxers \
         $components \
         $cross_options \
-        --extra-ldflags="-fPIC" \
-        --enable-pic \
+        --extra-ldflags="" \
         --disable-symver \
         --disable-stripping \
         $options
-
-    pkg_run make
 }
