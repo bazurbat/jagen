@@ -29,6 +29,10 @@ define_rule { 'karaoke-player', 'target',
     }
 }
 
+define_rule { 'loop-aes', 'target',
+    requires = { 'hi-kernel' }
+}
+
 define_rule { 'rootfs', 'target',
     requires = {
         'ast-files',
@@ -42,6 +46,7 @@ define_rule { 'rootfs', 'target',
         'hi-sdk',
         'hi-utils',
         'hia-astdisplayservice',
+        'loop-aes',
         'rtl8188eu',
     },
     { 'deploy' }
