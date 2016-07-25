@@ -1,8 +1,9 @@
 #!/bin/sh
 
 jagen_pkg_compile() {
-    pkg_compile \
-        LINUX_SOURCE="$LINUX_KERNEL" \
-        KBUILD_OUTPUT="$LINUX_KERNEL" \
-        USE_KBUILD=y MODINST=n RUNDM=n
+    pkg_run make \
+        LINUX_SOURCE="$KERNEL_SRC" \
+        KBUILD_OUTPUT="$KERNEL_SRC" \
+        USE_KBUILD=y RUNDM=n \
+        INSTALL_MOD_PATH="$pkg_install_dir"
 }

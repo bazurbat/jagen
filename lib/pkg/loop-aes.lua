@@ -9,7 +9,6 @@ return {
         in_source = true
     },
     install = {
-        type = 'none',
-        modules = 'tmp-d-kbuild'
+        type = 'none'
     }
 }
