@@ -6,5 +6,8 @@ return {
     },
     build = {
         type = 'CMake'
+    },
+    requires = {
+        'cmake-modules'
     }
 }

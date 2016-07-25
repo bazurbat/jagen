@@ -7,40 +7,10 @@ local firmware_rule = {
     }
 }
 
-define_rule { 'cmake-modules' }
-
-define_rule { 'ast-files' }
-
-define_rule { 'firmware-utils', 'host' }
-
-define_rule { 'hi-kernel', 'target' }
-
-define_rule { 'hi-drivers', 'target',
-    requires = { 'hi-kernel' },
-}
-
 define_rule { 'hi-sdk', 'target',
-    template = firmware_rule,
     { 'compile',
         -- msp modules expect to find compiled kernel in source tree
         { 'hi-kernel', 'compile', 'target' }
-    }
-}
-
-define_rule { 'rtl8188eu', 'target',
-    requires = {
-        'hi-kernel',
-        'hi-sdk',
-    }
-}
-
-define_rule { 'hi-utils', 'target',
-    requires = {
-        'glib',
-        'hi-sdk',
-    },
-    { 'configure',
-        { 'cmake-modules', 'unpack'              },
     }
 }
 
@@ -56,21 +26,12 @@ define_rule { 'karaoke-player', 'target',
         'libuv',
         'soundtouch',
         'wpa_supplicant',
-    },
-    { 'configure',
-        { 'cmake-modules', 'unpack'              },
     }
-}
-
-define_rule { 'hia-astdisplayservice', 'target',
-    requires = {
-        'karaoke-player'
-    },
-    { 'configure' }
 }
 
 define_rule { 'rootfs', 'target',
     requires = {
+        'ast-files',
         'busybox',
         'dropbear',
         'e2fsprogs',
@@ -82,11 +43,12 @@ define_rule { 'rootfs', 'target',
         'hia-astdisplayservice',
         'rtl8188eu',
     },
-    { 'install',
-        { 'ast-files', 'unpack' },
-    },
     { 'deploy' }
 }
+
+-- explicit definition of firmware utils to avoid building gpgme for host
+
+define_rule { 'firmware-utils', 'host' }
 
 define_rule { 'firmware-utils', 'target',
     requires = { 'gpgme' }

@@ -3,5 +3,12 @@ return {
         type     = 'git',
         location = 'git@bitbucket.org:art-system/hi-utils.git'
     },
-    build = { type = 'CMake' }
+    build = {
+        type = 'CMake'
+    },
+    requires = {
+        'cmake-modules',
+        'glib',
+        'hi-sdk',
+    }
 }

@@ -7,5 +7,8 @@ return {
     build = {
         type = 'linux_module',
         in_source = true
+    },
+    requires = {
+        'hi-kernel'
     }
 }

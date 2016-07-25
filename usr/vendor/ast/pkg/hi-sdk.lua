@@ -15,7 +15,6 @@ return {
         in_source = true
     },
     requires = {
-        'hi-kernel',
         'hi-sdk-tools',
     }
 }

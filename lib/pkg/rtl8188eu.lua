@@ -11,5 +11,9 @@ return {
     { 'unpack',
         -- the source tarball is distributed with hi-sdk
         { 'hi-sdk', 'unpack' }
+    },
+    requires = {
+        'hi-kernel',
+        'hi-sdk',
     }
 }
