@@ -11,6 +11,8 @@ define_rule { 'cmake-modules' }
 
 define_rule { 'ast-files' }
 
+define_rule { 'firmware-utils', 'host' }
+
 define_rule { 'hi-kernel', 'target' }
 
 define_rule { 'hi-drivers', 'target',
@@ -72,6 +74,7 @@ define_rule { 'rootfs', 'target',
         'busybox',
         'dropbear',
         'e2fsprogs',
+        'firmware-utils',
         'hdparm',
         'hi-drivers',
         'hi-sdk',
@@ -83,6 +86,10 @@ define_rule { 'rootfs', 'target',
         { 'ast-files', 'unpack' },
     },
     { 'deploy' }
+}
+
+define_rule { 'firmware-utils', 'target',
+    requires = { 'gpgme' }
 }
 
 if Jagen.flag 'debug' then
