@@ -143,11 +143,11 @@ function Jagen.src.update(args)
             old_head = source:head()
             if not source:dirty() then
                 if offline then
-                    Log.message('switch %s to %s in %s',
+                    Log.message('switching %s to %s in %s',
                         pkg.name, source.branch, source.dir)
                 else
-                    Log.message('update %s from %s to %s in %s',
-                        pkg.name, source.location, source.branch, source.dir)
+                    Log.message('updating %s to %s in %s',
+                        pkg.name, source.branch, source.dir)
                 end
 
                 if not offline then
