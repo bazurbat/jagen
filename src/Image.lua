@@ -3,6 +3,8 @@ local Log = require 'Log'
 
 local Image = {}
 
+local ast_firmware = '$jagen_host_dir/sbin/ast-firmware'
+
 local function calculate_size(dir)
     return System.pread('*n', 'du -sm "%s"', dir)
 end
@@ -41,6 +43,11 @@ function Image:create(src_dir, out_file)
     end
 
     Log.message('Image created: %s', out_file)
+end
+
+function Image:create_firmware(src_dir, out_file, version)
+    srun('"%s" create -p "%s" -f "%s" -k "${jagen_private_dir:?}/keys/keyfile.gpg"',
+        ast_firmware, src_dir, out_file)
 end
 
 return Image

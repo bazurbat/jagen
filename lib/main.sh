@@ -20,6 +20,7 @@ export jagen_src_dir="$jagen_root/src"
 export jagen_build_dir="$jagen_root/build"
 export jagen_include_dir="$jagen_root/include"
 export jagen_log_dir="$jagen_build_dir"
+export jagen_private_dir
 
 export jagen_path="$jagen_dir/lib"
 export LUA_PATH="$jagen_dir/lib/?.lua;$jagen_dir/src/?.lua;;"
@@ -55,6 +56,7 @@ add_LD_LIBRARY_PATH "$jagen_host_dir/lib"
 
 export jagen_sdk
 export jagen_target_toolchain
+export jagen_target_board
 
 export PATH
 export LD_LIBRARY_PATH

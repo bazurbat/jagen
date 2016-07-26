@@ -36,10 +36,13 @@ Jagen =
 
     flags = os.getenv('jagen_flags'),
 
-    lib_dir     = os.getenv('jagen_lib_dir'),
-    src_dir     = os.getenv('jagen_src_dir'),
-    build_dir   = os.getenv('jagen_build_dir'),
-    include_dir = os.getenv('jagen_include_dir'),
+    lib_dir     = assert(os.getenv('jagen_lib_dir')),
+    src_dir     = assert(os.getenv('jagen_src_dir')),
+    build_dir   = assert(os.getenv('jagen_build_dir')),
+    include_dir = assert(os.getenv('jagen_include_dir')),
+
+    target_dir   = assert(os.getenv('jagen_target_dir')),
+    target_board = os.getenv('jagen_target_board')
 }
 
 function Jagen.flag(f)
@@ -207,21 +210,28 @@ Jagen.image = {}
 
 function Jagen.image.create(args)
     local sdk = assert(os.getenv('jagen_sdk'))
-    if sdk ~= 'hi-linux' then
-        die('image creation is not supported for the current SDK: %s', sdk)
-    end
 
-    local image_type = args[1]
-    local Image = require 'Image'
+    if sdk == 'hi-linux' or sdk == 'sigma' then
+        local image_type = args[1]
+        local Image = require 'Image'
+        local board = Jagen.target_board
 
-    if image_type == 'rootfs' then
-        local src_dir = assert(os.getenv('jagen_target_dir'))
-        local out_file = assert(System.expand('$jagen_build_dir/rootfs.ext4'))
-        return Image:create(src_dir, out_file)
-    elseif not image_type then
-        die('image type is not specified')
+        if image_type == 'rootfs' then
+            local src_dir = assert(os.getenv('jagen_target_dir'))
+            local out_file = assert(System.expand('$jagen_build_dir/rootfs.ext4'))
+            return Image:create(src_dir, out_file)
+        elseif image_type == 'firmware' then
+            local src_dir = '$jagen_target_dir/usr'
+            local out_file = '$jagen_build_dir/firmware.bin'
+            local version = 1
+            return Image:create_firmware(src_dir, out_file, version)
+        elseif not image_type then
+            die('image type is not specified')
+        else
+            die('unsupported image type: %s', image_type)
+        end
     else
-        die('unsupported image type: %s', image_type)
+        die('image creation is not supported for the current SDK: %s', sdk)
     end
 end
 
