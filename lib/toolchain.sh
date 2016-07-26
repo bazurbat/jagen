@@ -66,14 +66,6 @@ toolchain_unpack() {
     pkg_link "$target_dir" "$source_dir"
 }
 
-toolchain_generate_wrapper() {
-    local wrapper="${1:?}" filepath="${2:?}"
-    cat >"$wrapper" <<EOF || return
-exec \$jagen_ccache "$filepath" "\$@"
-EOF
-    chmod +x "$wrapper"
-}
-
 toolchain_generate_wrappers() {
     local dest_dir="${1:?}"
     local src_dir="${2:?}"
@@ -83,8 +75,10 @@ toolchain_generate_wrappers() {
     for name in ${toolchain_programs:?}; do
         dest_path="${dest_dir}/${prefix:+$prefix-}${name}"
         src_path="${src_dir}/${prefix:+$prefix-}${name}"
-        if [ -x "$(eval echo "$src_path")" ]; then
-            toolchain_generate_wrapper "$dest_path" "$src_path" || return
+        if [ -x "$src_path" ]; then
+            cat >"$dest_path" <<EOF || return
+exec \$jagen_ccache "$src_path" "\$@"
+EOF
             chmod +x "$dest_path" || return
         else
             warning "$src_path is not found"
