@@ -83,7 +83,7 @@ toolchain_generate_wrappers() {
     for name in ${toolchain_programs:?}; do
         dest_path="${dest_dir}/${prefix:+$prefix-}${name}"
         src_path="${src_dir}/${prefix:+$prefix-}${name}"
-        if [ -x "$src_path" ]; then
+        if [ -x "$(eval echo "$src_path")" ]; then
             toolchain_generate_wrapper "$dest_path" "$src_path" || return
             chmod +x "$dest_path" || return
         else

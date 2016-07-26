@@ -8,7 +8,7 @@ make_tool() {
     local name="${1:?}" pre_opt="$2" post_opt="$3"
     local path="${jagen_bin_dir}/${jagen_target_system}-${name}"
     cat >"$path" <<EOF || return
-exec \$jagen_ccache "$pkg_source_dir/bin/mips-linux-gnu-${name}" $pre_opt "\$@" $post_opt
+exec \$jagen_ccache "\$jagen_toolchains_dir/$(basename $pkg_source_dir)/bin/mips-linux-gnu-${name}" $pre_opt "\$@" $post_opt
 EOF
     chmod +x "$path"
 }
