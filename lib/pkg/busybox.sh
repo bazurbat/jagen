@@ -107,6 +107,7 @@ renice
 reset
 resize
 rm
+rmdir
 run-parts
 runsv
 runsvdir
@@ -153,8 +154,6 @@ EOF
     rsync -a --files-from=- "$pkg_install_dir/sbin" "$dest/sbin" <<'EOF' || die
 adjtimex
 arping
-blkid
-blockdev
 crond
 getty
 halt
