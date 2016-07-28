@@ -322,6 +322,7 @@ pkg_configure() {
             use_env kbuild
             pkg_run cd "$pkg_source_dir"
             pkg_run make "${jagen_kernel_config:?}"
+			pkg_run make prepare
             ;;
         *)
             ;;
