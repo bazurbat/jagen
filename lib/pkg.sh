@@ -322,7 +322,7 @@ pkg_configure() {
             use_env kbuild
             pkg_run cd "$pkg_source_dir"
             pkg_run make "${jagen_kernel_config:?}"
-			pkg_run make prepare
+            pkg_run make prepare
             ;;
         *)
             ;;
@@ -449,7 +449,7 @@ pkg__image() {
 # stages
 
 jagen_pkg_unpack() {
-	pkg_run rm -rf "${pkg_work_dir:?}"
+    pkg_run rm -rf "${pkg_work_dir:?}"
     pkg_unpack
 }
 
