@@ -439,6 +439,9 @@ pkg__image() {
             use_env kbuild
             pkg_run cd "$pkg_source_dir"
             pkg_run make "${jagen_kernel_image:?}"
+            pkg_run install -vm644 \
+                "$pkg_build_dir/arch/$jagen_target_arch/boot/$jagen_kernel_image" \
+                "$jagen_build_dir"
             ;;
     esac
 }
