@@ -1,15 +1,25 @@
 -- HiSilicon Linux SDK
 
-define_rule { 'initramfs', 'target',
-    { 'install',
-        requires = {
-            'busybox',
-            'hi-kernel',
-            'loop-aes',
-            'util-linux',
+if not Jagen.flag('devenv') then
+
+    define_rule { 'hi-kernel', 'target',
+        { 'image',
+            requires = { 'initramfs' }
         }
     }
-}
+
+    define_rule { 'initramfs', 'target',
+        { 'install',
+            requires = {
+                'busybox',
+                'hi-kernel',
+                'loop-aes',
+                'util-linux',
+            }
+        }
+    }
+
+end
 
 define_rule { 'loop-aes', 'target',
     { 'compile',
@@ -36,7 +46,9 @@ define_rule { 'rootfs', 'target',
         'hi-sdk',
         'hi-utils',
         'hia-astdisplayservice',
+        'loop-aes',
         'rtl8188eu',
+        'util-linux',
     },
     { 'deploy' }
 }
