@@ -7,8 +7,5 @@ return {
     build = {
         type = 'linux_kernel',
         in_source = true
-    },
-    { 'image',
-        requires = { 'initramfs' }
     }
 }
