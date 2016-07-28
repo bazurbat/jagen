@@ -8,7 +8,7 @@ return {
         type = 'linux_kernel',
         in_source = true
     },
-    { 'compile',
+    { 'image',
         requires = { 'initramfs' }
     }
 }
