@@ -433,6 +433,16 @@ pkg_install_modules() {
     done
 }
 
+pkg__image() {
+    case $pkg_build_type in
+        linux_kernel)
+            use_env kbuild
+            pkg_run cd "$pkg_source_dir"
+            pkg_run make "${jagen_kernel_image:?}"
+            ;;
+    esac
+}
+
 # stages
 
 jagen_pkg_unpack() {
@@ -462,4 +472,8 @@ jagen_pkg_install() {
 
 jagen_pkg_install_modules() {
     pkg_install_modules $pkg_install_modules_dirs
+}
+
+jagen_pkg_image() {
+    pkg__image
 }
