@@ -321,30 +321,24 @@ function define_rule(rule)
 
     -- add global stages to every config
     for _, stage in ipairs(pkg) do
-        pkg:add_target(stage, config)
         add_requires(stage, config, template)
+        pkg:add_target(stage, config)
     end
 
     local requires = rule.requires or {}
     -- evaluate pkg requires for every add to collect rules from all templates
     table.iextend(requires, pkg.requires or {})
 
-    for _, item in ipairs(requires) do
-        local req = Package:parse(item, config)
-        pkg:add_target({ 'configure',
-                { req.name, 'install', req.config }
-            }, config)
-        define_rule {
-            name = req.name,
-            config = req.config,
-            template = template
-        }
+    if #requires > 0 then
+        local configure = { 'configure', requires = requires }
+        add_requires(configure, config, template)
+        pkg:add_target(configure, config)
     end
 
     -- stages collected from this rule should go last to maintain ordering
     for _, stage in ipairs(stages) do
-        pkg:add_target(stage, config)
         add_requires(stage, config, template)
+        pkg:add_target(stage, config)
     end
 end
 
