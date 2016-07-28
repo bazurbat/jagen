@@ -7,6 +7,20 @@ local firmware_rule = {
     }
 }
 
+local initramfs_rule = {
+    { 'deploy', arg = '$KERNEL_INITRAMFS_SRC' }
+}
+
+define_rule { 'busybox', 'target',
+    template = initramfs_rule,
+}
+
+define_rule { 'initramfs', 'target',
+    { 'install',
+        { 'busybox', 'deploy', 'target' }
+    }
+}
+
 define_rule { 'hi-sdk', 'target',
     { 'compile',
         -- msp modules expect to find compiled kernel in source tree
