@@ -3,6 +3,9 @@
 if not Jagen.flag('devenv') then
 
     define_rule { 'hi-kernel', 'target',
+        { 'compile',
+            { 'initramfs', 'configure', 'target' }
+        },
         { 'image',
             requires = { 'initramfs' }
         }

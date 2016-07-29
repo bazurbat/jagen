@@ -1,5 +1,24 @@
 #!/bin/sh
 
+generate_list() {
+    cat >"${KERNEL_SRC:?}/usr/initramfs_list" <<EOF
+dir /dev  0755 0 0
+dir /etc  0755 0 0
+dir /mnt  0755 0 0
+dir /proc 0755 0 0
+dir /run  0755 0 0
+dir /sys  0755 0 0
+dir /tmp  1777 0 0
+dir /var  0755 0 0
+nod /dev/console 0600 0 0 c 5 1
+nod /dev/null    0666 0 0 c 1 3
+EOF
+}
+
+jagen_pkg_configure() {
+    generate_list
+}
+
 install_bin() {
     pkg_run cd "$pkg_install_dir/bin"
     pkg_run rsync -tlp --chmod=755 \
@@ -42,21 +61,6 @@ EOF
     chmod 755 "$pkg_build_dir/init"
 }
 
-generate_nodes() {
-    cat >"${KERNEL_SRC:?}/usr/initramfs_list" <<EOF
-dir /dev  0755 0 0
-dir /etc  0755 0 0
-dir /mnt  0755 0 0
-dir /proc 0755 0 0
-dir /run  0755 0 0
-dir /sys  0755 0 0
-dir /tmp  1777 0 0
-dir /var  0755 0 0
-nod /dev/console 0600 0 0 c 5 1
-nod /dev/null    0666 0 0 c 1 3
-EOF
-}
-
 jagen_pkg_install() {
     : ${pkg_install_dir:?}
     : ${pkg_build_dir:?}
@@ -80,5 +84,4 @@ jagen_pkg_install() {
     install_module "extra/loop.ko"
 
     generate_init
-    generate_nodes
 }
