@@ -174,17 +174,15 @@ function Package:build_dirs(config)
 end
 
 function Package.load_rules(full)
-    local env = { Package = Package }
-    setmetatable(env, { __index = _G })
     local dirs = string.split2(os.getenv('jagen_path'), '\t')
     table.insert(dirs, 1, assert(os.getenv('jagen_root')))
 
     for i = #dirs, 1, -1 do
         local filename = System.mkpath(dirs[i], 'rules.lua')
-        if System.file_exists(filename) then
-            local chunk = assert(loadfile(filename))
-            setfenv(chunk, env)
-            chunk()
+        local file = io.open(filename, 'rb')
+        if file then
+            assert(loadstring(file:read('*a'), filename))()
+            file:close()
         end
     end
 
