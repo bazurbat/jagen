@@ -35,7 +35,7 @@ generation to provide the rules.
 
 ## Requirements
 
-POSIX compatible shell, Lua 5.1, [Ninja](https://ninja-build.org/).
+POSIX compatible shell, Lua 5.1 or 5.2, [Ninja](https://ninja-build.org/).
 
 ## Usage
 
