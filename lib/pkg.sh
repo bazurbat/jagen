@@ -156,6 +156,7 @@ pkg__download() {
 
     trap pkg__on_download_exit EXIT
 
+    pkg_run mkdir -p "${dest_path%/*}"
     curl -L "$src_path" -o "$dest_path" ||
         die "failed to download $src_path"
 
