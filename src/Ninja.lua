@@ -29,9 +29,12 @@ function Ninja:rule(rule)
         self:variable('command', rule.command, 1)
     }
     if rule.variables then
+        local vars = {}
         for k, v in pairs(rule.variables) do
-            table.insert(o, self:variable(k, v, 1))
+            table.insert(vars, self:variable(k, v, 1))
         end
+        table.sort(vars)
+        table.iextend(o, vars)
     end
     return table.concat(o, '\n')
 end
@@ -46,9 +49,12 @@ function Ninja:build(build)
         table.concat(header, ' $\n'..self:indent(4))
     }
     if build.variables then
+        local vars = {}
         for k, v in pairs(build.variables) do
-            table.insert(o, self:variable(k, v, 1))
+            table.insert(vars, self:variable(k, v, 1))
         end
+        table.sort(vars)
+        table.iextend(o, vars)
     end
     return table.concat(o, '\n')
 end
