@@ -1,5 +1,7 @@
 #!/bin/sh
 
+require rootfs
+
 install_sdk() {
     local pub_dir="$jagen_sdk_dir/pub"
 
@@ -10,12 +12,12 @@ install_sdk() {
     pkg_run rsync -rtl --delete "$pub_dir/kmod/" "kmod"
 }
 
-jagen_pkg_install() {
-    require rootfs
-
+jagen_pkg_compile() {
     jagen_rootfs_init .
     toolchain_install_runtime
+}
 
+jagen_pkg_install() {
     install_sdk
 
     pkg_run rsync -t "$jagen_private_dir/lib/libHA.AUDIO.PCM.decode.so" "lib"

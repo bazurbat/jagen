@@ -1,8 +1,26 @@
 -- HiSilicon Linux SDK
 
-if not Jagen.flag('devenv') then
+local rootfs_rule = {
+    config = 'target',
+    { 'install',
+        { 'rootfs', 'compile', 'target' }
+    }
+}
+
+local firmware_rule = {
+    config = 'target',
+    install = {
+        prefix = '/usr'
+    },
+    { 'install',
+        { 'firmware', 'compile', 'target' }
+    }
+}
+
+if not Jagen.flag 'devenv' then
 
     define_rule { 'hi-kernel', 'target',
+        template = rootfs_rule,
         { 'compile',
             { 'initramfs', 'configure', 'target' }
         },
@@ -12,10 +30,12 @@ if not Jagen.flag('devenv') then
     }
 
     define_rule { 'initramfs', 'target',
+        { 'configure',
+            { 'hi-kernel', 'configure', 'target' },
+        },
         { 'install',
             requires = {
                 'busybox',
-                'hi-kernel',
                 'loop-aes',
                 'util-linux',
             }
@@ -25,8 +45,8 @@ if not Jagen.flag('devenv') then
 end
 
 define_rule { 'loop-aes', 'target',
-    { 'compile',
-        { 'hi-kernel', 'configure', 'target' }
+    requires = {
+        'hi-kernel'
     }
 }
 
@@ -36,39 +56,10 @@ define_rule { 'hi-sdk', 'target',
     }
 }
 
-define_rule { 'rootfs', 'target',
-    requires = {
-        'ast-files',
-        'busybox',
-        'dropbear',
-        'e2fsprogs',
-        'firmware-utils',
-        'gnupg',
-        'hdparm',
-        'hi-drivers',
-        'hi-sdk',
-        'hi-utils',
-        'hia-astdisplayservice',
-        'loop-aes',
-        'rtl8188eu',
-        'util-linux',
-    },
-    { 'deploy' }
-}
-
 -- explicit definition of firmware utils to avoid building gpgme for host
-
 define_rule { 'firmware-utils', 'host' }
-
 define_rule { 'firmware-utils', 'target',
     requires = { 'gpgme' }
-}
-
-local firmware_rule = {
-    config = 'target',
-    install = {
-        prefix = '/usr'
-    }
 }
 
 define_rule { 'karaoke-player', 'target',
@@ -84,6 +75,40 @@ define_rule { 'karaoke-player', 'target',
         'libuv',
         'soundtouch',
         'wpa_supplicant',
+    }
+}
+
+define_rule { 'firmware', 'target',
+    pass_template = firmware_rule,
+    { 'compile',
+        { 'rootfs', 'compile', 'target' }
+    },
+    { 'install',
+        requires = {
+            'hi-utils',
+            'karaoke-player'
+        }
+    }
+}
+
+define_rule { 'rootfs', 'target',
+    { 'install',
+        requires = {
+            'ast-files',
+            'busybox',
+            'dropbear',
+            'e2fsprogs',
+            'firmware',
+            'firmware-utils',
+            'gnupg',
+            'hdparm',
+            'hi-drivers',
+            'hi-sdk',
+            'hia-astdisplayservice',
+            'loop-aes',
+            'rtl8188eu',
+            'util-linux',
+        }
     }
 }
 
