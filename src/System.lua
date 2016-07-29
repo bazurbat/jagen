@@ -26,7 +26,12 @@ function P.exec(cmdline, ...)
     Log.debug2(cmdline, ...)
     local command = string.format(cmdline, ...)
     local status = os.execute(command)
-    return status == 0, status % 0xFF
+    -- handling API change in Lua 5.2
+    if type(status) == 'number' then
+        return status == 0, status % 0xFF
+    else
+        return status or false
+    end
 end
 
 function P.popen(cmdline, ...)
