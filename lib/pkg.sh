@@ -177,14 +177,26 @@ pkg__unpack_dist() {
     fi
 
     if [ "$pkg_source_sha256sum" ]; then
-        echo "$pkg_source_sha256sum $dist_path" | sha256sum -c - ||
-            die "failed to verify sha256sum of $dist_path"
+        if [ "$(command -v sha256sum)" ]; then
+            echo "$pkg_source_sha256sum $dist_path" | sha256sum -c - ||
+                die "failed to verify sha256sum of $dist_path"
+        else
+            warning "sha256sum is not found in PATH, can not verify $pkg_name"
+        fi
     elif [ "$pkg_source_sha1sum" ]; then
-        echo "$pkg_source_sha1sum $dist_path" | sha1sum -c - ||
-            die "failed to verify sha1sum of $dist_path"
+        if [ "$(command -v sha1sum)" ]; then
+            echo "$pkg_source_sha1sum $dist_path" | sha1sum -c - ||
+                die "failed to verify sha1sum of $dist_path"
+        else
+            warning "sha1sum is not found in PATH, can not verify $pkg_name"
+        fi
     elif [ "$pkg_source_md5sum" ]; then
-        echo "$pkg_source_md5sum $dist_path" | md5sum -c - ||
-            die "failed to verify md5sum of $dist_path"
+        if [ "$(command -v md5sum)" ]; then
+            echo "$pkg_source_md5sum $dist_path" | md5sum -c - ||
+                die "failed to verify md5sum of $dist_path"
+        else
+            warning "md5sum is not found in PATH, can not verify $pkg_name"
+        fi
     fi
 
     [ -f "$dist_path" ] ||
