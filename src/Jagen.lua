@@ -245,7 +245,7 @@ end
 
 local function help_requested(args)
     return args and args[1] and
-        (args[1] == '-h' or string.match(args[1], '\--help$'))
+        (args[1] == '-h' or string.match(args[1], '^%--help$'))
 end
 
 local function find_options(args)
