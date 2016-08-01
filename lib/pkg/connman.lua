@@ -9,10 +9,10 @@ return {
     },
     build  = {
         type = 'GNU',
+        -- NOTE: connmand SEGVs on start without pie on MIPS
         options = {
             '--sysconfdir=/etc',
             '--localstatedir=/settings',
-            -- connmand SEGVs on start without pie
             '--enable-pie',
             '--disable-gadget',
             '--disable-bluetooth',
@@ -23,13 +23,7 @@ return {
             '--disable-wispr',
             '--disable-tools',
             '--disable-client',
-            '--disable-datafiles',
         }
-    },
-    install = {
-        dbus_system_configs = {
-            "src/connman-dbus.conf"
-        },
     },
     requires = {
         'dbus',
