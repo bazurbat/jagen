@@ -8,9 +8,10 @@ fi
 jagen_FS=$(printf '\t')
 jagen_IFS=$(printf '\n\t')
 
-# These should be set in env and config
-export jagen_dir=""
-export jagen_project_dir=""
+# These globals are coming from env.sh
+export jagen_dir="$jagen_dir"
+export jagen_project_dir="$jagen_project_dir"
+
 export jagen_layers=""
 
 export jagen_shell=""
