@@ -92,6 +92,7 @@ define_rule { 'firmware', 'target',
 }
 
 define_rule { 'rootfs', 'target',
+    pass_template = rootfs_rule,
     { 'install',
         requires = {
             'ast-files',
