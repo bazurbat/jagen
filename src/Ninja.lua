@@ -43,7 +43,7 @@ function Ninja:build(build)
     local header = {
         string.format('\nbuild %s: %s',
             table.concat(build.outputs, ' '), build.rule),
-        unpack(map(tostring, build.inputs))
+        table.unpack(map(tostring, build.inputs))
     }
     local o = {
         table.concat(header, ' $\n'..self:indent(4))

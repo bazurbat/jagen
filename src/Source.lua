@@ -174,7 +174,7 @@ end
 function GitSource:fixup()
     if self.assume_unchanged then
         return self:exec('update-index --assume-unchanged %s',
-            System.quote(unpack(self.assume_unchanged)))
+            System.quote(table.unpack(self.assume_unchanged)))
     end
     return true
 end

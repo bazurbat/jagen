@@ -74,6 +74,13 @@ function string.split2(s, sep)
     return o
 end
 
+-- compatibility with Lua 5.1
+if type(table.unpack) ~= 'function' then
+    function table.unpack(t)
+        return unpack(t)
+    end
+end
+
 function table.rest(t, start)
     local o = {}
     for i = start, #t do

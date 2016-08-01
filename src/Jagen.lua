@@ -323,7 +323,7 @@ function Jagen.command.clean(args)
     }
     local dirs = System.getenv(vars)
 
-    assert(System.rmrf(unpack(dirs)))
+    assert(System.rmrf(table.unpack(dirs)))
 
     return Jagen.command.refresh()
 end
@@ -337,7 +337,7 @@ local function prepare_root()
     }
     local dirs = System.getenv(vars)
 
-    assert(System.mkdir(unpack(dirs)))
+    assert(System.mkdir(table.unpack(dirs)))
 end
 
 function Jagen.command.refresh(args)
@@ -415,7 +415,7 @@ function Jagen.command.build(args)
 
     local cmd = System.mkpath(Jagen.lib_dir, 'cmd.sh')
     local err, status = System.exec('%s build %s', cmd,
-        System.quote(unpack(options)))
+        System.quote(table.unpack(options)))
 
     return status
 end
