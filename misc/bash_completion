@@ -9,7 +9,7 @@ _jagen_complete__list_products() {
       done )
 }
 
-_jagen_complete_init_root() {
+_jagen_complete_init_project() {
     local cur prev
     local this_cmd jagen_dir
 
@@ -74,7 +74,7 @@ _jagen_complete() {
     __ltrim_colon_completions "$cur"
 }
 
-complete -F _jagen_complete_init_root init-root
+complete -F _jagen_complete_init_project init-project
 complete -F _jagen_complete jagen
 
 ### End of Jagen Bash completion definitions ###
