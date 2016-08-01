@@ -17,6 +17,8 @@ export jagen_lib_dir="${jagen_dir:?}/lib"
 
 export jagen_bin_dir="$jagen_project_dir/bin"
 export jagen_src_dir="$jagen_project_dir/src"
+export jagen_dist_dir="$jagen_project_dir/dist"
+export jagen_toolchains_dir="$jagen_project_dir/toolchains"
 export jagen_build_dir="$jagen_project_dir/build"
 export jagen_include_dir="$jagen_project_dir/include"
 export jagen_log_dir="$jagen_build_dir"
@@ -33,10 +35,6 @@ jagen_build_verbose="no"
 if [ "$jagen_project_dir" ]; then
     include "$jagen_project_dir/config"
 fi
-
-export jagen_base_dir="${jagen_base_dir:-$jagen_dir}"
-export jagen_toolchains_dir="${jagen_base_dir:?}/toolchains"
-export jagen_dist_dir="${jagen_base_dir:?}/dist"
 
 set_jagen_path() {
     local path IFS="$jagen_IFS" FS="$jagen_FS"
