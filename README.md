@@ -72,7 +72,7 @@ OPTIONS:
   In the default configuration a location of software distributions, patches
   and toolchains is set relative to a base directory (\$jagen_dir/..) to
   facilitate sharing between different build roots. Source packages are checked
-  out into the current build root (\$jagen_root/src). Use the '-s' option to
+  out into the current build root (\$jagen_project_dir/src). Use the '-s' option to
   set a location of source packages relative to the base directory too. Note
   that 'jagen clean' command does not touch the source packages location even
   if it is inside the build root.

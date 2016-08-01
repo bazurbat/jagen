@@ -45,7 +45,7 @@ OPTIONS:
   In the default configuration a location of software distributions, patches
   and toolchains is set relative to a base directory (\$jagen_dir/..) to
   facilitate sharing between different build roots. Source packages are checked
-  out into the current build root (\$jagen_root/src). Use the '-s' option to
+  out into the current build root (\$jagen_project_dir/src). Use the '-s' option to
   set a location of source packages relative to the base directory too. Note
   that 'jagen clean' command does not touch the source packages location even
   if it is inside the build root.
@@ -93,8 +93,8 @@ write_env() {
 jagen_relative_dir="$jagen_dir"
 
 jagen_dir=\$(cd "\$jagen_relative_dir"; pwd -P)
-jagen_root=\$(pwd -P)
-export jagen_dir jagen_root
+jagen_project_dir=\$(pwd -P)
+export jagen_dir jagen_project_dir
 
 . "\$jagen_dir/lib/main.sh"; sts=\$?
 if [ \$sts != 0 ]; then
@@ -103,14 +103,14 @@ if [ \$sts != 0 ]; then
 fi
 
 add_PATH "\$jagen_dir/bin"
-add_PATH "\$jagen_root/bin"
+add_PATH "\$jagen_project_dir/bin"
 EOF
 }
 
 write_config() {
     cat >"$config_file" <<EOF
 # jagen_dir  - refers to the jagen project directory.
-# jagen_root - refers to the current build root (where this file is located).
+# jagen_project_dir - refers to the current build root (where this file is located).
 
 # Toplevel working directory.
 # Note: setting relative path allows sourcing this environment both from
@@ -166,7 +166,7 @@ parse_command_line() {
 }
 
 jagen_dir=$(dirname $0)
-jagen_root=''
+jagen_project_dir=''
 jagen_product=''
 jagen_flags=''
 
@@ -195,7 +195,7 @@ fi
 if [ "$share_sources" ]; then
     jagen_src_dir='$jagen_base_dir/src'
 else
-    jagen_src_dir='$jagen_root/src'
+    jagen_src_dir='$jagen_project_dir/src'
 fi
 
 . "$jagen_product_dir/init.sh" || exit

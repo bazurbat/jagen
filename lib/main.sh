@@ -15,10 +15,10 @@ export jagen_flags=""
 
 export jagen_lib_dir="${jagen_dir:?}/lib"
 
-export jagen_bin_dir="$jagen_root/bin"
-export jagen_src_dir="$jagen_root/src"
-export jagen_build_dir="$jagen_root/build"
-export jagen_include_dir="$jagen_root/include"
+export jagen_bin_dir="$jagen_project_dir/bin"
+export jagen_src_dir="$jagen_project_dir/src"
+export jagen_build_dir="$jagen_project_dir/build"
+export jagen_include_dir="$jagen_project_dir/include"
 export jagen_log_dir="$jagen_build_dir"
 export jagen_private_dir
 
@@ -30,8 +30,8 @@ jagen_build_verbose="no"
 . "$jagen_lib_dir/common.sh" || return
 
 # Avoid import during init-root
-if [ "$jagen_root" ]; then
-    include "$jagen_root/config"
+if [ "$jagen_project_dir" ]; then
+    include "$jagen_project_dir/config"
 fi
 
 export jagen_base_dir="${jagen_base_dir:-$jagen_dir}"
@@ -48,8 +48,8 @@ set_jagen_path() {
 }
 set_jagen_path
 
-export jagen_host_dir="$jagen_root/host"
-export jagen_target_dir="$jagen_root/target"
+export jagen_host_dir="$jagen_project_dir/host"
+export jagen_target_dir="$jagen_project_dir/target"
 
 add_PATH "$jagen_host_dir/bin"
 add_LD_LIBRARY_PATH "$jagen_host_dir/lib"

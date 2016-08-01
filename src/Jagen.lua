@@ -30,7 +30,7 @@ table.insert(package.loaders, 2, load_module)
 Jagen =
 {
     dir  = os.getenv('jagen_dir'),
-    root = os.getenv('jagen_root'),
+    root = os.getenv('jagen_project_dir'),
 
     shell = os.getenv('jagen_shell'),
 
