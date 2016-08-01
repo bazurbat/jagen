@@ -42,63 +42,71 @@ POSIX compatible shell, Lua 5.1 or 5.2, [Ninja](https://ninja-build.org/).
 ### Initializing
 
 ```
-Usage: init-root <CONFIG> [OPTIONS...]
-       init-root [-h]
-       init-root [-l]
+Usage: init-project <CONFIG> [OPTIONS...]
+       init-project [-h]
+       init-project [-l]
 
-  Initializes current directory as jagen build root.
+  Initializes current directory as jagen project.
 
 SYNOPSIS:
 
-  The script will put an environment file '$env_file' and a configuration file
-  '$config_file' in the current directory. The environment file should be
-  sourced into the working shell before issuing any other jagen commands. The
+  The script will put an environment file 'env.sh' and a configuration file
+  'config.sh' in the current directory. The environment file should be sourced
+  into the working shell before issuing any other jagen commands. The
   configuration file is sourced by a generator and a build system.
 
   Jagen will create and remove few directories inside the build root depending
   on the selected configuration and commands given, so it is not safe to store
   important data there. Also initializing jagen's own project directory as
   build root is not supported. It is recommended to use separate directory for
-  every configuration and do not mix shell environments from different build
-  roots.
+  every configuration and do not mix shell environments from different
+  projects.
 
 OPTIONS:
 
   -a  add flag
   -h  show this help
   -l  list config templates
-  -s  share sources between build roots
+  -s  share sources between projects
+  -f  use force
 
   In the default configuration a location of software distributions, patches
-  and toolchains is set relative to a base directory (\$jagen_dir/..) to
-  facilitate sharing between different build roots. Source packages are checked
-  out into the current build root (\$jagen_project_dir/src). Use the '-s' option to
-  set a location of source packages relative to the base directory too. Note
-  that 'jagen clean' command does not touch the source packages location even
-  if it is inside the build root.
+  and toolchains is set relative to a root directory (one level above checked
+  out Jagen sources by default) to facilitate sharing between different
+  projects. Source packages are checked out into the 'src' subdirectory of the
+  current project. Use the '-s' option to set a location of source packages
+  relative to the root directory too. Note that 'jagen clean' command does not
+  touch the source packages location even if it is inside the build root.
 
-  The generated environment binds the build root to the corresponding jagen
-  project directory. If one or the other is moved it will become invalid. Use
-  'init-root' again to reinitialize.
+  The command refuses to initialize non-empty directories by default. Use '-f'
+  option to override the check.
+
+  The generated environment binds the project to the corresponding jagen source
+  directory. If one or the other is moved or sourced from different root from
+  which it was originally initialized (like chroot or Docker container) any
+  build-related command will likely produce wrong results.
 
   The generated configuration can be adjusted manually but will be overwritten
-  by the next 'init-root' invocation. Use '-a' option to set 'jagen_flags' from
-  command line; it can be specified multiple times.
+  by the next 'init-project' invocation. Use '-a' option to set 'jagen_flags'
+  at the initialization time; it can be specified multiple times.
 
 EXAMPLES:
 
-    mkdir -p ~/work/root-ast100
-    cd ~/work/root-ast100
-    "<jagen_dir>/init-root" ast100 -a flag1 -a flag2
-    . ./$env_file
+	# assuming jagen is checked out into ~/work
+	cd ~/work
+    mkdir ast100
+    cd ast100
+    ../jagen/init-project ast100 -a flag1 -a flag2
+    . ./env.sh
     jagen build
     exit
 
   For subsequent invocations:
 
-    cd ~/work/root-ast100
-    . ./$env_file
-    jagen rebuild target1 target2
+    cd ~/work/ast100
+    . ./env.sh
+    jagen build -f target1 target2
+
 ```
 
 ### Building
