@@ -15,6 +15,7 @@ install_sdk() {
 jagen_pkg_compile() {
     jagen_rootfs_init .
     toolchain_install_runtime
+    toolchain_install_ldconfig
 }
 
 jagen_pkg_install() {

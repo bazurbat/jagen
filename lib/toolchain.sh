@@ -43,6 +43,13 @@ toolchain_get_arch_lib_dir() {
     printf "lib"
 }
 
+toolchain_find_path() {
+    local pathname="$("${2:-${CC:?}}" $jagen_target_cflags --print-file-name="${1:?}")"
+    if [ "$pathname" ]; then
+        real_path $(dirname "$pathname")
+    fi
+}
+
 toolchain_get_support_lib_dir() {
     local libstdc="$("${1:-${CC:?}}" $jagen_target_cflags --print-file-name=libstdc++.a)"
     if [ "$libstdc" ]; then
@@ -170,4 +177,8 @@ toolchain_install_runtime() {
             --exclude="*" \
             "$lib_dir/" "$dest_dir"
     fi
+}
+
+toolchain_install_ldconfig() {
+    :
 }
