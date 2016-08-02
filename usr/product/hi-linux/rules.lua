@@ -60,11 +60,9 @@ define_rule { 'karaoke-player', 'target',
         'dbus',
         'ffmpeg',
         'hi-sdk',
-        'hostapd',
         'libass',
         'libuv',
         'soundtouch',
-        'wpa_supplicant',
     }
 }
 
@@ -76,7 +74,9 @@ define_rule { 'firmware', 'target',
     { 'install',
         requires = {
             'hi-utils',
-            'karaoke-player'
+            'hostapd',
+            'karaoke-player',
+            'wpa_supplicant',
         }
     }
 }
