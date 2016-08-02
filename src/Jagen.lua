@@ -42,7 +42,9 @@ Jagen =
     include_dir = assert(os.getenv('jagen_include_dir')),
 
     target_dir   = assert(os.getenv('jagen_target_dir')),
-    target_board = os.getenv('jagen_target_board')
+    target_board = os.getenv('jagen_target_board'),
+
+    package_aliases = {}
 }
 
 function Jagen.flag(f)

@@ -13,19 +13,22 @@ end
 
 function Package:parse(rule, config)
     if type(rule) == 'string' then
-        return { name = rule, config = config }
+        rule = { name = rule, config = config }
+    else
+        if type(rule[1]) == 'string' then
+            rule.name = rule[1]
+            table.remove(rule, 1)
+        end
+
+        if type(rule[1]) == 'string' then
+            rule.config = rule[1]
+            table.remove(rule, 1)
+        end
+
+        rule.config = rule.config or config
     end
 
-    if type(rule[1]) == 'string' then
-        rule.name = rule[1]
-        table.remove(rule, 1)
-    end
-
-    if type(rule[1]) == 'string' then
-        rule.config = rule[1]
-        table.remove(rule, 1)
-    end
-    rule.config = rule.config or config
+    rule.name = Jagen.package_aliases[rule.name] or rule.name
 
     if type(rule.source) == 'string' then
         if string.match(rule.source, '^https?://') then
@@ -34,6 +37,7 @@ function Package:parse(rule, config)
             rule.source = { type = 'dist', location = rule.source }
         end
     end
+
     return rule
 end
 
@@ -346,6 +350,10 @@ function define_rule(rule)
         add_requires(stage, config, template)
         pkg:add_target(stage, config)
     end
+end
+
+function define_package_alias(name, value)
+    Jagen.package_aliases[name] = value
 end
 
 return Package
