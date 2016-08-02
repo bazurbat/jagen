@@ -1,13 +1,13 @@
 -- HiSilicon Linux SDK
 
-local rootfs_rule = {
+local rootfs_template_rule = {
     config = 'target',
     { 'install',
         { 'rootfs', 'compile', 'target' }
     }
 }
 
-local firmware_rule = {
+local firmware_template_rule = {
     config = 'target',
     install = {
         prefix = '/usr'
@@ -20,7 +20,7 @@ local firmware_rule = {
 if not Jagen.flag 'devenv' then
 
     define_rule { 'hi-kernel', 'target',
-        template = rootfs_rule,
+        template = rootfs_template_rule,
         { 'compile',
             { 'initramfs', 'configure', 'target' }
         },
@@ -63,7 +63,7 @@ define_rule { 'firmware-utils', 'target',
 }
 
 define_rule { 'karaoke-player', 'target',
-    template = firmware_rule,
+    template = firmware_template_rule,
     requires = {
         'chicken-eggs',
         'connman',
@@ -79,7 +79,7 @@ define_rule { 'karaoke-player', 'target',
 }
 
 define_rule { 'firmware', 'target',
-    pass_template = firmware_rule,
+    pass_template = firmware_template_rule,
     { 'compile',
         { 'rootfs', 'compile', 'target' }
     },
@@ -92,7 +92,7 @@ define_rule { 'firmware', 'target',
 }
 
 define_rule { 'rootfs', 'target',
-    pass_template = rootfs_rule,
+    pass_template = rootfs_template_rule,
     { 'install',
         requires = {
             'ast-files',
