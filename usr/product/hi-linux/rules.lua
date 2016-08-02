@@ -17,11 +17,7 @@ local firmware_template_rule = {
     }
 }
 
-define_rule { 'kernel', 'target',
-    { 'compile',
-        { 'hi-kernel', 'compile', 'target' }
-    }
-}
+define_package_alias('kernel', 'hi-kernel')
 
 if not Jagen.flag 'devenv' then
 
