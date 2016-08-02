@@ -100,7 +100,8 @@ define_rule { 'rootfs', 'target',
             'rtl8188eu',
             'util-linux',
         }
-    }
+    },
+    { 'deploy' }
 }
 
 if Jagen.flag 'debug' then
