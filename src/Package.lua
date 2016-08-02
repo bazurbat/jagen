@@ -288,7 +288,15 @@ function define_rule(rule)
                     }, config)
             end
 
-            pkg:add_target({ 'compile' }, config)
+            if build.kernel_modules == true then
+                pkg:add_target({ 'compile',
+                        { 'kernel', 'compile', config }
+                    }, config)
+                define_rule { 'kernel', config }
+            else
+                pkg:add_target({ 'compile' }, config)
+            end
+
             pkg:add_target({ 'install' }, config)
         end
 

@@ -6,7 +6,8 @@ return {
     },
     build  = {
         type = 'make',
-        in_source = true
+        in_source = true,
+        kernel_modules = true
     },
     install = {
         type = 'none'

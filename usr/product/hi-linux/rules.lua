@@ -17,6 +17,12 @@ local firmware_template_rule = {
     }
 }
 
+define_rule { 'kernel', 'target',
+    { 'compile',
+        { 'hi-kernel', 'compile', 'target' }
+    }
+}
+
 if not Jagen.flag 'devenv' then
 
     define_rule { 'hi-kernel', 'target',
@@ -43,18 +49,6 @@ if not Jagen.flag 'devenv' then
     }
 
 end
-
-define_rule { 'loop-aes', 'target',
-    requires = {
-        'hi-kernel'
-    }
-}
-
-define_rule { 'hi-sdk', 'target',
-    { 'compile',
-        { 'hi-kernel', 'configure', 'target' }
-    }
-}
 
 -- explicit definition of firmware utils to avoid building gpgme for host
 define_rule { 'firmware-utils', 'host' }
