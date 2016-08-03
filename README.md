@@ -1,5 +1,16 @@
 # jagen
 
+- [Requirements](#requirements)
+- [Usage](#usage)
+    - [Initializing](#initializing)
+    - [Building](#building)
+    - [Cleaning](#cleaning)
+    - [Targets](#targets)
+    - [Working with source packages](#working-with-source-packages)
+    - [Manage filesystem images](#manage-filesystem-images)
+    - [Install Bash completions](#install-bash-completions)
+- [Build system internals](#build-system-internals)
+
 Jagen is a tool which eases development of multiple interdependent software
 packages. It abstracts peculiarities of individual packages build systems and
 provides means to manage them as a whole.
