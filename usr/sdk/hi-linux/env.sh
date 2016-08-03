@@ -9,4 +9,3 @@ jagen_kernel_config='ast2xx_hi3719cv100_defconfig'
 jagen_kernel_image='uImage'
 
 export KERNEL_SRC="$jagen_kernel_dir"
-export KERNEL_INITRAMFS_SRC="${jagen_build_dir:?}/initramfs"
