@@ -283,3 +283,23 @@ COMMANDS
 Completions defined for `jagen` command will work only when environment is
 sourced from build root. Freeform target patterns such as `::host` or
 `:install:` are not currently completed.
+
+## Build system internals
+
+The build system is generated from a set of rules represented by dictionaries
+(key-value pairs) which are found in "rules.lua" files across "layer"
+directories. Each rule defines some piece of information about a "package",
+like build stages, location of source directory and so on. Rules with the same
+names are merged across layers and the final result is used in generation.
+Dependency information and build command goes into `build.ninja` file in the
+`build` directory, additional package specific environment goes into "include
+script" in the `include` directory. All code dealing with include script
+generation is in `src/Script.lua` file which can be used as a reference.
+
+Build stages are handled by `jagen-pkg` which includes `lib/pkg.sh` which
+contains definitions of default stages and some utility functions for usage in
+user defined build scripts. It is the actual "engine" of the build system.
+
+Layers, build type and directory locations are set in 'config.sh' which is
+generated during project initialization. It is also included indirectly in
+every build command.
