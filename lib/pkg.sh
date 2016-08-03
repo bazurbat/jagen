@@ -361,7 +361,7 @@ pkg_compile() {
             pkg_run make "${jagen_kernel_image:?}" modules
             ;;
         linux_module)
-            pkg_run make "$@" modules
+            pkg_run make $pkg_options "$@"
             ;;
     esac
 }
@@ -427,24 +427,44 @@ pkg_install() {
             pkg_run install -vm644 \
                 "$pkg_build_dir/arch/$jagen_target_arch/boot/$jagen_kernel_image" \
                 "$jagen_build_dir"
-            pkg_run make INSTALL_MOD_PATH="$pkg_install_dir" modules_install
+            pkg_run make \
+                INSTALL_MOD_PATH="${INSTALL_MOD_PATH:-${pkg_install_dir:?}}" \
+                "$@" modules_install
             ;;
         linux_module)
-            pkg_run make INSTALL_MOD_PATH="$pkg_install_dir" "$@" modules_install
+            if [ "$pkg_install_modules_dirs" ]; then
+                pkg_install_modules $pkg_install_modules_dirs
+            else
+                # NOTE: Passing '.' here causes 'modules_install' to append
+                # full path to the module sources after install-dir.
+                pkg_install_modules ''
+            fi
             ;;
         none)
             ;;
     esac
 
-    pkg_install_modules $pkg_install_modules_dirs
     pkg__install_dbus_configs
+}
+
+pkg__modules_install() {
+    pkg_run make -C "${KERNEL_SRC:?}" M="$PWD/$1" \
+        INSTALL_MOD_PATH="${INSTALL_MOD_PATH:-${pkg_install_dir:?}}" \
+        modules_install
 }
 
 pkg_install_modules() {
     local dir
-    for dir do
-        pkg_run make -C "${KERNEL_SRC:?}" M="$PWD/$dir" modules_install
-    done
+
+    if [ "$pkg_install_modules_dirs" ]; then
+        for dir do
+            pkg__modules_install "$dir"
+        done
+    else
+        # NOTE: Passing '.' here causes 'modules_install' to append
+        # full path to the module sources after install-dir.
+        pkg__modules_install ''
+    fi
 }
 
 pkg__image() {

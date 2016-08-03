@@ -6,6 +6,9 @@ return {
     },
     build = {
         type = 'linux_module',
+        options = {
+            'KSRC=$KERNEL_SRC'
+        },
         in_source = true
     },
     { 'unpack',
