@@ -1,5 +1,8 @@
 # jagen
 
+Just another build system generator.
+
+- [Overview](#overview)
 - [Requirements](#requirements)
 - [Usage](#usage)
     - [Initializing](#initializing)
@@ -11,38 +14,28 @@
     - [Install Bash completions](#install-bash-completions)
 - [Build system internals](#build-system-internals)
 
+## Overview
+
 Jagen is a tool which eases development of multiple interdependent software
 packages. It abstracts peculiarities of individual packages build systems and
 provides means to manage them as a whole.
 
-Aimed for cases when OpenEmbedded is too magical and hard to configure for
-obscure vendor SDK of choice. Intended to ease the pain of development of
-multiple interdependent software packages with non standard toolchains,
-cross-compilation and complex build dependencies. Based on ideas from Gentoo
-Portage, GNU Guix and Nix package managers.
+A workflow is organized around "projects" which are composed from several
+layers. Each layer can contribute rule definitions and environment variables to
+the project. The definitions are merged to generate meta build system which is
+then used to track individual packages build stages, allows selective rebuild
+or cleanup and management of sources.
 
-In contrast to [Buildroot](https://buildroot.org/) the workflow is organized
-around development of the rootfs/firmware itself rather than just building it
-from distribution packages. There are commands available to rebuild/cleanup
-only parts of the tree or only specific targets with dependency tracking. It is
-possible to have separate build roots with different configurations/toolchains
-building from the same sources. The sources are kept checked out and out of
-tree build is setup by default, so there are no intermediate archive/rsync
-step.
+Rules are declarative key-value pairs (dictionaries) defining a piece of
+information about a package. Rules with the same name are merged but there can
+be a few configurations for the same package inside a single project. This
+mechanism is used to support cross-compilation, but it is not limited to that.
 
-Built-in functions are provided to ease integrating of packages using common
-build systems like autotools and CMake with their own sets of workarounds. It
-is trivial to override any built-in stages with local customizations. It is
-also easy to hook up foreign build systems facilitating integration of
-proprietary packages.
-
-The concept of vendor layers is supported. It is possible to override
-everything provided upstream, add your own toolchains, SDKs, BSPs, etc. Every
-build root also can have local customizations.
-
-The build system itself is generated from layered set of declarative rules
-represented as Lua tables. You can also run arbitrary Lua code during
-generation to provide the rules.
+Every rule, environment file and build stage can be overridden in the
+subsequent layers or by the project. Built-in functions are provided to ease
+integrating of packages using common build systems like autotools and CMake
+with their own sets of workarounds. There are several vendor-specific layers in
+the Jagen distribution which can be used as an example.
 
 ## Requirements
 
