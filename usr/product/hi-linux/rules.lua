@@ -19,33 +19,6 @@ local firmware_template_rule = {
 
 define_package_alias('kernel', 'hi-kernel')
 
-if not Jagen.flag 'devenv' then
-
-    define_rule { 'hi-kernel', 'target',
-        template = rootfs_template_rule,
-        { 'compile',
-            { 'initramfs', 'configure', 'target' }
-        },
-        { 'image',
-            requires = { 'initramfs' }
-        }
-    }
-
-    define_rule { 'initramfs', 'target',
-        { 'configure',
-            { 'hi-kernel', 'configure', 'target' },
-        },
-        { 'install',
-            requires = {
-                'busybox',
-                'loop-aes',
-                'util-linux',
-            }
-        }
-    }
-
-end
-
 -- explicit definition of firmware utils to avoid building gpgme for host
 define_rule { 'firmware-utils', 'host' }
 define_rule { 'firmware-utils', 'target',
