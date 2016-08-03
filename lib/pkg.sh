@@ -436,6 +436,7 @@ pkg_install() {
             ;;
     esac
 
+    pkg_install_modules $pkg_install_modules_dirs
     pkg__install_dbus_configs
 }
 
@@ -484,10 +485,6 @@ jagen_pkg_compile() {
 
 jagen_pkg_install() {
     pkg_install
-}
-
-jagen_pkg_install_modules() {
-    pkg_install_modules $pkg_install_modules_dirs
 }
 
 jagen_pkg_image() {

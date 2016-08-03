@@ -312,7 +312,6 @@ function define_rule(rule)
     do local install = this.install or pkg.install
         if install then
             if install.modules then
-                pkg:add_target({ 'install_modules' }, config)
             end
         end
     end
