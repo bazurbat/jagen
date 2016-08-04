@@ -47,6 +47,13 @@ function P.pread(format, cmdline, ...)
     return out
 end
 
+function P.with_output_file(filename, proc)
+    local file = assert(io.open(filename, 'wb'))
+    local values = { proc(file) }
+    file:close()
+    return unpack(values)
+end
+
 function P.getenv(vars)
     local o = {}
     for _, v in ipairs(vars) do
