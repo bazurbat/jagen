@@ -70,6 +70,7 @@ define_rule { 'rootfs', 'target',
             'hi-sdk',
             'hia-astdisplayservice',
             'loop-aes',
+            'ntfs3g',
             'rtl8188eu',
             'util-linux',
         }
