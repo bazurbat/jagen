@@ -38,13 +38,13 @@ if ! [ "$pkg_stage" = "unpack" -o "$pkg_stage" = "patch" ]; then
     include "$jagen_include_dir/${pkg_name}__${pkg_config}" || die
 fi
 
+pkg_install_dir="$pkg_sysroot$pkg_prefix"
+
 _pkg_file=$(find_file "pkg/${pkg_name}.sh")
 if [ "$_pkg_file" ]; then
 	include "$_pkg_file"
 fi
 unset _pkg_file
-
-pkg_install_dir="${pkg_install_dir:-$pkg_sysroot$pkg_prefix}"
 
 if [ "$pkg_query" ]; then
     case $pkg_query in
