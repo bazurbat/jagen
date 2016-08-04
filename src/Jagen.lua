@@ -368,6 +368,40 @@ function Jagen.command.refresh(args)
     local ninja = Ninja:new()
     local build_file = System.mkpath(Jagen.build_dir, 'build.ninja')
     ninja:generate(build_file, packages)
+
+    local names = {}
+    for name, _ in pairs(packages) do
+        table.insert(names, name)
+    end
+    table.sort(names)
+
+    local names_file = assert(io.open(System.mkpath(Jagen.build_dir, '__package_names'), 'wb'))
+    local scm_names_file = assert(io.open(System.mkpath(Jagen.build_dir, '__package_names_scm'), 'wb'))
+    local configs_file = assert(io.open(System.mkpath(Jagen.build_dir, '__package_configs'), 'wb'))
+    local targets_file = assert(io.open(System.mkpath(Jagen.build_dir, '__package_targets'), 'wb'))
+
+    for _, name in ipairs(names) do
+        local pkg = packages[name]
+        assert(names_file:write(string.format('%s\n', name)))
+        if pkg.source and pkg.source:is_scm() then
+            assert(scm_names_file:write(string.format('%s\n', name)))
+        end
+        if pkg.configs then
+            for config, _ in pairs(pkg.configs) do
+                assert(configs_file:write(string.format('%s:%s\n', name, config)))
+            end
+        else
+            assert(configs_file:write(string.format('%s\n', name)))
+        end
+        for target in pkg:each() do
+            assert(targets_file:write(string.format('%s\n', target:__tostring(':'))))
+        end
+    end
+
+    names_file:close()
+    scm_names_file:close()
+    configs_file:close()
+    targets_file:close()
 end
 
 local function find_targets(packages, arg)
@@ -428,40 +462,6 @@ end
 
 function Jagen.command.image(args)
     return complex_command('image', args)
-end
-
-function Jagen.command.list(args)
-    local options, rest = find_options(args)
-    local cmd = rest[1]
-    local packages = Package.load_rules()
-
-    if cmd == 'packages' then
-        for k, v in pairs(packages) do
-            print(k)
-        end
-    elseif cmd == 'src_packages' then
-        for name, pkg in pairs(packages) do
-            if pkg.source:is_scm() then
-                print(name)
-            end
-        end
-    elseif cmd == 'package_configs' then
-        for name, pkg in pairs(packages) do
-            if pkg.configs then
-                for config, _ in pairs(pkg.configs) do
-                    print(string.format("%s:%s", name, config))
-                end
-            else
-                print(name)
-            end
-        end
-    elseif cmd == 'targets' then
-        for _, pkg in pairs(packages) do
-            for target in pkg:each() do
-                print(target:__tostring(':'))
-            end
-        end
-    end
 end
 
 local function nproc()

@@ -24,7 +24,7 @@ _jagen_complete_init_project() {
     case $prev in
         -a) ;; # expecting flag name, freeform, no completions for them for now
          *) COMPREPLY=($(compgen -W "$opts $(_jagen_complete__list_products "$jagen_dir")" -- "$cur")) ;;
-     esac
+    esac
 }
 
 _jagen_complete() {
@@ -53,20 +53,20 @@ _jagen_complete() {
             COMPREPLY=($(compgen -W "$help_opt $top_cmds" -- "$cur")) ;;
         clean)
             if [[ "$prev" == "clean" ]]; then
-                COMPREPLY=($(compgen -W "$help_opt $(jagen list package_configs)" -- "$cur"))
+                COMPREPLY=($(compgen -W "$help_opt $(cat "$jagen_build_dir/__package_configs")" -- "$cur"))
             else
-                COMPREPLY=($(compgen -W "$(jagen list package_configs)"))
+                COMPREPLY=($(compgen -W "$(cat "$jagen_build_dir/__package_configs")"))
             fi
             ;;
         refresh)
             COMPREPLY=($(compgen -W "$help_opt" -- "$cur")) ;;
         build)
-            COMPREPLY=($(compgen -W "$help_opt $build_opt $(jagen list targets)" -- "$cur")) ;;
+            COMPREPLY=($(compgen -W "$help_opt $build_opt $(cat "$jagen_build_dir/__package_targets")" -- "$cur")) ;;
         src)
             if [[ "$prev" == "src" ]]; then
                 COMPREPLY=($(compgen -W "$help_opt $src_cmds" -- "$cur"))
             else
-                COMPREPLY=($(compgen -W "$(jagen list src_packages)" -- "$cur"))
+                COMPREPLY=($(compgen -W "$(cat "$jagen_build_dir/__package_names_scm")" -- "$cur"))
             fi
             ;;
     esac
