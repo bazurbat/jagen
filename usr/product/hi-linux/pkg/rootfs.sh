@@ -32,7 +32,7 @@ jagen_pkg_install() {
     jagen_rootfs_install_hostname
     jagen_rootfs_fix_mtab
 
-    if pkg_is_production; then
+    if pkg_is_release; then
         pkg_strip_root "$pkg_install_dir"
         _jagen src status > heads || return
     else
