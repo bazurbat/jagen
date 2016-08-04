@@ -428,13 +428,7 @@ pkg_install() {
                 "$@" modules_install
             ;;
         linux_module)
-            if [ "$pkg_install_modules_dirs" ]; then
-                pkg_install_modules $pkg_install_modules_dirs
-            else
-                # NOTE: Passing '.' here causes 'modules_install' to append
-                # full path to the module sources after install-dir.
-                pkg_install_modules ''
-            fi
+            pkg_install_modules
             ;;
         none)
             ;;
@@ -453,7 +447,7 @@ pkg_install_modules() {
     local dir
 
     if [ "$pkg_install_modules_dirs" ]; then
-        for dir do
+        for dir in $pkg_install_modules_dirs; do
             pkg__modules_install "$dir"
         done
     else
