@@ -298,6 +298,10 @@ function Jagen.command.clean(args)
         return Jagen.command['help'] { 'clean' }
     end
 
+    function force_reconfigure(name, config)
+        assert(Target:new(name, 'configure', config):remove())
+    end
+
     if #args > 0 then
         local packages = Package.load_rules()
         for _, arg in ipairs(args) do
@@ -309,11 +313,20 @@ function Jagen.command.clean(args)
             end
             if pkg.build and pkg.build.in_source and pkg.source:is_scm() then
                 Jagen.src.clean({ name })
-                -- TODO: remove configure
             else
                 for config, dir in pairs(pkg:build_dirs(config)) do
                     assert(System.rmrf(dir))
-                    assert(Target:new(name, 'configure', config):remove())
+                end
+            end
+            if config then
+                force_reconfigure(name, config)
+            else
+                if next(pkg.configs) then
+                    for config in pairs(pkg.configs) do
+                        force_reconfigure(name, config)
+                    end
+                else
+                    force_reconfigure(name)
                 end
             end
         end
