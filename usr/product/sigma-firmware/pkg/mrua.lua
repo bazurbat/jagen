@@ -6,7 +6,8 @@ return {
     },
     build = {
         type = 'custom',
-        in_source = true
+        in_source = true,
+        kernel_modules = true,
     },
     install = {
         modules = {
