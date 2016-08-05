@@ -35,21 +35,6 @@ define_rule { 'astindex',
 
 -- kernel
 
-local kernel_rule_template = {
-    config = 'target',
-    { 'configure',
-        { 'kernel', 'compile', 'target' }
-    },
-    { 'install',
-        { 'kernel', 'install', 'target' }
-    }
-}
-
-local function define_kernel_rule(r)
-    r.template = kernel_rule_template
-    define_rule(r)
-end
-
 define_rule { 'kernel', 'target',
     { 'configure',
         { 'linux', 'unpack' },
@@ -58,13 +43,13 @@ define_rule { 'kernel', 'target',
         { 'rootfs', 'compile', 'target' }
     },
     { 'image',
-        requires = { 'rootfs' }
+        requires = {
+            'loop-aes',
+            'ralink',
+            'rootfs',
+        }
     }
 }
-
-define_kernel_rule { 'loop-aes' }
-
-define_kernel_rule { 'ralink' }
 
 -- rootfs
 
@@ -93,13 +78,6 @@ define_rule { 'rootfs', 'target',
             'utils',
         }
     }
-}
-
-define_rule { 'mrua', 'target',
-    { 'compile',
-        { 'kernel', 'compile', 'target' }
-    },
-    { 'install' },
 }
 
 define_rule { 'busybox', 'target',
