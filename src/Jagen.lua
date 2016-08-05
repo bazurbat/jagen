@@ -307,9 +307,14 @@ function Jagen.command.clean(args)
             if not pkg then
                 die('no such package: %s', name)
             end
-            for config, dir in pairs(pkg:build_dirs(config)) do
-                assert(System.rmrf(dir))
-                assert(Target:new(name, 'configure', config):remove())
+            if pkg.build and pkg.build.in_source and pkg.source:is_scm() then
+                Jagen.src.clean({ name })
+                -- TODO: remove configure
+            else
+                for config, dir in pairs(pkg:build_dirs(config)) do
+                    assert(System.rmrf(dir))
+                    assert(Target:new(name, 'configure', config):remove())
+                end
             end
         end
         return 0
