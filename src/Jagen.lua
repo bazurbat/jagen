@@ -386,13 +386,10 @@ function Jagen.command.refresh(args)
         if pkg.source and pkg.source:is_scm() then
             assert(scm_names_file:write(string.format('%s\n', name)))
         end
-        if pkg.configs then
-            for config, _ in pairs(pkg.configs) do
-                assert(configs_file:write(string.format('%s:%s\n', name, config)))
-            end
-        else
-            assert(configs_file:write(string.format('%s\n', name)))
+        for config, _ in pairs(pkg.configs or {}) do
+            assert(configs_file:write(string.format('%s:%s\n', name, config)))
         end
+        assert(configs_file:write(string.format('%s\n', name)))
         for target in pkg:each() do
             assert(targets_file:write(string.format('%s\n', target:__tostring(':'))))
         end
