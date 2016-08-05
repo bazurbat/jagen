@@ -292,7 +292,7 @@ function define_rule(rule)
                     }, config)
             end
 
-            if build.kernel_modules == true then
+            if build.type == 'linux_module' or build.kernel_modules == true then
                 pkg:add_target({ 'compile',
                         { 'kernel', 'compile', config }
                     }, config)
