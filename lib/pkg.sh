@@ -77,6 +77,27 @@ pkg_fix_config_script() {
     fi
 }
 
+pkg_sync_dirs() {
+    local source_dir="${1:?}"
+    local dest_dir="${2:?}"
+    local filter_file=
+
+    [ -d "$source_dir" ] ||
+        die "Sync source directory '$source_dir' is not exists"
+    [ -d "$dest_dir" ] ||
+        die "Sync destination directory '$dest_dir' is not exists"
+
+    if [ "$3" ]; then
+        filter_file=$(find_file "$3")
+        [ "$filter_file" ] ||
+            die "Could not find filter file '$3' for syncronization of '$source_dir' to '$dest_dir'"
+    fi
+
+    pkg_run rsync -va \
+        ${filter_file:+--filter="merge ${filter_file}"} \
+        "$source_dir" "$dest_dir"
+}
+
 pkg_link() {
     local src="${1:?}" dst="${2:?}"
 
