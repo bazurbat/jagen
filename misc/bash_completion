@@ -34,7 +34,7 @@ _jagen_complete() {
     local top_cmds='help clean refresh build src'
     local src_cmds='dirty status clean update delete'
     local help_opt='-h --help'
-    local build_opt='-n --dry-run -p --progress -P --allprogress -f --from -o --only'
+    local build_opt='-n --dry-run -p --progress -P --all-progress -f --force -a --all'
 
     # environment is not sourced
     [ "$jagen_dir" ] || return 2

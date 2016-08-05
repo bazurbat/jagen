@@ -27,7 +27,7 @@ maybe_sync() {
 
 cmd_build() {
     local IFS="$(printf '\n\t')"
-    local dry_run show_progress show_all
+    local dry_run show_progress show_all build_force build_all
     local targets logs sts arg i
     local cmd_log="$jagen_log_dir/$mode.log"
 
@@ -41,10 +41,10 @@ cmd_build() {
                 show_progress=1 ;;
             -all-progress|--all-progress)
                 show_all=1 ;;
-            -from|--from)
-                build_from=1 ;;
-            -only|--only)
-                build_only=1 ;;
+            -force|--force)
+                build_force=1 ;;
+            -all|--all)
+                build_all=1 ;;
             --*)
                 die "invalid option '$1'" ;;
             -*) arg="${1#-}"
@@ -54,8 +54,8 @@ cmd_build() {
                         n) dry_run=1 ;;
                         p) show_progress=1 ;;
                         P) show_all=1 ;;
-                        f) build_from=1 ;;
-                        o) build_only=1 ;;
+                        f) build_force=1 ;;
+                        a) build_all=1 ;;
                         *) die "invalid flag '$i' in '$1'" ;;
                     esac
                     arg=${arg#?}
@@ -81,7 +81,7 @@ cmd_build() {
         : > "$log" || return
     done
 
-    if [ "$build_from" ]; then
+    if [ "$build_force" ]; then
         rm -f $targets || return
     fi
 
@@ -102,10 +102,10 @@ cmd_build() {
     # (build server) not caring about console logs that much.
 
     maybe_sync
-    if [ "$build_only" ]; then
-        ninja $targets > "$cmd_log"; sts=$?
-    else
+    if [ "$build_all" ]; then
         ninja > "$cmd_log"; sts=$?
+    else
+        ninja $targets > "$cmd_log"; sts=$?
     fi
     maybe_sync
 
