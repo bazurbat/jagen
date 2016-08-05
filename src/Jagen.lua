@@ -293,71 +293,73 @@ function Jagen.command.help(args)
     end
 end
 
-function Jagen.command.clean(args)
-    if help_requested(args) then
-        return Jagen.command['help'] { 'clean' }
-    end
+local function clean_packages(args)
+    local packages = Package.load_rules()
 
     function force_reconfigure(name, config)
         assert(Target:new(name, 'configure', config):remove())
     end
 
-    if #args > 0 then
-        local packages = Package.load_rules()
-        for _, arg in ipairs(args) do
-            local match = string.gmatch(arg, '[^:]+')
-            local name, config = match(), match()
-            local pkg = packages[name]
-            if not pkg then
-                die('no such package: %s', name)
-            end
-            if pkg.build and pkg.build.in_source and pkg.source:is_scm() then
-                Jagen.src.clean({ name })
-            else
-                for _, dir in pairs(pkg:query('build_dir', config)) do
-                    assert(System.rmrf(dir))
-                end
-            end
-            if config then
-                force_reconfigure(name, config)
-            else
-                if next(pkg.configs) then
-                    for config in pairs(pkg.configs) do
-                        force_reconfigure(name, config)
-                    end
-                else
-                    force_reconfigure(name)
-                end
+    for _, arg in ipairs(args) do
+        local match = string.gmatch(arg, '[^:]+')
+        local name, config = match(), match()
+        local pkg = packages[name]
+
+        if not pkg then
+            die('no such package: %s', name)
+        end
+
+        if pkg.build and pkg.build.in_source and pkg.source:is_scm() then
+            Jagen.src.clean({ name })
+        else
+            for _, dir in pairs(pkg:query('build_dir', config)) do
+                assert(System.rmrf(dir))
             end
         end
-        return 0
+
+        if config then
+            force_reconfigure(name, config)
+        else
+            if next(pkg.configs) then
+                for config in pairs(pkg.configs) do
+                    force_reconfigure(name, config)
+                end
+            else
+                force_reconfigure(name)
+            end
+        end
+    end
+end
+
+local project_dirs = {
+    'jagen_bin_dir',
+    'jagen_build_dir',
+    'jagen_include_dir',
+    'jagen_log_dir',
+    'jagen_host_dir',
+    'jagen_target_dir',
+}
+
+local function clean_project()
+    assert(System.rmrf(table.unpack(System.getenv(project_dirs))))
+end
+
+function Jagen.command.clean(args)
+    if help_requested(args) then
+        return Jagen.command['help'] { 'clean' }
     end
 
-    local vars = {
-        'jagen_bin_dir',
-        'jagen_build_dir',
-        'jagen_include_dir',
-        'jagen_log_dir',
-        'jagen_host_dir',
-        'jagen_target_dir',
-    }
-    local dirs = System.getenv(vars)
-
-    assert(System.rmrf(table.unpack(dirs)))
+    if #args > 0 then
+        clean_packages(args)
+    else
+        clean_project()
+    end
 
     return Jagen.command.refresh()
 end
 
 local function prepare_root()
-    local vars = {
-        'jagen_bin_dir',
-        'jagen_build_dir',
-        'jagen_include_dir',
-        'jagen_log_dir'
-    }
-    local dirs = System.getenv(vars)
-
-    assert(System.mkdir(table.unpack(dirs)))
+    assert(System.mkdir(table.unpack(System.getenv(project_dirs))))
 end
 
 function Jagen.command.refresh(args)
