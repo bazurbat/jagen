@@ -49,7 +49,7 @@ cmd_build() {
                 die "invalid option '$1'" ;;
             -*) arg="${1#-}"
                 while [ "$arg" ]; do
-                    i=$(echo $arg | cut -c1)
+                    i=${arg%${arg#?}}
                     case $i in
                         n) dry_run=1 ;;
                         p) show_progress=1 ;;
@@ -58,7 +58,7 @@ cmd_build() {
                         o) build_only=1 ;;
                         *) die "invalid flag '$i' in '$1'" ;;
                     esac
-                    arg=${arg#$i}
+                    arg=${arg#?}
                 done ;;
              *) targets="${targets}${S}${1}"
                 logs="${logs}${S}${jagen_log_dir}/${1}.log" ;;
