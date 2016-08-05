@@ -314,7 +314,7 @@ function Jagen.command.clean(args)
             if pkg.build and pkg.build.in_source and pkg.source:is_scm() then
                 Jagen.src.clean({ name })
             else
-                for config, dir in pairs(pkg:build_dirs(config)) do
+                for _, dir in pairs(pkg:query('build_dir', config)) do
                     assert(System.rmrf(dir))
                 end
             end

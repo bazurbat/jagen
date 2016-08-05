@@ -160,21 +160,26 @@ function Package:each()
         end)
 end
 
-function Package:build_dirs(config)
-    local o = {}
-    local function get_dir(config)
-        return System.pread('*l',
-            'jagen-pkg -q build_dir %s %s', self.name, config)
+function Package:query(value, config)
+    local result = {}
+
+    local function run_query(config)
+        return assert(System.pread('*l', 'jagen-pkg -q %q %q %q',
+            assert(value), assert(self.name), config or ''))
     end
+
     if config then
         assert(self:has_config(config))
-        o[config] = assert(get_dir(config))
-    elseif self.configs then
-        for k, v in pairs(self.configs) do
-            o[k] = assert(get_dir(k))
+        result[config] = run_query(config)
+    elseif next(self.configs) then
+        for config, _ in pairs(self.configs) do
+            result[config] = run_query(config)
         end
+    else
+        result['__'] = run_query()
     end
-    return o
+
+    return result
 end
 
 function Package.load_rules(full)
