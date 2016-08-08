@@ -317,9 +317,9 @@ function define_rule(rule)
         if this.install and pkg.install and not getmetatable(this.install) then
             setmetatable(this.install, { __index = pkg.install })
         end
-    end
 
-    do local install = this.install or pkg.install
+        local install = this.install or pkg.install
+
         if install then
             if install.modules then
             end
