@@ -67,7 +67,7 @@ function Source:create(source, name)
         end
     end
 
-    if source.location and source.type ~= 'curl' then
+    if source.location then
         local base_dir = source.base_dir
         if not base_dir then
             if source:is_scm() then
