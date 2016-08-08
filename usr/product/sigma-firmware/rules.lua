@@ -119,7 +119,6 @@ define_rule { 'firmware', 'target',
     requires = {
         'ezboot',
         'karaoke-player',
-        'kernel',
         'mrua',
         'rsync',
         'ucode',
