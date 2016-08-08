@@ -191,37 +191,6 @@ function Jagen.src.delete(args)
     end
 end
 
--- image
-
-Jagen.image = {}
-
-function Jagen.image.create(args)
-    local sdk = assert(os.getenv('jagen_sdk'))
-
-    if sdk == 'hi-linux' or sdk == 'sigma' then
-        local image_type = args[1]
-        local Image = require 'Image'
-        local board = Jagen.target_board
-
-        if image_type == 'rootfs' then
-            local src_dir = assert(os.getenv('jagen_target_dir'))
-            local out_file = assert(System.expand('$jagen_build_dir/rootfs.ext4'))
-            return Image:create(src_dir, out_file)
-        elseif image_type == 'firmware' then
-            local src_dir = '$jagen_target_dir/usr'
-            local out_file = '$jagen_build_dir/firmware.bin'
-            local version = 1
-            return Image:create_firmware(src_dir, out_file, version)
-        elseif not image_type then
-            die('image type is not specified')
-        else
-            die('unsupported image type: %s', image_type)
-        end
-    else
-        die('image creation is not supported for the current SDK: %s', sdk)
-    end
-end
-
 -- these should return status number or nothing (nil)
 
 Jagen.command = {}
@@ -463,7 +432,15 @@ function Jagen.command.src(args)
 end
 
 function Jagen.command.image(args)
-    return complex_command('image', args)
+    if help_requested(args) then
+        return Jagen.command['help'] { 'image' }
+    end
+
+    local cmd = System.mkpath(Jagen.lib_dir, 'cmd.sh')
+    local err, status = System.exec('%s image %s', cmd,
+        System.quote(table.unpack(args)))
+
+    return status
 end
 
 local function nproc()

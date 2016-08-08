@@ -114,10 +114,26 @@ cmd_build() {
     return $sts
 }
 
+cmd_image() {
+    . "$jagen_lib_dir/main.sh" || return
+
+    local image_script="$(find_file "image.sh")"
+
+    [ "$image_script" ] ||
+        die "could not find script 'image.sh' in jagen_path - current \
+configuration does not support image creation"
+
+    . "$image_script" || return
+}
+
 case $1 in
     build)
         mode="$1"; shift
         cmd_build "$@"
+        ;;
+    image)
+        mode="$1"; shift
+        cmd_image "$@"
         ;;
     *)
         die "unknown wrapper command: $1"
