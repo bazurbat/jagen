@@ -183,11 +183,6 @@ function Package:query(value, config)
 end
 
 function Package.load_rules(full)
-    -- not empty: already loaded
-    if next(packages) then
-        return packages
-    end
-
     local dirs = string.split2(os.getenv('jagen_path'), '\t')
     table.insert(dirs, 1, assert(os.getenv('jagen_project_dir')))
 

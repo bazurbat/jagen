@@ -46,6 +46,12 @@ end
 function Source:create(source, name)
     local source = source or {}
 
+    -- Protect from double initialization, workaround for source.dir appending
+    -- value below
+    if getmetatable(source) then
+        return source
+    end
+
     if source.type == 'dist' then
         source = DistSource:new(source)
     elseif source.type == 'git' then
@@ -62,12 +68,11 @@ function Source:create(source, name)
         if not source.filename then
             source.filename = string.match(source.location, '^.*/(.+)') or source.location
         end
+
         if not source.basename then
             source.basename = source:_basename(source.filename)
         end
-    end
 
-    if source.location then
         local base_dir = source.base_dir
         if not base_dir then
             if source:is_scm() then
@@ -76,6 +81,7 @@ function Source:create(source, name)
                 base_dir = System.mkpath('$jagen_build_dir', name or source.basename)
             end
         end
+
         source.dir = System.mkpath(base_dir, source.dir or source.basename)
     end
 
