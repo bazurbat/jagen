@@ -277,8 +277,12 @@ function define_rule(rule)
         if this.build and pkg.build and not getmetatable(this.build) then
             setmetatable(this.build, { __index = pkg.build })
         end
+        if this.install and pkg.install and not getmetatable(this.install) then
+            setmetatable(this.install, { __index = pkg.install })
+        end
 
         local build = this.build or pkg.build
+        local install = this.install or pkg.install
 
         if build then
             if pkg.name ~= 'toolchain' then
@@ -302,26 +306,23 @@ function define_rule(rule)
                     }, config)
             end
 
-            if build.type == 'linux_module' or build.kernel_modules == true then
+            if build.type == 'linux_module' or build.kernel_modules == true or
+                    install and install.modules then
+
+                define_rule { 'kernel', config }
+
+                pkg:add_target({ 'configure',
+                        { 'kernel', 'configure', config }
+                    }, config)
                 pkg:add_target({ 'compile',
                         { 'kernel', 'compile', config }
                     }, config)
-                define_rule { 'kernel', config }
+                pkg:add_target({ 'install',
+                        { 'kernel', 'install', config }
+                    }, config)
             else
                 pkg:add_target({ 'compile' }, config)
-            end
-
-            pkg:add_target({ 'install' }, config)
-        end
-
-        if this.install and pkg.install and not getmetatable(this.install) then
-            setmetatable(this.install, { __index = pkg.install })
-        end
-
-        local install = this.install or pkg.install
-
-        if install then
-            if install.modules then
+                pkg:add_target({ 'install' }, config)
             end
         end
     end
