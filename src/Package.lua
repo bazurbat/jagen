@@ -220,6 +220,18 @@ function Package.load_rules(full)
     return packages
 end
 
+local function try_load_module(modname)
+    for path in string.gmatch(package.path, '[^;]+') do
+        local filename = string.gsub(path, '%?', modname)
+        local file = io.open(filename, 'rb')
+        if file then
+            local module = assert(loadstring(assert(file:read('*a')), filename))
+            file:close()
+            return module()
+        end
+    end
+end
+
 function define_rule(rule)
     rule = Package:new(rule)
 
@@ -231,7 +243,10 @@ function define_rule(rule)
         pkg:add_target { 'patch',
             { 'patches', 'unpack' }
         }
-        table.merge(pkg, Package:new(assert(require('pkg/'..rule.name))))
+        local module = try_load_module('pkg/'..rule.name)
+        if module then
+            table.merge(pkg, Package:new(module))
+        end
         packages[rule.name] = pkg
         pkg.configs = pkg.configs or {}
         define_rule { 'patches' }

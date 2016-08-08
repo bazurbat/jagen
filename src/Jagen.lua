@@ -12,21 +12,6 @@ local function die(...)
     os.exit(1)
 end
 
-local function load_module(modname)
-    local err, module = ''
-    for path in string.gmatch(package.path, '[^;]+') do
-        local filename = string.gsub(path, '%?', modname)
-        local file = io.open(filename, 'rb')
-        if file then
-            return assert(loadstring(assert(file:read('*a'))))
-        end
-        err = err.."\n\tno file '"..filename.."' (jagen loader)"
-    end
-    return err
-end
-
-table.insert(package.loaders, 2, load_module)
-
 Jagen =
 {
     dir  = os.getenv('jagen_dir'),
