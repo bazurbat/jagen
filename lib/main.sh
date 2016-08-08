@@ -29,7 +29,6 @@ export jagen_toolchains_dir="$jagen_project_dir/toolchains"
 export jagen_build_dir="$jagen_project_dir/build"
 export jagen_include_dir="$jagen_project_dir/include"
 export jagen_log_dir="$jagen_build_dir"
-export jagen_private_dir
 
 export jagen_path="$jagen_dir/lib"
 export LUA_PATH="$jagen_dir/lib/?.lua;$jagen_dir/src/?.lua;;"
@@ -71,5 +70,11 @@ in_flags ccache && use_env ccache
 
 require toolchain || die
 import env || die
+
+# not checking existence because it can be not checked out yet
+if [ "$jagen_private_dir" ]; then
+    export jagen_private_dir
+    add_PATH "$jagen_private_dir/bin"
+fi
 
 return 0
