@@ -7,15 +7,15 @@ return {
     build  = {
         type = 'GNU',
         options = {
-			'--disable-shared',
-			'--disable-static',
-			'--enable-ldscript',
-			'--disable-ldconfig',
-			'--disable-library',
-			'--disable-posix-acls',
-			'--disable-ntfsprogs',
-			'--without-uuid',
-			'--without-hd',
+            '--disable-shared',
+            '--disable-static',
+            '--enable-ldscript',
+            '--disable-ldconfig',
+            '--disable-library',
+            '--disable-posix-acls',
+            '--disable-ntfsprogs',
+            '--without-uuid',
+            '--without-hd',
         }
     }
 }
