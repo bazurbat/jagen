@@ -16,7 +16,6 @@ return {
         { 'hi-sdk', 'unpack' }
     },
     requires = {
-        'hi-kernel',
         'hi-sdk',
     }
 }
