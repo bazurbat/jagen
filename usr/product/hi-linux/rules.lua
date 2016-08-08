@@ -19,12 +19,6 @@ local firmware_template_rule = {
 
 define_package_alias('kernel', 'hi-kernel')
 
--- explicit definition of firmware utils to avoid building gpgme for host
-define_rule { 'firmware-utils', 'host' }
-define_rule { 'firmware-utils', 'target',
-    requires = { 'gpgme' }
-}
-
 define_rule { 'karaoke-player', 'target',
     template = firmware_template_rule,
     requires = {
@@ -76,6 +70,12 @@ define_rule { 'rootfs', 'target',
             'util-linux',
         }
     }
+}
+
+-- explicit definition of firmware utils to avoid building gpgme for host
+define_rule { 'firmware-utils', 'host' }
+define_rule { 'firmware-utils', 'target',
+    requires = { 'gpgme' }
 }
 
 define_rule { 'image', 'target',
