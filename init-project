@@ -64,8 +64,8 @@ OPTIONS:
 
 EXAMPLES:
 
-	# assuming jagen is checked out into ~/work
-	cd ~/work
+    # assuming jagen is checked out into ~/work
+    cd ~/work
     mkdir ast100
     cd ast100
     ../jagen/init-project ast100 -a flag1 -a flag2
