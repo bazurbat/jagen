@@ -40,7 +40,7 @@ fi
 
 pkg_install_dir="$pkg_sysroot$pkg_prefix"
 
-_pkg_file=$(find_file "pkg/${pkg_name}.sh")
+_pkg_file=$(find_in_path "pkg/${pkg_name}.sh")
 if [ "$_pkg_file" ]; then
 	include "$_pkg_file"
 fi
