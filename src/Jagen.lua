@@ -420,7 +420,7 @@ function Jagen.command.build(args)
         end
     end
 
-    local cmd = System.mkpath(Jagen.lib_dir, 'cmd.sh')
+    local cmd = System.mkpath(Jagen.dir, 'src', 'cmd.sh')
     local err, status = System.exec('%s build %s', cmd,
         System.quote(table.unpack(options)))
 
@@ -436,7 +436,7 @@ function Jagen.command.image(args)
         return Jagen.command['help'] { 'image' }
     end
 
-    local cmd = System.mkpath(Jagen.lib_dir, 'cmd.sh')
+    local cmd = System.mkpath(Jagen.dir, 'src', 'cmd.sh')
     local err, status = System.exec('%s image %s', cmd,
         System.quote(table.unpack(args)))
 
