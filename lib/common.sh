@@ -53,6 +53,19 @@ find_in_path() {
     done
 }
 
+try_require() {
+    local filename
+    debug "try_require $1"
+
+    filename="$(find_in_path "${1:?}.sh")"
+    if [ "$filename" ]; then
+        debug "  using $filename"
+        . "$filename"
+    else
+        return 2
+    fi
+}
+
 require() {
     local IFS="$jagen_IFS"
     local name="${1:?}" path= i=
