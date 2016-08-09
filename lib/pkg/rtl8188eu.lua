@@ -11,11 +11,8 @@ return {
         },
         in_source = true
     },
+    -- the source tarball is distributed with hi-sdk
     { 'unpack',
-        -- the source tarball is distributed with hi-sdk
         { 'hi-sdk', 'unpack' }
-    },
-    requires = {
-        'hi-sdk',
     }
 }
