@@ -15,7 +15,7 @@ else
     pkg_args="$@"
 fi
 
-. "${jagen_dir:?}/lib/pkg.sh" || die
+. "${jagen_dir:?}/src/pkg.sh" || die
 
 pkg_log="${jagen_log_dir:?}/${pkg_name}__${pkg_stage}${pkg_config:+__${pkg_config}}.log"
 pkg_work_dir="${jagen_build_dir:?}/$pkg_name"

@@ -300,7 +300,7 @@ Dependency information and build command goes into `build.ninja` file in the
 script" in the `include` directory. All code dealing with include script
 generation is in `src/Script.lua` file which can be used as a reference.
 
-Build stages are handled by `jagen-pkg` which includes `lib/pkg.sh` which
+Build stages are handled by `jagen-pkg` which includes `pkg.sh` which
 contains definitions of default stages and some utility functions for usage in
 user defined build scripts. It is the actual "engine" of the build system.
 
