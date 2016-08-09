@@ -120,10 +120,10 @@ cmd_image() {
     local image_script="$(find_in_path "image.sh")"
 
     [ "$image_script" ] ||
-        die "could not find script 'image.sh' in jagen_path - current \
-configuration does not support image creation"
+        die "could not find 'image.sh' in import path - \
+current configuration does not support image creation"
 
-    . "$image_script" || return
+    "${jagen_shell:-/bin/sh}" "$image_script" "$@"
 }
 
 case $1 in
