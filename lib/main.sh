@@ -35,7 +35,7 @@ export LUA_PATH="$jagen_dir/lib/?.lua;$jagen_dir/src/?.lua;;"
 
 jagen_build_verbose="no"
 
-. "$jagen_lib_dir/common.sh" || return
+. "$jagen_dir/src/common.sh" || return
 
 # Avoid import during init-root
 if [ "$jagen_project_dir" ]; then

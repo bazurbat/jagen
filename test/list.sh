@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. "$jagen_lib_dir/common.sh"
+. "$jagen_dir/src/common.sh"
 
 test_in_list() {
     local value="$1"; [ $# -ge 1 ] && shift
