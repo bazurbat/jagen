@@ -22,20 +22,15 @@ provides means to manage them as a whole.
 
 A workflow is organized around "projects" which are composed from several
 layers. Each layer can contribute rule definitions and environment variables to
-the project. The definitions are merged to generate meta build system which is
-then used to track individual packages build stages, allows selective rebuild
-or cleanup and management of sources.
+the project. These definitions are evaluated to generate meta build system
+which is then used to track individual packages build stages, allows selective
+rebuild or cleanup and management of sources.
 
-Rules are declarative key-value pairs (dictionaries) defining a piece of
-information about a package. Rules with the same name are merged but there can
-be a few configurations for the same package inside a single project. This
-mechanism is used to support cross-compilation, but it is not limited to that.
-
-Every rule, environment file and build stage can be overridden in the
-subsequent layers or by the project. Built-in functions are provided to ease
-integrating of packages using common build systems like autotools and CMake
-with their own sets of workarounds. There are several vendor-specific layers in
-the Jagen distribution which can be used as an example.
+Every rule, environment file or individual build stages can be overridden in
+the subsequent layers or by the project. Built-in functions are provided to
+ease integrating of packages using common build systems like autotools and
+CMake with their own sets of workarounds. There are several vendor-specific
+layers in the Jagen distribution which can be used as an example.
 
 ## Requirements
 
