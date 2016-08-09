@@ -40,7 +40,7 @@ include() {
     fi
 }
 
-find_file() {
+find_in_path() {
     local IFS="$jagen_IFS"
     local name="${1:?}" path= i=
 

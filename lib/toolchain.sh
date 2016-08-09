@@ -152,8 +152,8 @@ toolchain_install_runtime() {
     local dest_dir="${1:-${jagen_target_dir:?}}/lib"
     local sysroot_dir="$(toolchain_get_arch_sysroot)"
     local lib_dir="$(toolchain_get_support_lib_dir)"
-    local includes_file="$(find_file toolchain_lib_includes.txt)"
-    local excludes_file="$(find_file toolchain_lib_excludes.txt)"
+    local includes_file="$(find_in_path toolchain_lib_includes.txt)"
+    local excludes_file="$(find_in_path toolchain_lib_excludes.txt)"
 
     : ${sysroot_dir:?}
     : ${lib_dir:?}

@@ -88,7 +88,7 @@ pkg_sync_dirs() {
         die "Sync destination directory '$dest_dir' is not exists"
 
     if [ "$3" ]; then
-        filter_file=$(find_file "$3")
+        filter_file=$(find_in_path "$3")
         [ "$filter_file" ] ||
             die "Could not find filter file '$3' for syncronization of '$source_dir' to '$dest_dir'"
     fi
