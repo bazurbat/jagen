@@ -188,8 +188,8 @@ fi
 parse_command_line "$@"
 
 if ! [ "$jagen_product" ]; then
-    message "no product specified, assuming custom native build"
-    jagen_product='native'
+    message "no product specified, assuming default native build"
+    jagen_product='default'
 fi
 
 if [ -z "$use_force" -a "$(printf *)" != '*' ]; then
