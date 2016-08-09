@@ -21,6 +21,7 @@ export jagen_debug="${jagen_debug}"
 export jagen_flags=""
 
 export jagen_lib_dir="${jagen_dir:?}/lib"
+export jagen_project_lib_dir="$jagen_project_dir/lib"
 
 export jagen_bin_dir="$jagen_project_dir/bin"
 export jagen_src_dir="$jagen_project_dir/src"
@@ -49,6 +50,9 @@ set_jagen_path() {
         jagen_path="$path${FS}$jagen_path"
         LUA_PATH="$path/?.lua;$LUA_PATH"
     done
+
+    jagen_path="$jagen_project_lib_dir${FS}$jagen_path"
+    LUA_PATH="$jagen_project_lib_dir/?.lua;$LUA_PATH"
 }
 set_jagen_path
 

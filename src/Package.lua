@@ -184,7 +184,6 @@ end
 
 function Package.load_rules(full)
     local dirs = string.split2(os.getenv('jagen_path'), '\t')
-    table.insert(dirs, 1, assert(os.getenv('jagen_project_dir')))
 
     for i = #dirs, 1, -1 do
         local filename = System.mkpath(dirs[i], 'rules.lua')
