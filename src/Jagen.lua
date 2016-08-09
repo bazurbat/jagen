@@ -14,19 +14,11 @@ end
 
 Jagen =
 {
-    dir = os.getenv('jagen_dir'),
-
+    dir   = os.getenv('jagen_dir'),
     shell = os.getenv('jagen_shell'),
-
     flags = os.getenv('jagen_flags'),
 
-    lib_dir     = assert(os.getenv('jagen_lib_dir')),
-    src_dir     = assert(os.getenv('jagen_src_dir')),
-    build_dir   = assert(os.getenv('jagen_build_dir')),
-    include_dir = assert(os.getenv('jagen_include_dir')),
-
-    target_dir   = assert(os.getenv('jagen_target_dir')),
-    target_board = os.getenv('jagen_target_board'),
+    build_dir = assert(os.getenv('jagen_build_dir')),
 
     package_aliases = {}
 }
