@@ -115,7 +115,7 @@ cmd_build() {
 }
 
 cmd_image() {
-    . "$jagen_lib_dir/main.sh" || return
+    . "$jagen_dir/env.sh" || return
 
     local image_script="$(find_in_path "image.sh")"
 

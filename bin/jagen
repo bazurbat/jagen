@@ -5,7 +5,7 @@ if ! [ "$jagen_dir" ]; then
     exit 1
 fi
 
-if ! . "$jagen_dir/lib/main.sh"; then
+if ! . "$jagen_dir/env.sh"; then
     echo "Error: failed to load jagen environment"
     exit 1
 fi

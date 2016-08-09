@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. "$jagen_lib_dir/main.sh" || exit
+. "$jagen_dir/env.sh" || exit
 
 set -eu
 
