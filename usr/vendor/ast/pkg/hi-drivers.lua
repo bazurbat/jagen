@@ -7,5 +7,9 @@ return {
     build = {
         type = 'linux_module',
         in_source = true
+    },
+    -- hardcodes paths to SDK include dirs in Makefile
+    { 'compile',
+        { 'hi-sdk', 'unpack' }
     }
 }
