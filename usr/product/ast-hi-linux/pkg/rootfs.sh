@@ -33,11 +33,15 @@ jagen_pkg_install() {
     jagen_rootfs_fix_mtab
 
     if pkg_is_release; then
-        pkg_strip_root "$pkg_install_dir"
         _jagen src status > heads || return
-    else
+    fi
+
+    if in_flags devenv; then
         pkg_run touch "$pkg_install_dir/var/service/connman/down"
         pkg_run rm -f "$pkg_install_dir/var/service/dropbear/down"
+    else
+        pkg_run rm -f "$pkg_install_dir/var/service/connman/down"
+        pkg_run touch "$pkg_install_dir/var/service/dropbear/down"
     fi
 }
 
