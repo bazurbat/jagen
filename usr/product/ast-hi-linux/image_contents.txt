@@ -5,6 +5,7 @@
 + /bin/gpg
 + /bin/lt86104
 + /bin/ntfs-3g
++ /bin/sh
 + /bin/sil8784
 + /dev
 + /etc/***
@@ -27,11 +28,12 @@
 + /sbin/ast-firmware
 + /sbin/badblocks
 + /sbin/dropbear
++ /sbin/init
 + /sbin/ldconfig
 + /sbin/losetup
 + /sbin/mkswap
-+ /sbin/swapon
 + /sbin/swapoff
++ /sbin/swapon
 + /settings
 + /share
 + /sys
