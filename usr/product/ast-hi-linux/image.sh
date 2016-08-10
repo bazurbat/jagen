@@ -5,6 +5,8 @@
 set -eu
 
 mount_path=
+image_file=
+out_dir="$jagen_root_dir/out"
 
 calculate_size() {
     local du="$(du -sm "$1")"
@@ -26,23 +28,35 @@ on_exit() {
 }
 
 create_image() {
+    local target_board="${1:?target board is not specified}"
+    local version="${2:?version is not specified}"
     local source_dir="$jagen_build_dir/image"
-    local out_file="$jagen_build_dir/rootfs.ext4"
     local size=$(calculate_size "$source_dir")
     local fs_size=$(calculate_fs_size $size)
 
+    image_file="$jagen_build_dir/${target_board}_${version}.ext4"
+
     [ "$size" -gt 0 ] || die "Invalid image size, probably the $source_dir directory is empty"
 
-    message "Creating $out_file (${size}M/${fs_size}M) from $source_dir"
+    message "Creating $image_file (${size}M/${fs_size}M) from $source_dir"
 
-    dd if=/dev/zero of="$out_file" bs=1M count=0 seek="$fs_size" 2>/dev/null
-    mke2fs -qF -t ext4 -O ^huge_file "$out_file" "${fs_size}M"
+    dd if=/dev/zero of="$image_file" bs=1M count=0 seek="$fs_size" 2>/dev/null
+    mke2fs -qF -t ext4 -O ^huge_file "$image_file" "${fs_size}M"
 
     mount_path="$(mktemp -d)"
 
-    sudo mount -t ext4 "$out_file" "$mount_path"
+    sudo mount -t ext4 "$image_file" "$mount_path"
     trap on_exit EXIT
     sudo rsync -a --chown=0:0 "$source_dir/" "$mount_path"
 }
 
+move_to_output() {
+    mkdir -p "$out_dir"
+    mv -f "$image_file" "$out_dir"
+
+    message "New firmware image is ready:"
+    ls -t1 "$out_dir"/*.ext4 | head -n1
+}
+
 create_image "$@"
+move_to_output
