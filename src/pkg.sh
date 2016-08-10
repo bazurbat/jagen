@@ -93,7 +93,7 @@ pkg_sync_dirs() {
             die "Could not find filter file '$3' for syncronization of '$source_dir' to '$dest_dir'"
     fi
 
-    pkg_run rsync -va \
+    pkg_run rsync -va --delete --delete-excluded \
         ${filter_file:+--filter="merge ${filter_file}"} \
         "$source_dir" "$dest_dir"
 }
