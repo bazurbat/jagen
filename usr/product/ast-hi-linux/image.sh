@@ -16,7 +16,7 @@ calculate_size() {
 
 # add padding for filesystem structures
 calculate_fs_size() {
-    local size="${1:?}" divisor=8
+    local size="${1:?}" divisor=6
     # integer ceil
     local padding=$(( size / divisor + (size % divisor != 0) ))
     echo $((size + padding))
