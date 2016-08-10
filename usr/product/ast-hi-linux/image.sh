@@ -33,8 +33,9 @@ create_image() {
     local source_dir="$jagen_build_dir/image"
     local size=$(calculate_size "$source_dir")
     local fs_size=$(calculate_fs_size $size)
+    local name="$(echo $target_board | tr '[:lower:]' '[:upper:]')"
 
-    image_file="$jagen_build_dir/${target_board}_${version}.ext4"
+    image_file="$jagen_build_dir/${name}_${version}.ext4"
 
     [ "$size" -gt 0 ] || die "Invalid image size, probably the $source_dir directory is empty"
 
@@ -60,3 +61,7 @@ move_to_output() {
 
 create_image "$@"
 move_to_output
+
+if in_flags notify_slack && [ "$(command -v jagen-notify-slack)" ]; then
+    jagen-notify-slack new_image "$(cd "$out_dir" && ls -t1 *.ext4 | head -n1)"
+fi
