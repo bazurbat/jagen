@@ -414,7 +414,6 @@ pkg__install_dbus_configs() {
 }
 
 pkg_install() {
-    : ${pkg_install_dir:?}
     local pkg_install_type="${pkg_install_type:-$pkg_build_type}"
 
     case $pkg_install_type in
@@ -428,7 +427,7 @@ pkg_install() {
                 if [ -z "$pkg_install_config_script" ]; then
                     pkg_install_config_script="/bin/${pkg_name}-config"
                 fi
-                pkg_fix_config_script "${pkg_install_dir}${pkg_install_config_script}"
+                pkg_fix_config_script "${pkg_install_dir:?}${pkg_install_config_script}"
             done
             ;;
         CMake)
