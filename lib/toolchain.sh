@@ -113,40 +113,6 @@ toolchain_create_alias() {
     cd "$OLDPWD"
 }
 
-# The logic here is taken from Buildroot external toolchain helpers.
-toolchain_copy_sysroot() {
-    local CC="${CC:-${jagen_target_system:+$jagen_target_system-}gcc}"
-    local dest_dir="${1:-${jagen_target_dir:?}}"
-    local sysroot_dir="$(toolchain_get_sysroot)"
-    local arch_sysroot_dir="$(toolchain_get_arch_sysroot)"
-    local arch_subdir="$(toolchain_sysroot_get_arch_subdir "$sysroot_dir" "$arch_sysroot_dir")"
-    local arch_lib_dir="$(toolchain_get_arch_lib_dir)"
-    local support_lib_dir="$(toolchain_get_support_lib_dir)"
-
-    for dir in etc "$arch_lib_dir" sbin usr usr/"$arch_lib_dir"; do
-        if [ -d "$arch_sysroot_dir/$dir" ]; then
-            pkg_run rsync -a \
-                --exclude 'usr/lib/locale' \
-                --include '/libexec*/' \
-                --exclude '/lib*/' \
-                "$arch_sysroot_dir/$dir/" "$dest_dir/$dir/"
-        fi
-    done
-
-    if [ "$sysroot_dir" != "$arch_sysroot_dir" ]; then
-        if ! [ -d "$arch_sysroot_dir/usr/include" ]; then
-            pkg_run rsync -a "$sysroot_dir/usr/include" "$dest_dir/usr"
-        fi
-
-        ( pkg_run cd "$dest_dir"
-          pkg_run ln -snf "." "$arch_subdir" )
-    fi
-
-    if [ "$support_lib_dir" ]; then
-        pkg_run rsync -a "$support_lib_dir/" "$dest_dir/lib"
-    fi
-}
-
 toolchain_install_runtime() {
     local CC="${CC:-${jagen_target_system:+$jagen_target_system-}gcc}"
     local dest_dir="${1:-${jagen_target_dir:?}}/lib"
