@@ -95,13 +95,14 @@ import() {
         path="$(eval echo \$$i)/${name}.sh"
         if [ -f "$path" ]; then
             debug "  using $path"
-            . "$path"
+            . "$path" ||
+                die "import: error while sourcing '$path' of '$name'"
             found=1
         fi
         i=$((i-1))
     done
 
-    [ "$found" ] || die "import: could not find '$name' in import path"
+    [ "$found" ] && return 0 || return 2
 }
 
 use_env() {
