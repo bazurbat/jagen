@@ -22,8 +22,11 @@ jagen_rootfs_init() {
     pkg_run chmod 0700 "$dir/root"
     pkg_run chmod 1777 "$dir/tmp"
 
-    pkg_run rm -rf "$dir/var/run"
-    pkg_run ln -snf ../run "$dir/var"
+    pkg_run install -d -m 755 "$dir/run/lock"
+    pkg_run install -d -m 755 "$dir/var/log"
+
+    pkg_run ln -sf ../run "$dir/var"
+    pkg_run ln -sf ../run/lock "$dir/var"
 
     # backward compatibility with Sigma firmware
     pkg_run ln -snf var "$dir/settings"

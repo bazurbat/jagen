@@ -84,7 +84,10 @@
 + /usr/var/run
 + /usr/var/tmp
 + /var
++ /var/lock
++ /var/log
 + /var/run
++ /var/tmp
 + /var/service/***
 + /heads
 - *
