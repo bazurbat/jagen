@@ -1,9 +1,9 @@
 #!/bin/sh
 
 jagen_pkg_configure() {
-	local config=".config"
+    local config=".config"
 
-	cat >"$config" <<EOF || return
+    cat >"$config" <<EOF || return
 CONFIG_DRIVER_HOSTAP=y
 CONFIG_DRIVER_NL80211=y
 CONFIG_LIBNL32=y
@@ -21,11 +21,11 @@ EOF
 }
 
 jagen_pkg_compile_target() {
-	use_env target_toolchain
-	pkg_compile
+    use_env target_toolchain
+    pkg_compile
 }
 
 jagen_pkg_install() {
-	pkg_run install -vm755 hostapd "$pkg_install_dir/sbin"
-	pkg_run install -vm755 hostapd_cli "$pkg_install_dir/bin"
+    pkg_run install -vm755 hostapd "$pkg_install_dir/sbin"
+    pkg_run install -vm755 hostapd_cli "$pkg_install_dir/bin"
 }
