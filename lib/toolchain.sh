@@ -118,31 +118,20 @@ toolchain_install_runtime() {
     local dest_dir="${1:-${jagen_target_dir:?}}/lib"
     local sysroot_dir="$(toolchain_get_arch_sysroot)"
     local lib_dir="$(toolchain_get_support_lib_dir)"
-    local includes_file="$(find_in_path toolchain_lib_includes.txt)"
-    local excludes_file="$(find_in_path toolchain_lib_excludes.txt)"
+    local filter_file="$(find_in_path toolchain_lib_filter.txt)"
 
     : ${sysroot_dir:?}
     : ${lib_dir:?}
-    : ${includes_file:?}
-    : ${excludes_file:?}
 
     message "install toolchain runtime: $sysroot_dir, $lib_dir to $dest_dir"
 
-    pkg_run rsync -a \
-        --chmod=F0755 \
-        --exclude-from="$excludes_file" \
-        --include-from="$includes_file" \
-        --exclude="*" \
+    pkg_run rsync -va --chmod=F0755 \
+        --filter="merge $filter_file" \
         "$sysroot_dir/lib/" "$dest_dir"
 
-    if [ "$sysroot_dir" != "$lib_dir" ]; then
-        pkg_run rsync -a \
-            --chmod=F0755 \
-            --exclude-from="$excludes_file" \
-            --include-from="$includes_file" \
-            --exclude="*" \
-            "$lib_dir/" "$dest_dir"
-    fi
+    pkg_run rsync -va --chmod=F0755 \
+        --filter="merge $filter_file" \
+        "$lib_dir/" "$dest_dir"
 }
 
 toolchain_install_ldconfig() {
