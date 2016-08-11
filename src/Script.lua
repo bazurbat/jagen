@@ -5,7 +5,7 @@ local P = {}
 local function write_env(w, pkg)
     local env = pkg.env or { pkg.config }
     for _, e in ipairs(env) do
-        w('use_env %s || return', e)
+        w('use_env %s || true', e)
     end
 end
 
