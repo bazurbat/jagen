@@ -24,37 +24,27 @@ strings
 strip
 '
 
+toolchain_cc() {
+    printf "${1:-${CC:-${jagen_target_system:+${jagen_target_system}-}gcc}}"
+}
+
 toolchain_get_sysroot() {
-    real_path $("${1:-${CC:?}}" --print-sysroot)
+    real_path $("$(toolchain_cc "$1")" --print-sysroot)
 }
 
 toolchain_get_arch_sysroot() {
-    real_path $("${1:-${CC:?}}" $jagen_target_cflags --print-sysroot)
-}
-
-toolchain_sysroot_get_arch_subdir() {
-    local sysroot="${1:-$(toolchain_get_sysroot)}"
-    local arch_sysroot="${2:-$(toolchain_get_arch_sysroot)}"
-    printf "$arch_sysroot" | sed -re "s|$sysroot/||"
-}
-
-toolchain_get_arch_lib_dir() {
-    # TODO: check different toolchains
-    printf "lib"
+    real_path $("$(toolchain_cc "$1")" $jagen_target_cflags --print-sysroot)
 }
 
 toolchain_find_path() {
-    local pathname="$("${2:-${CC:?}}" $jagen_target_cflags --print-file-name="${1:?}")"
-    if [ "$pathname" ]; then
-        real_path $(dirname "$pathname")
+    local filename="$("$(toolchain_cc "$2")" $jagen_target_cflags --print-file-name="${1:?}")"
+    if [ "$filename" ]; then
+        real_path $(dirname "$filename")
     fi
 }
 
-toolchain_get_support_lib_dir() {
-    local libstdc="$("${1:-${CC:?}}" $jagen_target_cflags --print-file-name=libstdc++.a)"
-    if [ "$libstdc" ]; then
-        real_path $(dirname "$libstdc")
-    fi
+toolchain_get_lib_dir() {
+    toolchain_find_path libstdc++.a "$@"
 }
 
 toolchain_unpack() {
@@ -114,14 +104,14 @@ toolchain_create_alias() {
 }
 
 toolchain_install_runtime() {
-    local CC="${CC:-${jagen_target_system:+$jagen_target_system-}gcc}"
     local dest_dir="${1:-${jagen_target_dir:?}}/lib"
     local sysroot_dir="$(toolchain_get_arch_sysroot)"
-    local lib_dir="$(toolchain_get_support_lib_dir)"
-    local filter_file="$(find_in_path toolchain_lib_filter.txt)"
+    local lib_dir="$(toolchain_get_lib_dir)"
+    local filter_file="$(find_in_path toolchain_libs.txt)"
 
     : ${sysroot_dir:?}
     : ${lib_dir:?}
+    : ${filter_file:?}
 
     message "install toolchain runtime: $sysroot_dir, $lib_dir to $dest_dir"
 
