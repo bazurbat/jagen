@@ -312,12 +312,13 @@ Dependencies are resolved by touching specifically named files in the build
 directory after the command succeeded, see the generated `build.ninja` for
 details.
 
-Build stages are executed by `jagen-pkg` script which includes `pkg.sh` file
-which contains definitions of default stages and some utility functions for
-usage in user defined build scripts. It is an actual "engine" of the build
-system. Every build stage is "stateless", in a sense that a name and a config
-of a package is all that the `jagen-pkg` needs to find all necessary files and
-execute the stage.
+At the core of the build system is a `jagen-pkg` script. Given a package name,
+stage and config it finds and imports all necessary environment files, runs the
+stage script and returns its result. Default build stage scripts and utility
+functions are placed in a `src/pkg.sh` file which can be used as a reference.
+Every `pkg/<name>.lua` file can have `pkg/<name>.sh` backing file in the same
+directory which is included by `jagen-pkg` during the build and can be used to
+override default stages or environment.
 
 Layers, build type and directory locations are set in 'config.sh' which is
 generated during project initialization. It is also included indirectly in
