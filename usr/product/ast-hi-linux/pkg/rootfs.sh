@@ -28,6 +28,8 @@ jagen_pkg_install() {
     pkg_run mkdir -p lib/firmware
     pkg_run rsync -t "$jagen_private_dir/c6747/2McASP_BEST.bin" \
         "lib/firmware/c6747.bin"
+    pkg_run rsync -t "$jagen_private_dir/keys/keyfile.gpg" \
+        "lib/firmware"
 
     jagen_rootfs_install_hostname
     jagen_rootfs_fix_mtab
