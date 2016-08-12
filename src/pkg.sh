@@ -290,10 +290,6 @@ pkg_configure() {
 
     case $pkg_build_type in
         GNU)
-            if ! [ -x "$pkg_source_dir/configure" ]; then
-                die "GNU build type specified but no ./configure was found in $pkg_source_dir"
-            fi
-
             if [ "$pkg_sysroot" ]; then
                 LDFLAGS="$LDFLAGS -Wl,-rpath-link=$pkg_install_dir/lib"
             fi
