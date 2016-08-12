@@ -1,21 +1,11 @@
 #!/bin/sh
 
-use_env target
-
-workdir="gdb/gdbserver"
-
-jagen_pkg_compile() {
-    pkg_run cd "$workdir"
-    pkg_run "$pkg_source_dir/configure" \
-        --host="$jagen_target_system" \
-        --prefix="" \
-        --program-transform-name='' \
-        --disable-werror
-
-    pkg_run make
-}
-
-jagen_pkg_install() {
-    pkg_run cd "$workdir"
-    pkg_run make DESTDIR="$jagen_sdk_rootfs_prefix" install
+jagen_pkg_configure() {
+    # Workaround from: https://sourceware.org/bugzilla/show_bug.cgi?id=18113#c1
+    cat > makeinfo <<'EOF' || return
+#!/bin/sh
+echo "makeinfo (GNU texinfo) 5.2"
+EOF
+    pkg_run chmod a+x makeinfo
+    pkg_configure MAKEINFO="$(realpath ./makeinfo)"
 }
