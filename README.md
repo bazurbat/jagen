@@ -292,19 +292,32 @@ sourced from build root. Freeform target patterns such as `::host` or
 
 ## Build system internals
 
-The build system is generated from a set of rules represented by dictionaries
-(key-value pairs) which are found in "rules.lua" files across "layer"
-directories. Each rule defines some piece of information about a "package",
-like build stages, location of source directory and so on. Rules with the same
-names are merged across layers and the final result is used in generation.
-Dependency information and build command goes into `build.ninja` file in the
-`build` directory, additional package specific environment goes into "include
-script" in the `include` directory. All code dealing with include script
-generation is in `src/Script.lua` file which can be used as a reference.
+The build system is generated from a set of rules represented by tables
+(key-value pairs) which are found in `rules.lua` and `pkg/<name>.lua` files
+across layer directories. Each rule defines some piece of information about a
+package: build stages, type, location of source directory and so on. Rules with
+the same name are considered as belonging to the same package but evaluated
+independently at the point of reference. So, mentioning the package in the
+"requires" list of a package which has template and config will produce
+different result from standalone "define_rule" declaration. Also order of rules
+matters, both in the rules file and across layers. See the `define_rule`
+function in `src/Package.lua` file for complete information about evaluation
+logic.
 
-Build stages are handled by `jagen-pkg` which includes `pkg.sh` which
-contains definitions of default stages and some utility functions for usage in
-user defined build scripts. It is the actual "engine" of the build system.
+Package dependencies and build commands are written to `build.ninja` file in
+the `build` directory, additional package specific environment goes into
+"include scripts" in the `include` directory. All code dealing with include
+script generation is in `src/Script.lua` file which can be used as a reference.
+Dependencies are resolved by touching specifically named files in the build
+directory after the command succeeded, see the generated `build.ninja` for
+details.
+
+Build stages are executed by `jagen-pkg` script which includes `pkg.sh` file
+which contains definitions of default stages and some utility functions for
+usage in user defined build scripts. It is an actual "engine" of the build
+system. Every build stage is "stateless", in a sense that a name and a config
+of a package is all that the `jagen-pkg` needs to find all necessary files and
+execute the stage.
 
 Layers, build type and directory locations are set in 'config.sh' which is
 generated during project initialization. It is also included indirectly in
