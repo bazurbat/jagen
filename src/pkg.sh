@@ -301,7 +301,7 @@ pkg_configure() {
 
             export CFLAGS LDFLAGS
 
-            pkg_run "$pkg_source_dir/configure" $A \
+            pkg_run "${pkg_configure_file:-$pkg_source_dir/configure}" $A \
                 ${pkg_system:+--host="$pkg_system"} \
                 --prefix="$pkg_prefix" \
                 --disable-dependency-tracking \
