@@ -7,5 +7,6 @@ jagen_pkg_configure() {
 echo "makeinfo (GNU texinfo) 5.2"
 EOF
     pkg_run chmod a+x makeinfo
+
     pkg_configure MAKEINFO="$(realpath ./makeinfo)"
 }

@@ -89,6 +89,7 @@ define_rule { 'image', 'target',
 if Jagen.flag 'debug' then
     define_rule { 'gdb', 'host' }
     define_rule { 'strace', 'target' }
+    define_rule { 'gdbserver', 'target' }
 end
 
 require 'chicken'

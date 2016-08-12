@@ -8,9 +8,10 @@ return {
         type = 'GNU',
         in_source = true,
         options = {
+            '--disable-werror',
             '--program-transform-name=',
-            '--disable-werror'
         },
-        dir = '$pkg_source_dir/gdb/gdbserver'
+        dir = '$pkg_source_dir/gdb/gdbserver',
+        configure_file = "./configure"
     }
 }
