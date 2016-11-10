@@ -18,14 +18,6 @@ local RepoSource = Source:new()
 
 -- Source
 
-function Source._read_line(file)
-    return file:read()
-end
-
-function Source._read_all(file)
-    return file:read('*a')
-end
-
 function Source:is_scm()
     return self.type == 'git' or self.type == 'hg' or self.type == 'repo'
 end
