@@ -434,6 +434,14 @@ function Jagen.command.image(args)
     return status
 end
 
+function Jagen.command.test(args)
+    if help_requested(args) then
+        return Jagen.command['help'] { 'test' }
+    end
+
+    return 0
+end
+
 local function nproc()
     local name = System.pread('*l', 'uname -s')
     if name == 'Darwin' then
