@@ -194,9 +194,14 @@ function Package.load_rules(full)
         end
     end
 
-    define_rule { 'toolchain', 'host',
-        requires = { 'gcc-native' }
-    }
+    for _, pkg in pairs(packages) do
+        if pkg.name == 'toolchain' and pkg:has_config('host') then
+            define_rule { 'toolchain', 'host',
+                requires = { 'gcc-native' }
+            }
+            break
+        end
+    end
 
     local target_toolchain = os.getenv('jagen_target_toolchain')
     if target_toolchain then
