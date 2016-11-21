@@ -96,7 +96,7 @@ import() {
         if [ -f "$path" ]; then
             debug "  using $path"
             . "$path" ||
-                die "import: error while sourcing '$path' of '$name'"
+                die "import $name: error while sourcing '$path'"
             found=1
         fi
         i=$((i-1))
