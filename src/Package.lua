@@ -244,9 +244,11 @@ function define_rule(rule)
     if not pkg then
         pkg = Package:new { rule.name }
         pkg:add_target { 'unpack' }
-        pkg:add_target { 'patch',
-            { 'patches', 'unpack' }
-        }
+        if pkg.name ~= 'patches' then
+            pkg:add_target { 'patch',
+                { 'patches', 'unpack' }
+            }
+        end
         local module = try_load_module('pkg/'..rule.name)
         if module then
             table.merge(pkg, Package:new(module))
