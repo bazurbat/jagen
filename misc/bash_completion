@@ -13,7 +13,7 @@ _jagen_complete_init_project() {
     local cur prev
     local this_cmd jagen_dir
 
-    local opts='-a -h -l -s'
+    local opts='--help --list-products --share --force --flag'
 
     _get_comp_words_by_ref cur prev
 
@@ -22,7 +22,7 @@ _jagen_complete_init_project() {
     jagen_dir="${this_cmd%/*}"
 
     case $prev in
-        -a) ;; # expecting flag name, freeform, no completions for them for now
+        -a|--flag) ;; # expecting flag name, freeform, no completions for them for now
          *) COMPREPLY=($(compgen -W "$opts $(_jagen_complete__list_products "$jagen_dir")" -- "$cur")) ;;
     esac
 }
@@ -74,7 +74,7 @@ _jagen_complete() {
     __ltrim_colon_completions "$cur"
 }
 
-complete -F _jagen_complete_init_project init-project
+complete -o dirnames -F _jagen_complete_init_project init-project
 complete -F _jagen_complete jagen
 
 ### End of Jagen Bash completion definitions ###

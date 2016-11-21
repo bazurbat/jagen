@@ -12,6 +12,10 @@ die() {
     exit 1
 }
 
+real_path() {
+    echo $(cd "${1:?}"; pwd -P)
+}
+
 show_help() {
     cat <<EOF
 Usage: init-project <CONFIG> [OPTIONS...]
@@ -38,7 +42,7 @@ OPTIONS:
 
   -a  add flag
   -h  show this help
-  -l  list config templates
+  -l  list built-in products
   -s  share sources between projects
   -f  use force
 
@@ -82,7 +86,7 @@ EXAMPLES:
 EOF
 }
 
-list_configs() {
+list_products() {
     cd "$jagen_dir/usr/product"
     for cfg_dir in *; do
         echo $cfg_dir
@@ -149,28 +153,48 @@ jagen_build_profile="release"
 EOF
 }
 
-parse_command_line() {
-    local arg
+parse_name() {
+    local name="$1"
 
-    arg=$(getopt hlsfa: "$@")
-    [ $? = 0 ] || die "failed to parse command line options"
-    set -- $arg
+    # if an argument does not contain '/' it will remain unchanged;
+    # otherwise it will become empty after the substitution
+    if [ "${name%%*/*}" = "$name" ]; then
+        jagen_product="$name"
+    else
+        jagen_product_dir="$name"
+    fi
+}
+
+parse_command_line() {
+    local eoa=
 
     while [ $# -gt 0 ]; do
-        case $1 in
-            -h|--help) show_help; exit 0 ;;
-            -l) list_configs; exit 0 ;;
-            -s) share_sources=1 ;;
-            -f) use_force=1 ;;
-            -a) if [ "$jagen_flags" ]; then
-                    jagen_flags="$jagen_flags $2"
-                else
-                    jagen_flags="$2"
-                fi
-                shift ;;
-            --) ;;
-             *) jagen_product="$1"; break ;;
-        esac
+        if [ "$eoa" ]; then
+            parse_name "$1"
+            break
+        else
+            case $1 in
+                --) eoa=1 ;;
+                -h|--help)
+                    show_help; exit 0 ;;
+                -l|--list-products)
+                    list_products; exit 0 ;;
+                -s|--share)
+                    share_sources=1 ;;
+                -f|--force)
+                    use_force=1 ;;
+                -a|--flag) 
+                    if [ "$jagen_flags" ]; then
+                        jagen_flags="$jagen_flags $2"
+                    else
+                        jagen_flags="$2"
+                    fi
+                    shift ;;
+                 *) eoa=1
+                    parse_name "$1"
+                    break ;;
+            esac
+        fi
         shift
     done
 }
@@ -187,19 +211,25 @@ fi
 
 parse_command_line "$@"
 
-if ! [ "$jagen_product" ]; then
-    message "no product specified, assuming default native build"
-    jagen_product='default'
-fi
-
 if [ -z "$use_force" -a "$(printf *)" != '*' ]; then
     die "not initializing non-empty directory without force"
 fi
 
-jagen_product_dir="$jagen_dir/usr/product/$jagen_product"
+if ! [ "$jagen_product_dir" ]; then
+    if ! [ "$jagen_product" ]; then
+        message "no product specified, assuming default native build"
+        jagen_product='default'
+    fi
 
-if ! [ -d "$jagen_product_dir" ]; then
-    die "no such product: $jagen_product"
+    jagen_product_dir="$jagen_dir/usr/product/$jagen_product"
+
+    if ! [ -d "$jagen_product_dir" ]; then
+        die "product '$jagen_product' was not found in $(dirname $jagen_product_dir)"
+    fi
+else
+    if ! [ -d "$jagen_product_dir" ]; then
+        die "the specified product directory '$jagen_product_dir' is not exists"
+    fi
 fi
 
 if [ "$share_sources" ]; then
@@ -208,9 +238,20 @@ else
     jagen_src_dir='$jagen_project_dir/src'
 fi
 
-. "$jagen_product_dir/init.sh" || exit
+if [ -f "$jagen_product_dir/init.sh" ]; then
+    . "$jagen_product_dir/init.sh" ||
+        die "project init failed with status: $?"
+fi
+
+# assume the directory of the product itself as the sole layer by default
+if [ -z "$jagen_layers" ]; then
+    jagen_layers="
+$(real_path "$jagen_product_dir")
+"
+fi
 
 write_env || exit
 write_config "$config_file" || exit
+
 . ./env.sh || exit
 jagen refresh
