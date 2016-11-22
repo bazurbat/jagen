@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # deal with it
-if [ "$ZSH_VERSION" ]; then
+if [ "${ZSH_VERSION-}" ]; then
     setopt shwordsplit
 fi
 
@@ -17,7 +17,7 @@ export jagen_layers=""
 export jagen_shell=""
 export jagen_lua="${jagen_lua:-lua}"
 
-export jagen_debug="${jagen_debug}"
+export jagen_debug="${jagen_debug-}"
 export jagen_flags=""
 
 export jagen_lib_dir="${jagen_dir:?}/lib"
@@ -77,7 +77,7 @@ require toolchain || die
 import env
 
 # not checking existence because it can be not checked out yet
-if [ "$jagen_private_dir" ]; then
+if [ "${jagen_private_dir-}" ]; then
     export jagen_private_dir
     add_PATH "$jagen_private_dir/bin"
 fi

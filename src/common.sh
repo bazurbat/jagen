@@ -119,7 +119,7 @@ in_list() {
 
 list_remove() {
     local S="${1:?}" value="${2:?}"; shift 2
-    local result
+    local result=
     local IFS="$S"
     set -- $@
     for item; do
@@ -148,7 +148,7 @@ add_PATH() {
 
 add_LD_LIBRARY_PATH() {
     : ${1:?}
-    LD_LIBRARY_PATH="$1":$(list_remove : "$1" $LD_LIBRARY_PATH)
+    LD_LIBRARY_PATH="$1":$(list_remove : "$1" ${LD_LIBRARY_PATH-})
 }
 
 _jagen() {
