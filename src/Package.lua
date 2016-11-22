@@ -6,6 +6,19 @@ local Package = {}
 Package.__index = Package
 
 local packages = {}
+local have_patches = false
+
+local function try_load_module(modname)
+    for path in string.gmatch(package.path, '[^;]+') do
+        local filename = string.gsub(path, '%?', modname)
+        local file = io.open(filename, 'rb')
+        if file then
+            local module = assert(loadstring(assert(file:read('*a')), filename))
+            file:close()
+            return module()
+        end
+    end
+end
 
 function Package:__tostring()
     return string.format('%s__%s', self.name or '', self.config or '')
@@ -185,6 +198,8 @@ end
 function Package.load_rules(full)
     local dirs = string.split2(os.getenv('jagen_path'), '\t')
 
+    have_patches = try_load_module('pkg/patches')
+
     for i = #dirs, 1, -1 do
         local filename = System.mkpath(dirs[i], 'rules.lua')
         local file = io.open(filename, 'rb')
@@ -224,18 +239,6 @@ function Package.load_rules(full)
     return packages
 end
 
-local function try_load_module(modname)
-    for path in string.gmatch(package.path, '[^;]+') do
-        local filename = string.gsub(path, '%?', modname)
-        local file = io.open(filename, 'rb')
-        if file then
-            local module = assert(loadstring(assert(file:read('*a')), filename))
-            file:close()
-            return module()
-        end
-    end
-end
-
 function define_rule(rule)
     rule = Package:new(rule)
 
@@ -245,9 +248,13 @@ function define_rule(rule)
         pkg = Package:new { rule.name }
         pkg:add_target { 'unpack' }
         if pkg.name ~= 'patches' then
-            pkg:add_target { 'patch',
-                { 'patches', 'unpack' }
-            }
+            if have_patches then
+                pkg:add_target { 'patch',
+                    { 'patches', 'unpack' }
+                }
+            else
+                pkg:add_target { 'patch' }
+            end
         end
         local module = try_load_module('pkg/'..rule.name)
         if module then
@@ -255,7 +262,9 @@ function define_rule(rule)
         end
         packages[rule.name] = pkg
         pkg.configs = pkg.configs or {}
-        define_rule { 'patches' }
+        if have_patches then
+            define_rule { 'patches' }
+        end
     end
 
     if rule.template then
