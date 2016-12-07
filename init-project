@@ -5,6 +5,11 @@ set -eu
 env_file="env.sh"
 config_file="config.sh"
 
+jagen_dir=$(dirname "$0")
+jagen_flags=
+jagen_layers=
+init_jagen_layers=
+
 message() {
     echo init-project: $*
 }
@@ -153,8 +158,9 @@ write_config() {
 # jagen_project_dir - refers to the current project directory
 
 # A list of directories containing layers used by this project.
-# NOTE: separate items with newlines (\\n) or tabs (\\t), spaces ( ) are
-# assumed to be part of the pathname, so the indentation will be counted too.
+# NOTE: separate items with newlines (\\n) or tabs (\\t) here because normal
+# spaces ( ) are assumed to be a part of the pathname, so the indentation will
+# be counted too.
 jagen_layers="$jagen_layers"
 
 # Toplevel working directory.
@@ -197,17 +203,15 @@ parse_names() {
         fi
     done
 
-    if [ $# -gt 1 ]; then
-        init_jagen_layers="$@"
-    else
-        # if an argument does not contain '/' it will remain unchanged;
-        # otherwise it will become empty after the substitution
-        if [ "${1%%*/*}" = "$1" ]; then
-            jagen_product="$1"
-        else
-            init_jagen_layers="$1"
-        fi
+    # The first non-option argument could be product name, detect this by
+    # looking for '/': if the argument does not contains '/' it will remain
+    # unchanged; otherwise it will become empty after the substitution
+    if [ "${1%%*/*}" = "$1" ]; then
+        jagen_product="$1"
+        shift
     fi
+
+    init_jagen_layers="$@"
 }
 
 parse_command_line() {
@@ -230,7 +234,7 @@ parse_command_line() {
                     share_sources=1 ;;
                 -f|--force)
                     use_force=1 ;;
-                -a|--flag) 
+                -a|--flag)
                     if [ "$jagen_flags" ]; then
                         jagen_flags="$jagen_flags $2"
                     else
@@ -246,16 +250,8 @@ parse_command_line() {
     done
 }
 
-jagen_dir=$(dirname $0)
-jagen_project_dir=''
-jagen_product=''
-jagen_flags=''
-jagen_layers=
-init_jagen_layers=
-
 if [ $# = 0 ]; then
-    show_usage
-    exit 0
+    show_usage; exit 0
 fi
 
 parse_command_line "$@"
@@ -264,12 +260,10 @@ if [ -z "${use_force-}" -a "$(printf *)" != '*' ]; then
     die "not initializing non-empty directory without force"
 fi
 
-if [ "$jagen_product" ]; then
+if [ "${jagen_product-}" ]; then
     jagen_product_dir="$jagen_dir/usr/product/$jagen_product"
     [ -d "$jagen_product_dir" ] ||
         die "product '$jagen_product' was not found in $(dirname "$jagen_product_dir")"
-
-    init_jagen_layers="$jagen_product_dir"
 fi
 
 if [ "${share_sources-}" ]; then
@@ -284,22 +278,25 @@ on_layer_init_error() {
 
 trap on_layer_init_error EXIT
 
-for layer in $init_jagen_layers; do
+for layer in ${jagen_product_dir-} $init_jagen_layers; do
     if [ -f "$layer/init.sh" ]; then
-        . "$layer/init.sh" ||
-            die "layer '$layer' init failed with status: $?"
+        . "$layer/init.sh"
     fi
 done
 
 trap - EXIT
 
-if ! [ "$jagen_layers" ] && [ "$init_jagen_layers" ]; then
-    jagen_layers=$(printf '\n '); jagen_layers=${jagen_layers% }
-    for layer in $init_jagen_layers; do
-        jagen_layers="$jagen_layers$(printf '%s\n' "$layer")
+# prepend jagen_layers in case it was set by layer init (product)
+init_jagen_layers="$jagen_layers $init_jagen_layers"
+
+# construct newline-separated list of layers -- it looks prettier in
+# the config and allows having spaces in the paths
+jagen_layers="
 "
-    done
-fi
+for layer in $init_jagen_layers; do
+    jagen_layers="$jagen_layers$layer
+"
+done
 
 write_env || exit
 write_config "$config_file" || exit
