@@ -43,6 +43,8 @@ if [ "$jagen_project_dir" ]; then
     include "$jagen_project_dir/config"
 fi
 
+export jagen_dist_patches_dir="$jagen_src_dir/jagen-patches"
+
 set_jagen_path() {
     local path IFS="$jagen_IFS" FS="$jagen_FS"
 
