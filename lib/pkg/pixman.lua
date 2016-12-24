@@ -2,7 +2,7 @@ return {
     source = {
         type      = 'dist',
         location  = 'https://www.cairographics.org/releases/pixman-0.32.8.tar.gz',
-        sha256sum = '5c63dbb3523fc4d86ed4186677815918a941b7cb390d5eec4f55cb5d66b59fb1'
+        sha1sum = 'c1119bbdb587c56009b653e6f81c083f98a20135'
     },
     build = {
         type    = 'GNU',
