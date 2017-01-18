@@ -57,7 +57,7 @@ pkg_fix_pc() {
     local name="${1:?}"
     local filename="$pkg_install_dir/lib/pkgconfig/${name}.pc"
     debug "fix pc $filename"
-    if [ -f "$filename" ]; then
+    if [ -f "$filename" -a "$pkg_sysroot" ]; then
         pkg_run sed -i "s|$pkg_sysroot||g" "$filename"
     fi
 }
