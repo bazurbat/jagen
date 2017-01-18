@@ -12,7 +12,10 @@ return {
         options = {
             '--with-system-pid-file=/run/dbus.pid',
             '--with-system-socket=/run/dbus/system_bus_socket',
+            '--enable-shared',
+            '--disable-static',
             '--disable-compiler-coverage',
+            '--enable-compiler-optimizations',
             '--disable-developer',
             '--disable-ansi',
             '--disable-verbose-mode',
@@ -40,7 +43,8 @@ return {
             '--disable-stats',
             '--with-xml=expat',
             '--without-valgrind',
-            '--without-x'
+            '--without-x',
+            '--with-systemdsystemunitdir=$pkg_install_dir/lib/systemd/system'
         }
     },
     requires = { 'expat' }
