@@ -342,7 +342,7 @@ pkg_configure() {
             pkg_run cmake -G"${jagen_cmake_generator:?}" \
                 -DCMAKE_BUILD_TYPE="$(pkg_cmake_build_type)" \
                 -DCMAKE_INSTALL_PREFIX="$pkg_prefix" \
-                $A $jagen_cmake_options "$@" "$pkg_source_dir"
+                $A $jagen_cmake_options $pkg_options "$@" "$pkg_source_dir"
             ;;
         linux_kernel)
             use_env kbuild
