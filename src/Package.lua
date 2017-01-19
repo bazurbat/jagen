@@ -6,7 +6,6 @@ local Package = {}
 Package.__index = Package
 
 local packages = {}
-local have_patches = false
 
 local function try_load_module(modname)
     for path in string.gmatch(package.path, '[^;]+') do
@@ -198,8 +197,6 @@ end
 function Package.load_rules(full)
     local dirs = string.split2(os.getenv('jagen_path'), '\t')
 
-    have_patches = try_load_module('pkg/patches')
-
     for i = #dirs, 1, -1 do
         local filename = System.mkpath(dirs[i], 'rules.lua')
         local file = io.open(filename, 'rb')
@@ -248,13 +245,9 @@ function define_rule(rule)
         pkg = Package:new { rule.name }
         pkg:add_target { 'unpack' }
         if pkg.name ~= 'patches' then
-            if have_patches then
-                pkg:add_target { 'patch',
-                    { 'patches', 'unpack' }
-                }
-            else
-                pkg:add_target { 'patch' }
-            end
+            pkg:add_target { 'patch',
+                { 'patches', 'unpack' }
+            }
         end
         local module = try_load_module('pkg/'..rule.name)
         if module then
@@ -262,9 +255,7 @@ function define_rule(rule)
         end
         packages[rule.name] = pkg
         pkg.configs = pkg.configs or {}
-        if have_patches then
-            define_rule { 'patches' }
-        end
+        define_rule { 'patches' }
     end
 
     if rule.template then
