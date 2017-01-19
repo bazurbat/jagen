@@ -7,7 +7,11 @@ return {
         { 'capicxx-dbus-runtime-Add-DBus-LIBDIR-to-link-directories', 1 }
     },
     build = {
-        type = 'CMake'
+        type = 'CMake',
+        options = {
+            '-DUSE_CONSOLE=ON',
+            '-DUSE_FILE=ON',
+        }
     },
     requires = {
         'capicxx-core-runtime',

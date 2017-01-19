@@ -4,6 +4,10 @@ return {
         location = 'https://github.com/GENIVI/capicxx-core-runtime.git'
     },
     build = {
-        type = 'CMake'
+        type = 'CMake',
+        options = {
+            '-DUSE_CONSOLE=ON',
+            '-DUSE_FILE=ON',
+        }
     }
 }
