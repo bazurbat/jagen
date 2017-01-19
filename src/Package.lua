@@ -243,11 +243,13 @@ function define_rule(rule)
 
     if not pkg then
         pkg = Package:new { rule.name }
-        pkg:add_target { 'unpack' }
         if pkg.name ~= 'patches' then
-            pkg:add_target { 'patch',
+            pkg:add_target { 'unpack',
                 { 'patches', 'unpack' }
             }
+            pkg:add_target { 'patch' }
+        else
+            pkg:add_target { 'unpack' }
         end
         local module = try_load_module('pkg/'..rule.name)
         if module then
