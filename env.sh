@@ -46,9 +46,17 @@ fi
 export jagen_dist_patches_dir="$jagen_src_dir/jagen-patches"
 
 set_jagen_path() {
-    local path IFS="$jagen_IFS" FS="$jagen_FS"
+    local layer path IFS="$jagen_IFS" FS="$jagen_FS"
 
-    for path in $jagen_layers; do
+    for layer in $jagen_layers; do
+        path="$layer"
+        if ! [ -d "$path" ]; then
+            path="$jagen_dir/usr/$path"
+        fi
+        if ! [ -d "$path" ]; then
+            error "Could not find path for layer: $layer"
+            return 2
+        fi
         jagen_path="$path${FS}$jagen_path"
         LUA_PATH="$path/?.lua;$LUA_PATH"
     done
@@ -56,7 +64,7 @@ set_jagen_path() {
     jagen_path="$jagen_project_lib_dir${FS}$jagen_path"
     LUA_PATH="$jagen_project_lib_dir/?.lua;$LUA_PATH"
 }
-set_jagen_path
+set_jagen_path || return
 
 export jagen_host_dir="$jagen_project_dir/host"
 export jagen_target_dir="$jagen_project_dir/target"
