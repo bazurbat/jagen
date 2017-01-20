@@ -148,6 +148,18 @@ function Package:add_ordering_dependencies()
     end
 end
 
+function Package:add_patches_to_inputs()
+    if not self.patches then return end
+    local stage = self.stages['unpack']
+    if not stage then return end
+    stage.inputs = stage.inputs or {}
+    for _, item in ipairs(self.patches) do
+        local name = item[1];
+        local path = System.mkpath('$jagen_dist_patches_dir', name..'.patch')
+        table.insert(stage.inputs, System.expand(path))
+    end
+end
+
 function Package:each()
     return coroutine.wrap(function ()
             for _, target in ipairs(self.stages) do
@@ -227,6 +239,7 @@ function Package.load_rules(full)
     end
 
     for _, pkg in pairs(packages) do
+        -- pkg:add_patches_to_inputs()
         pkg.source = Source:create(pkg.source, pkg.name)
         if full then
             pkg:add_ordering_dependencies()
