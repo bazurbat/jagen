@@ -48,7 +48,7 @@ return {
     },
     requires = { 'expat' },
     -- patches are distributed with the capicxx-dbus-runtime package
-    { 'patch',
+    { 'unpack',
         { 'capicxx-dbus-runtime', 'unpack' }
     }
 }
