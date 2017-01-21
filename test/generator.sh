@@ -13,7 +13,7 @@ create_project() {
     cd "$name"
     "../$init_project" -f "$name"
     cp -f build/build.ninja build.ninja.orig
-    cp -a include/ include.orig
+    rsync -a --delete include/ include.orig
     cd - >/dev/null
 }
 
