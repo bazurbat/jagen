@@ -40,9 +40,10 @@ function Ninja:rule(rule)
 end
 
 function Ninja:build(build)
+    table.sort(build.outputs)
     local header = {
         string.format('\nbuild %s: %s',
-            table.concat(build.outputs, ' '), build.rule),
+            table.concat(build.outputs, ' $\n      '), build.rule),
         table.unpack(map(tostring, build.inputs))
     }
     local o = {
@@ -90,7 +91,7 @@ function Ninja:build_stage(target)
 
     return self:build({
             rule      = 'script',
-            outputs   = { tostring(target) },
+            outputs   = target.outputs or { tostring(target) },
             inputs    = target.inputs,
             variables = {
                 script      = table.concat(script, ' '),

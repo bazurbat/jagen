@@ -5,7 +5,7 @@ jagen_pkg_patch() {
     local patches_dir="$jagen_src_dir/capicxx-dbus-runtime/src/dbus-patches"
     local patches=
 
-    pkg_patch
+    # pkg_patch
 
     patches=$(find "$patches_dir" -maxdepth 1 -type f -name "*.patch")
     for patchfile in $patches; do

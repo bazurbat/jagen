@@ -148,15 +148,22 @@ function Package:add_ordering_dependencies()
     end
 end
 
-function Package:add_patches_to_inputs()
-    if not self.patches then return end
-    local stage = self.stages['unpack']
-    if not stage then return end
-    stage.inputs = stage.inputs or {}
-    for _, item in ipairs(self.patches) do
-        local name = item[1];
-        local path = System.mkpath('$jagen_dist_patches_dir', name..'.patch')
-        table.insert(stage.inputs, System.expand(path))
+function Package.process_patches_rules()
+    local patches = {}
+
+    for _, pkg in pairs(packages) do
+        if pkg.patches then
+            local provider = pkg.patches.provider or 'patches'
+
+            local provider_pkg = packages[provider]
+            if not provider_pkg then
+                provider_pkg = define_rule { provider }
+            end
+
+            pkg:add_target { 'unpack',
+                { provider, 'unpack' }
+            }
+        end
     end
 end
 
@@ -238,8 +245,9 @@ function Package.load_rules(full)
         }
     end
 
+    Package.process_patches_rules()
+
     for _, pkg in pairs(packages) do
-        -- pkg:add_patches_to_inputs()
         pkg.source = Source:create(pkg.source, pkg.name)
         if full then
             pkg:add_ordering_dependencies()
@@ -256,13 +264,9 @@ function define_rule(rule)
 
     if not pkg then
         pkg = Package:new { rule.name }
+        pkg:add_target { 'unpack' }
         if pkg.name ~= 'patches' then
-            pkg:add_target { 'unpack',
-                { 'patches', 'unpack' }
-            }
             pkg:add_target { 'patch' }
-        else
-            pkg:add_target { 'unpack' }
         end
         local module = try_load_module('pkg/'..rule.name)
         if module then
@@ -270,7 +274,6 @@ function define_rule(rule)
         end
         packages[rule.name] = pkg
         pkg.configs = pkg.configs or {}
-        define_rule { 'patches' }
     end
 
     if rule.template then
@@ -391,6 +394,8 @@ function define_rule(rule)
         add_requires(stage, config, template)
         pkg:add_target(stage, config)
     end
+
+    return pkg
 end
 
 function define_package_alias(name, value)
