@@ -148,23 +148,58 @@ function Package:add_ordering_dependencies()
     end
 end
 
-function Package.process_patches_rules()
-    local patches = {}
-
-    for _, pkg in pairs(packages) do
-        if pkg.patches then
-            local provider = pkg.patches.provider or 'patches'
-
-            local provider_pkg = packages[provider]
-            if not provider_pkg then
-                provider_pkg = define_rule { provider }
-            end
-
-            pkg:add_target { 'unpack',
-                { provider, 'unpack' }
-            }
-        end
+function Package.add_patch_dependencies()
+    local function having_patches(pkg)
+        return pkg.patches
     end
+
+    local function patches_provider(pkg)
+        local name = pkg.patches.provider or 'patches'
+        return packages[name] or define_rule { name }
+    end
+
+    local function unpack_stage(pkg)
+        return pkg.stages['unpack']
+    end
+
+    local function patch_filenames(pkg)
+        local function extract_name(item)
+            return item[1]
+        end
+        local function to_path(name)
+            local source_dir = patches_provider(pkg).source.dir
+            local filename = name..'.patch'
+            local path
+            if pkg.patches.dir then
+                path = System.mkpath(source_dir, pkg.patches.dir, filename)
+            else
+                path = System.mkpath(source_dir, filename)
+            end
+            return System.expand(path)
+        end
+        return table.imap(pkg.patches, compose(to_path, extract_name))
+    end
+
+    local function add_outputs(provider, pkg)
+        local unpack = unpack_stage(provider)
+        if not unpack.outputs then
+            unpack.outputs = { tostring(unpack) }
+        end
+        table.iextend(unpack.outputs, patch_filenames(pkg))
+    end
+
+    local function add_inputs(pkg)
+        local unpack = unpack_stage(pkg)
+        unpack.inputs = unpack.inputs or {}
+        table.iextend(unpack.inputs, patch_filenames(pkg))
+    end
+
+    local function add_dependencies(pkg)
+        add_outputs(patches_provider(pkg), pkg)
+        add_inputs(pkg)
+    end
+
+    table.for_each(table.filter(packages, having_patches), add_dependencies)
 end
 
 function Package:each()
@@ -245,7 +280,7 @@ function Package.load_rules(full)
         }
     end
 
-    Package.process_patches_rules()
+    Package.add_patch_dependencies()
 
     for _, pkg in pairs(packages) do
         if full then
