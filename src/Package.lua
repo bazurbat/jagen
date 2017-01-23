@@ -248,7 +248,6 @@ function Package.load_rules(full)
     Package.process_patches_rules()
 
     for _, pkg in pairs(packages) do
-        pkg.source = Source:create(pkg.source, pkg.name)
         if full then
             pkg:add_ordering_dependencies()
         end
@@ -274,6 +273,8 @@ function define_rule(rule)
         end
         packages[rule.name] = pkg
         pkg.configs = pkg.configs or {}
+
+        pkg.source = Source:create(pkg.source, pkg.name)
     end
 
     if rule.template then
