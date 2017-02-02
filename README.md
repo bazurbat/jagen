@@ -345,6 +345,7 @@ rules and also to find pkg files. The `config` is optional.
         exclude  = true,       -- assumed to be 'false' if not set
     },
     patches = {
+        provider = 'patches',
         { 'filename1', num },
         { 'filename2', num },
         ...
@@ -404,6 +405,9 @@ rules and also to find pkg files. The `config` is optional.
   where `'name'` is the filename of the patch without the `.patch` extension
   and the `num` is the number of leading slashes to strip from filenames when
   applying the patch (passed as `-pnum` to the `patch` utility).
+
+- **pkg.patches.provider** — optional name of the package providing the
+  patches; defaults to "patches" if not specified
 
 - **pkg.build** (`pkg_build_*`) — Parameters for the build stage
 
