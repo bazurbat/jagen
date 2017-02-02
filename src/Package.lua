@@ -183,7 +183,7 @@ function Package.add_patch_dependencies()
     local function add_outputs(provider, pkg)
         local unpack = unpack_stage(provider)
         if not unpack.outputs then
-            unpack.outputs = { tostring(unpack) }
+            unpack.outputs = {} 
         end
         table.iextend(unpack.outputs, patch_filenames(pkg))
     end

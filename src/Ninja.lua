@@ -3,6 +3,8 @@ Ninja = {
     space = 4
 }
 
+local insert = table.insert
+
 function Ninja:new()
     local o = {}
     setmetatable(o, self)
@@ -12,15 +14,26 @@ end
 
 function Ninja:indent(level)
     level = level or 0
-    local t = {}
+    local out = {}
     for i = 1, level * self.space do
-        table.insert(t, ' ')
+        insert(out, ' ')
     end
-    return table.concat(t)
+    return table.concat(out)
 end
 
-function Ninja:variable(k, v, level)
-    return string.format('%s%s = %s', self:indent(level), k, v)
+function Ninja:line(list, level)
+    local out = {}
+    insert(out, list[1])
+    if #list > 1 then
+        for i = 2, #list do
+            insert(out, self:indent(level or 1)..list[i])
+        end
+    end
+    return table.concat(out, ' $\n')
+end
+
+function Ninja:variable(key, value, level)
+    return string.format('%s%s = %s', self:indent(level), key, value)
 end
 
 function Ninja:rule(rule)
@@ -31,28 +44,7 @@ function Ninja:rule(rule)
     if rule.variables then
         local vars = {}
         for k, v in pairs(rule.variables) do
-            table.insert(vars, self:variable(k, v, 1))
-        end
-        table.sort(vars)
-        table.iextend(o, vars)
-    end
-    return table.concat(o, '\n')
-end
-
-function Ninja:build(build)
-    table.sort(build.outputs)
-    local header = {
-        string.format('\nbuild %s: %s',
-            table.concat(build.outputs, ' $\n      '), build.rule),
-        table.unpack(map(tostring, build.inputs))
-    }
-    local o = {
-        table.concat(header, ' $\n'..self:indent(4))
-    }
-    if build.variables then
-        local vars = {}
-        for k, v in pairs(build.variables) do
-            table.insert(vars, self:variable(k, v, 1))
+            insert(vars, self:variable(k, v, 1))
         end
         table.sort(vars)
         table.iextend(o, vars)
@@ -75,37 +67,58 @@ function Ninja:header()
     return table.concat(o)
 end
 
-function Ninja:build_stage(target)
-    local script = {}
-    local shell = Jagen.shell
-    if shell and #shell > 0 then
-        table.insert(script, shell)
-    end
-    table.insert(script, 'jagen-pkg')
-    table.insert(script, assert(target.name))
-    table.insert(script, assert(target.stage))
-    table.insert(script, target.config or "''")
-    if target.arg then
-        table.insert(script, "'"..string.gsub(target.arg, '%$', '$$').."'")
+function Ninja:format_stage(target)
+    local o = {}
+    
+    local function format_outputs()
+        local o = { tostring(target) }
+        if target.outputs then
+            table.sort(target.outputs)
+            table.iextend(o, target.outputs)
+        end
+        if #o > 1 then
+            insert(o, self:indent(1))
+        end
+        return self:line(o, 2)
     end
 
-    return self:build({
-            rule      = 'script',
-            outputs   = target.outputs or { tostring(target) },
-            inputs    = target.inputs,
-            variables = {
-                script      = table.concat(script, ' '),
-                description = target:__tostring(' ')
-            }
-        })
+    local function format_inputs()
+        local o = table.imap(target.inputs or {}, tostring)
+        table.sort(o)
+        insert(o, 1, '')
+        return self:line(o, 4)
+    end
+
+    local function format_script()
+        local o = {}
+        if Jagen.shell and #Jagen.shell > 0 then
+            insert(o, Jagen.shell)
+        end
+        insert(o, 'jagen-pkg')
+        insert(o, assert(target.name))
+        insert(o, assert(target.stage))
+        insert(o, target.config or "''")
+        if target.arg then
+            insert(o, "'"..string.gsub(target.arg, '%$', '$$').."'")
+        end
+        return table.concat(o, ' ')
+    end
+
+    insert(o, string.format('\nbuild %s: script%s',
+            format_outputs(), format_inputs()))
+
+    insert(o, self:variable('description', target:__tostring(' '), 1))
+    insert(o, self:variable('script', format_script(), 1))
+
+    return table.concat(o, '\n')
 end
 
-function Ninja:build_package(pkg)
-    local o = {}
+function Ninja:format_package(pkg)
+    local out = {}
     for stage in pkg:each() do
-        table.insert(o, self:build_stage(stage))
+        insert(out, self:format_stage(stage))
     end
-    return table.concat(o)
+    return table.concat(out)
 end
 
 function Ninja:generate(out_file, rules)
@@ -113,26 +126,17 @@ function Ninja:generate(out_file, rules)
     local packages = {}
 
     for _, rule in pairs(rules) do
-        table.insert(packages, rule)
+        insert(packages, rule)
     end
 
     table.sort(packages, function (a, b)
             return a.name < b.name
         end)
 
-    for _, pkg in ipairs(packages) do
-        for stage in pkg:each() do
-            table.sort(stage.inputs or {}, function (a, b)
-                    return tostring(a) < tostring(b)
-                end)
-        end
-    end
-
-
     out:write(self:header())
     out:write('\n')
     for _, pkg in ipairs(packages) do
-        out:write(self:build_package(pkg))
+        out:write(self:format_package(pkg))
         out:write('\n')
     end
 
