@@ -40,6 +40,29 @@ function P.popen(cmdline, ...)
     return assert(io.popen(prog))
 end
 
+function P.pipe(command, func)
+    Log.debug2(command)
+    local file = assert(io.popen(command))
+    local vals = { func(file) }
+    file:close()
+    return table.unpack(vals)
+end
+
+function P.read_single(command)
+    return P.pipe(command, io.read_single)
+end
+
+function P.with_reader(reader, command, func)
+    return P.pipe(command,
+        function (file)
+            if func then
+                return func(reader(file))
+            else
+                return reader(file)
+            end
+        end)
+end
+
 function P.pread(format, cmdline, ...)
     local file = P.popen(cmdline, ...)
     local out = file:read(format)

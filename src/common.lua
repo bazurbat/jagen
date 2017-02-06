@@ -215,3 +215,13 @@ function table.dump(t, i)
     end
     io.write(string.rep(' ', i), '}\n')
 end
+
+function io.read_first(file)
+    return file:read('*l')
+end
+
+function io.read_single(file)
+    local first, second = file:read('*l', '*l')
+    assert(not second, 'unexpected second line')
+    return first
+end

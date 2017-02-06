@@ -343,6 +343,8 @@ rules and also to find pkg files. The `config` is optional.
         basename = 'filename', -- derived from filename if not set
         filename = 'filename', -- derived from location if not set
         exclude  = true,       -- assumed to be 'false' if not set
+
+        ignore_dirty = false
     },
     patches = {
         provider = 'patches',
@@ -448,6 +450,8 @@ rules and also to find pkg files. The `config` is optional.
 
 - **source.filename** (`pkg_source_filename`) — The last part of the source
   location.
+
+- **source.ignore\_dirty** — Ignore "dirty" status of the source directory.
 
 - **source.location** — The location of the source file or the repository URL.
 

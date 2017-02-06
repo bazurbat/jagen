@@ -99,6 +99,10 @@ function GitSource:new(o)
     return source
 end
 
+function GitSource:command(command, ...)
+    return string.format('git -C "%s" '..command, self.dir, ...)
+end
+
 function GitSource:exec(command, ...)
     return System.exec('git -C "%s" '..command, self.dir, ...)
 end
@@ -112,6 +116,9 @@ function GitSource:head()
 end
 
 function GitSource:dirty()
+    if self.ignore_dirty then
+        return false
+    end
     return self:pread('*l', 'status --porcelain') ~= nil
 end
 
@@ -119,76 +126,80 @@ function GitSource:clean()
     return self:exec('checkout HEAD .') and self:exec('clean -fxd')
 end
 
-function GitSource:_resolve_ref(pattern)
-    local ls = self:pread('*l', 'ls-remote -q --refs origin "%s"', pattern)
-    if ls then
-        return string.match(ls, '%S+%s+(%S+)')
-    end
+function GitSource:_ref_name(line)
+    return string.match(line, '%S+%s+(%S+)')
+end
+
+function GitSource:_ls_remote(pattern)
+    return System.pipe(
+        self:command('ls-remote --quiet --refs origin "%s"', pattern),
+        function (file)
+            local first, second = file:read('*l', '*l')
+            assert(not second, string.format('multiple remote refs match "%s"', pattern))
+            if first then
+                return self:_ref_name(first)
+            end
+        end)
+end
+
+function GitSource:_ref_is_tag(ref)
+    return string.match(ref, '/tags/')
 end
 
 function GitSource:update()
-    local ref = assert(self:_resolve_ref(self.branch))
-    local refspec = string.format('+%s:%s', ref, ref)
+    local src = assert(self:_ls_remote(self.branch))
+    local dst
+    if self:_ref_is_tag(src) then
+        dst = string.format('refs/tags/%s', self.branch)
+    else
+        dst = string.format('refs/remotes/origin/%s', self.branch)
+    end
+    local refspec = string.format('+%s:%s', src, dst)
     return self:exec('fetch --prune --no-tags origin "%s"', refspec)
 end
 
-function GitSource:_is_branch(pattern)
-    local branch = self:pread('*l', 'branch -a --list "%s"', pattern)
-    local exists, active = false, false
-
-    if branch and #branch > 0 then
-        exists = true
-        active = string.sub(branch, 1, 1) == '*'
+function GitSource:_branch_list(pattern)
+    local line = System.read_single(
+        self:command('branch --list --all "%s"', assert(pattern)))
+    local name, active = nil, false
+    if line and #line > 0 then
+        active = string.sub(line, 1, 1) == '*'
+        name = assert(string.match(line, '%s+(%S+)'))
     end
-
-    return exists, active
+    return name, active
 end
 
-function GitSource:_is_tag(pattern)
-    local tag = self:pread('*l', 'tag --list "%s"', pattern)
-    local exists, active = false, false
-
-    if tag and #tag > 0 then
-        exists = true
-    end
-
-    return exists, active
-end
-
-function GitSource:_checkout()
-    local branch = assert(self.branch)
-    local exists, active = self:_is_branch(branch) or self:_is_tag(branch)
-    if active then
-        return true
-    elseif exists then
-        return self:exec('checkout "%s"', branch)
-    else
-        local start_point = 'origin/'..branch
-        exists = self:_is_branch(start_point)
-        if exists then
-            return self:exec('remote set-branches origin "%s"', branch) and
-                   self:exec('checkout -b "%s" "%s"', branch, start_point)
-        else
-            Log.error("could not find branch '%s' in local repository", branch)
-            return false
-        end
-    end
-end
-
-function GitSource:_show_ref(pattern)
-    local ls = self:pread('*l', 'show-ref "%s"', pattern)
-    if ls then
-        return string.match(ls, '%S+%s+(%S+)')
-    end
-end
-
-function GitSource:_merge()
-    local ref = assert(self:_show_ref(self.branch))
-    return self:exec('merge --ff-only "%s"', ref)
+function GitSource:_tag_list(pattern)
+    return System.read_single(
+        self:command('tag --list "%s"', assert(pattern)))
 end
 
 function GitSource:switch()
-    return self:_checkout() and self:_merge()
+    local branch, active = self:_branch_list(self.branch)
+    if active then return true end
+    if branch then
+        return
+            self:exec('checkout "%s"', branch) and
+            self:exec('merge --ff-only')
+    end
+
+    branch = self:_branch_list('origin/'..self.branch)
+    if branch then
+        return
+            self:exec('remote set-branches origin "%s"', self.branch) and
+            self:exec('checkout -b "%s" "%s"', self.branch, branch) and
+            self:exec('merge --ff-only')
+    end
+
+    local tag = self:_tag_list(self.branch)
+    if tag then
+        return
+            self:exec('checkout "%s"', self.branch)
+    end
+
+    Log.error("could not find branch '%s' in local repository", self.branch)
+
+    return false
 end
 
 function GitSource:clone()
