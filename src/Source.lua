@@ -119,9 +119,17 @@ function GitSource:clean()
     return self:exec('checkout HEAD .') and self:exec('clean -fxd')
 end
 
+function GitSource:_resolve_ref(pattern)
+    local ls = self:pread('*l', 'ls-remote -q --refs origin "%s"', pattern)
+    if ls then
+        return string.match(ls, '%S+%s+(%S+)')
+    end
+end
+
 function GitSource:update()
-    return self:exec('fetch --prune --no-tags origin '..
-        '"+refs/heads/%s:refs/remotes/origin/%s"', self.branch, self.branch)
+    local ref = assert(self:_resolve_ref(self.branch))
+    local refspec = string.format('+%s:%s', ref, ref)
+    return self:exec('fetch --prune --no-tags origin "%s"', refspec)
 end
 
 function GitSource:_is_branch(pattern)
@@ -136,9 +144,20 @@ function GitSource:_is_branch(pattern)
     return exists, active
 end
 
+function GitSource:_is_tag(pattern)
+    local tag = self:pread('*l', 'tag --list "%s"', pattern)
+    local exists, active = false, false
+
+    if tag and #tag > 0 then
+        exists = true
+    end
+
+    return exists, active
+end
+
 function GitSource:_checkout()
     local branch = assert(self.branch)
-    local exists, active = self:_is_branch(branch)
+    local exists, active = self:_is_branch(branch) or self:_is_tag(branch)
     if active then
         return true
     elseif exists then
@@ -156,8 +175,16 @@ function GitSource:_checkout()
     end
 end
 
+function GitSource:_show_ref(pattern)
+    local ls = self:pread('*l', 'show-ref "%s"', pattern)
+    if ls then
+        return string.match(ls, '%S+%s+(%S+)')
+    end
+end
+
 function GitSource:_merge()
-    return self:exec('merge --ff-only "origin/%s"', self.branch)
+    local ref = assert(self:_show_ref(self.branch))
+    return self:exec('merge --ff-only "%s"', ref)
 end
 
 function GitSource:switch()
