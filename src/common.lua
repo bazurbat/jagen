@@ -67,6 +67,11 @@ function find(pred, list)
     return nil, nil
 end
 
+function string.escape(s)
+    assert_arg('escape', 1, 'string', s)
+    return string.gsub(s, '([^%w_-])', '\\%1')
+end
+
 function string.split(s, sep)
     local o, b, e = {}
     local init = 1
