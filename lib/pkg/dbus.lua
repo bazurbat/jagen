@@ -15,7 +15,6 @@ return {
             '--enable-shared',
             '--disable-static',
             '--disable-compiler-coverage',
-            '--enable-compiler-optimizations',
             '--disable-developer',
             '--disable-ansi',
             '--disable-verbose-mode',

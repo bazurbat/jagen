@@ -24,7 +24,6 @@ return {
             '--enable-shared',
             '--disable-static',
             '--disable-compiler-coverage',
-            '--enable-compiler-optimizations',
             '--disable-developer',
             '--disable-ansi',
             '--disable-verbose-mode',
@@ -50,7 +49,6 @@ return {
             '--disable-x11-autolaunch',
             '--disable-Werror',
             '--disable-stats',
-            '--with-xml=expat',
             '--without-valgrind',
             '--without-x',
         }
