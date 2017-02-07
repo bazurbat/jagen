@@ -216,12 +216,12 @@ function table.dump(t, i)
     io.write(string.rep(' ', i), '}\n')
 end
 
-function io.read_first(file)
+function io.read_line(file)
     return file:read('*l')
 end
 
-function io.read_single(file)
+function io.read_single_line(file)
     local first, second = file:read('*l', '*l')
-    assert(not second, 'unexpected second line')
+    assert(not second, 'unexpected second line read')
     return first
 end

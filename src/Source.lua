@@ -126,20 +126,16 @@ function GitSource:clean()
     return self:exec('checkout HEAD .') and self:exec('clean -fxd')
 end
 
-function GitSource:_ref_name(line)
-    return string.match(line, '%S+%s+(%S+)')
-end
-
 function GitSource:_ls_remote(pattern)
+    local function get_matching_remote_ref(line)
+        if line then
+            return assert(string.match(line, '%S+%s+(%S+)'))
+        end
+    end
     return System.pipe(
+        get_matching_remote_ref,
         self:command('ls-remote --quiet --refs origin "%s"', pattern),
-        function (file)
-            local first, second = file:read('*l', '*l')
-            assert(not second, string.format('multiple remote refs match "%s"', pattern))
-            if first then
-                return self:_ref_name(first)
-            end
-        end)
+        io.read_single_line)
 end
 
 function GitSource:_ref_is_tag(ref)
@@ -147,7 +143,11 @@ function GitSource:_ref_is_tag(ref)
 end
 
 function GitSource:update()
-    local src = assert(self:_ls_remote(self.branch))
+    local src = self:_ls_remote(self.branch)
+    if not src then
+        Log.error("could not find tag or branch '%s' in '%s'", self.branch, self.location)
+        return false
+    end
     local dst
     if self:_ref_is_tag(src) then
         dst = string.format('refs/tags/%s', self.branch)
@@ -158,46 +158,55 @@ function GitSource:update()
     return self:exec('fetch --prune --no-tags origin "%s"', refspec)
 end
 
-function GitSource:_branch_list(pattern)
-    local line = System.read_single(
-        self:command('branch --list --all "%s"', assert(pattern)))
-    local name, active = nil, false
-    if line and #line > 0 then
-        active = string.sub(line, 1, 1) == '*'
-        name = assert(string.match(line, '%s+(%S+)'))
-    end
-    return name, active
-end
-
-function GitSource:_tag_list(pattern)
-    return System.read_single(
-        self:command('tag --list "%s"', assert(pattern)))
-end
-
 function GitSource:switch()
-    local branch, active = self:_branch_list(self.branch)
-    if active then return true end
-    if branch then
+    local branch = assert(self.branch)
+
+    local function get_matching_ref(line)
+        local ref, active = nil, false
+        if line and #line > 0 then
+            ref = string.match(line, '%s*(%S+)')
+            active = string.sub(line, 1, 1) == '*'
+        end
+        return ref, active
+    end
+
+    local ref, active = System.pipe(
+        get_matching_ref,
+        self:command('branch --list "%s"', branch),
+        io.read_single_line)
+
+    if active then
+        return true
+    end
+
+    if ref then
         return
             self:exec('checkout "%s"', branch) and
-            self:exec('merge --ff-only')
+            self:exec('merge --ff-only "%s"', 'origin/'..branch)
     end
 
-    branch = self:_branch_list('origin/'..self.branch)
-    if branch then
+    ref = System.pipe(
+        get_matching_ref,
+        self:command('branch --list --remotes "%s"', 'origin/'..branch),
+        io.read_single_line)
+
+    if ref then
         return
-            self:exec('remote set-branches origin "%s"', self.branch) and
-            self:exec('checkout -b "%s" "%s"', self.branch, branch) and
-            self:exec('merge --ff-only')
+            self:exec('checkout -b "%s" "%s"', branch, ref) and
+            self:exec('merge --ff-only "%s"', 'origin/'..branch)
     end
 
-    local tag = self:_tag_list(self.branch)
+    local tag = System.pipe(
+        get_matching_ref,
+        self:command('tag --list "%s"', branch),
+        io.read_single_line)
+
     if tag then
         return
             self:exec('checkout "%s"', self.branch)
     end
 
-    Log.error("could not find branch '%s' in local repository", self.branch)
+    Log.error("could not find tag or branch '%s' in '%s'", branch, self.dir)
 
     return false
 end
