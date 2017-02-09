@@ -167,3 +167,11 @@ jagen_nproc() {
             nproc
     esac
 }
+
+jagen__versions() {
+    _jagen _compare_versions "$@"
+}
+
+jagen__get_cmake_version() {
+    printf "%s" $(cmake --version | head -1 | cut -d' ' -f3)
+}

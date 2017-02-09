@@ -442,6 +442,49 @@ function Jagen.command.test(args)
     return 0
 end
 
+function Jagen.command._compare_versions(args)
+    assert(#args == 3, "function 'compare_versions' requires 3 arguments")
+    local op_arg = assert(args[1])
+    local va_arg = assert(args[2])
+    local vb_arg = assert(args[3])
+
+    local ops = {
+        ['eq'] = function(a, b) return a == b end,
+        ['ne'] = function(a, b) return a ~= b end,
+        ['gt'] = function(a, b) return a >  b end,
+        ['ge'] = function(a, b) return a >= b end,
+        ['lt'] = function(a, b) return a <  b end,
+        ['le'] = function(a, b) return a <= b end,
+    }
+
+    local function tonumbers(str)
+        return table.imap(string.split(str, '.'), function (i)
+                local num = tonumber(i)
+                assert(num, string.format("unable to convert '%s' to number in version string '%s'", i, str))
+                return num
+            end)
+    end
+
+    local function tostatus(result)
+        return result and 0 or 1
+    end
+
+    local op = ops[op_arg]; assert(op, 'invalid comparison operator: '..op_arg)
+    local va = tonumbers(va_arg); assert(#va > 0)
+    local vb = tonumbers(vb_arg); assert(#vb > 0)
+
+    for i = 1, math.max(#va, #vb) do
+        local a, b = va[i] or 0, vb[i] or 0
+        if a ~= b then return tostatus(op(a, b)) end
+    end
+
+    if op_arg == 'ne' or op_arg == 'gt' or op_arg == 'lt' then
+        return tostatus(false)
+    else
+        return tostatus(true)
+    end
+end
+
 local function nproc()
     local name = System.pread('*l', 'uname -s')
     if name == 'Darwin' then
