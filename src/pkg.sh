@@ -341,6 +341,12 @@ pkg_configure() {
                 A="$A$S-DCMAKE_FIND_ROOT_PATH=$pkg_install_dir"
             fi
 
+            if $(jagen__versions ge "$(jagen__get_cmake_version)" 3.1); then
+                A="$A$S-DCMAKE_EXPORT_NO_PACKAGE_REGISTRY=YES"
+                A="$A$S-DCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY=YES"
+                A="$A$S-DCMAKE_FIND_PACKAGE_NO_SYSTEM_PACKAGE_REGISTRY=YES"
+            fi
+
             pkg_run cmake -G"${jagen_cmake_generator:?}" \
                 -DCMAKE_BUILD_TYPE="$(pkg_cmake_build_type)" \
                 -DCMAKE_INSTALL_PREFIX="$pkg_prefix" \
