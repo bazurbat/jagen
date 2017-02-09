@@ -312,6 +312,9 @@ function define_rule(rule)
         pkg.configs = pkg.configs or {}
 
         pkg.source = Source:create(pkg.source, pkg.name)
+        if not pkg.source.ignore_dirty and pkg.patches then
+            pkg.source.ignore_dirty = true
+        end
     end
 
     if rule.template then
