@@ -3,7 +3,6 @@ return {
         type = 'git',
         location = 'https://github.com/GENIVI/AudioManager.git',
         branch = '7.5',
-        ignore_dirty = true
     },
     patches = {
         { 'audio-manager-pass-all-LDFLAGS-to-linker-when-building-wrappers', 1 }
