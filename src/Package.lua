@@ -251,6 +251,8 @@ end
 function Package.load_rules(full)
     local dirs = string.split2(os.getenv('jagen_path'), '\t')
 
+    packages = {}
+
     for i = #dirs, 1, -1 do
         local filename = System.mkpath(dirs[i], 'rules.lua')
         local file = io.open(filename, 'rb')
