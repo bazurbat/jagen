@@ -9,8 +9,12 @@ function P.quote(...)
     return table.concat(table.imap({...}, quote), ' ')
 end
 
-function P.expand(...)
-    return P.pread('*a', 'printf "%s" '..P.quote(...), '%s')
+function P.expand(str)
+    local command = string.format("printf '%%s' %q", str)
+    local file    = assert(io.popen(command))
+    local output  = file:read('*a')
+    file:close()
+    return output
 end
 
 function P.mkpath(...)
