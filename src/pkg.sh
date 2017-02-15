@@ -234,7 +234,7 @@ pkg_unpack() {
             pkg__unpack_dist "$src_path" "$pkg_work_dir"
             ;;
         git|hg|repo)
-            if [ -d "$pkg_source_dir" ]; then
+            if [ -d "$pkg_source_dir" ] && ! jagen__is_empty "$pkg_source_dir"; then
                 if [ "$pkg_source_exclude" ] ||
                     in_list "$pkg_name" $jagen_source_exclude
                 then

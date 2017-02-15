@@ -175,3 +175,7 @@ jagen__versions() {
 jagen__get_cmake_version() {
     printf "%s" $(cmake --version | head -1 | cut -d' ' -f3)
 }
+
+jagen__is_empty() {
+    test "$(cd "${1:?}" 2>/dev/null && echo *)" = '*'
+}

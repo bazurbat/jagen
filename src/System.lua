@@ -103,7 +103,7 @@ function P.dir_exists(path)
 end
 
 function P.is_empty(path)
-    return P.pread('*l', 'cd "%s" && echo *', path) == '*'
+    return P.pread('*l', 'cd "%s" 2>/dev/null && echo *', path) == '*'
 end
 
 return P

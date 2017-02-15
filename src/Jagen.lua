@@ -70,7 +70,8 @@ function Jagen.src.dirty(args)
     local packages = scm_packages(args)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
-        if System.exists(source.dir) and source:dirty() then
+        if System.exists(source.dir) and not System.is_empty(source.dir) and
+                source:dirty() then
             return 0
         end
     end
@@ -81,7 +82,7 @@ function Jagen.src.status(args)
     local packages = scm_packages(args)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
-        if System.exists(source.dir) then
+        if System.exists(source.dir) and not System.is_empty(source.dir) then
             local dirty = source:dirty() and 'dirty' or ''
             local head = source:head()
             if not head then
@@ -120,7 +121,7 @@ function Jagen.src.update(args)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
         local old_head
-        if System.exists(source.dir) then
+        if System.exists(source.dir) and not System.is_empty(source.dir) then
             old_head = source:head()
             if not source:dirty() then
                 if offline then
