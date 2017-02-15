@@ -405,18 +405,6 @@ pkg__install_files() {
     done
 }
 
-pkg__install_dbus_configs() {
-    local session_conf_dir="$pkg_install_dir/etc/dbus-1/session.d"
-    local system_conf_dir="$pkg_install_dir/etc/dbus-1/system.d"
-    local service_dir="$pkg_install_dir/share/dbus-1/services"
-    local system_service_dir="$pkg_install_dir/share/dbus-1/system-services"
-
-    pkg__install_files "$session_conf_dir" $pkg_install_dbus_session_configs
-    pkg__install_files "$system_conf_dir" $pkg_install_dbus_system_configs
-    pkg__install_files "$service_dir" $pkg_install_dbus_services
-    pkg__install_files "$system_service_dir" $pkg_install_dbus_system_services
-}
-
 pkg_install() {
     local pkg_install_type="${pkg_install_type:-$pkg_build_type}"
 
@@ -457,8 +445,6 @@ pkg_install() {
         none)
             ;;
     esac
-
-    pkg__install_dbus_configs
 }
 
 pkg__modules_install() {

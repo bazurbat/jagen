@@ -378,11 +378,6 @@ rules and also to find pkg files. The `config` is optional.
 
         config_script = 'filename',
         modules = { 'name1', 'name2', ...},
-
-        dbus_services        = { 'filename1', 'filename2', ... },
-        dbus_session_configs = { 'filename1', 'filename2', ... },
-        dbus_system_configs  = { 'filename1', 'filename2', ... },
-        dbus_system_services = { 'filename1', 'filename2', ... },
     },
     requires = {
         'name1',
@@ -524,17 +519,6 @@ rules and also to find pkg files. The `config` is optional.
 - **install.config_script** (`pkg_install_config_script`) — The location of the
   installed config script relative the the install prefix.
 
-- **install.dbus_services** (`pkg_install_dbus_services`) — DBus service files.
-
-- **install.dbus_session_configs** (`pkg_install_dbus_session_configs`) — DBus
-  session config files.
-
-- **install.dbus_system_configs** (`pkg_install_dbus_system_configs`) — DBus
-  system config files.
-
-- **install.dbus_system_services** (`pkg_install_dbus_system_services`) — DBus
-  system service files.
-
 - **install.modules** (`pkg_install_modules_dirs`) — Linux kernel modules.
 
 - **install.prefix** (`pkg_prefix`) — Install prefix.
@@ -654,22 +638,6 @@ rules and also to find pkg files. The `config` is optional.
 - **pkg_install_config_script** (`install.config_script`) — specifies the
   location of the `*-config` script relative to the sysroot; some GNU packages
   install those with hardcoded values which might need post-install cleanup
-
-- **pkg_install_dbus_services** (`install.dbus_services`) — a list of DBus
-  service files to install (default location:
-  `$pkg_install_dir/share/dbus-1/services`)
-
-- **pkg_install_dbus_session_configs** (`install.dbus_session_configs`) — a
-  list of DBus session config files to install (default location:
-  `$pkg_install_dir/etc/dbus-1/session.d`)
-
-- **pkg_install_dbus_system_configs** (`install.dbus_system_configs`) — a
-  list of DBus system config files to install (default location:
-  `$pkg_install_dir/etc/dbus-1/system.d`)
-
-- **pkg_install_dbus_system_services** (`install.dbus_system_services`) — a
-  list of DBus system service files to install (default location:
-  `$pkg_install_dir/share/dbus-1/system-services`)
 
 - **pkg_install_dir** — full path to the package installation directory
   (`$pkg_sysroot$pkg_prefix`)
