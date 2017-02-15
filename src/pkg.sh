@@ -387,24 +387,6 @@ pkg_compile() {
     esac
 }
 
-pkg__install_files() {
-    local dest_dir="$1"; shift
-
-    [ $# -gt 0 ] || return 0
-
-    pkg_run mkdir -vp "$dest_dir"
-
-    for filename; do
-        if [ -r "$pkg_source_dir/$filename" ]; then
-            pkg_run install -vm644 "$pkg_source_dir/$filename" "$dest_dir"
-        elif [ -r "$pkg_build_dir/$filename" ]; then
-            pkg_run install -vm644 "$pkg_build_dir/$filename" "$dest_dir"
-        else
-            die "Could not find dbus config file: $filename"
-        fi
-    done
-}
-
 pkg_install() {
     local pkg_install_type="${pkg_install_type:-$pkg_build_type}"
 
