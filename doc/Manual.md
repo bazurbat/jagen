@@ -2,13 +2,13 @@
 
 ## Contents
 
-- [Initializing](doc/Initializing.md)
-- [Building](doc/Building.md)
-- [Cleaning](doc/Cleaning.md)
+- [Initializing](Initializing.md)
+- [Building](Building.md)
+- [Cleaning](Cleaning.md)
 - [Targets](#targets)
-- [Working with source packages](doc/ManagingSources.md)
-- [Manage filesystem images](doc/Images.md)
-- [Install Bash completions](doc/Installation.md)
+- [Working with source packages](ManagingSources.md)
+- [Manage filesystem images](Images.md)
+- [Install Bash completions](Installation.md)
 - [Writing build scripts](#writing-build-scripts)
 - [Build system internals](#build-system-internals)
 
