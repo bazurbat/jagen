@@ -100,15 +100,15 @@ function GitSource:new(o)
 end
 
 function GitSource:command(command, ...)
-    return string.format('git -C "%s" '..command, self.dir, ...)
+    return string.format('git --git-dir .git -C "%s" '..command, self.dir, ...)
 end
 
 function GitSource:exec(command, ...)
-    return System.exec('git -C "%s" '..command, self.dir, ...)
+    return System.exec('git --git-dir .git -C "%s" '..command, self.dir, ...)
 end
 
 function GitSource:pread(format, command, ...)
-    return System.pread(format, 'git -C "%s" '..command, self.dir, ...)
+    return System.pread(format, 'git --git-dir .git -C "%s" '..command, self.dir, ...)
 end
 
 function GitSource:head()
