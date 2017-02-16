@@ -158,16 +158,36 @@ function Package.add_patch_dependencies()
         return packages[name] or define_rule { name }
     end
 
-    local function unpack_stage(pkg)
-        return pkg.stages['unpack']
+    local function add_inputs(pkg, inputs)
+        local stage = pkg.stages['unpack']
+        stage.inputs = stage.inputs or {}
+        table.iextend(stage.inputs, inputs)
     end
 
-    local function patch_filenames(pkg)
-        local function extract_name(item)
-            return item[1]
+    local function add_outputs(pkg, outputs)
+        local name = 'provide_patches'
+        local stage = pkg.stages[name]
+        if not stage then
+            pkg:add_target { name }
+            stage = assert(pkg.stages[name])
         end
-        local function to_path(name)
-            local source_dir = patches_provider(pkg).source.dir
+        stage.outputs = stage.outputs or {}
+        table.iextend(stage.outputs, outputs)
+    end
+
+    local function get_name(item)
+        return item[1]
+    end
+
+    local function map_names(pkg, func)
+        return table.imap(pkg.patches, compose(func, get_name))
+    end
+
+    local function add_dependencies(pkg)
+        local provider = patches_provider(pkg)
+
+        local function get_source_path(name)
+            local source_dir = provider.source.dir
             local filename = name..'.patch'
             local path
             if pkg.patches.dir then
@@ -177,26 +197,9 @@ function Package.add_patch_dependencies()
             end
             return System.expand(path)
         end
-        return table.imap(pkg.patches, compose(to_path, extract_name))
-    end
 
-    local function add_outputs(provider, pkg)
-        local unpack = unpack_stage(provider)
-        if not unpack.outputs then
-            unpack.outputs = {} 
-        end
-        table.iextend(unpack.outputs, patch_filenames(pkg))
-    end
-
-    local function add_inputs(pkg)
-        local unpack = unpack_stage(pkg)
-        unpack.inputs = unpack.inputs or {}
-        table.iextend(unpack.inputs, patch_filenames(pkg))
-    end
-
-    local function add_dependencies(pkg)
-        add_outputs(patches_provider(pkg), pkg)
-        add_inputs(pkg)
+        add_inputs(pkg, map_names(pkg, get_source_path))
+        add_outputs(provider, map_names(pkg, get_source_path))
     end
 
     table.for_each(table.filter(packages, having_patches), add_dependencies)
