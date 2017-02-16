@@ -1,8 +1,4 @@
-# jagen
-
-Just another build system generator.
-
-## Overview
+# Jagen
 
 Jagen is a tool which eases development of multiple interdependent software
 packages. It abstracts peculiarities of individual packages build systems and
@@ -30,3 +26,31 @@ In short, it's fresh remix of ideas from [Repo][], [BitBake][] and
 ## Requirements
 
 POSIX compatible shell, Lua 5.1 or 5.2, [Ninja](https://ninja-build.org/).
+
+## Getting Started
+
+```
+cd ~/src
+git clone https://github.com/bazurbat/jagen.git
+mkdir root-genivi
+cd root-genivi
+../jagen/init-project vendor/genivi
+. ./env.sh
+jagen build
+```
+
+the sources are checked out to the `src` subdirectory. Working directory for
+packages is in `build/<name>`.
+
+```
+vim src/AudioManager/AudioManagerDaemon/src/main.cpp
+jagen build -fa audio-manager:compile:host
+```
+
+resume work:
+
+```
+cd ~/src/root-genivi
+. ./env.sh
+jagen build
+```
