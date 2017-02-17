@@ -205,6 +205,35 @@ function Package.add_patch_dependencies()
     table.for_each(table.filter(packages, having_patches), add_dependencies)
 end
 
+function Package:add_source_dependencies()
+    local function is_source(pkg)
+        return pkg.source.dir and pkg.source:is_scm()
+    end
+
+    local function compile_stages(pkg)
+        local stages = {}
+        for target in pkg:each() do
+            if target.stage == 'compile' then
+                table.insert(stages, target)
+            end
+        end
+        return stages
+    end
+
+    local function append_files(stage, dir)
+        local files = System.find_files(dir)
+        for _, file in ipairs(files) do
+            stage:append(file)
+        end
+    end
+
+    for _, pkg in pairs(table.filter(packages, is_source)) do
+        for _, stage in ipairs(compile_stages(pkg)) do
+            append_files(stage, System.expand(pkg.source.dir))
+        end
+    end
+end
+
 function Package:each()
     return coroutine.wrap(function ()
             for _, target in ipairs(self.stages) do
@@ -286,6 +315,7 @@ function Package.load_rules(full)
     end
 
     Package.add_patch_dependencies()
+    Package.add_source_dependencies()
 
     for _, pkg in pairs(packages) do
         if full then

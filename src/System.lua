@@ -106,4 +106,17 @@ function P.is_empty(path)
     return P.pread('*l', 'cd "%s" 2>/dev/null && echo *', path) == '*'
 end
 
+function P.find_files(path)
+    local result  = {}
+    if P.dir_exists(path) then
+        local command = string.format('find "%s" -type f -not -path "*/.*"', path)
+        local pipe    = assert(io.popen(command))
+        for line in pipe:lines() do
+            table.insert(result, line)
+        end
+        pipe:close()
+    end
+    return result
+end
+
 return P
