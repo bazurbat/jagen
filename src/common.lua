@@ -122,8 +122,8 @@ function table.map(t, func)
     assert_arg('map', 1, 'table', t)
     assert_arg('map', 2, 'function', func)
     local out = {}
-    for _, v in pairs(t) do
-        table.insert(out, func(v))
+    for k, v in pairs(t) do
+        out[k] = func(v)
     end
     return out
 end
