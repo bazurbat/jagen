@@ -32,6 +32,13 @@ function Ninja:line(list, level)
     return table.concat(out, ' $\n')
 end
 
+function Ninja.filename(line)
+    line = string.gsub(line, "%$", "$$")
+    line = string.gsub(line, " ", "$ ")
+    line = string.gsub(line, ":", "$:")
+    return line
+end
+
 function Ninja:variable(key, value, level)
     return string.format('%s%s = %s', self:indent(level), key, value)
 end
@@ -69,12 +76,12 @@ end
 
 function Ninja:format_stage(target)
     local o = {}
-    
+
     local function format_outputs()
         local o = { tostring(target) }
         if target.outputs then
             table.sort(target.outputs)
-            table.iextend(o, target.outputs)
+            table.iextend(o, table.imap(target.outputs, Ninja.filename))
         end
         if #o > 1 then
             insert(o, self:indent(1))
@@ -83,7 +90,7 @@ function Ninja:format_stage(target)
     end
 
     local function format_inputs()
-        local o = table.imap(target.inputs or {}, tostring)
+        local o = table.imap(target.inputs or {}, compose(Ninja.filename, tostring))
         table.sort(o)
         insert(o, 1, '')
         return self:line(o, 4)
