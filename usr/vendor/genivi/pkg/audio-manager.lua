@@ -23,6 +23,7 @@ return {
         }
     },
     requires = {
-        'capicxx-core-runtime'
+        'capicxx-core-runtime',
+        'dbus',
     }
 }
