@@ -22,12 +22,23 @@ function compose(f, g)
     end
 end
 
-function append(ls, ...)
-    assert_arg('append', 1, 'table', ls)
+function append(list, ...)
     for _, arg in ipairs({...}) do
-        table.insert(ls, arg)
+        table.insert(list, arg)
     end
-    return ls
+    return list
+end
+
+function extend(list, other_list)
+    for _, val in ipairs(other_list) do
+        table.insert(list, val)
+    end
+    return list
+end
+
+function sort(list, comp)
+    table.sort(list, comp)
+    return list
 end
 
 function copy(o)
@@ -50,12 +61,20 @@ function each(t)
     end
 end
 
-function map(f, t)
-    local r = {}
-    for i, v in ipairs(t or {}) do
-        table.insert(r, f(v))
+function map(func, list)
+    local new_list = {}
+    for _, val in ipairs(list or {}) do
+        table.insert(new_list, func(val))
     end
-    return r
+    return new_list
+end
+
+function pmap(func, list)
+    local new_list = {}
+    for key, val in pairs(list) do
+        table.insert(new_list, func(key, val))
+    end
+    return new_list
 end
 
 function find(pred, list)
@@ -65,6 +84,10 @@ function find(pred, list)
         end
     end
     return nil, nil
+end
+
+function string.empty(s)
+    return not s or #s == 0
 end
 
 function string.escape(s)

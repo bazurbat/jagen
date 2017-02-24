@@ -1,11 +1,11 @@
 require 'common'
-require 'Ninja'
 
 local System  = require 'System'
 local Package = require 'Package'
 local Target  = require 'Target'
 local Source  = require 'Source'
 local Log     = require 'Log'
+local Ninja   = require 'Ninja'
 
 local function die(...)
     Log.error(...)
@@ -331,9 +331,8 @@ function Jagen.command.refresh(args)
         end
     end
 
-    local ninja = Ninja:new()
     local build_file = System.mkpath(Jagen.build_dir, 'build.ninja')
-    ninja:generate(build_file, packages)
+    Ninja.generate(build_file, packages)
 
     local names = {}
     for name, _ in pairs(packages) do

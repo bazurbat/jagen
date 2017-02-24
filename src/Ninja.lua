@@ -1,151 +1,165 @@
+local P = {}
+local System = require 'System'
 
-Ninja = {
-    space = 4
-}
+local format = string.format
+local concat = table.concat
 
-local insert = table.insert
-
-function Ninja:new()
-    local o = {}
-    setmetatable(o, self)
-    self.__index = self
-    return o
+local function indent(n)
+    return string.rep(' ', n or 4)
 end
 
-function Ninja:indent(level)
-    level = level or 0
-    local out = {}
-    for i = 1, level * self.space do
-        insert(out, ' ')
-    end
-    return table.concat(out)
+local function indented(line, n)
+    return concat { indent(n), line }
 end
 
-function Ninja:line(list, level)
-    local out = {}
-    insert(out, list[1])
-    if #list > 1 then
-        for i = 2, #list do
-            insert(out, self:indent(level or 1)..list[i])
+local function join(list)
+    return concat(list)
+end
+
+local function join_space(list)
+    return concat(list, ' ')
+end
+
+local function join_nl(list)
+    return concat(list, '\n')
+end
+
+local function join_escaped(list)
+    return concat(list, ' $\n')
+end
+
+local function quote(s)
+    return format("'%s'", string.gsub(s or '', "%$", "$$"))
+end
+
+local function escape(s)
+    s = string.gsub(s, "%$", "$$")
+    s = string.gsub(s, " ", "$ ")
+    s = string.gsub(s, ":", "$:")
+    return s
+end
+
+local function binding(k, v)
+    return format('%s = %s', assert(k), assert(v))
+end
+
+local function format_rule(name, command)
+    return format('rule %s\n%scommand = %s', name, indent(4), command)
+end
+
+local function format_build(build)
+    local function format_outputs(outputs)
+        local lines = { outputs[1] }
+        if #outputs > 1 then
+            extend(lines, map(function (x)
+                        return indented(escape(x), 8)
+                end, sort(table.rest(outputs, 2))))
+            append(lines, indent(12))
         end
+        return join_escaped(lines)
     end
-    return table.concat(out, ' $\n')
-end
-
-function Ninja.filename(line)
-    line = string.gsub(line, "%$", "$$")
-    line = string.gsub(line, " ", "$ ")
-    line = string.gsub(line, ":", "$:")
-    return line
-end
-
-function Ninja:variable(key, value, level)
-    return string.format('%s%s = %s', self:indent(level), key, value)
-end
-
-function Ninja:rule(rule)
-    local o = {
-        string.format('\nrule %s', rule.name),
-        self:variable('command', rule.command, 1)
+    local function format_inputs(inputs)
+        local lines = { '' }
+        extend(lines, sort(map(function (x)
+                        return indented(escape(tostring(x)), 16)
+            end, inputs)))
+        return join_escaped(lines)
+    end
+    return join_nl { '',
+        format('build %s: script%s',
+            format_outputs(build.outputs),
+            format_inputs(build.inputs)),
+        indented(binding('description', build.description)),
+        indented(binding('script', build.script))
     }
-    if rule.variables then
-        local vars = {}
-        for k, v in pairs(rule.variables) do
-            insert(vars, self:variable(k, v, 1))
-        end
-        table.sort(vars)
-        table.iextend(o, vars)
-    end
-    return table.concat(o, '\n')
 end
 
-function Ninja:header()
-    local o = {
-        self:variable('builddir', Jagen.build_dir),
-        self:rule({
-                name    = 'command',
-                command = '$command'
-            }),
-        self:rule({
-                name    = 'script',
-                command = '$script && touch $out'
-            }),
-    }
-    return table.concat(o)
-end
-
-function Ninja:format_stage(target)
-    local o = {}
-
-    local function format_outputs()
-        local o = { tostring(target) }
-        if target.outputs then
-            table.sort(target.outputs)
-            table.iextend(o, table.imap(target.outputs, Ninja.filename))
-        end
-        if #o > 1 then
-            insert(o, self:indent(1))
-        end
-        return self:line(o, 2)
-    end
-
-    local function format_inputs()
-        local o = table.imap(target.inputs or {}, compose(Ninja.filename, tostring))
-        table.sort(o)
-        insert(o, 1, '')
-        return self:line(o, 4)
+local function format_stage(target)
+    local function get_outputs()
+        local outputs = { tostring(target) }
+        return extend(outputs, target.outputs or {})
     end
 
     local function format_script()
-        local o = {}
-        if Jagen.shell and #Jagen.shell > 0 then
-            insert(o, Jagen.shell)
+        local command = {}
+        if not string.empty(Jagen.shell) then
+            append(command, Jagen.shell)
         end
-        insert(o, 'jagen-pkg')
-        insert(o, assert(target.name))
-        insert(o, assert(target.stage))
-        insert(o, target.config or "''")
+        extend(command, { 'jagen-pkg', target.name, target.stage })
+        append(command, target.config or quote(''))
         if target.arg then
-            insert(o, "'"..string.gsub(target.arg, '%$', '$$').."'")
+            append(command, quote(target.arg))
         end
-        return table.concat(o, ' ')
+        return join_space(command)
     end
 
-    insert(o, string.format('\nbuild %s: script%s',
-            format_outputs(), format_inputs()))
-
-    insert(o, self:variable('description', target:__tostring(' '), 1))
-    insert(o, self:variable('script', format_script(), 1))
-
-    return table.concat(o, '\n')
+    return format_build {
+        outputs     = get_outputs(),
+        inputs      = target.inputs,
+        description = target:__tostring(' '),
+        script      = format_script()
+    }
 end
 
-function Ninja:format_package(pkg)
-    local out = {}
+local function format_package(name, pkg)
+    local lines = {}
     for stage in pkg:each() do
-        insert(out, self:format_stage(stage))
+        append(lines, format_stage(stage))
     end
-    return table.concat(out)
+    return join(lines)
 end
 
-function Ninja:generate(out_file, rules)
-    local out = io.open(out_file, 'w')
+local function find_sources()
+    local sources = {}
+    local pipe = System.popen([[find "$jagen_dir" "$jagen_project_dir" \
+-type f "(" \
+-path "$jagen_dir/bin/*" -o \
+-path "$jagen_dir/lib/*" -o \
+-path "$jagen_dir/src/*" -o \
+-path "$jagen_dir/usr/*" -o \
+-path "$jagen_dir/env.sh" -o \
+-path "$jagen_dir/init-project" -o \
+-path "$jagen_project_dir/env.sh" -o \
+-path "$jagen_project_dir/config.sh" -o \
+-path "$jagen_project_dir/lib/*" \
+")" | sort]])
+    for line in pipe:lines() do
+        table.insert(sources, line)
+    end
+    pipe:close()
+    return sources
+end
+
+function P.generate(out_file, rules)
+    local file = assert(io.open(out_file, 'w'))
     local packages = {}
 
-    for _, rule in pairs(rules) do
-        insert(packages, rule)
+    for k, v in pairs(rules) do
+        table.insert(packages, v)
     end
 
     table.sort(packages, function (a, b)
             return a.name < b.name
         end)
 
-    out:write(self:header())
-    out:write('\n')
-    for _, pkg in ipairs(packages) do
-        out:write(self:format_package(pkg))
-        out:write('\n')
-    end
+    local lines = {
+        binding('builddir', assert(Jagen.build_dir)),
+        format_rule('command', '$command'),
+        format_rule('script', '$script && touch $out')
+    }
 
-    out:close()
+    append(lines, format_build {
+            outputs     = { '__refresh', 'build.ninja' },
+            inputs      = find_sources(),
+            description = 'refresh',
+            script      = 'jagen refresh'
+        })
+    extend(lines, pmap(format_package, packages))
+
+    file:write(join_nl(lines))
+    file:write('\n')
+
+    file:close()
 end
+
+return P
