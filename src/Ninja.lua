@@ -48,6 +48,8 @@ local function format_rule(name, command)
 end
 
 local function format_build(build)
+    local lines = { '' }
+
     local function format_outputs(outputs)
         local lines = { outputs[1] }
         if #outputs > 1 then
@@ -58,6 +60,7 @@ local function format_build(build)
         end
         return join_escaped(lines)
     end
+
     local function format_inputs(inputs)
         local lines = { '' }
         extend(lines, sort(map(function (x)
@@ -65,13 +68,21 @@ local function format_build(build)
             end, inputs)))
         return join_escaped(lines)
     end
-    return join_nl { '',
-        format('build %s: script%s',
+
+    append(lines, format('build %s: %s%s',
             format_outputs(build.outputs),
-            format_inputs(build.inputs)),
-        indented(binding('description', build.description)),
-        indented(binding('script', build.script))
-    }
+            assert(build.rule),
+            format_inputs(build.inputs)))
+
+    if build.description then
+        append(lines, indented(binding('description', build.description)))
+    end
+
+    if build.script then
+        append(lines, indented(binding('script', build.script)))
+    end
+
+    return join_nl(lines)
 end
 
 local function format_stage(target)
@@ -94,6 +105,7 @@ local function format_stage(target)
     end
 
     return format_build {
+        rule        = 'script',
         outputs     = get_outputs(),
         inputs      = target.inputs,
         description = target:__tostring(' '),
@@ -144,16 +156,16 @@ function P.generate(out_file, rules)
 
     local lines = {
         binding('builddir', assert(Jagen.build_dir)),
-        format_rule('command', '$command'),
-        format_rule('script', '$script && touch $out')
+        format_rule('refresh', 'jagen refresh'),
+        format_rule('script', '$script && touch $out'),
     }
 
     append(lines, format_build {
-            outputs     = { '__refresh', 'build.ninja' },
-            inputs      = find_sources(),
-            description = 'refresh',
-            script      = 'jagen refresh'
+            rule    = 'refresh',
+            inputs  = find_sources(),
+            outputs = { 'build.ninja' },
         })
+
     extend(lines, pmap(format_package, packages))
 
     file:write(join_nl(lines))
