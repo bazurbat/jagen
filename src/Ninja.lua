@@ -12,6 +12,14 @@ local function indented(line, n)
     return concat { indent(n), line }
 end
 
+local function separated(str)
+    if not string.empty(str) then
+        return str..(suffix or ' ')
+    else
+        return ''
+    end
+end
+
 local function join(list)
     return concat(list)
 end
@@ -74,12 +82,8 @@ local function format_build(build)
             assert(build.rule),
             format_inputs(build.inputs)))
 
-    if build.description then
-        append(lines, indented(binding('description', build.description)))
-    end
-
-    if build.script then
-        append(lines, indented(binding('script', build.script)))
+    for k, v in pairs(build.vars or {}) do
+        append(lines, indented(binding(k, v)))
     end
 
     return join_nl(lines)
@@ -91,13 +95,10 @@ local function format_stage(target)
         return extend(outputs, target.outputs or {})
     end
 
-    local function format_script()
-        local command = {}
-        if not string.empty(Jagen.shell) then
-            append(command, Jagen.shell)
-        end
-        extend(command, { 'jagen-pkg', target.name, target.stage })
-        append(command, target.config or quote(''))
+    local function format_args()
+        local command = { target.name, target.stage,
+            target.config or quote('')
+        }
         if target.arg then
             append(command, quote(target.arg))
         end
@@ -105,11 +106,13 @@ local function format_stage(target)
     end
 
     return format_build {
-        rule        = 'script',
-        outputs     = get_outputs(),
-        inputs      = target.inputs,
-        description = target:__tostring(' '),
-        script      = format_script()
+        rule    = 'stage',
+        inputs  = target.inputs,
+        outputs = get_outputs(),
+        vars    = {
+            description = target:__tostring(' '),
+            args        = format_args()
+        }
     }
 end
 
@@ -157,7 +160,9 @@ function P.generate(out_file, rules)
     local lines = {
         binding('builddir', assert(Jagen.build_dir)),
         format_rule('refresh', 'jagen refresh'),
-        format_rule('script', '$script && touch $out'),
+        format_rule('stage', join {
+                separated(Jagen.shell), 'jagen-pkg $args && touch $out'
+            })
     }
 
     append(lines, format_build {
