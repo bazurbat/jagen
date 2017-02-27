@@ -82,9 +82,9 @@ local function format_build(build)
             assert(build.rule),
             format_inputs(build.inputs)))
 
-    for k, v in pairs(build.vars or {}) do
-        append(lines, indented(binding(k, v)))
-    end
+    extend(lines, map(function (key)
+                return indented(binding(key, build.vars[key]))
+        end, sort(table.keys(build.vars))))
 
     return join_nl(lines)
 end

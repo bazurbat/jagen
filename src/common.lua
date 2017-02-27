@@ -124,6 +124,14 @@ if type(table.unpack) ~= 'function' then
     end
 end
 
+function table.keys(t)
+    local keys = {}
+    for k, v in pairs(t or {}) do
+        table.insert(keys, k)
+    end
+    return keys
+end
+
 function table.rest(t, start)
     local o = {}
     for i = start, #t do
