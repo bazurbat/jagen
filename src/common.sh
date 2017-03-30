@@ -144,11 +144,13 @@ in_flags() {
 add_PATH() {
     : ${1:?}
     PATH="$1":$(list_remove : "$1" $PATH)
+    PATH="${PATH%:}"
 }
 
 add_LD_LIBRARY_PATH() {
     : ${1:?}
     LD_LIBRARY_PATH="$1":$(list_remove : "$1" ${LD_LIBRARY_PATH-})
+    LD_LIBRARY_PATH="${LD_LIBRARY_PATH%:}"
 }
 
 _jagen() {
