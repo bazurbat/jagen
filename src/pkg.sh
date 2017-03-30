@@ -366,6 +366,12 @@ pkg_configure() {
 pkg_compile() {
     [ "$pkg_source_dir" ] || return 0
 
+    local is_offline
+
+    if in_flags offline; then
+        is_offline=1
+    fi
+
     case $pkg_build_type in
         GNU|KBuild)
             pkg_run make "$@"
@@ -383,6 +389,12 @@ pkg_compile() {
             ;;
         linux_module)
             pkg_run make $pkg_options "$@"
+            ;;
+        maven)
+            pkg_run "${jagen_mvn_exe:-mvn}" \
+                ${is_offline:+-o} \
+                $jagen_mvn_options $pkg_options "$@" \
+                verify
             ;;
     esac
 }
