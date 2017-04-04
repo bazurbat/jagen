@@ -132,10 +132,13 @@ function GitSource:_ls_remote(pattern)
             return assert(string.match(line, '%S+%s+(%S+)'))
         end
     end
+    -- read_single_line will fail here if there are a branch and a tag with the
+    -- same name, changed to reading first line but need to think of a way to
+    -- better handle this case
     return System.pipe(
         get_matching_remote_ref,
         self:command('ls-remote --quiet --refs origin "%s"', pattern),
-        io.read_single_line)
+        io.read_line)
 end
 
 function GitSource:_ref_is_tag(ref)
