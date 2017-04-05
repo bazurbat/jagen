@@ -1,11 +1,10 @@
 return {
     source = {
-        type     = 'dist',
-        location = 'http://zlib.net/zlib-1.2.8.tar.gz',
-        md5sum   = '44d667c142d7cda120332623eab69f40'
+        type      = 'dist',
+        location  = 'http://zlib.net/zlib-1.2.11.tar.gz',
+        sha256sum = 'c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1'
     },
-    build  = {
-        type = 'make',
-        in_source = true
+    build = {
+        type = 'make'
     }
 }
