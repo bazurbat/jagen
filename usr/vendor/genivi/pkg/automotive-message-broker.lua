@@ -10,11 +10,10 @@ return {
             '-Denable_icecc=OFF'
         }
     },
-    -- using host system for now
-    -- also requires uuid lib and headers
-    -- requires = {
-    --     'boost',
-    --     'glib',
-    --     'json-c',
-    -- }
+    requires = {
+        { 'boost',  'system' },
+        { 'glib',   'system' },
+        { 'json-c', 'system' },
+        { 'uuid',   'system' },
+    }
 }
