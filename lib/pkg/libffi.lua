@@ -1,12 +1,9 @@
 return {
     source = {
         type      = 'dist',
-        location  = 'ftp://sourceware.org/pub/libffi/libffi-3.1.tar.gz',
-        sha256sum = '97feeeadca5e21870fa4433bc953d1b3af3f698d5df8a428f68b73cd60aef6eb'
-    },
-    patches = {
-        { 'libffi-3.1-execstack', 0 },
-        { 'libffi-3.1-typing_error', 0 }
+        location  = 'ftp://sourceware.org/pub/libffi/libffi-3.2.1.tar.gz',
+        md5sum    = '83b89587607e3eb65c70d361f13bab43',
+        sha512sum = 'fed5f6eec86144608966857f54bd69a5faa43427f27bc9178ebe2c7a1cecf925c20dbd6df07a207ae469842874efcf5b99fb7e09db59cbd92ebfc0a7e1bb'
     },
     build = {
         type    = 'GNU',

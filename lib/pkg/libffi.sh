@@ -3,9 +3,8 @@
 jagen_pkg_patch() {
     pkg_patch
 
+    # https://bugs.gentoo.org/462814
     pkg_run sed -i -e 's:@toolexeclibdir@:$(libdir):g' Makefile.in
-    # http://sourceware.org/ml/libffi-discuss/2014/msg00060.html
-    pkg_run sed -i -e 's:@toolexeclibdir@:${libdir}:' libffi.pc.in
 }
 
 jagen_pkg_configure() {
