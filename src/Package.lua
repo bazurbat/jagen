@@ -412,7 +412,8 @@ function define_rule(rule)
             define_rule {
                 name = req.name,
                 config = req.config,
-                template = template
+                template = template,
+                { 'install' }
             }
         end
     end
