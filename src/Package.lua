@@ -408,13 +408,15 @@ function define_rule(rule)
     local function add_requires(stage, config, template)
         for _, item in ipairs(stage.requires or {}) do
             local req = Package:parse(item, config)
-            table.insert(stage, { req.name, 'install', req.config })
-            define_rule {
-                name = req.name,
-                config = req.config,
-                template = template,
-                { 'install' }
-            }
+            if req.config ~= 'system' then 
+                table.insert(stage, { req.name, 'install', req.config })
+                define_rule {
+                    name = req.name,
+                    config = req.config,
+                    template = template,
+                    { 'install' }
+                }
+            end
         end
     end
 
