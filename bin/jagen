@@ -1,5 +1,7 @@
 #!/bin/sh
 
+cd "${jagen_project_dir:?}"
+
 if ! [ "$jagen_dir" ]; then
     echo "Error: jagen_dir is not set, please source env.sh inside jagen build root"
     exit 1
