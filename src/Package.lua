@@ -23,9 +23,9 @@ function Package:__tostring()
     return string.format('%s__%s', self.name or '', self.config or '')
 end
 
-function Package:parse(rule, config)
+function Package:parse(rule)
     if type(rule) == 'string' then
-        rule = { name = rule, config = config }
+        rule = { name = rule }
     else
         if type(rule[1]) == 'string' then
             rule.name = rule[1]
@@ -36,8 +36,6 @@ function Package:parse(rule, config)
             rule.config = rule[1]
             table.remove(rule, 1)
         end
-
-        rule.config = rule.config or config
     end
 
     rule.name = Jagen.package_aliases[rule.name] or rule.name
@@ -324,6 +322,8 @@ function define_rule(rule)
         rule = table.merge(copy(rule.template), rule)
     end
 
+    local stages = table.imove({}, rule)
+
     local config = rule.config
     local this
 
@@ -337,8 +337,11 @@ function define_rule(rule)
         this = pkg
     end
 
-    local stages = table.imove({}, rule)
     local template = rule.template or rule.pass_template or this.template
+
+    if not template then
+        template = { config = config }
+    end
 
     rule.template, rule.pass_template = nil, nil
     table.merge(this, rule)
@@ -405,14 +408,14 @@ function define_rule(rule)
         end
     end
 
-    local function add_requires(stage, config, template)
+    local function add_requires(stage, template)
         for _, item in ipairs(stage.requires or {}) do
-            local req = Package:parse(item, config)
+            local req = Package:parse(item)
+            req.config = req.config or template.config
             if req.config ~= 'system' then 
                 table.insert(stage, { req.name, 'install', req.config })
                 define_rule {
                     name = req.name,
-                    config = req.config,
                     template = template,
                     { 'install' }
                 }
@@ -422,7 +425,7 @@ function define_rule(rule)
 
     -- add global stages to every config
     for _, stage in ipairs(pkg) do
-        add_requires(stage, config, template)
+        add_requires(stage, template)
         pkg:add_target(stage, config)
     end
 
@@ -432,13 +435,13 @@ function define_rule(rule)
 
     if #requires > 0 then
         local configure = { 'configure', requires = requires }
-        add_requires(configure, config, template)
+        add_requires(configure, template)
         pkg:add_target(configure, config)
     end
 
     -- stages collected from this rule should go last to maintain ordering
     for _, stage in ipairs(stages) do
-        add_requires(stage, config, template)
+        add_requires(stage, template)
         pkg:add_target(stage, config)
     end
 
