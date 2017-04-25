@@ -236,7 +236,8 @@ function Package:query(value, config)
     end
 
     if config then
-        assert(self:has_config(config))
+        assert(self:has_config(config),
+            "the package '"..self.name.."' does not have the config '"..config.."'")
         result[config] = run_query(config)
     elseif next(self.configs) then
         for config, _ in pairs(self.configs) do

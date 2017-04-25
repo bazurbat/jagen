@@ -31,7 +31,7 @@ _jagen_complete() {
     local cur prev
     local jagen_command
 
-    local top_cmds='help clean refresh build src'
+    local top_cmds='help get clean refresh build src'
     local src_cmds='dirty status clean update delete'
     local help_opt='-h --help'
     local build_opt='-n --dry-run -p --progress -P --all-progress -f --force -a --all'
@@ -51,6 +51,13 @@ _jagen_complete() {
     case $jagen_command in
         jagen)
             COMPREPLY=($(compgen -W "$help_opt $top_cmds" -- "$cur")) ;;
+        get)
+            if [[ "$prev" == "get" ]]; then
+                COMPREPLY=($(compgen -W "$help_opt $(cat "$jagen_build_dir/__package_configs")" -- "$cur"))
+            else
+                COMPREPLY=($(compgen -W "work_dir source_dir woo build_dir install_dir" -- "$cur"))
+            fi
+            ;;
         clean)
             if [[ "$prev" == "clean" ]]; then
                 COMPREPLY=($(compgen -W "$help_opt $(cat "$jagen_build_dir/__package_configs")" -- "$cur"))
