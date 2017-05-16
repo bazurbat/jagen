@@ -1,6 +1,7 @@
 local System = require 'System'
 local Target = require 'Target'
 local Source = require 'Source'
+local Log    = require 'Log'
 
 local Package = {}
 Package.__index = Package
@@ -85,6 +86,21 @@ function Package:set(key, value, config)
         self.configs[config][key] = value
     else
         self[key] = value
+    end
+end
+
+function Package:add_requires(stage, template)
+    for _, item in ipairs(stage.requires or {}) do
+        local req = Package:parse(item)
+        req.config = req.config or template.config
+        if req.config ~= 'system' then
+            table.insert(stage, { req.name, 'install', req.config })
+            define_rule {
+                name = req.name,
+                template = template,
+                { 'install' }
+            }
+        end
     end
 end
 
@@ -338,18 +354,18 @@ function define_rule(rule)
         this = pkg
     end
 
-    local template = rule.template or rule.pass_template or this.template
-
-    if not template then
-        template = { config = config }
-    end
-
     local shared_properties = { 'source', 'patches' }
     for _, pname in ipairs(shared_properties) do
         if rule[pname] then
             pkg[pname] = table.merge(pkg[pname] or {}, rule[pname])
             rule[pname] = nil
         end
+    end
+
+    local template = rule.template or rule.pass_template or this.template
+
+    if not template then
+        template = { config = config }
     end
 
     rule.template, rule.pass_template = nil, nil
@@ -417,42 +433,29 @@ function define_rule(rule)
         end
     end
 
-    local function add_requires(stage, template)
-        for _, item in ipairs(stage.requires or {}) do
-            local req = Package:parse(item)
-            req.config = req.config or template.config
-            if req.config and req.config ~= 'system' then 
-                table.insert(stage, { req.name, 'install', req.config })
-                define_rule {
-                    name = req.name,
-                    template = template,
-                    { 'install' }
-                }
-            end
-        end
-    end
-
     -- add global stages to every config
     for _, stage in ipairs(pkg) do
-        add_requires(stage, template)
+        pkg:add_requires(stage, template)
         pkg:add_target(stage, config)
     end
 
-    if config then
-        local requires = rule.requires or {}
-        -- evaluate pkg requires for every add to collect rules from all templates
-        table.iextend(requires, pkg.requires or {})
-
-        if #requires > 0 then
+    -- always evaluate shared requires in config-specific context
+    local requires = {}
+    table.iextend(requires, pkg.requires or {})
+    table.iextend(requires, rule.requires or {})
+    if #requires > 0 then
+        if config then
             local configure = { 'configure', requires = requires }
-            add_requires(configure, template)
+            pkg:add_requires(configure, template)
             pkg:add_target(configure, config)
+        else
+            Log.warning("ignoring 'requires' declaration in rule without config: %s", rule.name)
         end
     end
 
     -- stages collected from this rule should go last to maintain ordering
     for _, stage in ipairs(stages) do
-        add_requires(stage, template)
+        pkg:add_requires(stage, template)
         pkg:add_target(stage, config)
     end
 
