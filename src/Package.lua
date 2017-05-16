@@ -344,6 +344,14 @@ function define_rule(rule)
         template = { config = config }
     end
 
+    local shared_properties = { 'source', 'patches' }
+    for _, pname in ipairs(shared_properties) do
+        if rule[pname] then
+            pkg[pname] = table.merge(pkg[pname] or {}, rule[pname])
+            rule[pname] = nil
+        end
+    end
+
     rule.template, rule.pass_template = nil, nil
     table.merge(this, rule)
     this.template = template
