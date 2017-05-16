@@ -62,7 +62,7 @@ _jagen_complete() {
             if [[ "$prev" == "clean" ]]; then
                 COMPREPLY=($(compgen -W "$help_opt $(cat "$jagen_build_dir/__package_configs")" -- "$cur"))
             else
-                COMPREPLY=($(compgen -W "$(cat "$jagen_build_dir/__package_configs")"))
+                COMPREPLY=($(compgen -W "$(cat "$jagen_build_dir/__package_configs")" -- "$cur"))
             fi
             ;;
         refresh)
