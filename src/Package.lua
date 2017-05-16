@@ -430,15 +430,17 @@ function define_rule(rule)
         pkg:add_target(stage, config)
     end
 
-    local requires = rule.requires or {}
-    -- evaluate pkg requires for every add to collect rules from all templates
-    table.iextend(requires, pkg.requires or {})
+	if config then
+		local requires = rule.requires or {}
+		-- evaluate pkg requires for every add to collect rules from all templates
+		table.iextend(requires, pkg.requires or {})
 
-    if #requires > 0 then
-        local configure = { 'configure', requires = requires }
-        add_requires(configure, template)
-        pkg:add_target(configure, config)
-    end
+		if #requires > 0 then
+			local configure = { 'configure', requires = requires }
+			add_requires(configure, template)
+			pkg:add_target(configure, config)
+		end
+	end
 
     -- stages collected from this rule should go last to maintain ordering
     for _, stage in ipairs(stages) do
