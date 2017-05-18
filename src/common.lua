@@ -256,3 +256,69 @@ function io.read_single_line(file)
     assert(not second, 'unexpected second line read')
     return first
 end
+
+function toppstring(value, indent)
+    local indent = indent or 0
+    local output = {}
+
+    local function add(formatstring, ...)
+        table.insert(output, string.format(formatstring, ...))
+    end
+    local function isarray(t)
+        if type(t) ~= 'table' then
+            return false
+        end
+        for k, v in pairs(t) do
+            if type(k) ~= 'number' or type(v) == 'table' then
+                return false
+            end
+        end
+        return true
+    end
+    local function fmt_indent(indent)
+        return string.rep(' ', indent)
+    end
+    local function fmt_array(t)
+        local strings = {}
+        for k, v in ipairs(t) do
+            table.insert(strings, toppstring(v))
+        end
+        return table.concat(strings, ', ')
+    end
+    local function fmt_kv(k, v)
+        return string.format('%s%s = %s',
+            fmt_indent(indent+2), k, toppstring(v, indent+2))
+    end
+
+    if type(value) == 'table' then
+        if isarray(value) then
+            return string.format('[ %s ]', fmt_array(value))
+        else
+            table.insert(output, '{')
+            for k, v in pairs(value) do
+                if type(k) ~= 'number' then
+                    add('%s', fmt_kv(k, v))
+                end
+            end
+            if #value > 0 then
+                local a = {}
+                for k, v in ipairs(value) do
+                    if type(v) == 'table' then
+                        add('%s', fmt_kv(k, v))
+                    else
+                        table.insert(a, tostring(v))
+                    end
+                end
+                if #a > 0 then
+                    add("%s%s", fmt_indent(indent+2), fmt_array(a))
+                end
+            end
+        end
+        add('%s}', fmt_indent(indent))
+    elseif type(value) == 'string' then
+        add("'%s'", value)
+    else
+        add("%s", tostring(value))
+    end
+    return table.concat(output, '\n')
+end
