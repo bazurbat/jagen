@@ -379,14 +379,16 @@ function define_rule(rule)
         define_rule { 'repo', 'host' }
     end
 
-    if config then
+    if this ~= pkg then
         if this.build and pkg.build and not getmetatable(this.build) then
             setmetatable(this.build, { __index = pkg.build })
         end
         if this.install and pkg.install and not getmetatable(this.install) then
             setmetatable(this.install, { __index = pkg.install })
         end
+    end
 
+    if config then
         local build = this.build or pkg.build
         local install = this.install or pkg.install
 
