@@ -3,6 +3,8 @@ local Target = require 'Target'
 local Source = require 'Source'
 local Log    = require 'Log'
 
+local current_filename
+
 local Package = {}
 Package.__index = Package
 
@@ -275,6 +277,7 @@ function Package.load_rules(full)
         local filename = System.mkpath(dirs[i], 'rules.lua')
         local file = io.open(filename, 'rb')
         if file then
+            current_filename = filename
             assert(loadstring(file:read('*a'), filename))()
             file:close()
         end
