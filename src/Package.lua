@@ -445,17 +445,11 @@ function define_rule(rule)
     end
 
     -- always evaluate shared requires in config-specific context
-    local requires = {}
-    table.iextend(requires, pkg.requires or {})
-    table.iextend(requires, rule.requires or {})
-    if #requires > 0 then
-        if config then
-            local configure = { 'configure', requires = requires }
-            pkg:add_requires(configure, template)
-            pkg:add_target(configure, config)
-        else
-            Log.warning("ignoring 'requires' declaration in rule without config: %s", rule.name)
-        end
+    local requires = extend(extend({}, pkg.requires), rule.requires)
+    if config and #requires > 0 then
+        local configure = { 'configure', requires = requires }
+        pkg:add_requires(configure, template)
+        pkg:add_target(configure, config)
     end
 
     -- stages collected from this rule should go last to maintain ordering
