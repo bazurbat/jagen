@@ -77,6 +77,12 @@ function pmap(func, list)
     return new_list
 end
 
+function for_each(list, func, ...)
+    for _, v in ipairs(list) do
+        func(v, ...)
+    end
+end
+
 function find(pred, list)
     for i, v in ipairs(list) do
         if pred(v) then
@@ -84,6 +90,22 @@ function find(pred, list)
         end
     end
     return nil, nil
+end
+
+function contains(member, list)
+    for i, v in ipairs(list) do
+        if v == member then
+            return true, i
+        end
+    end
+    return false, nil
+end
+
+function append_uniq(value, list)
+    if not contains(value, list) then
+        table.insert(list, value)
+    end
+    return list
 end
 
 function string.empty(s)
