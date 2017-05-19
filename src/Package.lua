@@ -29,16 +29,17 @@ end
 function Package:parse(rule)
     if type(rule) == 'string' then
         rule = { name = rule }
-    else
+    elseif type(rule) == 'table' then
         if type(rule[1]) == 'string' then
             rule.name = rule[1]
             table.remove(rule, 1)
         end
-
         if type(rule[1]) == 'string' then
             rule.config = rule[1]
             table.remove(rule, 1)
         end
+    else
+        error("invalid rule type")
     end
 
     rule.name = Jagen.package_aliases[rule.name] or rule.name
@@ -357,11 +358,10 @@ function define_rule(rule)
         this = pkg
     end
 
-    local shared_properties = { 'source', 'patches' }
-    for _, pname in ipairs(shared_properties) do
-        if rule[pname] then
-            pkg[pname] = table.merge(pkg[pname] or {}, rule[pname])
-            rule[pname] = nil
+    for _, key in ipairs({ 'source', 'patches' }) do
+        if rule[key] then
+            pkg[key] = table.merge(pkg[key] or {}, rule[key])
+            rule[key] = nil
         end
     end
 
@@ -375,13 +375,6 @@ function define_rule(rule)
     table.merge(this, rule)
     this.template = template
 
-    if pkg.source and pkg.source.type == 'repo' then
-        pkg:add_target { 'unpack',
-            { 'repo', 'install', 'host' }
-        }
-        define_rule { 'repo', 'host' }
-    end
-
     if this ~= pkg then
         if this.build and pkg.build and not getmetatable(this.build) then
             setmetatable(this.build, { __index = pkg.build })
@@ -389,6 +382,13 @@ function define_rule(rule)
         if this.install and pkg.install and not getmetatable(this.install) then
             setmetatable(this.install, { __index = pkg.install })
         end
+    end
+
+    if pkg.source and pkg.source.type == 'repo' then
+        pkg:add_target { 'unpack',
+            { 'repo', 'install', 'host' }
+        }
+        define_rule { 'repo', 'host' }
     end
 
     if config then
