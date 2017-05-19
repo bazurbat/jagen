@@ -30,7 +30,8 @@ function append(list, ...)
 end
 
 function extend(list, other_list)
-    for _, val in ipairs(other_list) do
+    list = list or {}
+    for _, val in ipairs(other_list or {}) do
         table.insert(list, val)
     end
     return list
