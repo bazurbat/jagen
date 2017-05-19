@@ -333,7 +333,7 @@ function define_rule(rule)
         pkg.configs = pkg.configs or {}
 
         pkg.source = Source:create(pkg.source, pkg.name)
-        if not pkg.source.ignore_dirty and pkg.patches then
+        if pkg.patches or (pkg.build and pkg.build.in_source) then
             pkg.source.ignore_dirty = true
         end
     end
