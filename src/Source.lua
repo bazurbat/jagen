@@ -77,6 +77,10 @@ function Source:create(source, name)
         source.dir = System.mkpath(base_dir, source.dir or source.basename)
     end
 
+    if not source.dir then
+        source.dir = System.mkpath('$jagen_src_dir', name)
+    end
+
     return source
 end
 
