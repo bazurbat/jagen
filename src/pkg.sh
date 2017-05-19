@@ -277,8 +277,8 @@ pkg_autoreconf() {
     [ "$pkg_source_dir" ] || return 0
     pkg_run cd "$pkg_source_dir"
     if [ "$pkg_build_generate" ]; then
-        if [ -x ./autogen.sh ]; then
-            pkg_run ./autogen.sh
+        if [ -f ./autogen.sh ]; then
+            pkg_run sh ./autogen.sh
         fi
     else
         pkg_run autoreconf -vif -I "$jagen_host_dir/share/aclocal"
