@@ -409,7 +409,7 @@ function define_rule(rule)
                 end
             end
 
-            if pkg.name == 'toolchain' or build.toolchain == false then
+            if pkg.name == 'toolchain' or build.requires_toolchain == false then
                 pkg:add_target({ 'configure' }, config)
             else
                 pkg:add_target({ 'configure',

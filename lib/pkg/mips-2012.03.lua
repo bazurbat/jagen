@@ -7,6 +7,6 @@ return {
     },
     build = {
         in_source = true,
-        toolchain = false
+        requires_toolchain = false
     }
 }

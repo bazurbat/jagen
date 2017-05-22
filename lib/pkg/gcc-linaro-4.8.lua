@@ -6,7 +6,7 @@ return {
     },
     build = {
         in_source = true,
-        toolchain = false
+        requires_toolchain = false
     },
     requires = {
         'gcc-linaro-4.8-runtime',
