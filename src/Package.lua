@@ -396,10 +396,6 @@ function define_rule(rule)
         local install = this.install or pkg.install
 
         if build then
-            if pkg.name ~= 'toolchain' then
-                define_rule { 'toolchain', config }
-            end
-
             if build.type == 'GNU' then
                 if build.generate or build.autoreconf then
                     pkg:add_target { 'autoreconf',
@@ -415,6 +411,7 @@ function define_rule(rule)
                 pkg:add_target({ 'configure',
                         { 'toolchain', 'install', config }
                     }, config)
+                define_rule { 'toolchain', config }
             end
 
             if build.type == 'linux_module' or build.kernel_modules == true or
