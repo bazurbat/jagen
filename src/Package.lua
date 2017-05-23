@@ -436,9 +436,11 @@ function define_rule(rule)
     end
 
     -- add global stages to every config
-    for _, stage in ipairs(pkg) do
-        pkg:add_requires(stage, template)
-        pkg:add_target(stage, config)
+    if config then
+        for _, stage in ipairs(pkg) do
+            pkg:add_requires(stage, template)
+            pkg:add_target(stage, config)
+        end
     end
 
     -- always evaluate shared requires in config-specific context
@@ -450,9 +452,13 @@ function define_rule(rule)
     end
 
     -- stages collected from this rule should go last to maintain ordering
-    for _, stage in ipairs(stages) do
-        pkg:add_requires(stage, template)
-        pkg:add_target(stage, config)
+    if config then
+        for _, stage in ipairs(stages) do
+            pkg:add_requires(stage, template)
+            pkg:add_target(stage, config)
+        end
+    else
+        extend(pkg, stages)
     end
 
     return pkg
