@@ -99,11 +99,11 @@ pkg_sync_dirs() {
 }
 
 pkg_link() {
-    local src="${1:?}" dst="${2:?}"
+    local target="${1:?}" src="${2:?}"
 
-    pkg_run cd $(dirname "$dst")
-    pkg_run rm -rf $(basename "$dst")
-    pkg_run ln -rs "$src" "$dst"
+    pkg_run cd "$(dirname "$src")"
+    pkg_run rm -rf "$(basename "$src")"
+    pkg_run ln -rs "$target" "$src"
     pkg_run cd "$OLDPWD"
 }
 
