@@ -452,13 +452,9 @@ function define_rule(rule)
     end
 
     -- stages collected from this rule should go last to maintain ordering
-    if config then
-        for _, stage in ipairs(stages) do
-            pkg:add_requires(stage, template)
-            pkg:add_target(stage, config)
-        end
-    else
-        extend(pkg, stages)
+    for _, stage in ipairs(stages) do
+        pkg:add_requires(stage, template)
+        pkg:add_target(stage, config)
     end
 
     return pkg
