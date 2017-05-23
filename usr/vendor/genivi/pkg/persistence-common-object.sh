@@ -13,8 +13,10 @@ jagen_pkg_configure() {
 }
 
 jagen_pkg_install() {
+    local root_path="${pkg_install_dir:?}/Data"
+
     pkg_install
 
-    pkg_run mkdir -p "$pkg_install_dir/mnt-c"
-    ( cd "$pkg_install_dir" && ln -sT "mnt-c" "mnt-wt")
+    pkg_run mkdir -p "$root_path/mnt-c"
+    pkg_link "$root_path/mnt-c" "$root_path/mnt-wt"
 }

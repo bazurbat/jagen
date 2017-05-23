@@ -12,3 +12,14 @@ jagen_pkg_configure() {
 
     pkg_configure
 }
+
+jagen_pkg_install() {
+    pkg_install
+
+    pkg_run cp -f "$pkg_source_dir/config/pclCustomLibConfigFile.cfg" \
+        "$pkg_install_dir/etc/pclCustomLibConfigFileDefault.cfg"
+
+    pkg_run cat >"$pkg_install_dir/etc/pclCustomLibConfigFile.cfg" <<EOF
+default $pkg_install_dir/lib/libpers_common.so.0 init sync
+EOF
+}

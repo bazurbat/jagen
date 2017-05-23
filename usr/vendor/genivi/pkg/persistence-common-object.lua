@@ -7,6 +7,9 @@ return {
     build = {
         type = 'GNU',
         autoreconf = true,
-        in_source = true
+        in_source = true,
+        options = {
+            '--with-database=key-value-store'
+        }
     }
 }
