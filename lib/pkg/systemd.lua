@@ -1,10 +1,8 @@
 return {
     source = {
-        type      = 'dist',
-        location  = 'https://github.com/systemd/systemd/archive/v216.tar.gz',
-        filename  = 'systemd-216.tar.gz',
-        sha256sum = '',
-        dir       = 'systemd-216'
+        type      = 'git',
+        location  = 'https://github.com/systemd/systemd.git',
+        branch    = 'v208'
     },
     build = {
         type = 'GNU',
