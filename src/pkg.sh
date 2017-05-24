@@ -302,6 +302,12 @@ pkg_configure() {
                 LDFLAGS="$LDFLAGS -L$pkg_install_dir/lib"
             fi
 
+            if pkg_is_debug; then
+                CFLAGS="$CFLAGS -g -O0"
+            elif pkg_is_release_with_debug; then
+                CFLAGS="$CFLAGS -g"
+            fi
+
             export CFLAGS LDFLAGS
 
             pkg_run "${pkg_configure_file:-$pkg_source_dir/configure}" $A \
