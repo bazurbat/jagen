@@ -1,7 +1,11 @@
 #!/bin/sh
 
 jagen_pkg_autoreconf() {
-    pkg_run mkdir -p "$pkg_source_dir/m4"
+    # LIBPERSOCOMMON_VERSION_S is not defined anywhere
+    sed -ri \
+        -e 's|LIBPERSOCOMMON_VERSION_S|PERSCOMMON_PACKAGE_VERSION_S|g' \
+        "$pkg_source_dir/configure.ac"
+
     pkg_autoreconf
 }
 
