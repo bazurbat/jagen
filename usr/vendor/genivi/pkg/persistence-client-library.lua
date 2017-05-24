@@ -7,7 +7,10 @@ return {
     build = {
         type = 'GNU',
         autoreconf = true,
-        in_source = true
+        in_source = true,
+        options = {
+            '--enable-pasinterface'
+        }
     },
     requires = {
         'dbus',
