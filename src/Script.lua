@@ -67,6 +67,12 @@ local function write_build(w, pkg)
         w("pkg_build_type='%s'", build.type)
     end
 
+    if build.type == 'CMake' then
+        if build.generator then
+            w('pkg_build_generator="%s"', build.generator)
+        end
+    end
+
     if build.generate then
         w("pkg_build_generate='yes'")
     end

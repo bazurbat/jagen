@@ -82,6 +82,7 @@ rules and also to find pkg files. The `config` is optional.
 
         autoreconf = true,
         generate   = true,
+        generator  = 'Ninja',
         configure_file = 'path',
         configure_needs_install_dir = true,
 
@@ -212,6 +213,9 @@ rules and also to find pkg files. The `config` is optional.
   should be done by running `autogen.sh` script in the source directory. Also
   causes `libtool` to be install for the host.
 
+- **build.generator** (`pkg_build_generator`) — If the package build type is
+  'CMake' sets its CMake generator.
+
 - **build.in_source** (`pkg_build_in_source`) — If set to `true`, indicates
   that the package can not be built outside of it's source directory.
 
@@ -336,6 +340,9 @@ rules and also to find pkg files. The `config` is optional.
 
 - **pkg_build_generate** (`build.generate`) — if build type is "GNU" and
   `autogen.sh` is found in the source directory — run it
+
+- **pkg_build_generator** (`build.generator`) — if build type is "CMake" sets
+  per-package CMake generator option (passed in -G argument).
 
 - **pkg_build_in_source** (`build.in_source`) — if set, specifies that the
   location of the "build" directory is the same as the "source" directory; also
