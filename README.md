@@ -54,3 +54,5 @@ cd ~/src/root-genivi
 . ./env.sh
 jagen build
 ```
+
+See [Manual](doc/Manual.md) for more details.
