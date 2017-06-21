@@ -472,6 +472,12 @@ pkg_install_modules() {
     fi
 }
 
+pkg_install_file() {
+    local src="$(find_in_path "$1")"
+    [ -f "$src" ] || die "failed to find the $1 in path"
+    pkg_run cp -vf "$src" "$2"
+}
+
 pkg__image() {
     case $pkg_build_type in
         linux_kernel)
