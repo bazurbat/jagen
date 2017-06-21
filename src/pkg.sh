@@ -28,8 +28,12 @@ pkg_run() {
 }
 
 pkg_run_patch() {
-    local num="${1:?}" name="${2:?}"
-    pkg_run patch -p$num -i "${jagen_dist_patches_dir:?}/${name}.patch"
+    local num="${1:?}" name="${2:?}" filename=
+    filename="${jagen_dist_dir:?}/${name}.patch"
+    if ! [ -f "$filename" ]; then
+        filename="${jagen_dist_patches_dir:?}/${name}.patch"
+    fi
+    pkg_run patch -p$num -i "${filename:?}"
 }
 
 pkg_strip_root() {
