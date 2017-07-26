@@ -48,7 +48,7 @@ local function escape(s)
 end
 
 local function binding(k, v)
-    return format('%s = %s', assert(k), assert(v))
+    return format('%s = %s', assert(k), tostring(assert(v)))
 end
 
 local function format_rule(name, command)
