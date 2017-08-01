@@ -2,10 +2,7 @@ return {
     source = {
         type     = 'git',
         location = 'https://github.com/GENIVI/capicxx-dbus-runtime.git',
-        branch   = '3.1.8'
-    },
-    patches = {
-        { 'capicxx-dbus-runtime-Add-DBus-LIBDIR-to-link-directories', 1 }
+        branch   = '3.1.12'
     },
     build = {
         type = 'CMake',

@@ -2,7 +2,7 @@ return {
     source = {
         type     = 'git',
         location = 'https://github.com/GENIVI/capicxx-core-runtime.git',
-        branch   = '3.1.8'
+        branch   = '3.1.12.1'
     },
     patches = {
         { 'capicxx-core-runtime-Add-USE_DLT-option', 1 }
