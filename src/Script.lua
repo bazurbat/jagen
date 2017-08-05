@@ -46,7 +46,7 @@ local function write_source(w, pkg)
         w("pkg_source_exclude='yes'")
     end
 
-    if pkg.patches then
+    if pkg.patches and #pkg.patches > 0 then
         w('jagen_pkg_apply_patches() {')
         for _, patch in ipairs(pkg.patches or {}) do
             local name = patch[1]
