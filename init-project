@@ -27,12 +27,14 @@ show_usage() {
     cat <<EOF
 Usage: init-project [OPTIONS...] [PRODUCT] [LAYERS...]
 
-  -a      add flag
-  -f      use force
-  -h      show usage
-  --help  show help
-  -l      list built-in products
-  -s      share sources between projects
+  -a                   add flag
+  -f                   use force
+  -h                   show usage
+  --help               show this help
+  -l                   list built-in products
+  -s, --share-sources  share sources between projects
+  --share-dist         share dist files between projects
+  --share-toolchains   share toolchains between projects
 
 EOF
 }
@@ -77,23 +79,24 @@ SYNOPSIS:
 
 OPTIONS:
 
-  -a      add flag
-  -f      use force
-  -h      show usage
-  --help  show this help
-  -l      list built-in products
-  -s      share sources between projects
+  -a                   add flag
+  -f                   use force
+  -h                   show usage
+  --help               show this help
+  -l                   list built-in products
+  -s, --share-sources  share sources between projects
+  --share-dist         share dist files between projects
+  --share-toolchains   share toolchains between projects
 
-  In the default configuration a location of software distributions, patches
-  and toolchains is set relative to a root directory (one level above checked
-  out Jagen sources by default) to facilitate sharing between different
-  projects. Source packages are checked out into the 'src' subdirectory of the
-  current project. Use the '-s' option to set a location of source packages
-  relative to the root directory too. Note that 'jagen clean' command does not
-  touch the source packages location even if it is inside the build root.
+  Source packages, software distributions, patches and toolchains are located
+  inside the project by default. To share them between different projects use
+  '--share-...' options. If the share argument is given the corresponding
+  component will be searched one directory level higher relative to the current
+  project. Note that 'jagen clean' command does remove those directories even
+  if they are inside the project root.
 
-  The command refuses to initialize non-empty directories by default. Use '-f'
-  option to override the check.
+  The 'init-project' command refuses to initialize non-empty directories by
+  default. Use '-f' option to override the check.
 
   The generated environment binds the project to the corresponding jagen source
   directory. If one or the other is moved or sourced from different root from
@@ -168,14 +171,14 @@ jagen_layers="$jagen_layers"
 # outside and inside the chrooted container.
 jagen_root_dir=\$(real_path "\$jagen_dir/..")
 
-# A directory for downloaded distribution files.
-jagen_dist_dir="\$jagen_root_dir/dist"
-
-# A directory where unpacked toolchains are kept.
-jagen_toolchains_dir="\$jagen_root_dir/toolchains"
-
 # A directory where source packages will be checked out.
 jagen_src_dir="$jagen_src_dir"
+
+# A directory for downloaded distribution files.
+jagen_dist_dir="$jagen_dist_dir"
+
+# A directory where unpacked toolchains are kept.
+jagen_toolchains_dir="$jagen_toolchains_dir"
 
 # Space separated list of optional features.
 #   ccache  - wrap compilation commands with ccache
@@ -194,58 +197,69 @@ jagen_build_profile="release"
 EOF
 }
 
-parse_names() {
-    local i=
+is_product_name() {
+    case $1 in
+        -*|*/*) return 1 ;;
+             *) return 0 ;;
+    esac
+}
 
-    for i in "$@"; do
-        if [ "$i" = . ] || [ "$i" = .. ]; then
-            die "invalid layer path value '$i'"
-        fi
-    done
+parse_path() {
+    local path="$1"
 
-    # The first non-option argument could be product name, detect this by
-    # looking for '/': if the argument does not contains '/' it will remain
-    # unchanged; otherwise it will become empty after the substitution
-    if [ "${1%%*/*}" = "$1" ]; then
-        jagen_product="$1"
-        shift
+    if [ "$path" = . ] || [ "$path" = .. ]; then
+        die "invalid layer path '$path'"
     fi
 
-    init_jagen_layers="$@"
+    if ! [ "${jagen_product-}" ] && is_product_name "$path"; then
+        jagen_product="$path"
+        return
+    fi
+
+    if [ "$init_jagen_layers" ]; then
+        init_jagen_layers="$init_jagen_layers $path"
+    else
+        init_jagen_layers="$path"
+    fi
+}
+
+parse_option() {
+    case $1 in
+        -h)
+            show_usage; exit 0 ;;
+        --help)
+            show_help; exit 0 ;;
+        -l|--list-products)
+            list_products; exit 0 ;;
+        -s|--share|--share-sources)
+            share_sources=1 ;;
+        --share-dist)
+            share_dist=1 ;;
+        --share-toolchains)
+            share_toolchains=1 ;;
+        -f|--force)
+            use_force=1 ;;
+        -a|--flag)
+            if [ "$jagen_flags" ]; then
+                jagen_flags="$jagen_flags $2"
+            else
+                jagen_flags="$2"
+            fi
+            shift ;;
+        *)
+            die "invalid option: '$1'"
+    esac
 }
 
 parse_command_line() {
     local eoa=
 
     while [ $# -gt 0 ]; do
-        if [ "$eoa" ]; then
-            parse_names "$@"
-            break
-        else
-            case $1 in
-                --) eoa=1 ;;
-                -h)
-                    show_usage; exit 0 ;;
-                --help)
-                    show_help; exit 0 ;;
-                -l|--list-products)
-                    list_products; exit 0 ;;
-                -s|--share)
-                    share_sources=1 ;;
-                -f|--force)
-                    use_force=1 ;;
-                -a|--flag)
-                    if [ "$jagen_flags" ]; then
-                        jagen_flags="$jagen_flags $2"
-                    else
-                        jagen_flags="$2"
-                    fi
-                    shift ;;
-                 *) eoa=1
-                    parse_names "$@"
-                    break ;;
-            esac
-        fi
+        case $1 in
+            --) eoa=1 ;;
+            -*) [ "${eoa:-}" ] && parse_path "$1" || parse_option "$1" ;;
+             *) parse_path "$1" ;;
+        esac
         shift
     done
 }
@@ -270,6 +284,18 @@ if [ "${share_sources-}" ]; then
     jagen_src_dir='$jagen_root_dir/src'
 else
     jagen_src_dir='$jagen_project_dir/src'
+fi
+
+if [ "${share_dist-}" ]; then
+    jagen_dist_dir='$jagen_root_dir/dist'
+else
+    jagen_dist_dir='$jagen_project_dir/dist'
+fi
+
+if [ "${share_toolchains-}" ]; then
+    jagen_toolchains_dir='$jagen_root_dir/toolchains'
+else
+    jagen_toolchains_dir='$jagen_project_dir/toolchains'
 fi
 
 on_layer_init_error() {

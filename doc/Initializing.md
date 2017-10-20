@@ -39,20 +39,21 @@ SYNOPSIS:
 
 OPTIONS:
 
-  -a      add flag
-  -f      use force
-  -h      show usage
-  --help  show this help
-  -l      list built-in products
-  -s      share sources between projects
+  -a                   add flag
+  -f                   use force
+  -h                   show usage
+  --help               show this help
+  -l                   list built-in products
+  -s, --share-sources  share sources between projects
+  --share-dist         share dist files between projects
+  --share-toolchains   share toolchains between projects
 
-  In the default configuration a location of software distributions, patches
-  and toolchains is set relative to a root directory (one level above checked
-  out Jagen sources by default) to facilitate sharing between different
-  projects. Source packages are checked out into the 'src' subdirectory of the
-  current project. Use the '-s' option to set a location of source packages
-  relative to the root directory too. Note that 'jagen clean' command does not
-  touch the source packages location even if it is inside the build root.
+  Source packages, software distributions, patches and toolchains are located
+  inside the project by default. To share them between different projects use
+  '--share-...' options. If the share argument is given the corresponding
+  component will be searched one directory level higher relative to the current
+  project. Note that 'jagen clean' command does remove those directories even
+  if they are inside the project root.
 
   The command refuses to initialize non-empty directories by default. Use '-f'
   option to override the check.
