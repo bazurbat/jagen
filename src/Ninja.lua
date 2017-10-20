@@ -133,27 +133,6 @@ local function format_package(name, pkg)
     return join(lines)
 end
 
-local function find_sources()
-    local sources = {}
-    local pipe = System.popen([[find "$jagen_dir" "$jagen_project_dir" \
--type f "(" \
--path "$jagen_dir/bin/*" -o \
--path "$jagen_dir/lib/*" -o \
--path "$jagen_dir/src/*" -o \
--path "$jagen_dir/usr/*" -o \
--path "$jagen_dir/env.sh" -o \
--path "$jagen_dir/init-project" -o \
--path "$jagen_project_dir/env.sh" -o \
--path "$jagen_project_dir/config.sh" -o \
--path "$jagen_project_dir/lib/*" \
-")" | sort]])
-    for line in pipe:lines() do
-        table.insert(sources, line)
-    end
-    pipe:close()
-    return sources
-end
-
 function P.generate(out_file, rules)
     local file = assert(io.open(out_file, 'w'))
     local packages = {}
@@ -168,17 +147,10 @@ function P.generate(out_file, rules)
 
     local lines = {
         binding('builddir', assert(Jagen.build_dir)),
-        format_rule('refresh', 'jagen refresh'),
         format_rule('stage', join {
                 separated(Jagen.shell), 'jagen-pkg $args && touch $out'
             })
     }
-
-    append(lines, format_build {
-            rule    = 'refresh',
-            inputs  = find_sources(),
-            outputs = { 'build.ninja' },
-        })
 
     extend(lines, pmap(format_package, packages))
 

@@ -350,14 +350,14 @@ local function prepare_root()
     assert(System.mkdir(table.unpack(System.getenv(project_dirs))))
 end
 
-function Jagen.command.refresh(args)
+function Jagen.command.refresh(args, packages)
     if help_requested(args) then
         return Jagen.command['help'] { 'refresh' }
     end
 
     prepare_root()
 
-    local packages = Package.load_rules(true)
+    local packages = packages or Package.load_rules(true)
     local Script = require 'Script'
     local include_dir = assert(os.getenv('jagen_include_dir'))
     local log_dir = assert(os.getenv('jagen_log_dir'))
@@ -444,7 +444,8 @@ function Jagen.command.build(args)
         return Jagen.command['help'] { 'build' }
     end
 
-    local packages = Package.load_rules()
+    local packages = Package.load_rules(true)
+    Jagen.command.refresh(nil, packages)
     local options, rest = find_options(args)
 
     for _, arg in ipairs(rest) do
