@@ -4,7 +4,7 @@ export CC="gcc"
 export CXX="g++"
 export STRIP="strip"
 
-export CFLAGS="-march=core2 -O2 -fomit-frame-pointer -pipe"
+export CFLAGS="-march=core2 -O2 -pipe"
 export CXXFLAGS="$CFLAGS"
 export LDFLAGS=""
 export ASMFLAGS="$CFLAGS"
