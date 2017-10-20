@@ -29,10 +29,17 @@ pkg_run() {
 
 pkg_run_patch() {
     local num="${1:?}" name="${2:?}" filename=
-    filename="${jagen_dist_dir:?}/${name}.patch"
-    if ! [ -f "$filename" ]; then
+    filename="$(find_in_path "patches/${name}.patch")"
+    if ! [ -s "$filename" ]; then
+        filename="${jagen_dist_dir:?}/${name}.patch"
+    fi
+    if ! [ -s "$filename" ]; then
         filename="${jagen_dist_patches_dir:?}/${name}.patch"
     fi
+    if [ -f "$filename" ] && ! [ -s "$filename" ]; then
+        die "Found the patch file '$filename' for ${pkg_name:?} but it is empty"
+    fi
+    message "Using patch '$filename' ($num)"
     pkg_run patch -p$num -i "${filename:?}"
 }
 
