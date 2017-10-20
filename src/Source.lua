@@ -189,7 +189,8 @@ function GitSource:switch()
     if ref then
         return
             self:exec('checkout "%s"', branch) and
-            self:exec('merge --ff-only "%s"', 'origin/'..branch)
+            self:exec('merge --ff-only "%s"', 'origin/'..branch) and
+            self:exec('submodule update --init --recursive')
     end
 
     ref = System.pipe(
@@ -200,7 +201,8 @@ function GitSource:switch()
     if ref then
         return
             self:exec('checkout -b "%s" "%s"', branch, ref) and
-            self:exec('merge --ff-only "%s"', 'origin/'..branch)
+            self:exec('merge --ff-only "%s"', 'origin/'..branch) and
+            self:exec('submodule update --init --recursive')
     end
 
     local tag = System.pipe(
@@ -210,7 +212,8 @@ function GitSource:switch()
 
     if tag then
         return
-            self:exec('checkout "%s"', self.branch)
+            self:exec('checkout "%s"', self.branch) and
+            self:exec('submodule update --init --recursive')
     end
 
     Log.error("could not find tag or branch '%s' in '%s'", branch, self.dir)
@@ -219,8 +222,12 @@ function GitSource:switch()
 end
 
 function GitSource:clone()
+    -- Having depth 1 for submodules fails to checkout when the superrepo
+    -- references not the HEAD commit. It is not easy to predict how much
+    -- history we need to fetch, maybe make an option?
     return System.exec('git clone --depth 1 --branch "%s" "%s" "%s"',
         assert(self.branch), assert(self.location), assert(self.dir))
+        and self:exec('submodule update --init --recursive')
 end
 
 function GitSource:fixup()
