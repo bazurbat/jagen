@@ -6,5 +6,5 @@ return {
     },
     build = {
         type = 'CMake'
-	}
+    }
 }
