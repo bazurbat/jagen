@@ -215,8 +215,10 @@ function Package.add_patch_dependencies()
             return System.expand(path)
         end
 
-        add_inputs(pkg, map_names(pkg, get_source_path))
-        add_outputs(provider, map_names(pkg, get_source_path))
+        if provider then
+            add_inputs(pkg, map_names(pkg, get_source_path))
+            add_outputs(provider, map_names(pkg, get_source_path))
+        end
     end
 
     table.for_each(table.filter(packages, having_patches), add_dependencies)
