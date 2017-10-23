@@ -132,7 +132,13 @@ real_path() {
     echo $(cd "$1"; pwd -P)
 }
 
-is_function() { type "$1" 2>/dev/null | grep -q 'function'; }
+is_function() {
+    local out="$(type "$1")"
+    case $out in
+        *function*) return 0 ;;
+                 *) return 1 ;;
+    esac
+}
 
 in_path() { $(which "$1" >/dev/null 2>&1); }
 
