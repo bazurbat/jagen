@@ -83,13 +83,18 @@ function Jagen.src.status(args)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
         if System.exists(source.dir) and not System.is_empty(source.dir) then
-            local dirty = source:dirty() and 'dirty' or ''
             local head = source:head()
             if not head then
                 die('failed to get source head for %s in %s',
                     pkg.name, source.dir)
             end
-            print(string.format("%s (%s): %s %s", pkg.name, source.location, head, dirty))
+            local dirty = source:dirty() and ' dirty' or ''
+            if #dirty > 0 and source.ignore_dirty then
+                dirty = dirty..'(ignored)'
+            end
+            local exclude = source.exclude and ' excluded' or ''
+            print(string.format("%s (%s): %s%s%s", pkg.name, source.location, head,
+                dirty, exclude))
         else
             print(string.format("%s (%s): not exists", pkg.name, source.location))
         end
