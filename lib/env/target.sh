@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [ -z "$jagen_toolchain_prefix" ]; then
-	jagen_toolchain_prefix="${jagen_bin_dir:?}/${jagen_target_system:?}-"
+    jagen_toolchain_prefix="${jagen_bin_dir:?}/${jagen_target_system:?}-"
 fi
 
 : ${jagen_target_dir:?}
