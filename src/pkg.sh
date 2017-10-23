@@ -250,8 +250,9 @@ pkg_unpack() {
                     in_list "$pkg_name" $jagen_source_exclude
                 then
                     message "skipping unpack of $pkg_name: excluded by configuration"
-                elif _jagen src dirty "$pkg_name" &&
-                    ! is_function jagen_pkg_apply_patches
+                elif [ -z "$pkg_source_ignore_dirty" ] &&
+                     ! is_function jagen_pkg_apply_patches &&
+                     _jagen src dirty "$pkg_name"
                 then
                     message "skipping unpack of $pkg_name: the source directory '$pkg_source_dir' is dirty"
                 else

@@ -421,8 +421,13 @@ rules and also to find pkg files. The `config` is optional.
 
 - **pkg_source_dir** (`source.dir`) — the source directory of the package
 
-- **pkg_source_exclude** (`source.exclude`) — if set to any value the "unpack"
-  stage will do nothing with the package source directory
+- **pkg_source_exclude** (`source.exclude`) — if set to any value than the
+  "unpack" stage will not clean or update the package source directory (this
+  rule takes precedence over the "ignore\_dirty")
+
+- **pkg_source_ignore_dirty** (`source.ignore_dirty`) — if set to any value
+  then the "unpack" stage will cleanup the source directory even if it has
+  changes
 
 - **pkg_source_filename** (`source.filename`) — the "filename" part of the
   location (the part after the last "/" if not set manually)

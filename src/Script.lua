@@ -45,6 +45,9 @@ local function write_source(w, pkg)
     if source.exclude then
         w("pkg_source_exclude='yes'")
     end
+    if source.ignore_dirty then
+        w("pkg_source_ignore_dirty='yes'")
+    end
 
     if pkg.patches and #pkg.patches > 0 then
         w('jagen_pkg_apply_patches() {')

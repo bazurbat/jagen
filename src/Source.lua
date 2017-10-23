@@ -120,9 +120,6 @@ function GitSource:head()
 end
 
 function GitSource:dirty()
-    if self.ignore_dirty then
-        return false
-    end
     return self:pread('*l', 'status --porcelain') ~= nil
 end
 
