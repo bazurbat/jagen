@@ -364,12 +364,13 @@ function Jagen.command.refresh(args, packages)
 
     prepare_root()
 
-    local packages = packages or Package.load_rules(true)
+    local packages = packages or Package.load_rules()
     local Script = require 'Script'
     local include_dir = assert(os.getenv('jagen_include_dir'))
     local log_dir = assert(os.getenv('jagen_log_dir'))
 
     for _, pkg in pairs(packages) do
+        pkg:add_ordering_dependencies()
         Script:generate(pkg, include_dir)
 
         -- create/truncate all log files beforehand to allow tail following
@@ -451,7 +452,7 @@ function Jagen.command.build(args)
         return Jagen.command['help'] { 'build' }
     end
 
-    local packages = Package.load_rules(true)
+    local packages = Package.load_rules()
     Jagen.command.refresh(nil, packages)
     local options, rest = find_options(args)
 

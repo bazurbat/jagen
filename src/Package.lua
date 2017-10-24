@@ -276,7 +276,7 @@ function Package:query(value, config)
     return result
 end
 
-function Package.load_rules(full)
+function Package.load_rules()
     local dirs = string.split2(os.getenv('jagen_path'), '\t')
 
     packages = {}
@@ -311,17 +311,13 @@ function Package.load_rules(full)
         }
     end
 
-    if full then
-        -- As the add_patch_dependencies can insert new packages to the list
-        -- the usage of the table.filter here is essential to avoid undefined
-        -- behaviour during the traversal because we are relying on the fact
-        -- that it returns a new list with the matching elements.
-        table.for_each(table.filter(packages,
-                function (pkg) return pkg.patches end),
-            Package.add_patch_dependencies)
-
-        table.for_each(packages, Package.add_ordering_dependencies)
-    end
+    -- As the add_patch_dependencies can insert new packages to the list
+    -- the usage of the table.filter here is essential to avoid undefined
+    -- behaviour during the traversal because we are relying on the fact
+    -- that it returns a new list with the matching elements.
+    table.for_each(table.filter(packages,
+            function (pkg) return pkg.patches end),
+        Package.add_patch_dependencies)
 
     return packages
 end
