@@ -21,7 +21,9 @@ function P.mkpath(...)
     local sep = '/'
     local path = {}
     for _, c in ipairs({...}) do
-        table.insert(path, c)
+        if #c > 0 then
+            table.insert(path, c)
+        end
     end
     return table.concat(path, sep)
 end
