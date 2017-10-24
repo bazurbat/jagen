@@ -145,6 +145,70 @@ function Package:add_target(rule, config)
     return self
 end
 
+function Package:add_patch_dependencies()
+    local function patch_names(pkg)
+        local i, n = 0, #pkg.patches
+        return function()
+            i = i + 1
+            if i <= n then return pkg.patches[i][1] end
+        end
+    end
+
+    local function get_provider(name)
+        if name and name ~= 'none' then
+            return packages[name] or define_rule { name }
+        end
+    end
+
+    local function get_provided_filename(provider, name)
+        return System.expand(System.mkpath(provider.source.dir,
+            self.patches.dir or '', name..'.patch'))
+    end
+
+    local function find_in_path(name)
+        return System.pread('*l', '%s find_patch "%s"', Jagen.cmd, name)
+    end
+
+    local function add_inputs(self, inputs)
+        local stage = self.stages['unpack']
+        stage.inputs = stage.inputs or {}
+        table.iextend(stage.inputs, inputs)
+    end
+
+    local function add_outputs(pkg, outputs)
+        local name = 'provide_patches'
+        local stage = pkg.stages[name]
+        if not stage then
+            pkg:add_target { name }
+            stage = assert(pkg.stages[name])
+        end
+        stage.outputs = stage.outputs or {}
+        table.iextend(stage.outputs, outputs)
+    end
+
+    local provider = get_provider(self.patches.provider)
+    local filenames = {}
+
+    for name in patch_names(self) do
+        local filename
+        if provider then
+            filename = get_provided_filename(provider, name)
+        else
+            filename = find_in_path(name)
+        end
+        if not filename then
+            provider = get_provider('patches')
+            filename = get_provided_filename(provider, name)
+        end
+        table.insert(filenames, filename)
+    end
+
+    add_inputs(self, filenames)
+    if provider then
+        add_outputs(provider, filenames)
+    end
+end
+
 function Package:add_ordering_dependencies()
     local prev, common
 
@@ -163,65 +227,6 @@ function Package:add_ordering_dependencies()
             common = s
         end
     end
-end
-
-function Package.add_patch_dependencies()
-    local function having_patches(pkg)
-        return pkg.patches
-    end
-
-    local function patches_provider(pkg)
-        local name = pkg.patches.provider or 'patches'
-        return packages[name] or define_rule { name }
-    end
-
-    local function add_inputs(pkg, inputs)
-        local stage = pkg.stages['unpack']
-        stage.inputs = stage.inputs or {}
-        table.iextend(stage.inputs, inputs)
-    end
-
-    local function add_outputs(pkg, outputs)
-        local name = 'provide_patches'
-        local stage = pkg.stages[name]
-        if not stage then
-            pkg:add_target { name }
-            stage = assert(pkg.stages[name])
-        end
-        stage.outputs = stage.outputs or {}
-        table.iextend(stage.outputs, outputs)
-    end
-
-    local function get_name(item)
-        return item[1]
-    end
-
-    local function map_names(pkg, func)
-        return table.imap(pkg.patches, compose(func, get_name))
-    end
-
-    local function add_dependencies(pkg)
-        local provider = patches_provider(pkg)
-
-        local function get_source_path(name)
-            local source_dir = provider.source.dir
-            local filename = name..'.patch'
-            local path
-            if pkg.patches.dir then
-                path = System.mkpath(source_dir, pkg.patches.dir, filename)
-            else
-                path = System.mkpath(source_dir, filename)
-            end
-            return System.expand(path)
-        end
-
-        if provider then
-            add_inputs(pkg, map_names(pkg, get_source_path))
-            add_outputs(provider, map_names(pkg, get_source_path))
-        end
-    end
-
-    table.for_each(table.filter(packages, having_patches), add_dependencies)
 end
 
 function Package:each()
@@ -306,7 +311,11 @@ function Package.load_rules(full)
         }
     end
 
-    Package.add_patch_dependencies()
+    for _, pkg in pairs(packages) do
+        if full and pkg.patches then
+            pkg:add_patch_dependencies()
+        end
+    end
 
     for _, pkg in pairs(packages) do
         if full then

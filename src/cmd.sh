@@ -126,14 +126,35 @@ current configuration does not support image creation"
     "${jagen_shell:-/bin/sh}" "$image_script" "$@"
 }
 
-case $1 in
+cmd_find_patch() {
+    set -u
+    local name="${1:?}" filename=
+    . "${jagen_dir}/env.sh" || return
+    filename="${jagen_dist_dir}/${name}.patch"
+    if [ -f "$filename" ]; then
+        echo "$filename"
+        return 0
+    fi
+    filename="$(find_in_path "patches/${name}.patch")"
+    if [ -f "$filename" ]; then
+        echo "$filename"
+        return 0
+    fi
+    return 2
+}
+
+mode="${1:?}"
+shift
+
+case $mode in
     build)
-        mode="$1"; shift
         cmd_build "$@"
         ;;
     image)
-        mode="$1"; shift
         cmd_image "$@"
+        ;;
+    find_patch)
+        cmd_find_patch "$@"
         ;;
     *)
         die "unknown wrapper command: $1"

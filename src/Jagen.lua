@@ -23,6 +23,8 @@ Jagen =
     package_aliases = {}
 }
 
+Jagen.cmd = System.mkpath(Jagen.dir, 'src', 'cmd.sh')
+
 function Jagen.flag(f)
     for w in string.gmatch(Jagen.flags, "[_%w]+") do
         if w == f then
