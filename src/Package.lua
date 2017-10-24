@@ -311,16 +311,16 @@ function Package.load_rules(full)
         }
     end
 
-    for _, pkg in pairs(packages) do
-        if full and pkg.patches then
-            pkg:add_patch_dependencies()
-        end
-    end
+    if full then
+        -- As the add_patch_dependencies can insert new packages to the list
+        -- the usage of the table.filter here is essential to avoid undefined
+        -- behaviour during the traversal because we are relying on the fact
+        -- that it returns a new list with the matching elements.
+        table.for_each(table.filter(packages,
+                function (pkg) return pkg.patches end),
+            Package.add_patch_dependencies)
 
-    for _, pkg in pairs(packages) do
-        if full then
-            pkg:add_ordering_dependencies()
-        end
+        table.for_each(packages, Package.add_ordering_dependencies)
     end
 
     return packages
