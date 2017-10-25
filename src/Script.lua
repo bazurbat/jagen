@@ -49,14 +49,24 @@ local function write_source(w, pkg)
         w("pkg_source_ignore_dirty='yes'")
     end
 
-    if pkg.patches and #pkg.patches > 0 then
-        w('jagen_pkg_apply_patches() {')
-        for _, patch in ipairs(pkg.patches or {}) do
-            local name = patch[1]
-            local strip = patch[2]
-            w('  pkg_run_patch %d "%s"', strip, name)
+    if pkg.patches then
+        local patches = pkg.patches
+        if patches.required then
+            w('pkg_patches_required="%s"', table.concat(patches.required, '\n'))
         end
-        w('}')
+        if patches.provided then
+            w('pkg_patches_provided="%s"', table.concat(patches.provided, '\n'))
+        end
+        if #patches > 0 then
+            assert(patches.required and #patches == #patches.required)
+            w('jagen_pkg_apply_patches() {')
+            for i, item in ipairs(patches) do
+                local name = item[1]
+                local strip = item[2]
+                w('  pkg_run_patch %d "%s"', strip, patches.required[i])
+            end
+            w('}')
+        end
     end
 end
 

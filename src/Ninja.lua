@@ -110,13 +110,6 @@ local function format_stage(target)
         args        = format_args(),
     }
 
-    -- Do not rebuild the outputs if the command line changes. In this case it
-    -- means that adding or removing patches from the list will not cause full
-    -- rebuild.
-    if target.stage == 'provide_patches' then
-        vars.generator = true
-    end
-
     return format_build {
         rule    = 'stage',
         inputs  = target.inputs,

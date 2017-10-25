@@ -17,7 +17,8 @@ fi
 
 . "${jagen_dir:?}/src/pkg.sh" || die
 
-pkg_log="${jagen_log_dir:?}/${pkg_name}__${pkg_stage}${pkg_config:+__${pkg_config}}.log"
+_pkg_stamp_name="${pkg_name}__${pkg_stage}${pkg_config:+__${pkg_config}}"
+pkg_log="${jagen_log_dir:?}/${_pkg_stamp_name}.log"
 pkg_work_dir="${jagen_build_dir:?}/$pkg_name"
 
 if [ -z "$pkg_query" ]; then

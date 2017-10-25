@@ -169,10 +169,13 @@ function Package:add_patch_dependencies()
         return System.pread('*l', '%s find_patch "%s"', Jagen.cmd, name)
     end
 
-    local function add_inputs(self, inputs)
-        local stage = self.stages['unpack']
+    local function add_inputs(pkg, inputs)
+        local stage = pkg.stages['unpack']
         stage.inputs = stage.inputs or {}
         table.iextend(stage.inputs, inputs)
+
+        pkg.patches = pkg.patches or {}
+        pkg.patches.required = extend(pkg.patches.required, inputs)
     end
 
     local function add_outputs(pkg, outputs)
@@ -184,6 +187,9 @@ function Package:add_patch_dependencies()
         end
         stage.outputs = stage.outputs or {}
         table.iextend(stage.outputs, outputs)
+
+        pkg.patches = pkg.patches or {}
+        pkg.patches.provided = extend(pkg.patches.provided, outputs)
     end
 
     local provider = get_provider(self.patches.provider)
@@ -210,21 +216,25 @@ function Package:add_patch_dependencies()
 end
 
 function Package:add_ordering_dependencies()
-    local prev, common
+    local prev, common 
 
-    for s in self:each() do
-        if prev then
-            s.inputs = s.inputs or {}
-            if common and s.config ~= prev.config then
-                append(s.inputs, common)
-            else
-                append(s.inputs, prev)
+    for curr in self:each() do
+        if curr.stage == 'provide_patches' then
+            local unpack = assert(self.stages['unpack'])
+            curr.inputs = append(curr.inputs, unpack)
+        else
+            if prev then
+                if common and curr.config ~= prev.config then
+                    curr.inputs = append(curr.inputs, common)
+                else
+                    curr.inputs = append(curr.inputs, prev)
+                end
             end
-        end
 
-        prev = s
-        if not s.config then
-            common = s
+            prev = curr
+            if not curr.config then
+                common = curr
+            end
         end
     end
 end

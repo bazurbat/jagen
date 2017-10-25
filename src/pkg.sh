@@ -28,19 +28,8 @@ pkg_run() {
 }
 
 pkg_run_patch() {
-    local num="${1:?}" name="${2:?}" filename=
-    filename="$(find_in_path "patches/${name}.patch")"
-    if ! [ -s "$filename" ]; then
-        filename="${jagen_dist_dir:?}/${name}.patch"
-    fi
-    if ! [ -s "$filename" ]; then
-        filename="${jagen_dist_patches_dir:?}/${name}.patch"
-    fi
-    if [ -f "$filename" ] && ! [ -s "$filename" ]; then
-        die "Found the patch file '$filename' for ${pkg_name:?} but it is empty"
-    fi
-    message "Using patch '$filename' ($num)"
-    pkg_run patch -p$num -i "${filename:?}"
+    local num="${1:?}" filename="${2:?}"
+    pkg_run patch -p"$num" -i "$filename"
 }
 
 pkg_strip_root() {
@@ -508,6 +497,19 @@ jagen_pkg_unpack() {
 
 jagen_pkg_patch() {
     pkg_patch
+}
+
+jagen_pkg_provide_patches() {
+    local IFS="$jagen_IFS"
+    for filename in ${pkg_patches_provided-}; do
+        if [ -f "$filename" ]; then
+            if ! [ -s "$filename" ]; then
+                die "the patch file '$filename' is empty"
+            fi
+        else
+            die "the patch file '$filename' does not exist"
+        fi
+    done
 }
 
 jagen_pkg_autoreconf() {
