@@ -189,7 +189,7 @@ function Package:add_patch_dependencies()
         table.iextend(stage.outputs, outputs)
 
         pkg.patches = pkg.patches or {}
-        pkg.patches.provided = extend(pkg.patches.provided, outputs)
+        pkg.patches.provided = sort(extend(pkg.patches.provided, outputs))
     end
 
     local provider = get_provider(self.patches.provider)
