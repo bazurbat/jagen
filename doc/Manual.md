@@ -277,7 +277,6 @@ rules and also to find pkg files. The `config` is optional.
 - **jagen_debug** — Debug level.
 - **jagen_dir** — The location of the Jagen source directory.
 - **jagen_dist_dir** — The location of the `dist` directory (`$jagen_project_dir/dist`).
-- **jagen_dist_patches_dir** — The location of the `patches` repository.
 - **jagen_flags** — Space-separated list of flags.
 - **jagen_host_dir** — The location of the `host` directory (`$jagen_project_dir/host`).
 - **jagen_host_system** — The name of the current host system.
