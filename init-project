@@ -223,41 +223,41 @@ parse_path() {
     fi
 }
 
-parse_option() {
-    case $1 in
-        -h)
-            show_usage; exit 0 ;;
-        --help)
-            show_help; exit 0 ;;
-        -l|--list-products)
-            list_products; exit 0 ;;
-        -s|--share|--share-sources)
-            share_sources=1 ;;
-        --share-dist)
-            share_dist=1 ;;
-        --share-toolchains)
-            share_toolchains=1 ;;
-        -f|--force)
-            use_force=1 ;;
-        -a|--flag)
-            if [ "$jagen_flags" ]; then
-                jagen_flags="$jagen_flags $2"
-            else
-                jagen_flags="$2"
-            fi
-            shift ;;
-        *)
-            die "invalid option: '$1'"
-    esac
-}
-
 parse_command_line() {
     local eoa=
 
     while [ $# -gt 0 ]; do
         case $1 in
             --) eoa=1 ;;
-            -*) [ "${eoa:-}" ] && parse_path "$1" || parse_option "$1" ;;
+            -*) if [ "${eoa:-}" ]; then
+                    parse_path "$1"
+                else
+                    case $1 in
+                        -h)
+                            show_usage; exit 0 ;;
+                        --help)
+                            show_help; exit 0 ;;
+                        -l|--list-products)
+                            list_products; exit 0 ;;
+                        -s|--share|--share-sources)
+                            share_sources=1 ;;
+                        --share-dist)
+                            share_dist=1 ;;
+                        --share-toolchains)
+                            share_toolchains=1 ;;
+                        -f|--force)
+                            use_force=1 ;;
+                        -a|--flag)
+                            if [ "$jagen_flags" ]; then
+                                jagen_flags="$jagen_flags $2"
+                            else
+                                jagen_flags="$2"
+                            fi
+                            shift ;;
+                        *)
+                            die "invalid option: '$1'"
+                    esac
+                fi ;;
              *) parse_path "$1" ;;
         esac
         shift
