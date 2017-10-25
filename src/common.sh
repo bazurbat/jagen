@@ -133,7 +133,7 @@ real_path() {
 }
 
 is_function() {
-    local out="$(type "$1")"
+    local out="$(type "$1" 2>/dev/null)"
     case $out in
         *function*) return 0 ;;
                  *) return 1 ;;
