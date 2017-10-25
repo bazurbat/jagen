@@ -129,7 +129,7 @@ list_remove() {
 }
 
 real_path() {
-    echo $(cd "$1"; pwd -P)
+    (cd "$1" >/dev/null 2>&1 && pwd -P)
 }
 
 is_function() {
