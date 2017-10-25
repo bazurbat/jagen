@@ -7,6 +7,7 @@ return {
     patches = {
         provider = 'capicxx-dbus-runtime',
         dir = 'src/dbus-patches',
+        { 'capi-dbus-1-pc',                                            1 },
         { 'capi-dbus-add-send-with-reply-set-notify',                  1 },
         { 'capi-dbus-add-support-for-custom-marshalling',              1 },
         { 'capi-dbus-block-acquire-io-path-on-send',                   1 },
