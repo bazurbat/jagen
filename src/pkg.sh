@@ -269,8 +269,14 @@ pkg_unpack() {
 }
 
 pkg_patch() {
+    local IFS; unset IFS
     if is_function jagen_pkg_apply_patches; then
-        jagen_pkg_apply_patches
+        if [ "$pkg_source_exclude" ] || in_list "$pkg_name" $jagen_source_exclude
+        then
+            message "skipping patch of $pkg_name: excluded by configuration"
+        else
+            jagen_pkg_apply_patches
+        fi
     fi
 }
 
