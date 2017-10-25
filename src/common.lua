@@ -23,6 +23,7 @@ function compose(f, g)
 end
 
 function append(list, ...)
+    list = list or {}
     for _, arg in ipairs({...}) do
         table.insert(list, arg)
     end
