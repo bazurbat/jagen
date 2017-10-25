@@ -399,6 +399,12 @@ rules and also to find pkg files. The `config` is optional.
   build system directly, it could be `configure` options, `CMake` defines or
   `make` variable assignments depending on the package build type
 
+- **pkg_patches_provided** (`pkg.patches.provided`) — a list of absolute patch
+  filenames which the current package is expected to provide
+
+- **pkg_patches_required** (`pkg.patches.required`) — a list of absolute patch
+  filenames which the current package requires
+
 - **pkg_prefix** (`install.prefix`) — specifies the install prefix of the
   package, depends on the build system (`--prefix=` passed to `configure`
   script or `CMAKE_INSTALL_PREFIX` for `CMake`)
