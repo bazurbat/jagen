@@ -235,9 +235,7 @@ pkg_unpack() {
             ;;
         git|hg|repo)
             if [ -d "$pkg_source_dir" ] && ! jagen__is_empty "$pkg_source_dir"; then
-                if [ "$pkg_source_exclude" ] ||
-                    in_list "$pkg_name" $jagen_source_exclude
-                then
+                if [ "$pkg_source_exclude" ]; then
                     message "skipping unpack of $pkg_name: excluded by configuration"
                 elif [ -z "$pkg_source_ignore_dirty" ] &&
                      ! is_function jagen_pkg_apply_patches &&
@@ -271,8 +269,7 @@ pkg_unpack() {
 pkg_patch() {
     local IFS; unset IFS
     if is_function jagen_pkg_apply_patches; then
-        if [ "$pkg_source_exclude" ] || in_list "$pkg_name" $jagen_source_exclude
-        then
+        if [ "$pkg_source_exclude" ]; then
             message "skipping patch of $pkg_name: excluded by configuration"
         else
             jagen_pkg_apply_patches

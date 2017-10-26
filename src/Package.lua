@@ -329,6 +329,16 @@ function Package.load_rules()
             function (pkg) return pkg.patches end),
         Package.add_patch_dependencies)
 
+    local source_exclude = os.getenv('jagen_source_exclude')
+    for name in string.gmatch(source_exclude, '[^%s]+') do
+        local pkg = packages[name]
+        if pkg then
+            pkg.source.exclude = true
+        else
+            Log.warning("the jagen_source_exclude list contains '%s' but no such package is defined", name)
+        end
+    end
+
     return packages
 end
 
