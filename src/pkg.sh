@@ -507,10 +507,10 @@ jagen_pkg_provide_patches() {
     for filename in ${pkg_patches_provided-}; do
         if [ -f "$filename" ]; then
             if ! [ -s "$filename" ]; then
-                die "the patch file '$filename' is empty"
+                die "providing a patch '$filename' but the file is empty"
             fi
         else
-            die "the patch file '$filename' does not exist"
+            die "must provide a patch '$filename' but the file does not exist"
         fi
     done
 }
