@@ -130,7 +130,7 @@ cmd_find_patch() {
     set -u
     local name="${1:?}" filename=
     . "${jagen_dir}/env.sh" || return
-    filename="${jagen_dist_dir}/${name}.patch"
+    filename="${jagen_dist_dir}/patches/${name}.patch"
     if [ -f "$filename" ]; then
         echo "$filename"
         return 0
