@@ -473,9 +473,10 @@ pkg_install_modules() {
 }
 
 pkg_install_file() {
-    local src="$(find_in_path "$1")"
-    [ -f "$src" ] || die "failed to find the $1 in path"
-    pkg_run cp -vf "$src" "$2"
+    local src="$(find_in_path "${1:?}")" dest="${2:?}"
+    [ -f "$src" ] || die "failed to find '$1' in path"
+    pkg_run mkdir -p "$(dirname "$dest")"
+    pkg_run cp -vf "$src" "$dest"
 }
 
 pkg__image() {
