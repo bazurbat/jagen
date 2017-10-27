@@ -10,6 +10,7 @@ COMMANDS
   refresh   Regenerate the build system
   build     Build or rebuild the specified targets
   src       Manage SCM package sources
+  show      Display build logs
 
   Use 'jagen help <command>' to get help about individual commands.
 
@@ -195,6 +196,18 @@ COMMANDS
 
 ]]
 
+local show = [[
+Usage: jagen show <target>
+
+  Displays build logs.
+
+SYNOPSIS
+
+  Displays the log file for the specified target if it exists. Uses PAGER
+  environment variable or 'less' if not defined. Use 'jagen_pager' to override.
+
+]]
+
 return {
     usage   = usage,
     help    = help,
@@ -203,5 +216,6 @@ return {
     build   = build,
     src     = src,
     image   = image,
+    show    = show,
     targets = targets
 }

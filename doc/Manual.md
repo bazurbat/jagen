@@ -294,6 +294,7 @@ rules and also to find pkg files. The `config` is optional.
 - **jagen_mvn_exe** — A name or a path to the mvn executable.
 - **jagen_mvn_options** — A list of arguments which are passed to every invocaction of mvn.
 <!-- - **jagen_out_dir** — _Not used_. -->
+- **jagen_pager** — Overrides PAGER environment variable.
 - **jagen_path** — Import path. Derived from layer locations.
 - **jagen_private_dir** — The location of the private directory (can be set from project-specific config).
 - **jagen_product** — _init-project_.

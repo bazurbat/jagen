@@ -24,6 +24,7 @@ Jagen =
 }
 
 Jagen.cmd = System.mkpath(Jagen.dir, 'src', 'cmd.sh')
+Jagen.pager = os.getenv('jagen_pager') or os.getenv('PAGER') or 'less'
 
 function Jagen.flag(f)
     for w in string.gmatch(Jagen.flags, "[_%w]+") do
@@ -471,6 +472,25 @@ end
 
 function Jagen.command.src(args)
     return complex_command('src', args)
+end
+
+function Jagen.command.show(args)
+    if #args == 0 or help_requested(args) then
+        return Jagen.command['help'] { 'show' }
+    end
+
+    if #args ~= 1 then
+        die('expected a single argument but given %d', #args)
+    end
+
+    local filename = tostring(Target:from_arg(args[1]))
+    if #filename == 0 then
+        die('the target name is empty')
+    end
+
+    local path = System.mkpath(assert(os.getenv('jagen_log_dir')),
+                               filename..'.log')
+    return os.execute(string.format('%s "%s"', Jagen.pager, path))
 end
 
 function Jagen.command.image(args)
