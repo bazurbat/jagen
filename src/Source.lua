@@ -219,12 +219,19 @@ function GitSource:switch()
 end
 
 function GitSource:clone()
-    -- Having depth 1 for submodules fails to checkout when the superrepo
-    -- references not the HEAD commit. It is not easy to predict how much
-    -- history we need to fetch, maybe make an option?
-    return System.exec('git clone --depth 1 --branch "%s" "%s" "%s"',
-        assert(self.branch), assert(self.location), assert(self.dir))
-        and self:exec('submodule update --init --recursive')
+    assert(self.location)
+    assert(self.branch)
+    assert(self.dir)
+    local depth_arg
+    -- http transport does not support depth
+    if not string.match(self.location, '^http.*') then
+        depth_arg = '--depth 1 '
+    end
+    local clone_res = System.exec('git clone %s --branch "%s" "%s" "%s"',
+        depth_arg or '', self.branch, self.location, self.dir)
+    -- Checkout of submodule might fail with depth if it is not enough to reach
+    -- the referenced commit. Do the full checkout for now.
+    return clone_res and self:exec('submodule update --init --recursive')
 end
 
 function GitSource:fixup()
