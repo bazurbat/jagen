@@ -160,7 +160,8 @@ add_LD_LIBRARY_PATH() {
 }
 
 _jagen() {
-    "${jagen_lua:?}" "$jagen_dir/src/Jagen.lua" "$@"
+    [ "$jagen_lua" ] || die "Lua >=5.1 or compatible (LuaJIT 2.0) is required to run Jagen but it was not found."
+    "$jagen_lua" "$jagen_dir/src/Jagen.lua" "$@"
 }
 
 to_lower() {

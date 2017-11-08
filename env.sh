@@ -15,7 +15,9 @@ export jagen_project_dir="$jagen_project_dir"
 export jagen_layers=""
 
 export jagen_shell=""
-export jagen_lua="${jagen_lua:-lua}"
+export jagen_lua="$jagen_lua"
+: ${jagen_lua:=$(test "$(command -v luajit)" && echo luajit)}
+: ${jagen_lua:=$(test "$(command -v lua)" && echo lua)}
 
 export jagen_debug="${jagen_debug-}"
 export jagen_flags=""
