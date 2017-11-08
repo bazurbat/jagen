@@ -38,12 +38,6 @@ end
 function Source:create(source, name)
     local source = source or {}
 
-    -- Protect from double initialization, workaround for source.dir appending
-    -- value below
-    if getmetatable(source) then
-        return source
-    end
-
     if source.type == 'dist' then
         source = DistSource:new(source)
     elseif source.type == 'git' then

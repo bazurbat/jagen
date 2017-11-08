@@ -359,11 +359,6 @@ function define_rule(rule)
         end
         packages[rule.name] = pkg
         pkg.configs = pkg.configs or {}
-
-        pkg.source = Source:create(pkg.source, pkg.name)
-        if pkg.patches or (pkg.build and pkg.build.in_source) then
-            pkg.source.ignore_dirty = true
-        end
     end
 
     if rule.template then
@@ -411,6 +406,13 @@ function define_rule(rule)
         end
     end
 
+    if not pkg.source or not getmetatable(pkg.source) then
+        pkg.source = Source:create(pkg.source, pkg.name)
+        if pkg.patches and pkg.source:is_scm() then
+            pkg.source.ignore_dirty = true
+        end
+    end
+
     if pkg.source and pkg.source.type == 'repo' then
         pkg:add_target { 'unpack',
             { 'repo', 'install', 'host' }
@@ -423,6 +425,10 @@ function define_rule(rule)
         local install = this.install or pkg.install
 
         if build then
+            if build.in_source and pkg.source:is_scm() then
+                pkg.source.ignore_dirty = true
+            end
+
             if build.type == 'GNU' then
                 if build.generate or build.autoreconf then
                     pkg:add_target { 'autoreconf',
