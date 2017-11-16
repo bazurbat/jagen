@@ -22,6 +22,14 @@ local function try_load_module(modname)
     end
 end
 
+local function define_irule(rule)
+    rule = rule or {}
+    if rule._implicit == nil then
+        rule._implicit = true
+    end
+    return define_rule(rule)
+end
+
 function Package:__tostring()
     return string.format('%s__%s', self.name or '', self.config or '')
 end
@@ -92,13 +100,14 @@ function Package:set(key, value, config)
     end
 end
 
-function Package:add_requires(stage, template)
+function Package:add_requires(stage, template, implicit)
     for _, item in ipairs(stage.requires or {}) do
         local req = Package:parse(item)
         req.config = req.config or template.config
         if req.config ~= 'system' then
             table.insert(stage, { req.name, 'install', req.config })
             define_rule {
+                _implicit = implicit,
                 name = req.name,
                 template = template,
                 { 'install' }
@@ -156,7 +165,7 @@ function Package:add_patch_dependencies()
 
     local function get_provider(name)
         if name and name ~= 'none' then
-            return packages[name] or define_rule { name }
+            return packages[name] or define_irule { name }
         end
     end
 
@@ -303,7 +312,7 @@ function Package.load_rules()
 
     for _, pkg in pairs(packages) do
         if pkg.name == 'toolchain' and pkg:has_config('host') then
-            define_rule { 'toolchain', 'host',
+            define_irule { 'toolchain', 'host',
                 requires = { 'gcc-native' }
             }
             break
@@ -312,11 +321,11 @@ function Package.load_rules()
 
     local target_toolchain = os.getenv('jagen_target_toolchain')
     if target_toolchain then
-        define_rule {
+        define_irule {
             name = target_toolchain,
             config = 'target'
         }
-        define_rule { 'toolchain', 'target',
+        define_irule { 'toolchain', 'target',
             requires = { target_toolchain }
         }
     end
@@ -343,6 +352,9 @@ function Package.load_rules()
 end
 
 function define_rule(rule)
+    local implicit = rule._implicit
+    rule._implicit = nil
+
     rule = Package:new(rule)
 
     local pkg = packages[rule.name]
@@ -365,7 +377,7 @@ function define_rule(rule)
 
     do  -- do not add duplicate filenames
         local prev = pkg.filenames[#pkg.filenames]
-        if not prev or not string.find(prev, current_filename, 1, true) then
+        if not implicit and (not prev or not string.find(prev, current_filename, 1, true)) then
             table.insert(pkg.filenames, current_filename)
         end
     end
@@ -426,7 +438,7 @@ function define_rule(rule)
         pkg:add_target { 'unpack',
             { 'repo', 'install', 'host' }
         }
-        define_rule { 'repo', 'host' }
+        define_irule { 'repo', 'host' }
     end
 
     if config then
@@ -443,7 +455,7 @@ function define_rule(rule)
                     pkg:add_target { 'autoreconf',
                         { 'libtool', 'install', 'host' }
                     }
-                    define_rule { 'libtool', 'host' }
+                    define_irule { 'libtool', 'host' }
                 end
             end
 
@@ -453,13 +465,13 @@ function define_rule(rule)
                 pkg:add_target({ 'configure',
                         { 'toolchain', 'install', config }
                     }, config)
-                define_rule { 'toolchain', config }
+                define_irule { 'toolchain', config }
             end
 
             if build.type == 'linux_module' or build.kernel_modules == true or
                     install and install.modules then
 
-                define_rule { 'kernel', config }
+                define_irule { 'kernel', config }
 
                 pkg:add_target({ 'configure',
                         { 'kernel', 'configure', config }
@@ -480,7 +492,7 @@ function define_rule(rule)
     -- add global stages to every config
     if config then
         for _, stage in ipairs(pkg) do
-            pkg:add_requires(stage, template)
+            pkg:add_requires(stage, template, implicit)
             pkg:add_target(stage, config)
         end
     end
@@ -489,13 +501,13 @@ function define_rule(rule)
     local requires = extend(extend({}, pkg.requires), rule.requires)
     if config and #requires > 0 then
         local configure = { 'configure', requires = requires }
-        pkg:add_requires(configure, template)
+        pkg:add_requires(configure, template, implicit)
         pkg:add_target(configure, config)
     end
 
     -- stages collected from this rule should go last to maintain ordering
     for _, stage in ipairs(stages) do
-        pkg:add_requires(stage, template)
+        pkg:add_requires(stage, template, implicit)
         pkg:add_target(stage, config)
     end
 
