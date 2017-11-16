@@ -14,7 +14,9 @@ end
 
 Jagen =
 {
-    dir   = os.getenv('jagen_dir'),
+    dir         = os.getenv('jagen_dir'),
+    project_dir = os.getenv('jagen_project_dir'),
+
     shell = os.getenv('jagen_shell'),
     flags = os.getenv('jagen_flags'),
 
@@ -491,6 +493,34 @@ function Jagen.command.show(args)
     local path = System.mkpath(assert(os.getenv('jagen_log_dir')),
                                filename..'.log')
     return os.execute(string.format('%s "%s"', Jagen.pager, path))
+end
+
+function Jagen.command.list(args)
+    if #args == 0 or help_requested(args) then
+        return Jagen.command['help'] { 'list' }
+    end
+
+    if args[1] ~= 'packages' then
+        die("invalid list command '"..args[1].."', try 'jagen list help'")
+    end
+
+    local packages = Package.load_rules()
+    local pkg_list, name_max = {}, 0
+    for name, pkg in pairs(packages) do
+        if #name > name_max then name_max = #name end
+        table.insert(pkg_list, pkg)
+    end
+    table.sort(pkg_list, function (a, b) return a.name < b.name end)
+
+    local dirname = System.dirname(Jagen.project_dir)
+    for _, pkg in ipairs(pkg_list) do
+        local filenames = table.imap(pkg.filenames, function (fname)
+                return '...'..string.remove_prefix(fname, dirname)
+            end)
+        local space = name_max - #pkg.name + 2
+        io.write(string.format('%s%s%s\n', pkg.name, string.rep(' ', space),
+            table.concat(filenames, ' + ')))
+    end
 end
 
 function Jagen.command.image(args)

@@ -11,6 +11,7 @@ COMMANDS
   build     Build or rebuild the specified targets
   src       Manage SCM package sources
   show      Display build logs
+  list      List various information about the current project
 
   Use 'jagen help <command>' to get help about individual commands.
 
@@ -208,6 +209,22 @@ SYNOPSIS
 
 ]]
 
+local list = [[
+Usage: jagen list packages
+
+  Lists various information about the current project.
+
+COMMANDS
+
+  packages  List packages and their origin
+
+  The 'packages' command displays a list of all currently defined packages
+  along with the paths to rule files where definitions for those packages were
+  found. The parent directory of the current project directory is replaced
+  '...' in the displayed filenames.
+
+]]
+
 return {
     usage   = usage,
     help    = help,
@@ -217,5 +234,6 @@ return {
     src     = src,
     image   = image,
     show    = show,
+    list    = list,
     targets = targets
 }

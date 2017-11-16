@@ -31,7 +31,7 @@ _jagen_complete() {
     local cur prev
     local jagen_command
 
-    local top_cmds='help get clean refresh build src show'
+    local top_cmds='help get clean refresh build src show list'
     local src_cmds='dirty status clean update delete'
     local help_opt='-h --help'
     local build_opt='-n --dry-run -p --progress -P --all-progress -f --force -a --all'
@@ -79,6 +79,10 @@ _jagen_complete() {
         show)
             if [[ "$prev" == "show" ]]; then
                 COMPREPLY=($(compgen -W "$help_opt $(cat "$jagen_build_dir/__package_targets")" -- "$cur"))
+            fi ;;
+        list)
+            if [[ "$prev" == "list" ]]; then
+                COMPREPLY=($(compgen -W "$help_opt packages" -- "$cur"))
             fi ;;
     esac
 

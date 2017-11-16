@@ -17,7 +17,7 @@ local function try_load_module(modname)
         if file then
             local module = assert(loadstring(assert(file:read('*a')), filename))
             file:close()
-            return module()
+            return module(), filename
         end
     end
 end
@@ -353,12 +353,21 @@ function define_rule(rule)
         if pkg.name ~= 'patches' then
             pkg:add_target { 'patch' }
         end
-        local module = try_load_module('pkg/'..rule.name)
+        pkg.filenames = {}
+        local module, filename = try_load_module('pkg/'..rule.name)
         if module then
             table.merge(pkg, Package:new(module))
+            table.insert(pkg.filenames, filename)
         end
         packages[rule.name] = pkg
         pkg.configs = pkg.configs or {}
+    end
+
+    do  -- do not add duplicate filenames
+        local prev = pkg.filenames[#pkg.filenames]
+        if not prev or not string.find(prev, current_filename, 1, true) then
+            table.insert(pkg.filenames, current_filename)
+        end
     end
 
     if rule.template then

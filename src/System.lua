@@ -174,4 +174,8 @@ function P.find_files(path)
     return result
 end
 
+function P.dirname(path)
+    return P.pread('*l', 'dirname "%s"', path)
+end
+
 return P

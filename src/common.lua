@@ -141,6 +141,19 @@ function string.split2(s, sep)
     return o
 end
 
+function string.remove_prefix(str, prefix)
+    local b, e = string.find(str, prefix, 1, true)
+    if e then
+        return string.sub(str, e+1), true
+    else
+        return str, false
+    end
+end
+
+function string.escape_pattern(p)
+    return string.gsub(p, '%p', '%%%0')
+end
+
 -- compatibility with Lua 5.1
 if type(table.unpack) ~= 'function' then
     function table.unpack(t)

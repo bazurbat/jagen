@@ -119,6 +119,9 @@ rules and also to find pkg files. The `config` is optional.
 - **pkg.config** — a config for the current pkg rule, also derived from the
   rule or can be set by a template
 
+- **pkg.filenames** — a list of filenames where rules for this package was
+  found
+
 - **pkg.source** (`pkg_source_*`) — Source object
 
 - **pkg.patches** — A list of objects of the form:
