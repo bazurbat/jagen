@@ -2,23 +2,23 @@
 
 -- base
 
-define_rule { 'ast-files' }
+package { 'ast-files' }
 
-define_rule { 'cmake-modules' }
+package { 'cmake-modules' }
 
-define_rule { 'linux' }
+package { 'linux' }
 
-define_rule { 'xsdk' }
+package { 'xsdk' }
 
-define_rule { 'ucode', 'target',
+package { 'ucode', 'target',
     { 'install' }
 }
 
 -- host
 
-define_rule { 'utils', 'host' }
+package { 'utils', 'host' }
 
-define_rule { 'karaoke-player', 'host',
+package { 'karaoke-player', 'host',
     requires = {
         'chicken-eggs',
         'ffmpeg',
@@ -29,13 +29,13 @@ define_rule { 'karaoke-player', 'host',
     }
 }
 
-define_rule { 'astindex',
+package { 'astindex',
     { 'unpack', { 'karaoke-player', 'unpack' } }
 }
 
 -- kernel
 
-define_rule { 'kernel', 'target',
+package { 'kernel', 'target',
     { 'configure',
         { 'linux', 'unpack' },
     },
@@ -60,7 +60,7 @@ local rootfs_template = {
     }
 }
 
-define_rule { 'rootfs', 'target',
+package { 'rootfs', 'target',
     pass_template = rootfs_template,
     { 'configure',
         { 'ast-files', 'unpack' },
@@ -80,7 +80,7 @@ define_rule { 'rootfs', 'target',
     }
 }
 
-define_rule { 'busybox', 'target',
+package { 'busybox', 'target',
     install = {
         root = '$jagen_sdk_initfs_dir',
         prefix = ''
@@ -88,14 +88,14 @@ define_rule { 'busybox', 'target',
     { 'patch', { 'ast-files', 'unpack' } }
 }
 
-define_rule { 'utils', 'target',
+package { 'utils', 'target',
     requires = { 'gpgme' },
     { 'configure',
         { 'dbus', 'install', 'target' }
     }
 }
 
-define_rule { 'ezboot', 'target',
+package { 'ezboot', 'target',
     requires = { 'rootfs' }
 }
 
@@ -109,12 +109,12 @@ local firmware_rule_template = {
     { 'install', { 'firmware', 'unpack' } }
 }
 
-local function define_firmware_rule(r)
+local function firmware_package(r)
     r.template = firmware_rule_template
-    define_rule(r)
+    package(r)
 end
 
-define_rule { 'firmware', 'target',
+package { 'firmware', 'target',
     pass_template = firmware_rule_template,
     requires = {
         'ezboot',
@@ -131,7 +131,7 @@ define_rule { 'firmware', 'target',
     { 'install' }
 }
 
-define_firmware_rule { 'karaoke-player',
+firmware_package { 'karaoke-player',
     requires = {
         'chicken-eggs',
         'connman',

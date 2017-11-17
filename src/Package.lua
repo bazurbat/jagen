@@ -3,6 +3,8 @@ local Target = require 'Target'
 local Source = require 'Source'
 local Log    = require 'Log'
 
+local lua_package = package
+
 local current_filename
 
 local P = {}
@@ -11,7 +13,7 @@ P.__index = P
 local packages = {}
 
 local function try_load_module(modname)
-    for path in string.gmatch(package.path, '[^;]+') do
+    for path in string.gmatch(lua_package.path, '[^;]+') do
         local filename = string.gsub(path, '%?', modname)
         local file = io.open(filename, 'rb')
         if file then
@@ -508,6 +510,10 @@ end
 
 function define_package_alias(name, value)
     Jagen.package_aliases[name] = value
+end
+
+function package(rule)
+    return define_rule(rule)
 end
 
 return P

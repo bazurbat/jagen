@@ -36,11 +36,11 @@
 
 ### Rules
 
-Rules are processed by the `define_rule` function and should be Lua table of
+Rules are processed by the `package` function and should be Lua table of
 the following form:
 
 ```lua
-define_rule { 'name', '[config]',
+package { 'name', '[config]',
   <overrides>,
   { 'stage1', '[config]' },
   { 'stage2', '[config]' },
@@ -475,8 +475,8 @@ package: build stages, type, location of source directory and so on. Rules with
 the same name are considered as belonging to the same package but evaluated
 independently at the point of reference. So, mentioning the package in the
 "requires" list of a package which has template and config will produce
-different result from standalone "define_rule" declaration. Also order of rules
-matters, both in the rules file and across layers. See the `define_rule`
+different result from standalone "package" declaration. Also order of rules
+matters, both in the rules file and across layers. See the `package`
 function in `src/Package.lua` file for complete information about evaluation
 logic.
 

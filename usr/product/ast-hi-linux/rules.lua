@@ -19,7 +19,7 @@ local firmware_template_rule = {
 
 define_package_alias('kernel', 'hi-kernel')
 
-define_rule { 'karaoke-player', 'target',
+package { 'karaoke-player', 'target',
     template = firmware_template_rule,
     requires = {
         'chicken-eggs',
@@ -33,7 +33,7 @@ define_rule { 'karaoke-player', 'target',
     }
 }
 
-define_rule { 'firmware', 'target',
+package { 'firmware', 'target',
     pass_template = firmware_template_rule,
     { 'compile',
         { 'rootfs', 'compile', 'target' }
@@ -48,7 +48,7 @@ define_rule { 'firmware', 'target',
     }
 }
 
-define_rule { 'rootfs', 'target',
+package { 'rootfs', 'target',
     pass_template = rootfs_template_rule,
     { 'install',
         requires = {
@@ -73,12 +73,12 @@ define_rule { 'rootfs', 'target',
 }
 
 -- explicit definition of firmware utils to avoid building gpgme for host
-define_rule { 'firmware-utils', 'host' }
-define_rule { 'firmware-utils', 'target',
+package { 'firmware-utils', 'host' }
+package { 'firmware-utils', 'target',
     requires = { 'gpgme' }
 }
 
-define_rule { 'image', 'target',
+package { 'image', 'target',
     { 'compile',
         requires = {
             'rootfs'
@@ -87,9 +87,9 @@ define_rule { 'image', 'target',
 }
 
 if Jagen.flag 'debug' then
-    define_rule { 'gdb', 'host' }
-    define_rule { 'strace', 'target' }
-    define_rule { 'gdbserver', 'target' }
+    package { 'gdb', 'host' }
+    package { 'strace', 'target' }
+    package { 'gdbserver', 'target' }
 end
 
 require 'chicken'

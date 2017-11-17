@@ -1,4 +1,4 @@
-define_rule { 'genivi', 'host',
+package { 'genivi', 'host',
     requires = {
         'audio-manager',
         'audio-manager-plugins',

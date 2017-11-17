@@ -1,14 +1,14 @@
 -- CHICKEN Scheme
 
-define_rule { 'chicken', 'host' }
+package { 'chicken', 'host' }
 
-define_rule { 'chicken-eggs', 'host' }
+package { 'chicken-eggs', 'host' }
 
-define_rule { 'chicken', 'target',
+package { 'chicken', 'target',
     { 'configure', { 'chicken', 'install', 'host' } }
 }
 
-define_rule { 'chicken-eggs', 'target',
+package { 'chicken-eggs', 'target',
     requires = {
         'dbus',
         'sqlite',
@@ -19,7 +19,7 @@ define_rule { 'chicken-eggs', 'target',
 }
 
 if Jagen.flag('new_chicken') then
-    define_rule { 'chicken', 'host',
+    package { 'chicken', 'host',
         requires = { 'chicken-boot' }
     }
 end
