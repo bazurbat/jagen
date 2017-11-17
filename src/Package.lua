@@ -24,13 +24,6 @@ local function try_load_module(modname)
     end
 end
 
-local function define_irule(rule)
-    rule = rule or {}
-    rule.template = rule.template or {}
-    rule.template.implicit = true
-    return define_rule(rule)
-end
-
 function P:__tostring()
     return string.format('%s__%s', self.name or '', self.config or '')
 end
@@ -107,7 +100,7 @@ function P:add_requires(stage, template)
         req.config = req.config or template.config
         if req.config ~= 'system' then
             table.insert(stage, { req.name, 'install', req.config })
-            define_rule {
+            P.define_rule {
                 name = req.name,
                 template = template,
                 { 'install' }
@@ -165,7 +158,7 @@ function P:add_patch_dependencies()
 
     local function get_provider(name)
         if name and name ~= 'none' then
-            return packages[name] or define_irule { name }
+            return packages[name] or P.define_irule { name }
         end
     end
 
@@ -312,7 +305,7 @@ function P.load_rules()
 
     for _, pkg in pairs(packages) do
         if pkg.name == 'toolchain' and pkg:has_config('host') then
-            define_irule { 'toolchain', 'host',
+            P.define_irule { 'toolchain', 'host',
                 requires = { 'gcc-native' }
             }
             break
@@ -321,11 +314,11 @@ function P.load_rules()
 
     local target_toolchain = os.getenv('jagen_target_toolchain')
     if target_toolchain then
-        define_irule {
+        P.define_irule {
             name = target_toolchain,
             config = 'target'
         }
-        define_irule { 'toolchain', 'target',
+        P.define_irule { 'toolchain', 'target',
             requires = { target_toolchain }
         }
     end
@@ -351,7 +344,7 @@ function P.load_rules()
     return packages
 end
 
-function define_rule(rule)
+function P.define_rule(rule)
     rule = P:new(rule)
 
     local pkg = packages[rule.name]
@@ -432,7 +425,7 @@ function define_rule(rule)
         pkg:add_target { 'unpack',
             { 'repo', 'install', 'host' }
         }
-        define_irule { 'repo', 'host' }
+        P.define_irule { 'repo', 'host' }
     end
 
     if config then
@@ -449,7 +442,7 @@ function define_rule(rule)
                     pkg:add_target { 'autoreconf',
                         { 'libtool', 'install', 'host' }
                     }
-                    define_irule { 'libtool', 'host' }
+                    P.define_irule { 'libtool', 'host' }
                 end
             end
 
@@ -459,13 +452,13 @@ function define_rule(rule)
                 pkg:add_target({ 'configure',
                         { 'toolchain', 'install', config }
                     }, config)
-                define_irule { 'toolchain', config }
+                P.define_irule { 'toolchain', config }
             end
 
             if build.type == 'linux_module' or build.kernel_modules == true or
                     install and install.modules then
 
-                define_irule { 'kernel', config }
+                P.define_irule { 'kernel', config }
 
                 pkg:add_target({ 'configure',
                         { 'kernel', 'configure', config }
@@ -508,12 +501,19 @@ function define_rule(rule)
     return pkg
 end
 
+function P.define_irule(rule)
+    rule = rule or {}
+    rule.template = rule.template or {}
+    rule.template.implicit = true
+    return P.define_rule(rule)
+end
+
 function define_package_alias(name, value)
     Jagen.package_aliases[name] = value
 end
 
 function package(rule)
-    return define_rule(rule)
+    return P.define_rule(rule)
 end
 
 return P
