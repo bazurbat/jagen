@@ -14,7 +14,7 @@ error() {
 
 debug() {
     if [ "$jagen_debug" ]; then
-        printf "(D) %s\n" "$*"
+        printf "(D) %s\n" "$*" >&2
     fi
 }
 
