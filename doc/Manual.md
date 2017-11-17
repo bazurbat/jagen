@@ -281,6 +281,7 @@ rules and also to find pkg files. The `config` is optional.
 - **jagen_dir** — The location of the Jagen source directory.
 - **jagen_dist_dir** — The location of the `dist` directory (`$jagen_project_dir/dist`).
 - **jagen_flags** — Space-separated list of flags.
+- **jagen_host_cflags** — The global host cflags.
 - **jagen_host_dir** — The location of the `host` directory (`$jagen_project_dir/host`).
 - **jagen_host_system** — The name of the current host system.
 - **jagen_include_dir** — The location of the `include` directory (`$jagen_project_dir/include`).

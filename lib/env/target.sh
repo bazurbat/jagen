@@ -6,6 +6,11 @@ fi
 
 : ${jagen_target_dir:?}
 
+export CFLAGS="${jagen_target_cflags:--O2}"
+export CXXFLAGS="$CFLAGS"
+export ASMFLAGS="$CFLAGS"
+export LDFLAGS=""
+
 export PKG_CONFIG_SYSROOT_DIR="$jagen_target_dir"
 export PKG_CONFIG_LIBDIR="$jagen_target_dir/lib/pkgconfig"
 export PKG_CONFIG_PATH="$jagen_target_dir/usr/lib/pkgconfig"

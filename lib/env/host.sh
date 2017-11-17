@@ -4,9 +4,9 @@ export CC="gcc"
 export CXX="g++"
 export STRIP="strip"
 
-export CFLAGS="-march=core2 -O2 -pipe"
+export CFLAGS="${jagen_host_cflags:--march=core2 -O2 -pipe}"
 export CXXFLAGS="$CFLAGS"
-export LDFLAGS=""
 export ASMFLAGS="$CFLAGS"
+export LDFLAGS=""
 
 export PKG_CONFIG_PATH="$jagen_host_dir/lib/pkgconfig"
