@@ -5,8 +5,8 @@ local Log    = require 'Log'
 
 local current_filename
 
-local Package = {}
-Package.__index = Package
+local P = {}
+P.__index = P
 
 local packages = {}
 
@@ -29,11 +29,11 @@ local function define_irule(rule)
     return define_rule(rule)
 end
 
-function Package:__tostring()
+function P:__tostring()
     return string.format('%s__%s', self.name or '', self.config or '')
 end
 
-function Package:parse(rule)
+function P:parse(rule)
     if type(rule) == 'string' then
         rule = { name = rule }
     elseif type(rule) == 'table' then
@@ -62,17 +62,17 @@ function Package:parse(rule)
     return rule
 end
 
-function Package:new(rule)
-    rule = Package:parse(rule)
+function P:new(rule)
+    rule = P:parse(rule)
     setmetatable(rule, self)
     return rule
 end
 
-function Package:has_config(name)
+function P:has_config(name)
     return self.configs and self.configs[name]
 end
 
-function Package:add_config(name)
+function P:add_config(name)
     if not self.configs then
         self.configs = {}
     end
@@ -81,7 +81,7 @@ function Package:add_config(name)
     end
 end
 
-function Package:get(key, config)
+function P:get(key, config)
     if config and self.configs and self.configs[config] then
         return self.configs[config][key]
     else
@@ -89,7 +89,7 @@ function Package:get(key, config)
     end
 end
 
-function Package:set(key, value, config)
+function P:set(key, value, config)
     if config then
         self.configs = self.configs or {}
         self.configs[config] = self.configs[config] or {}
@@ -99,9 +99,9 @@ function Package:set(key, value, config)
     end
 end
 
-function Package:add_requires(stage, template)
+function P:add_requires(stage, template)
     for _, item in ipairs(stage.requires or {}) do
-        local req = Package:parse(item)
+        local req = P:parse(item)
         req.config = req.config or template.config
         if req.config ~= 'system' then
             table.insert(stage, { req.name, 'install', req.config })
@@ -114,7 +114,7 @@ function Package:add_requires(stage, template)
     end
 end
 
-function Package:add_target(rule, config)
+function P:add_target(rule, config)
     local target = Target:parse(rule, self.name, config)
     local name   = target.stage
     local config = target.config
@@ -152,7 +152,7 @@ function Package:add_target(rule, config)
     return self
 end
 
-function Package:add_patch_dependencies()
+function P:add_patch_dependencies()
     local function patch_names(pkg)
         local i, n = 0, #pkg.patches
         return function()
@@ -222,7 +222,7 @@ function Package:add_patch_dependencies()
     end
 end
 
-function Package:add_ordering_dependencies()
+function P:add_ordering_dependencies()
     local prev, common 
 
     for curr in self:each() do
@@ -246,7 +246,7 @@ function Package:add_ordering_dependencies()
     end
 end
 
-function Package:each()
+function P:each()
     return coroutine.wrap(function ()
             for _, target in ipairs(self.stages) do
                 coroutine.yield(target)
@@ -270,7 +270,7 @@ function Package:each()
         end)
 end
 
-function Package:query(value, config)
+function P:query(value, config)
     local result = {}
 
     local function run_query(config)
@@ -293,7 +293,7 @@ function Package:query(value, config)
     return result
 end
 
-function Package.load_rules()
+function P.load_rules()
     local dirs = string.split2(os.getenv('jagen_path'), '\t')
 
     packages = {}
@@ -334,7 +334,7 @@ function Package.load_rules()
     -- that it returns a new list with the matching elements.
     table.for_each(table.filter(packages,
             function (pkg) return pkg.patches end),
-        Package.add_patch_dependencies)
+        P.add_patch_dependencies)
 
     local source_exclude = os.getenv('jagen_source_exclude')
     for name in string.gmatch(source_exclude, '[^%s]+') do
@@ -350,12 +350,12 @@ function Package.load_rules()
 end
 
 function define_rule(rule)
-    rule = Package:new(rule)
+    rule = P:new(rule)
 
     local pkg = packages[rule.name]
 
     if not pkg then
-        pkg = Package:new { rule.name }
+        pkg = P:new { rule.name }
         pkg:add_target { 'unpack' }
         if pkg.name ~= 'patches' then
             pkg:add_target { 'patch' }
@@ -363,7 +363,7 @@ function define_rule(rule)
         pkg.filenames = {}
         local module, filename = try_load_module('pkg/'..rule.name)
         if module then
-            table.merge(pkg, Package:new(module))
+            table.merge(pkg, P:new(module))
             table.insert(pkg.filenames, filename)
         end
         packages[rule.name] = pkg
@@ -510,4 +510,4 @@ function define_package_alias(name, value)
     Jagen.package_aliases[name] = value
 end
 
-return Package
+return P
