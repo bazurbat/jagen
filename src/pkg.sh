@@ -361,6 +361,11 @@ pkg_configure() {
             A="$A$S-DCMAKE_C_FLAGS_RELEASE="
             A="$A$S-DCMAKE_CXX_FLAGS_RELEASE="
 
+            if pkg_is_debug; then
+                # assuming that global defaults are for 'release' config
+                unset CFLAGS CXXFLAGS
+            fi
+
             pkg_run cmake -G"${pkg_build_generator:-${jagen_cmake_generator:?}}" \
                 -DCMAKE_BUILD_TYPE="$(pkg_cmake_build_type)" \
                 -DCMAKE_INSTALL_PREFIX="$pkg_prefix" \
