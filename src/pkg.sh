@@ -380,7 +380,7 @@ pkg_configure() {
 pkg_compile() {
     [ "$pkg_source_dir" ] || return 0
 
-    local is_offline
+    local is_offline build_generator
 
     if in_flags offline; then
         is_offline=1
@@ -391,6 +391,15 @@ pkg_compile() {
             pkg_run make "$@"
             ;;
         CMake)
+            if [ "$jagen_build_verbose" ]; then
+                build_generator="${jagen_build_generator:-$jagen_cmake_generator}"
+                case $build_generator in
+                    *Ninja)
+                        jagen_cmake_build_options="-v $jagen_cmake_build_options" ;;
+                    *Makefiles)
+                        jagen_cmake_build_options="V=1 $jagen_cmake_build_options" ;;
+                esac
+            fi
             pkg_run cmake --build . -- $jagen_cmake_build_options "$@"
             ;;
         make)
