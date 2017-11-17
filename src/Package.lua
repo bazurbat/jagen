@@ -24,9 +24,8 @@ end
 
 local function define_irule(rule)
     rule = rule or {}
-    if rule._implicit == nil then
-        rule._implicit = true
-    end
+    rule.template = rule.template or {}
+    rule.template.implicit = true
     return define_rule(rule)
 end
 
@@ -100,14 +99,13 @@ function Package:set(key, value, config)
     end
 end
 
-function Package:add_requires(stage, template, implicit)
+function Package:add_requires(stage, template)
     for _, item in ipairs(stage.requires or {}) do
         local req = Package:parse(item)
         req.config = req.config or template.config
         if req.config ~= 'system' then
             table.insert(stage, { req.name, 'install', req.config })
             define_rule {
-                _implicit = implicit,
                 name = req.name,
                 template = template,
                 { 'install' }
@@ -352,9 +350,6 @@ function Package.load_rules()
 end
 
 function define_rule(rule)
-    local implicit = rule._implicit
-    rule._implicit = nil
-
     rule = Package:new(rule)
 
     local pkg = packages[rule.name]
@@ -375,15 +370,15 @@ function define_rule(rule)
         pkg.configs = pkg.configs or {}
     end
 
-    do  -- do not add duplicate filenames
-        local prev = pkg.filenames[#pkg.filenames]
-        if not implicit and (not prev or not string.find(prev, current_filename, 1, true)) then
-            table.insert(pkg.filenames, current_filename)
-        end
-    end
-
     if rule.template then
         rule = table.merge(copy(rule.template), rule)
+    end
+
+    do
+        local prev = pkg.filenames[#pkg.filenames]
+        if not rule.implicit and (not prev or not string.find(prev, current_filename, 1, true)) then
+            table.insert(pkg.filenames, current_filename)
+        end
     end
 
     local stages = table.imove({}, rule)
@@ -408,11 +403,8 @@ function define_rule(rule)
         end
     end
 
-    local template = rule.template or rule.pass_template or this.template
-
-    if not template then
-        template = { config = config }
-    end
+    local template = rule.template or rule.pass_template or this.template or {}
+    template.config = config
 
     rule.template, rule.pass_template = nil, nil
     table.merge(this, rule)
@@ -492,7 +484,7 @@ function define_rule(rule)
     -- add global stages to every config
     if config then
         for _, stage in ipairs(pkg) do
-            pkg:add_requires(stage, template, implicit)
+            pkg:add_requires(stage, template)
             pkg:add_target(stage, config)
         end
     end
@@ -501,13 +493,13 @@ function define_rule(rule)
     local requires = extend(extend({}, pkg.requires), rule.requires)
     if config and #requires > 0 then
         local configure = { 'configure', requires = requires }
-        pkg:add_requires(configure, template, implicit)
+        pkg:add_requires(configure, template)
         pkg:add_target(configure, config)
     end
 
     -- stages collected from this rule should go last to maintain ordering
     for _, stage in ipairs(stages) do
-        pkg:add_requires(stage, template, implicit)
+        pkg:add_requires(stage, template)
         pkg:add_target(stage, config)
     end
 

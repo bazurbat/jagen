@@ -514,8 +514,8 @@ function Jagen.command.list(args)
 
     local dirname = System.dirname(Jagen.project_dir)
     for _, pkg in ipairs(pkg_list) do
-        local filenames = table.imap(pkg.filenames, function (fname)
-                return '...'..string.remove_prefix(fname, dirname)
+        local filenames = table.imap(pkg.filenames, function (item)
+                return '...'..string.remove_prefix(item, dirname)
             end)
         local space = name_max - #pkg.name + 2
         io.write(string.format('%s%s%s\n', pkg.name, string.rep(' ', space),
