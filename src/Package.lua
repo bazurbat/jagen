@@ -100,7 +100,7 @@ function P:add_requires(stage, template)
         req.config = req.config or template.config
         if req.config ~= 'system' then
             table.insert(stage, { req.name, 'install', req.config })
-            P.define_rule {
+            P.define_irule {
                 name = req.name,
                 template = template,
                 { 'install' }
