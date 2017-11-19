@@ -3,14 +3,26 @@ local Target = require 'Target'
 local Source = require 'Source'
 local Log    = require 'Log'
 
-local lua_package = package
-
-local current_filename
-
 local P = {}
 P.__index = P
 
+local lua_package = package
 local packages = {}
+
+local context = {}
+local context_stack = {}
+
+local function push_context(o)
+    table.insert(context_stack, o)
+    context = o
+    return o
+end
+
+local function pop_context()
+    local o = table.remove(context_stack)
+    context = assert(context_stack[#context_stack])
+    return o
+end
 
 local function try_load_module(modname)
     for path in string.gmatch(lua_package.path, '[^;]+') do
@@ -100,7 +112,7 @@ function P:add_requires(stage, template)
         req.config = req.config or template.config
         if req.config ~= 'system' then
             table.insert(stage, { req.name, 'install', req.config })
-            P.define_irule {
+            P.define_rule {
                 name = req.name,
                 template = template,
                 { 'install' }
@@ -158,7 +170,7 @@ function P:add_patch_dependencies()
 
     local function get_provider(name)
         if name and name ~= 'none' then
-            return packages[name] or P.define_irule { name }
+            return packages[name] or P.define_rule { name }
         end
     end
 
@@ -292,20 +304,22 @@ function P.load_rules()
     local dirs = string.split2(os.getenv('jagen_path'), '\t')
 
     packages = {}
+    push_context({})
 
     for i = #dirs, 1, -1 do
         local filename = System.mkpath(dirs[i], 'rules.lua')
         local file = io.open(filename, 'rb')
         if file then
-            current_filename = filename
+            push_context({ filename = filename })
             assert(loadstring(file:read('*a'), filename))()
             file:close()
+            pop_context()
         end
     end
 
     for _, pkg in pairs(packages) do
         if pkg.name == 'toolchain' and pkg:has_config('host') then
-            P.define_irule { 'toolchain', 'host',
+            P.define_rule { 'toolchain', 'host',
                 requires = { 'gcc-native' }
             }
             break
@@ -314,11 +328,11 @@ function P.load_rules()
 
     local target_toolchain = os.getenv('jagen_target_toolchain')
     if target_toolchain then
-        P.define_irule {
+        P.define_rule {
             name = target_toolchain,
             config = 'target'
         }
-        P.define_irule { 'toolchain', 'target',
+        P.define_rule { 'toolchain', 'target',
             requires = { target_toolchain }
         }
     end
@@ -341,39 +355,57 @@ function P.load_rules()
         end
     end
 
+    -- prune duplicate context entries
+    for name, pkg in pairs(packages) do
+        local tt, tag = {}
+        for _, c in ipairs(pkg.contexts) do
+            tag = string.format('%s:%s', c.filename or '', c.name or '')
+            if not tt[tag] then
+                tt[tag] = c
+                table.insert(tt, c)
+            end
+        end
+        pkg.contexts = {}
+        for _, c in ipairs(tt) do
+            table.insert(pkg.contexts, c)
+        end
+    end
+
     return packages
 end
 
 function P.define_rule(rule)
     rule = P:new(rule)
+    push_context(copy(context))
 
     local pkg = packages[rule.name]
 
     if not pkg then
         pkg = P:new { rule.name }
+        pkg.contexts = {}
         pkg:add_target { 'unpack' }
         if pkg.name ~= 'patches' then
             pkg:add_target { 'patch' }
         end
-        pkg.filenames = {}
         local module, filename = try_load_module('pkg/'..rule.name)
         if module then
+            local pkg_context = copy(context)
+            if context.filename then -- show name only for implicit rules
+                pkg_context.name = nil
+            end
+            pkg_context.filename = filename
             table.merge(pkg, P:new(module))
-            table.insert(pkg.filenames, filename)
+            append(pkg.contexts, pkg_context)
         end
         packages[rule.name] = pkg
         pkg.configs = pkg.configs or {}
     end
 
+    append(pkg.contexts, copy(context))
+    context.name = pkg.name
+
     if rule.template then
         rule = table.merge(copy(rule.template), rule)
-    end
-
-    do
-        local prev = pkg.filenames[#pkg.filenames]
-        if not rule.implicit and (not prev or not string.find(prev, current_filename, 1, true)) then
-            table.insert(pkg.filenames, current_filename)
-        end
     end
 
     local stages = table.imove({}, rule)
@@ -425,7 +457,7 @@ function P.define_rule(rule)
         pkg:add_target { 'unpack',
             { 'repo', 'install', 'host' }
         }
-        P.define_irule { 'repo', 'host' }
+        P.define_rule { 'repo', 'host' }
     end
 
     if config then
@@ -442,7 +474,7 @@ function P.define_rule(rule)
                     pkg:add_target { 'autoreconf',
                         { 'libtool', 'install', 'host' }
                     }
-                    P.define_irule { 'libtool', 'host' }
+                    P.define_rule { 'libtool', 'host' }
                 end
             end
 
@@ -452,13 +484,13 @@ function P.define_rule(rule)
                 pkg:add_target({ 'configure',
                         { 'toolchain', 'install', config }
                     }, config)
-                P.define_irule { 'toolchain', config }
+                P.define_rule { 'toolchain', config }
             end
 
             if build.type == 'linux_module' or build.kernel_modules == true or
                     install and install.modules then
 
-                P.define_irule { 'kernel', config }
+                P.define_rule { 'kernel', config }
 
                 pkg:add_target({ 'configure',
                         { 'kernel', 'configure', config }
@@ -498,14 +530,8 @@ function P.define_rule(rule)
         pkg:add_target(stage, config)
     end
 
+    pop_context()
     return pkg
-end
-
-function P.define_irule(rule)
-    rule = rule or {}
-    rule.template = rule.template or {}
-    rule.template.implicit = true
-    return P.define_rule(rule)
 end
 
 function define_package_alias(name, value)

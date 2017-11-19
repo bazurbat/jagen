@@ -513,13 +513,22 @@ function Jagen.command.list(args)
     table.sort(pkg_list, function (a, b) return a.name < b.name end)
 
     local dirname = System.dirname(Jagen.project_dir)
+    local col2_pos = name_max + 2
+
     for _, pkg in ipairs(pkg_list) do
-        local filenames = table.imap(pkg.filenames, function (item)
-                return '...'..string.remove_prefix(item, dirname)
-            end)
-        local space = name_max - #pkg.name + 2
-        io.write(string.format('%s%s%s\n', pkg.name, string.rep(' ', space),
-            table.concat(filenames, ' + ')))
+        io.write(pkg.name)
+        io.write(string.rep(' ', col2_pos - #pkg.name))
+        local contexts = {}
+        for _, context in ipairs(pkg.contexts) do
+            if context.filename then
+                local str = string.format('...%s', string.remove_prefix(context.filename, dirname))
+                if context.name then
+                    str = string.format('%s (%s)', str, context.name)
+                end
+                table.insert(contexts, str)
+            end
+        end
+        io.write(table.concat(contexts, '\n'..string.rep(' ', col2_pos + 3)), '\n')
     end
 end
 
