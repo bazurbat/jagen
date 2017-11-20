@@ -9,18 +9,19 @@ P.__index = P
 local lua_package = package
 local packages = {}
 
-local context = {}
+local context
 local context_stack = {}
 
 local function push_context(o)
+    o = o or copy(assert(context))
     table.insert(context_stack, o)
     context = o
     return o
 end
 
 local function pop_context()
-    local o = table.remove(context_stack)
-    context = assert(context_stack[#context_stack])
+    local o = assert(table.remove(context_stack))
+    context = context_stack[#context_stack]
     return o
 end
 
@@ -304,7 +305,6 @@ function P.load_rules()
     local dirs = string.split2(os.getenv('jagen_path'), '\t')
 
     packages = {}
-    push_context({})
 
     for i = #dirs, 1, -1 do
         local filename = System.mkpath(dirs[i], 'rules.lua')
@@ -316,6 +316,8 @@ function P.load_rules()
             pop_context()
         end
     end
+
+    push_context({ implicit = true })
 
     for _, pkg in pairs(packages) do
         if pkg.name == 'toolchain' and pkg:has_config('host') then
@@ -359,7 +361,7 @@ function P.load_rules()
     for name, pkg in pairs(packages) do
         local tt, tag = {}
         for _, c in ipairs(pkg.contexts) do
-            tag = string.format('%s:%s', c.filename or '', c.name or '')
+            tag = string.format('%s:%s:%s', c.filename or '', c.name or '', c.config or '')
             if not tt[tag] then
                 tt[tag] = c
                 table.insert(tt, c)
@@ -376,7 +378,6 @@ end
 
 function P.define_rule(rule)
     rule = P:new(rule)
-    push_context(copy(context))
 
     local pkg = packages[rule.name]
 
@@ -389,20 +390,12 @@ function P.define_rule(rule)
         end
         local module, filename = try_load_module('pkg/'..rule.name)
         if module then
-            local pkg_context = copy(context)
-            if context.filename then -- show name only for implicit rules
-                pkg_context.name = nil
-            end
-            pkg_context.filename = filename
             table.merge(pkg, P:new(module))
-            append(pkg.contexts, pkg_context)
+            append(pkg.contexts, { filename = filename })
         end
         packages[rule.name] = pkg
         pkg.configs = pkg.configs or {}
     end
-
-    append(pkg.contexts, copy(context))
-    context.name = pkg.name
 
     if rule.template then
         rule = table.merge(copy(rule.template), rule)
@@ -453,6 +446,10 @@ function P.define_rule(rule)
         end
     end
 
+    append(pkg.contexts, context)
+
+    push_context({ name = pkg.name, config = config, implicit = true })
+
     if pkg.source and pkg.source.type == 'repo' then
         pkg:add_target { 'unpack',
             { 'repo', 'install', 'host' }
@@ -487,6 +484,9 @@ function P.define_rule(rule)
                 P.define_rule { 'toolchain', config }
             end
 
+            push_context()
+            context.implicit = false
+
             if build.type == 'linux_module' or build.kernel_modules == true or
                     install and install.modules then
 
@@ -505,8 +505,14 @@ function P.define_rule(rule)
                 pkg:add_target({ 'compile' }, config)
                 pkg:add_target({ 'install' }, config)
             end
+
+            pop_context()
         end
     end
+
+    pop_context()
+
+    push_context({ name = pkg.name, config = config, implicit = context.implicit })
 
     -- add global stages to every config
     if config then
@@ -531,6 +537,7 @@ function P.define_rule(rule)
     end
 
     pop_context()
+
     return pkg
 end
 

@@ -515,20 +515,40 @@ function Jagen.command.list(args)
     local dirname = System.dirname(Jagen.project_dir)
     local col2_pos = name_max + 2
 
+    local function format_context(c)
+        local str = ''
+        if c.name then
+            str = string.format('%s', c.name)
+        end
+        if c.config then
+            str = string.format('%s:%s', str, c.config)
+        end
+        if c.filename then
+            local name, rem = string.remove_prefix(c.filename, dirname)
+            local pref = rem and '...' or ''
+            local suff = ''
+            if #str > 0 then
+                suff = string.format(' (%s)', str)
+            end
+            str = string.format('%s%s%s', pref, name, suff)
+        end
+        if (c.name or c.filename) and c.implicit then
+            str = string.format('%s *', str)
+        end
+        return str
+    end
+
     for _, pkg in ipairs(pkg_list) do
         io.write(pkg.name)
         io.write(string.rep(' ', col2_pos - #pkg.name))
-        local contexts = {}
+        local lines = {}
         for _, context in ipairs(pkg.contexts) do
-            if context.filename then
-                local str = string.format('...%s', string.remove_prefix(context.filename, dirname))
-                if context.name then
-                    str = string.format('%s (%s)', str, context.name)
-                end
-                table.insert(contexts, str)
+            local str = format_context(context)
+            if #str > 0 then
+                table.insert(lines, str)
             end
         end
-        io.write(table.concat(contexts, '\n'..string.rep(' ', col2_pos + 3)), '\n')
+        io.write(table.concat(lines, '\n'..string.rep(' ', col2_pos + 4)), '\n')
     end
 end
 

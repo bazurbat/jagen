@@ -141,6 +141,16 @@ function string.split2(s, sep)
     return o
 end
 
+function string.join(t, sep)
+    local o = {}
+    for _, s in ipairs(t) do
+        if #s > 0 then
+            table.insert(o, s)
+        end
+    end
+    return table.concat(o, sep or '')
+end
+
 function string.remove_prefix(str, prefix)
     local b, e = string.find(str, prefix, 1, true)
     if e then
