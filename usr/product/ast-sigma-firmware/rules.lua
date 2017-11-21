@@ -111,7 +111,7 @@ local firmware_rule_template = {
 
 local function firmware_package(r)
     r.template = firmware_rule_template
-    package(r)
+    return package(r)
 end
 
 package { 'firmware', 'target',

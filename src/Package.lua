@@ -334,10 +334,8 @@ function P.load_rules()
         local filename = System.mkpath(dirs[i], 'rules.lua')
         local file = io.open(filename, 'rb')
         if file then
-            push_context({ filename = filename })
             assert(loadstring(file:read('*a'), filename))()
             file:close()
-            pop_context()
         end
     end
 
@@ -541,7 +539,7 @@ function P.define_rule(rule)
 
     pop_context()
 
-    push_context({ name = pkg.name, config = config, implicit = context.implicit })
+    push_context(table.merge(copy(context), { name = pkg.name, config = config }))
 
     -- add global stages to every config
     if config then
@@ -575,7 +573,13 @@ function define_package_alias(name, value)
 end
 
 function package(rule)
-    return P.define_rule(rule)
+    push_context({})
+    local info = debug.getinfo(2, 'Sl')
+    context.filename = info.source
+    context.line = info.currentline
+    local pkg = P.define_rule(rule)
+    pop_context()
+    return pkg
 end
 
 return P

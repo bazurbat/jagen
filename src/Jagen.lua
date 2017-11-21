@@ -516,26 +516,39 @@ function Jagen.command.list(args)
     local col2_pos = name_max + 2
 
     local function format_context(c)
-        local str = ''
-        if c.name then
-            str = string.format('%s', c.name)
-        end
-        if c.config then
-            str = string.format('%s:%s', str, c.config)
-        end
-        if c.filename then
-            local name, rem = string.remove_prefix(c.filename, dirname)
-            local pref = rem and '...' or ''
-            local suff = ''
-            if #str > 0 then
-                suff = string.format(' (%s)', str)
+        local s = ''
+        local function name()
+            local s = ''
+            if c.name then
+                s = string.format('%s', c.name)
             end
-            str = string.format('%s%s%s', pref, name, suff)
+            if c.config then
+                s = string.format('%s:%s', s, c.config)
+            end
+            return s
         end
-        if (c.name or c.filename) and c.implicit then
-            str = string.format('%s *', str)
+        local function filename()
+            local s = ''
+            if c.filename then
+                local name, rem = string.remove_prefix(c.filename, dirname)
+                s = string.format('%s%s', rem and '...' or '', name)
+                if c.line then
+                    s = string.format('%s:%d', s, c.line)
+                end
+            end
+            return s
         end
-        return str
+        if c.name and c.filename then
+            s = string.format('%s (%s)', name(), filename())
+        elseif c.name then
+            s = name()
+        elseif c.filename then
+            s = filename()
+        end
+        if c.implicit and #s > 0 then
+            s = string.format('%s *', s)
+        end
+        return s
     end
 
     for _, pkg in ipairs(pkg_list) do
