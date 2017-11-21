@@ -247,6 +247,16 @@ function table.find(t, pred)
     return nil, nil
 end
 
+function table.count(this)
+    local count = 0
+    if this then
+        for k, v in pairs(this) do
+            count = count + 1
+        end
+    end
+    return count
+end
+
 function table.merge(to, from)
     assert_arg('merge', 1, 'table', to)
     assert_arg('merge', 2, 'table', from)

@@ -301,6 +301,30 @@ function P:query(value, config)
     return result
 end
 
+function P:check_insource_build()
+    local config_count = table.count(self.configs)
+    local in_source, generate
+    if self.build then
+        in_source = self.build.in_source
+        generate = self.build.generate
+    end
+    for _, config in pairs(self.configs or {}) do
+        if config.build then
+            in_source = in_source or config.build.in_source
+            generate = generate or config.build.generate
+        end
+    end
+    if config_count > 1 then
+        if in_source then
+            -- ?? toolchain
+            -- Log.warning("package '%s' requires in source build but multiple configs are defined, this would not work", self.name)
+        end
+        if generate then
+            Log.warning("package '%s' generates build files in the source directory for multiple configs -- the build will probably break", self.name)
+        end
+    end
+end
+
 function P.load_rules()
     local dirs = string.split2(os.getenv('jagen_path'), '\t')
 
@@ -371,6 +395,11 @@ function P.load_rules()
         for _, c in ipairs(tt) do
             table.insert(pkg.contexts, c)
         end
+    end
+
+    -- some sanity checks
+    for name, pkg in pairs(packages) do
+        pkg:check_insource_build()
     end
 
     return packages
