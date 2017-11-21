@@ -319,9 +319,6 @@ function P:check_insource_build()
             -- ?? toolchain
             -- Log.warning("package '%s' requires in source build but multiple configs are defined, this would not work", self.name)
         end
-        if generate then
-            Log.warning("package '%s' generates build files in the source directory for multiple configs -- the build will probably break", self.name)
-        end
     end
 end
 
@@ -396,9 +393,10 @@ function P.load_rules()
     end
 
     -- some sanity checks
-    for name, pkg in pairs(packages) do
-        pkg:check_insource_build()
-    end
+    -- TODO: until toolchain improvements
+    -- for name, pkg in pairs(packages) do
+    --     pkg:check_insource_build()
+    -- end
 
     return packages
 end
