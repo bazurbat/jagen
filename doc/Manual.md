@@ -249,8 +249,14 @@ rules and also to find pkg files. The `config` is optional.
 
 ### Install
 
+- **install.args** (`pkg_install_args`) — A list of additional arguments for
+  install command invocation.
+
 - **install.config_script** (`pkg_install_config_script`) — The location of the
   installed config script relative the the install prefix.
+
+- **install.ldconfig** (`pkg_install_ldconfig`) — Run `ldconfig` after the
+  install.
 
 - **install.modules** (`pkg_install_modules_dirs`) — Linux kernel modules.
 
@@ -374,12 +380,18 @@ rules and also to find pkg files. The `config` is optional.
   effectively this setting adds `-I$pkg_install_dir/include` to `CFLAGS` and
   `-L$pkg_install_dir/lib` to `LDFLAGS`.
 
+- **pkg_install_args** (`install.args`) — a list of additional install command
+  arguments
+
 - **pkg_install_config_script** (`install.config_script`) — specifies the
   location of the `*-config` script relative to the sysroot; some GNU packages
   install those with hardcoded values which might need post-install cleanup
 
 - **pkg_install_dir** — full path to the package installation directory
   (`$pkg_sysroot$pkg_prefix`)
+
+- **pkg_install_ldconfig** (`install.ldconfig`) — a flag indicating whether to
+  run `ldconfig` after the install
 
 - **pkg_install_modules_dirs** (`install.modules`) — a list of directories
   relative the the source directory containing Linux kernel modules which could

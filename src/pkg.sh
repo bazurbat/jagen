@@ -77,6 +77,12 @@ pkg_fix_config_script() {
     fi
 }
 
+pkg__run_ldconfig() {
+    if [ "$pkg_install_ldconfig" ]; then
+        pkg_run ldconfig -n "$pkg_install_dir/lib"
+    fi
+}
+
 pkg_sync_dirs() {
     local source_dir="${1:?}"
     local dest_dir="${2:?}"
@@ -428,11 +434,12 @@ pkg_compile() {
 }
 
 pkg_install() {
+    local IFS="$jagen_IFS"
     local pkg_install_type="${pkg_install_type:-$pkg_build_type}"
 
     case $pkg_install_type in
         GNU|make)
-            pkg_run make ${pkg_sysroot:+DESTDIR="$pkg_sysroot"} "$@" install
+            pkg_run make ${pkg_sysroot:+DESTDIR="$pkg_sysroot"} $pkg_install_args "$@" install
 
             for name in $pkg_libs; do
                 pkg_fix_pc "$name"
@@ -448,7 +455,7 @@ pkg_install() {
             if [ "$pkg_sysroot" ]; then
                 export DESTDIR="$pkg_sysroot"
             fi
-            pkg_run cmake --build . --target install -- "$@"
+            pkg_run cmake --build . --target install -- $pkg_install_args "$@"
             unset DESTDIR
             ;;
         linux_kernel)
@@ -459,7 +466,7 @@ pkg_install() {
                 "$jagen_build_dir"
             pkg_run make \
                 INSTALL_MOD_PATH="${INSTALL_MOD_PATH:-${pkg_install_dir:?}}" \
-                "$@" modules_install
+                $pkg_install_args "$@" modules_install
             ;;
         linux_module)
             pkg_install_modules
@@ -467,6 +474,8 @@ pkg_install() {
         none)
             ;;
     esac
+
+    pkg__run_ldconfig
 }
 
 pkg__modules_install() {

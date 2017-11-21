@@ -152,6 +152,20 @@ local function write_install(w, pkg)
         w("pkg_install_config_script='%s'", install.config_script)
     end
 
+    if install.args then
+        local args
+        if type(install.args) == 'table' then
+            args = install.args
+        else
+            args = { tostring(install.args) }
+        end
+        w('pkg_install_args="%s"', table.concat(args, '\n'))
+    end
+
+    if install.ldconfig then
+        w("pkg_install_ldconfig='yes'")
+    end
+
     if install.modules then
         if type(install.modules) == 'string' then
             w("pkg_install_modules_dirs='%s'", install.modules)
