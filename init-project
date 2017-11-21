@@ -169,7 +169,7 @@ jagen_layers="$jagen_layers"
 # Toplevel working directory.
 # Note: using relative path allows sourcing this configuration both from
 # outside and inside the chrooted container.
-jagen_root_dir=\$(real_path "\$jagen_dir/..")
+jagen_root_dir=\$(real_path "\$jagen_project_dir/..")
 
 # A directory where source packages will be checked out.
 jagen_src_dir="$jagen_src_dir"
