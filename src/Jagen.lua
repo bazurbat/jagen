@@ -515,7 +515,8 @@ function Jagen.command.list(args)
     local dirname = System.dirname(Jagen.project_dir)
     local col2_pos = name_max + 2
 
-    local function format_context(c)
+    local function format_context(c, level)
+        level = level or 0
         local s = ''
         local function name()
             local s = ''
@@ -548,6 +549,9 @@ function Jagen.command.list(args)
         if c.implicit and #s > 0 then
             s = string.format('%s *', s)
         end
+        if #s > 0 then
+            s = string.format('%s%s', string.rep(' ', level * 2), s)
+        end
         return s
     end
 
@@ -556,12 +560,17 @@ function Jagen.command.list(args)
         io.write(string.rep(' ', col2_pos - #pkg.name))
         local lines = {}
         for _, context in ipairs(pkg.contexts) do
-            local str = format_context(context)
-            if #str > 0 then
-                table.insert(lines, str)
+            local level = 0
+            while context do
+                local str = format_context(context, level)
+                if #str > 0 then
+                    table.insert(lines, str)
+                end
+                context = context.parent
+                level = level + 1
             end
         end
-        io.write(table.concat(lines, '\n'..string.rep(' ', col2_pos + 4)), '\n')
+        io.write(table.concat(lines, '\n'..string.rep(' ', col2_pos)), '\n')
     end
 end
 

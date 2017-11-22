@@ -12,11 +12,35 @@ local packages = {}
 local context
 local context_stack = {}
 
-local function push_context(o)
-    o = o or copy(assert(context))
-    table.insert(context_stack, o)
-    context = o
+local Context = {}
+
+function Context:new(o)
+    o = o or {}
+    setmetatable(o, self)
+    self.__index = self
     return o
+end
+
+function Context:__unm()
+    local this = self
+    local s = ''
+    while this do
+        for k, v in pairs(this) do
+            if k ~= 'parent' then
+                s = string.format('%s:%s=%s', s, k, tostring(v))
+            end
+        end
+        this = this.parent
+    end
+    return s
+end
+
+local function push_context(new)
+    new = Context:new(new)
+    new.parent = context
+    table.insert(context_stack, new)
+    context = new
+    return new
 end
 
 local function pop_context()
@@ -380,7 +404,7 @@ function P.load_rules()
     for name, pkg in pairs(packages) do
         local tt, tag = {}
         for _, c in ipairs(pkg.contexts) do
-            tag = string.format('%s:%s:%s', c.filename or '', c.name or '', c.config or '')
+            tag = -c
             if not tt[tag] then
                 tt[tag] = c
                 table.insert(tt, c)
@@ -401,7 +425,7 @@ function P.load_rules()
     return packages
 end
 
-function P.define_rule(rule)
+function P.define_rule(rule, rule_context)
     rule = P:new(rule)
 
     local pkg = packages[rule.name]
@@ -416,7 +440,7 @@ function P.define_rule(rule)
         local module, filename = try_load_module('pkg/'..rule.name)
         if module then
             table.merge(pkg, P:new(module))
-            append(pkg.contexts, { filename = filename })
+            append(pkg.contexts, Context:new { filename = filename })
         end
         packages[rule.name] = pkg
         pkg.configs = pkg.configs or {}
@@ -425,6 +449,14 @@ function P.define_rule(rule)
     if rule.template then
         rule = table.merge(copy(rule.template), rule)
     end
+
+    if rule_context then
+        rule_context.name = rule.name
+        rule_context.config = rule.config
+        push_context(rule_context)
+    end
+
+    append(pkg.contexts, context)
 
     local stages = table.imove({}, rule)
 
@@ -471,9 +503,11 @@ function P.define_rule(rule)
         end
     end
 
-    append(pkg.contexts, context)
-
-    push_context({ name = pkg.name, config = config, implicit = true })
+    push_context({
+            name = pkg.name,
+            config = config,
+            implicit = true
+        })
 
     if pkg.source and pkg.source.type == 'repo' then
         pkg:add_target { 'unpack',
@@ -509,9 +543,6 @@ function P.define_rule(rule)
                 P.define_rule { 'toolchain', config }
             end
 
-            push_context()
-            context.implicit = false
-
             if build.type == 'linux_module' or build.kernel_modules == true or
                     install and install.modules then
 
@@ -530,14 +561,19 @@ function P.define_rule(rule)
                 pkg:add_target({ 'compile' }, config)
                 pkg:add_target({ 'install' }, config)
             end
-
-            pop_context()
         end
     end
 
     pop_context()
 
-    push_context(table.merge(copy(context), { name = pkg.name, config = config }))
+    local new_context
+    if pkg.name ~= context.name or config ~= context.config then
+        new_context = push_context({
+                name = pkg.name,
+                config = config,
+                implicit = context.implicit 
+            })
+    end
 
     -- add global stages to every config
     if config then
@@ -561,7 +597,9 @@ function P.define_rule(rule)
         pkg:add_target(stage, config)
     end
 
-    pop_context()
+    if new_context then pop_context() end
+
+    if rule_context then pop_context() end
 
     return pkg
 end
@@ -571,13 +609,12 @@ function define_package_alias(name, value)
 end
 
 function package(rule)
-    push_context({})
     local info = debug.getinfo(2, 'Sl')
-    context.filename = info.source
-    context.line = info.currentline
-    local pkg = P.define_rule(rule)
-    pop_context()
-    return pkg
+    local rule_context = {
+        filename = info.source,
+        line = info.currentline
+    }
+    return P.define_rule(rule, rule_context)
 end
 
 return P
