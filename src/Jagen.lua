@@ -6,6 +6,7 @@ local Target  = require 'Target'
 local Source  = require 'Source'
 local Log     = require 'Log'
 local Ninja   = require 'Ninja'
+local Options = require 'Options'
 
 local function die(...)
     Log.error(...)
@@ -504,6 +505,13 @@ function Jagen.command.list(args)
         die("invalid list command '"..args[1].."', try 'jagen list help'")
     end
 
+    local depth, show_all = 0, false
+
+    Options.parse(args, {
+            { 'depth,d=', function (val) depth = tonumber(val) or 999 end },
+            { 'all,a', function (val) show_all = true end }
+        })
+
     local packages = Package.load_rules()
     local pkg_list, name_max = {}, 0
     for name, pkg in pairs(packages) do
@@ -555,6 +563,37 @@ function Jagen.command.list(args)
         return s
     end
 
+    -- prune up to the specified depth
+    for _, pkg in pairs(packages) do
+        for _, context in ipairs(pkg.contexts) do
+            local level = 0
+            while context do
+                if level > depth then
+                    context.parent = nil
+                end
+                context = context.parent
+                level = level + 1
+            end
+        end
+    end
+
+    -- prune duplicate context entries
+    for name, pkg in pairs(packages) do
+        local tt, tag = {}
+        for _, c in ipairs(pkg.contexts) do
+            tag = -c
+            if not tt[tag] then
+                tt[tag] = c
+                table.insert(tt, c)
+            end
+        end
+        pkg.contexts = {}
+        for _, c in ipairs(tt) do
+            table.insert(pkg.contexts, c)
+        end
+    end
+
+
     for _, pkg in ipairs(pkg_list) do
         io.write(pkg.name)
         io.write(string.rep(' ', col2_pos - #pkg.name))
@@ -562,6 +601,7 @@ function Jagen.command.list(args)
         for _, context in ipairs(pkg.contexts) do
             local level = 0
             while context do
+                if not show_all and context.implicit then break end
                 local str = format_context(context, level)
                 if #str > 0 then
                     table.insert(lines, str)

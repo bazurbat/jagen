@@ -179,12 +179,13 @@ function table.keys(t)
     return keys
 end
 
-function table.rest(t, start)
-    local o = {}
-    for i = start, #t do
-        table.insert(o, t[i])
+function table.rest(list, start)
+    assert_arg('rest', 1, 'table', list)
+    local out = {}
+    for i = start or 1, #list do
+        table.insert(out, list[i])
     end
-    return o
+    return out
 end
 
 function table.iextend(this, other)
@@ -234,6 +235,20 @@ function table.filter(t, pred)
         end
     end
     return out
+end
+
+function table.ifilter(list, pred)
+    assert_arg('ifilter', 1, 'table', list)
+    assert_arg('ifilter', 2, 'function', pred)
+    local matching, rest = {}, {}
+    for i, v in ipairs(list) do
+        if pred(v, i) then
+            table.insert(matching, v)
+        else
+            table.insert(rest, v)
+        end
+    end
+    return matching, rest
 end
 
 function table.find(t, pred)

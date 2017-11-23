@@ -400,22 +400,6 @@ function P.load_rules()
         end
     end
 
-    -- prune duplicate context entries
-    for name, pkg in pairs(packages) do
-        local tt, tag = {}
-        for _, c in ipairs(pkg.contexts) do
-            tag = -c
-            if not tt[tag] then
-                tt[tag] = c
-                table.insert(tt, c)
-            end
-        end
-        pkg.contexts = {}
-        for _, c in ipairs(tt) do
-            table.insert(pkg.contexts, c)
-        end
-    end
-
     -- some sanity checks
     -- TODO: until toolchain improvements
     -- for name, pkg in pairs(packages) do
