@@ -24,12 +24,12 @@ end
 
 function Source:_basename(filename)
     local name = string.match(filename, '^.*/(.+)') or filename
-    local exts = { '%.git', '%.tar', '%.tgz', '%.txz', '%.tbz2',
-        '%.zip', '%.rar', ''
+    local exts = { '%.git', '%.tar%.%w+', '%.tgz', '%.txz', '%.tbz2',
+        '%.tar', '%.zip', '%.rar', ''
     }
     for _, ext in ipairs(exts) do
-        local match = string.match(name, '^([%w_.-]+)'..ext)
-        if match then
+        local match = string.match(name, string.format('^(.+)%s$', ext))
+        if match and #match > 0 then
             return match
         end
     end
