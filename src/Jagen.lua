@@ -507,10 +507,11 @@ function Jagen.command.list(args)
 
     local depth, show_all = 0, false
 
-    Options.parse(args, {
-            { 'depth,d=', function (val) depth = tonumber(val) or 999 end },
-            { 'all,a', function (val) show_all = true end }
-        })
+    if not Options.parse(table.rest(args, 2), {
+                { 'depth,d=', function (val) depth = tonumber(val) or 999 end },
+                { 'all,a', function (val) show_all = true end }
+        }) then return 22 end
+
 
     local packages = Package.load_rules()
     local pkg_list, name_max = {}, 0
