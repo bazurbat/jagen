@@ -106,8 +106,10 @@ pkg_sync_dirs() {
 
 pkg_link() {
     local target="${1:?}" src="${2:?}"
+    local dir="$(dirname "$src")"
 
-    pkg_run cd "$(dirname "$src")"
+    pkg_run mkdir -p "$dir"
+    pkg_run cd "$dir"
     pkg_run rm -rf "$(basename "$src")"
     pkg_run ln -rs "$target" "$src"
     pkg_run cd "$OLDPWD"
@@ -226,7 +228,18 @@ pkg__unpack_dist() {
         die "could not find $dist_path for unpacking"
 
     pkg_run mkdir -p "$work_dir"
-    pkg_run tar -C "$work_dir" -xf "$dist_path"
+    pkg_run cd "$work_dir"
+
+    case $pkg_source_filename in
+        *.tar.*|*.tgz|*.tbz2|*.txz)
+            pkg_run tar -xf "$dist_path" ;;
+        *.zip)
+            # to emulate the tar convention on putting the directory name
+            # inside the archive
+            pkg_run unzip -d "$pkg_source_basename" "$dist_path" ;;
+        *)
+            die "unable to unpack '$pkg_source_filename': unknown archive format" ;;
+    esac
 }
 
 pkg_unpack() {
