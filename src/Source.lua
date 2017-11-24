@@ -23,16 +23,12 @@ function Source:is_scm()
 end
 
 function Source:_basename(filename)
-    local name = string.match(filename, '^.*/(.+)') or filename
-    local exts = { '%.git', '%.tar%.%w+', '%.tgz', '%.txz', '%.tbz2',
-        '%.tar', '%.zip', '%.rar', ''
-    }
-    for _, ext in ipairs(exts) do
-        local match = string.match(name, string.format('^(.+)%s$', ext))
-        if match and #match > 0 then
-            return match
-        end
+    local name, match = string.match(filename, '^.*/(.+)') or filename
+    for _, ext in ipairs({ '%.tar%.%w+', '%.[^.]+' }) do
+        match = string.match(name, string.format('^(.+)%s$', ext))
+        if match then return match end
     end
+    return name
 end
 
 function Source:create(source, name)
