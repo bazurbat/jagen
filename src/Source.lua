@@ -306,7 +306,7 @@ end
 
 function RepoSource:new(o)
     local source = Source.new(RepoSource, o)
-    source.jobs = Jagen.nproc * 2
+    source.jobs = Jagen.nproc() * 2
     return source
 end
 

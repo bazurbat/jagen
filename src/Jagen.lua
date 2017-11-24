@@ -678,19 +678,20 @@ function Jagen.command._compare_versions(args)
     end
 end
 
-local function nproc()
-    local name = System.pread('*l', 'uname -s')
+function Jagen.nproc()
+    if Jagen._nproc then return Jagen._nproc end
+    local name, nproc = System.pread('*l', 'uname -s')
     if name == 'Darwin' then
-        return System.pread('*l', 'sysctl -n hw.ncpu')
+        nproc = System.pread('*l', 'sysctl -n hw.ncpu')
     else
-        return System.pread('*l', 'nproc')
+        nproc = System.pread('*l', 'nproc')
     end
+    Jagen._nproc = tonumber(nproc)
+    return Jagen._nproc
 end
 
 function Jagen:run(args)
     local cmd = args[1]
-
-    Jagen.nproc = nproc()
 
     if #args == 0 or help_requested(args) then
         return Jagen.command['help']({ args[2] })
