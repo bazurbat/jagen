@@ -115,7 +115,8 @@ function append_uniq(value, list)
 end
 
 function quote(arg)
-    return arg and string.format('"%s"', arg) or ''
+    assert_arg('quote', 1, 'string', arg)
+    return string.format('"%s"', arg)
 end
 
 function string.empty(s)
@@ -157,6 +158,10 @@ function string.join(t, sep)
         end
     end
     return table.concat(o, sep or '')
+end
+
+function string.trim(s)
+    return string.match(s, '^%s*(.-)%s*$')
 end
 
 function string.remove_prefix(str, prefix)
@@ -325,16 +330,6 @@ function table.dump(t, i)
         end
     end
     io.write(string.rep(' ', i), '}\n')
-end
-
-function io.read_line(file)
-    return file:read('*l')
-end
-
-function io.read_single_line(file)
-    local first, second = file:read('*l', '*l')
-    assert(not second, 'unexpected second line read')
-    return first
 end
 
 function toppstring(value, indent)

@@ -2,6 +2,9 @@ local Command = require 'Command'
 local System = require 'System'
 local Log    = require 'Log'
 
+local format = string.format
+local match = string.match
+
 local Source = {}
 
 function Source:new(o)
@@ -117,13 +120,6 @@ function GitSource:clean()
     return self:git('checkout HEAD .'):exec() and self:git('clean -fxd'):exec()
 end
 
-function GitSource:_ls_remote(pattern)
-    -- It is possible to have a branch and a tag with the same name. The branch
-    -- ref will be returned here because 'heads' sorts before 'tags'.
-    local ref = self:git('ls-remote --refs -qht', 'origin', quote(pattern)):read()
-    return ref and string.match(ref, '^%S+%s+(%S+)$')
-end
-
 function GitSource:update_submodules()
     if System.file_exists(System.mkpath(self.dir, '.gitmodules')) then
         return Command:git('submodule update --init --recursive'):exec()
@@ -131,75 +127,52 @@ function GitSource:update_submodules()
     return true
 end
 
-function GitSource:_ref_is_tag(ref)
-    return string.match(ref, '/tags/')
-end
-
 function GitSource:update()
-    local src = self:_ls_remote(self.branch)
-    if not src then
-        Log.error("could not find tag or branch '%s' in '%s'", self.branch, self.location)
+    local branch = self.branch
+    if not branch then return false end
+    local line = self:git('ls-remote -qht --refs origin', quote(branch)):read()
+    if not line then
+        Log.error("could not find tag or branch '%s' in '%s'", branch, self.location)
         return false
     end
-    local dst
-    if self:_ref_is_tag(src) then
-        dst = string.format('refs/tags/%s', self.branch)
+    local src, dst = match(line, '^%S+%s+(%S+)$')
+    local name = assert(match(src, '^.+/([^/]+)$'))
+    if match(src, '/tags/') then
+        dst = format('refs/tags/%s', name)
     else
-        dst = string.format('refs/remotes/origin/%s', self.branch)
+        dst = format('refs/remotes/origin/%s', name)
     end
-    local refspec = string.format('+%s:%s', src, dst)
-    return self:git('fetch --prune --no-tags origin', quote(refspec)):exec()
+    local refspec = format('+%s:%s', src, dst)
+    return self:git('fetch --prune origin', quote(refspec)):exec()
 end
 
 function GitSource:switch()
-    local branch = assert(self.branch)
+    local branch = self.branch
+    if not branch then return false end
 
-    local function get_matching_ref(line)
-        local ref, active = nil, false
-        if line and #line > 0 then
-            ref = string.match(line, '%s*(%S+)')
-            active = string.sub(line, 1, 1) == '*'
+    local name = self:git('branch --list', quote(branch)):read()
+    if name then
+        if string.sub(name, 1, 1) == '*' then -- already active
+            return true
+        else -- switch to matching local branch
+            name = string.trim(name)
+            return self:git('checkout -q', quote(name)):exec() and
+                   self:git('merge --ff-only', quote('origin/'..name)):read() and
+                   self:update_submodules()
         end
-        return ref, active
     end
 
-    local ref, active = System.pipe(
-        get_matching_ref,
-        self:command('branch --list "%s"', branch),
-        io.read_single_line)
-
-    if active then
-        return true
+    name = self:git('branch --list --remotes', quote('origin/'..branch)):read()
+    if name then -- switch to a new remote branch
+        name = assert(string.match(name, '^%s+origin/(%S+)'))
+        return self:git('checkout -b', quote(name), quote('origin/'..name)):exec() and
+               self:update_submodules()
     end
 
-    if ref then
-        return
-            self:exec('checkout "%s"', branch) and
-            self:exec('merge --ff-only "%s"', 'origin/'..branch) and
-            self:exec('submodule update --init --recursive')
-    end
-
-    ref = System.pipe(
-        get_matching_ref,
-        self:command('branch --list --remotes "%s"', 'origin/'..branch),
-        io.read_single_line)
-
-    if ref then
-        return
-            self:exec('checkout -b "%s" "%s"', branch, ref) and
-            self:exec('merge --ff-only "%s"', 'origin/'..branch) and
-            self:exec('submodule update --init --recursive')
-    end
-
-    local tag = System.pipe(
-        get_matching_ref,
-        self:command('tag --list "%s"', branch),
-        io.read_single_line)
-
+    local tag = self:git('tag --list', quote(branch)):read()
     if tag then
-        return
-            self:exec('checkout "%s"', self.branch) and
-            self:exec('submodule update --init --recursive')
+        return self:git('checkout', quote(tag)):exec() and
+               self:update_submodules()
     end
 
     Log.error("could not find tag or branch '%s' in '%s'", branch, self.dir)
