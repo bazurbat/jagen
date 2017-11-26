@@ -1,4 +1,4 @@
-
+local Command = require 'Command'
 local System = require 'System'
 local Log    = require 'Log'
 
@@ -93,6 +93,10 @@ function GitSource:new(o)
     return source
 end
 
+function GitSource:git(...)
+    return Command:new('git -C', quote(self.dir), ...)
+end
+
 function GitSource:command(command, ...)
     return string.format('git --git-dir .git -C "%s" '..command, self.dir, ...)
 end
@@ -101,35 +105,30 @@ function GitSource:exec(command, ...)
     return System.exec('git --git-dir .git -C "%s" '..command, self.dir, ...)
 end
 
-function GitSource:pread(format, command, ...)
-    return System.pread(format, 'git --git-dir .git -C "%s" '..command, self.dir, ...)
-end
-
 function GitSource:head()
-    return self:pread('*l', 'rev-parse HEAD')
+    return self:git('rev-parse HEAD'):read()
 end
 
 function GitSource:dirty()
-    return self:pread('*l', 'status --porcelain') ~= nil
+    return self:git('status --porcelain'):read() ~= nil
 end
 
 function GitSource:clean()
-    return self:exec('checkout HEAD .') and self:exec('clean -fxd')
+    return self:git('checkout HEAD .'):exec() and self:git('clean -fxd'):exec()
 end
 
 function GitSource:_ls_remote(pattern)
-    local function get_matching_remote_ref(line)
-        if line then
-            return assert(string.match(line, '%S+%s+(%S+)'))
-        end
+    -- It is possible to have a branch and a tag with the same name. The branch
+    -- ref will be returned here because 'heads' sorts before 'tags'.
+    local ref = self:git('ls-remote --refs -qht', 'origin', quote(pattern)):read()
+    return ref and string.match(ref, '^%S+%s+(%S+)$')
+end
+
+function GitSource:update_submodules()
+    if System.file_exists(System.mkpath(self.dir, '.gitmodules')) then
+        return Command:git('submodule update --init --recursive'):exec()
     end
-    -- read_single_line will fail here if there are a branch and a tag with the
-    -- same name, changed to reading first line but need to think of a way to
-    -- better handle this case
-    return System.pipe(
-        get_matching_remote_ref,
-        self:command('ls-remote --quiet --refs origin "%s"', pattern),
-        io.read_line)
+    return true
 end
 
 function GitSource:_ref_is_tag(ref)
@@ -149,7 +148,7 @@ function GitSource:update()
         dst = string.format('refs/remotes/origin/%s', self.branch)
     end
     local refspec = string.format('+%s:%s', src, dst)
-    return self:exec('fetch --prune --no-tags origin "%s"', refspec)
+    return self:git('fetch --prune --no-tags origin', quote(refspec)):exec()
 end
 
 function GitSource:switch()
@@ -209,19 +208,21 @@ function GitSource:switch()
 end
 
 function GitSource:clone()
-    assert(self.location)
-    assert(self.branch)
-    assert(self.dir)
-    local depth_arg
-    -- http transport does not support depth
-    if not string.match(self.location, '^http.*') then
-        depth_arg = '--depth 1 '
+    local clone = Command:new('git clone --progress')
+    if self.branch then
+        clone:append('--branch', quote(self.branch))
     end
-    local clone_res = System.exec('git clone %s --branch "%s" "%s" "%s"',
-        depth_arg or '', self.branch, self.location, self.dir)
-    -- Checkout of submodule might fail with depth if it is not enough to reach
-    -- the referenced commit. Do the full checkout for now.
-    return clone_res and self:exec('submodule update --init --recursive')
+    -- try to detect if the server is "smart"
+    -- https://stackoverflow.com/questions/9270488/is-it-possible-to-detect-whether-a-http-git-remote-is-smart-or-dumb
+    local headers = Command:new('curl -si', quote(self.location..'/info/refs?service=git-upload-pack')):read('*a')
+    if string.match(headers, 'Content%-Type: application/x%-git') then -- smart
+        clone:append('--depth', 1)
+    end
+    clone:append('--', quote(self.location), quote(self.dir))
+
+    local ok, status = clone:exec()
+    if ok then return self:update_submodules() end
+    return ok, status
 end
 
 function GitSource:fixup()

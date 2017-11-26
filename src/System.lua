@@ -9,16 +9,6 @@ function P.quote(...)
     return table.concat(table.imap({...}, quote), ' ')
 end
 
-function P.q(arg)
-    if type(arg) == 'string' then
-        return string.format('%q', arg)
-    elseif type(arg) == 'number' then
-        return string.format('%q', tostring(arg))
-    else
-        error("bad argument to 'q' (string or number expected, got "..type(arg)..')')
-    end
-end
-
 function P.expand(str)
     local command = string.format("printf '%%s' %q", str)
     local file    = assert(io.popen(command))
@@ -36,49 +26,6 @@ function P.mkpath(...)
         end
     end
     return table.concat(path, sep)
-end
-
-function P.toarg(argv)
-    if type(argv) == 'table' then
-        local o = {}
-        for k, v in pairs(argv) do
-            if type(k) == 'string' then
-                local start, sep = '--', '='
-                if #k == 1 then start = '-' sep = ' ' end
-                if v == true then
-                    table.insert(o, string.format('%s%s', start, k))
-                elseif v == false then
-                else
-                    if type(v) == 'string' then
-                        table.insert(o, string.format('%s%s%s%q', start, k, sep, v))
-                    else
-                        table.insert(o, string.format('%s%s%s%s', start, k, sep, v))
-                    end
-                end
-            elseif type(k) == 'number' then
-            end
-        end
-        for _, v in ipairs(argv) do
-            table.insert(o, P.toarg(v))
-        end
-        return table.concat(o, ' ')
-    elseif type(argv) == 'string' then
-        return string.format('%q', argv)
-    else
-        return tostring(argv)
-    end
-end
-
-function P.execv(argv)
-    local command = P.toarg(argv)
-    Log.debug2(command)
-    local status = os.execute(command)
-    -- handling API change in Lua 5.2
-    if type(status) == 'number' then
-        return status == 0, status % 0xFF
-    else
-        return status or false
-    end
 end
 
 function P.exec(cmdline, ...)
@@ -119,13 +66,6 @@ function P.pread(format, cmdline, ...)
     return out
 end
 
-function P.with_output_file(filename, proc)
-    local file = assert(io.open(filename, 'wb'))
-    local values = { proc(file) }
-    file:close()
-    return unpack(values)
-end
-
 function P.getenv(vars)
     local o = {}
     for _, v in ipairs(vars) do
@@ -159,19 +99,6 @@ end
 
 function P.is_empty(path)
     return P.pread('*l', 'cd "%s" 2>/dev/null && echo *', path) == '*'
-end
-
-function P.find_files(path)
-    local result  = {}
-    if P.dir_exists(path) then
-        local command = string.format('find "%s" -type f -not -path "*/.*"', path)
-        local pipe    = assert(io.popen(command))
-        for line in pipe:lines() do
-            table.insert(result, line)
-        end
-        pipe:close()
-    end
-    return result
 end
 
 function P.dirname(path)

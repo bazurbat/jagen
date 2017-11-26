@@ -1,5 +1,9 @@
 -- common
 
+local insert = table.insert
+local concat = table.concat
+local format = string.format
+
 local function assert_arg(fname, num, expected, value)
     local got = type(value)
     assert(got == expected,
@@ -108,6 +112,10 @@ function append_uniq(value, list)
         table.insert(list, value)
     end
     return list
+end
+
+function quote(arg)
+    return arg and string.format('"%s"', arg) or ''
 end
 
 function string.empty(s)
