@@ -130,7 +130,7 @@ end
 function GitSource:update()
     local branch = self.branch
     if not branch then return false end
-    local line = self:git('ls-remote -qht --refs origin', quote(branch)):read()
+    local line = self:git('ls-remote --heads --tags origin', quote(branch)):read()
     if not line then
         Log.error("could not find tag or branch '%s' in '%s'", branch, self.location)
         return false
