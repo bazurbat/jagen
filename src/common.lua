@@ -84,6 +84,7 @@ function pmap(func, list)
 end
 
 function for_each(list, func, ...)
+    if not list then return end
     for _, v in ipairs(list) do
         func(v, ...)
     end
@@ -313,87 +314,54 @@ function table.imove(to, from)
     return to
 end
 
-function table.dump(t, i)
-    local i = i or 0
-    if type(t) ~= 'table' then
-        io.write(tostring(t), '\n')
-        return
-    end
-    io.write(string.rep(' ', i), tostring(t), ' {\n')
-    for k, v in pairs(t) do
-        io.write(string.rep(' ', i+2), k, ' = ')
-        if type(v) == 'table' then
-            io.write('\n')
-            table.dump(v, i+4)
-        else
-            io.write(tostring(v), '\n')
-        end
-    end
-    io.write(string.rep(' ', i), '}\n')
-end
-
-function toppstring(value, indent)
-    local indent = indent or 0
+function pretty(value, level)
+    local level = level or 0
     local output = {}
 
-    local function add(formatstring, ...)
-        table.insert(output, string.format(formatstring, ...))
+    local function add(line, indent)
+        insert(output, format('%s%s', string.rep('  ', indent or 0), line))
     end
     local function isarray(t)
         if type(t) ~= 'table' then
             return false
         end
         for k, v in pairs(t) do
-            if type(k) ~= 'number' or type(v) == 'table' then
+            if type(k) ~= 'number' then
                 return false
             end
         end
         return true
     end
-    local function fmt_indent(indent)
-        return string.rep(' ', indent)
-    end
-    local function fmt_array(t)
+    local function pretty_array(t)
         local strings = {}
         for k, v in ipairs(t) do
-            table.insert(strings, toppstring(v))
+            insert(strings, pretty(v))
         end
-        return table.concat(strings, ', ')
-    end
-    local function fmt_kv(k, v)
-        return string.format('%s%s = %s',
-            fmt_indent(indent+2), k, toppstring(v, indent+2))
+        return concat(strings, ', ')
     end
 
     if type(value) == 'table' then
         if isarray(value) then
-            return string.format('[ %s ]', fmt_array(value))
+            return format('[ %s ]', pretty_array(value))
         else
-            table.insert(output, '{')
-            for k, v in pairs(value) do
-                if type(k) ~= 'number' then
-                    add('%s', fmt_kv(k, v))
-                end
+            local keys = {}
+            for k, _ in pairs(value) do
+                if type(k) ~= 'number' then insert(keys, k) end
             end
-            if #value > 0 then
-                local a = {}
-                for k, v in ipairs(value) do
-                    if type(v) == 'table' then
-                        add('%s', fmt_kv(k, v))
-                    else
-                        table.insert(a, tostring(v))
-                    end
-                end
-                if #a > 0 then
-                    add("%s%s", fmt_indent(indent+2), fmt_array(a))
-                end
+            table.sort(keys)
+            add('{')
+            for _, k in ipairs(keys) do
+                add(format('%s = %s', k, pretty(value[k], level+1)), level+1)
             end
+            for k, v in ipairs(value) do
+                add(pretty(v, level+1), level+1)
+            end
+            add('}', level)
         end
-        add('%s}', fmt_indent(indent))
     elseif type(value) == 'string' then
-        add("'%s'", value)
+        add(format("'%s'", value))
     else
-        add("%s", tostring(value))
+        add(format("%s", value))
     end
-    return table.concat(output, '\n')
+    return concat(output, '\n')
 end
