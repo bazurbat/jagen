@@ -568,7 +568,8 @@ function P.define_rule(rule, rule_context)
     end
 
     -- always evaluate shared requires in config-specific context
-    local requires = extend(extend({}, pkg.requires), rule.requires)
+    local requires = copy(pkg.requires or {})
+    for_each(rule.requires, append_uniq, requires)
     if config and #requires > 0 then
         local configure = { 'configure', requires = requires }
         pkg:add_requires(configure, template)
