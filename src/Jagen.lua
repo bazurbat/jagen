@@ -508,10 +508,19 @@ function Jagen.command.list(args)
     local depth, show_all = 0, false
 
     if not Options.parse(table.rest(args, 2), {
-                { 'depth,d=', function (val) depth = tonumber(val) or 999 end },
-                { 'all,a', function (val) show_all = true end }
-        }) then return 22 end
+        { 'depth,d=', function (val) depth = val end },
+        { 'all,a', function (val) show_all = true end }
+    }) then return 22 end
 
+    if not depth or #depth == 0 then
+        depth = 999
+    else
+        local arg = depth
+        depth = tonumber(arg)
+        if not depth then
+            die("invalid list depth specified: '%s' expected to be a number", arg)
+        end
+    end
 
     local packages = Package.load_rules()
     local pkg_list, name_max = {}, 0
