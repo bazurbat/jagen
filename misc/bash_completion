@@ -28,13 +28,15 @@ _jagen_complete_init_project() {
 }
 
 _jagen_complete() {
+    local word="$2" prev_word="$3"
     local cur prev
-    local jagen_command
+    local jagen_command jagen_subcommand
 
     local top_cmds='help get clean refresh build src show list'
     local src_cmds='dirty status clean update delete'
     local help_opt='-h --help'
     local build_opt='-n --dry-run -p --progress -P --all-progress -f --force -a --all'
+    local list_packages_opt='--depth -d --all -a'
 
     # environment is not sourced
     [ "$jagen_dir" ] || return 2
@@ -47,6 +49,8 @@ _jagen_complete() {
     else
         jagen_command=${COMP_WORDS[1]}
     fi
+
+    jagen_subcommand=${COMP_WORDS[2]}
 
     case $jagen_command in
         jagen)
@@ -83,6 +87,8 @@ _jagen_complete() {
         list)
             if [[ "$prev" == "list" ]]; then
                 COMPREPLY=($(compgen -W "$help_opt packages" -- "$cur"))
+            elif [[ "$jagen_subcommand" == "packages" ]]; then
+                COMPREPLY=($(compgen -W "$help_opt $list_packages_opt" -- "$cur"))
             fi ;;
     esac
 
