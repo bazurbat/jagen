@@ -34,11 +34,15 @@ function P:new(config)
 end
 
 function P:is_option(arg)
-    return string.sub(arg, 1, 1) == '-'
+    return arg and string.sub(arg, 1, 1) == '-'
 end
 
 function P:is_short(arg)
-    return string.sub(arg, 1, 1) == '-' and not string.sub(arg, 2, 1) == '-'
+    return arg and string.sub(arg, 1, 1) == '-' and string.sub(arg, 2, 2) ~= '-'
+end
+
+function P:is_long(arg)
+    return arg and string.sub(arg, 1, 1) == '-' and string.sub(arg, 2, 2) == '-'
 end
 
 function P:match(opt, arg)
@@ -61,37 +65,69 @@ end
 
 function P.parse(args, config)
     local options = P:new(config)
-    local next_opt
-    local function match(arg)
-        for _, opt in pairs(options.config) do
-            local name, value = options:match(opt, arg)
-            if name then
-                if opt.needs_value and not value then
-                    next_opt = opt
-                    return true
-                else
-                    opt.func(value)
-                    return true
+    local short_opts = table.filter(options.config, function (opt) return opt.short end)
+    local long_opts  = table.filter(options.config, function (opt) return opt.long end)
+    local i = 1
+    while i <= #args do
+        local arg = args[i]
+        if options:is_short(arg) then
+            local j = 2
+            while j <= #arg do
+                local arg_name, name, value, opt = string.sub(arg, j)
+                for _, o in pairs(short_opts) do
+                    local patterns = {
+                        string.format('^(%s)$', o.short),
+                        string.format('^(%s)=(%%S*)$', o.short),
+                        string.format('^(%s)(%%S*)$', o.short),
+                    }
+                    for _, pattern in ipairs(patterns) do
+                        name, value = string.match(arg_name, pattern)
+                        if name then break end
+                    end
+                    if name then opt = o break end
+                end
+                if not opt then
+                    Log.error("invalid option: -%s", string.sub(arg_name, 1, 1))
+                    return false
+                end
+                if opt.needs_value then
+                    local next_arg = args[i+1]
+                    if not value and not options:is_option(next_arg) then
+                        value = next_arg
+                        i = i+1
+                    end
+                    j = #arg+1
+                end
+                opt.func(value)
+                j = j+1
+            end
+        elseif options:is_long(arg) then
+            local arg_name, name, value, opt = string.sub(arg, 3)
+            for _, o in pairs(long_opts) do
+                local patterns = {
+                    string.format('^(%s)$', o.long),
+                    string.format('^(%s)=(%%S*)$', o.long)
+                }
+                for _, pattern in ipairs(patterns) do
+                    name, value = string.match(arg_name, pattern)
+                    if name then break end
+                end
+                if name then opt = o break end
+            end
+            if not opt then
+                Log.error("invalid option: %s", arg)
+                return false
+            end
+            if opt.needs_value then
+                local next_arg = args[i+1]
+                if not value and not options:is_option(next_arg) then
+                    value = next_arg
+                    i = i+1
                 end
             end
+            opt.func(value)
         end
-    end
-    for i = 1, #args do
-        local arg = args[i]
-        if next_opt then
-            if not options:is_option(arg) then
-                next_opt.func(arg)
-            end
-            next_opt = nil
-        else
-            if not match(arg) then
-                Log.error('unexpected argument: %s', arg)
-                return
-            end
-        end
-    end
-    if next_opt then
-        next_opt.func()
+        i = i+1
     end
     return true
 end
