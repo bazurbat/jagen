@@ -122,7 +122,7 @@ end
 
 function GitSource:update_submodules()
     if System.file_exists(System.mkpath(self.dir, '.gitmodules')) then
-        return Command:git('submodule update --init --recursive'):exec()
+        return self:git('submodule update --init --recursive'):exec()
     end
     return true
 end
@@ -143,7 +143,8 @@ function GitSource:update()
         dst = format('refs/remotes/origin/%s', name)
     end
     local refspec = format('+%s:%s', src, dst)
-    return self:git('fetch --prune origin', quote(refspec)):exec()
+    return self:git('fetch --prune origin', quote(refspec)):exec() and
+           self:update_submodules()
 end
 
 function GitSource:switch()
