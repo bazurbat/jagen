@@ -335,7 +335,7 @@ function pretty(value, level)
     local function pretty_array(t)
         local strings = {}
         for k, v in ipairs(t) do
-            insert(strings, pretty(v))
+            insert(strings, pretty(v, level+1))
         end
         return concat(strings, ', ')
     end
