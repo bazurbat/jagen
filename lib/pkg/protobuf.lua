@@ -1,14 +1,15 @@
 return {
     source = {
-        type = 'git',
+        type     = 'git',
         location = 'https://github.com/google/protobuf.git',
-        branch = '3.5.x'
+        -- "stable" version, newer have problems with cross-compiling
+        branch   = '3.1.x'
     },
     build = {
         type = 'GNU',
         generate = true,
+        target_requires_host = true,
         options = {
-            'DIST_LANG=cpp',
             '--disable-maintainer-mode',
             '--disable-64bit-solaris',
             '--enable-shared',
@@ -18,5 +19,14 @@ return {
     },
     requires = {
         { 'unzip', 'system' },
+    },
+    configs = {
+        target = {
+            build = {
+                options = {
+                    '--with-protoc=$jagen_host_dir/bin/protoc'
+                }
+            }
+        }
     }
 }
