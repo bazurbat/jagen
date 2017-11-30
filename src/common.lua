@@ -180,8 +180,8 @@ end
 
 -- compatibility with Lua 5.1
 if type(table.unpack) ~= 'function' then
-    function table.unpack(t)
-        return unpack(t)
+    function table.unpack(...)
+        return unpack(...)
     end
 end
 
