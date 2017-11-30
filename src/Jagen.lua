@@ -134,7 +134,7 @@ function Jagen.src.update(args)
         local old_head
         if System.exists(source.dir) and not System.is_empty(source.dir) then
             old_head = source:head()
-            if not source:dirty() then
+            if source.ignore_dirty == true or not source:dirty() then
                 if offline then
                     Log.message('switching %s to %s in %s',
                         pkg.name, source.branch, source.dir)
