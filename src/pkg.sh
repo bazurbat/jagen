@@ -366,10 +366,15 @@ pkg_configure() {
             fi
             if [ "$pkg_config" = "target" ]; then
                 A="$A$S-DCMAKE_SYSTEM_NAME=Linux"
-                A="$A$S-DCMAKE_C_COMPILER=${jagen_toolchain_prefix}gcc"
-                A="$A$S-DCMAKE_CXX_COMPILER=${jagen_toolchain_prefix}g++"
                 A="$A$S-DCMAKE_FIND_ROOT_PATH=$pkg_install_dir"
                 A="$A$S-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY"
+                # These might be preset by user environment or SDK
+                if [ -z "$CC" ]; then
+                    A="$A$S-DCMAKE_C_COMPILER=${jagen_toolchain_prefix}gcc"
+                fi
+                if [ -z "$CXX" ]; then
+                    A="$A$S-DCMAKE_CXX_COMPILER=${jagen_toolchain_prefix}g++"
+                fi
             fi
 
             if $(jagen__versions ge "$(jagen__get_cmake_version)" 3.1); then
