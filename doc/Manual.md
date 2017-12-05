@@ -198,6 +198,9 @@ rules and also to find pkg files. The `config` is optional.
   necessary for the package. Also causes `libtool` to be installed for the
   host.
 
+- **build.cmake_toolchain_file** (`pkg_cmake_toolchain_file`) — Specifies CMake
+  toolchain file for this package.
+
 - **build.configure_file** (`pkg_configure_file`) — The location of the
   `configure` script (`$pkg_source_dir/configure`).
 
@@ -283,11 +286,13 @@ rules and also to find pkg files. The `config` is optional.
 - **jagen_cmake_generator** (`Ninja`) — Override CMake generator.
 - **jagen_cmake_module_path** — Override the `CMAKE_MODULE_PATH`.
 - **jagen_cmake_options** — Arguments to pass to CMake in `configure` stage.
+- **jagen_cmake_toolchain_file** — The toolchain file to pass to CMake in `configure` stage.
 - **jagen_debug** — Debug level.
 - **jagen_dir** — The location of the Jagen source directory.
 - **jagen_dist_dir** — The location of the `dist` directory (`$jagen_project_dir/dist`).
 - **jagen_flags** — Space-separated list of flags.
 - **jagen_host_cflags** — The global host cflags.
+- **jagen_host_cmake_toolchain_file** — The toolchain file to pass to CMake only when configuring packages with `host` config.
 - **jagen_host_dir** — The location of the `host` directory (`$jagen_project_dir/host`).
 - **jagen_host_system** — The name of the current host system.
 - **jagen_include_dir** — The location of the `include` directory (`$jagen_project_dir/include`).
@@ -331,6 +336,7 @@ rules and also to find pkg files. The `config` is optional.
 - **jagen_target_arch** — The name of the current target architecture.
 - **jagen_target_board** — The name of the current target board.
 - **jagen_target_cflags** — The global target cflags.
+- **jagen_target_cmake_toolchain_file** — The toolchain file to pass to CMake only when configuring packages with `target` config.
 - **jagen_target_cpu** — The name of the current target CPU (like cortex-a9).
 - **jagen_target_dir** — The location of the `target` directory (`$jagen_project_dir/target`).
 - **jagen_target_platform** — The name of the current target platform (currently used only for Android).
@@ -368,6 +374,9 @@ rules and also to find pkg files. The `config` is optional.
 - **pkg_build_type** (`build.type`) — the type of the build system of the
   package; currently supported values are: GNU, KBuild, CMake, make,
   linux_kernel, linux_module
+
+- **pkg_cmake_toolchain_file** (`build.cmake_toolchain_file`) — specifies CMake
+  toolchain file for this package.
 
 - **pkg_config** (`pkg.config`) — the config of the currently executing stage
 

@@ -311,6 +311,7 @@ pkg_autoreconf() {
 
 pkg_configure() {
     local IFS="$jagen_IFS" S="$jagen_FS" A=
+    local cmake_toolchain_file=
 
     [ "$pkg_source_dir" ] || return 0
 
@@ -364,16 +365,36 @@ pkg_configure() {
             if [ "$jagen_cmake_module_path" ]; then
                 A="$A$S-DCMAKE_MODULE_PATH=$jagen_cmake_module_path"
             fi
+
+            cmake_toolchain_file="$jagen_cmake_toolchain_file"
+            if [ "$pkg_config" = "host" ]; then
+                if [ "$jagen_host_cmake_toolchain_file" ]; then
+                    cmake_toolchain_file="$jagen_host_cmake_toolchain_file"
+                fi
+            fi
+            if [ "$pkg_config" = "target" ]; then
+                if [ "$jagen_target_cmake_toolchain_file" ]; then
+                    cmake_toolchain_file="$jagen_target_cmake_toolchain_file"
+                fi
+            fi
+            if [ "$pkg_cmake_toolchain_file" ]; then
+                cmake_toolchain_file="$pkg_cmake_toolchain_file"
+            fi
+            if [ "$cmake_toolchain_file" ]; then
+                A="$A$S-DCMAKE_TOOLCHAIN_FILE=$cmake_toolchain_file"
+            fi
+
             if [ "$pkg_config" = "target" ]; then
                 A="$A$S-DCMAKE_SYSTEM_NAME=Linux"
                 A="$A$S-DCMAKE_FIND_ROOT_PATH=$pkg_install_dir"
+                A="$A$S-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY"
                 A="$A$S-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY"
                 # These might be preset by user environment or SDK
                 if [ -z "$CC" ]; then
-                    A="$A$S-DCMAKE_C_COMPILER=${jagen_toolchain_prefix}gcc"
+                    A="$A$S-DCMAKE_C_COMPILER=${jagen_toolchain_prefix-}gcc"
                 fi
                 if [ -z "$CXX" ]; then
-                    A="$A$S-DCMAKE_CXX_COMPILER=${jagen_toolchain_prefix}g++"
+                    A="$A$S-DCMAKE_CXX_COMPILER=${jagen_toolchain_prefix-}g++"
                 fi
             fi
 
