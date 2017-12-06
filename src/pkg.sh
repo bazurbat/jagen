@@ -312,6 +312,7 @@ pkg_autoreconf() {
 pkg_configure() {
     local IFS="$jagen_IFS" S="$jagen_FS" A=
     local cmake_toolchain_file=
+    local build_generator=
 
     [ "$pkg_source_dir" ] || return 0
 
@@ -412,7 +413,10 @@ pkg_configure() {
                 unset CFLAGS CXXFLAGS
             fi
 
-            pkg_run cmake -G"${pkg_build_generator:-${jagen_cmake_generator:?}}" \
+            : ${build_generator:=$pkg_build_generator}
+            : ${build_generator:=$jagen_cmake_generator}
+
+            pkg_run cmake -G"$build_generator" \
                 -DCMAKE_BUILD_TYPE="$(pkg_cmake_build_type)" \
                 -DCMAKE_INSTALL_PREFIX="$pkg_prefix" \
                 $A $jagen_cmake_options $pkg_options "$@" "$pkg_source_dir"
@@ -431,7 +435,7 @@ pkg_configure() {
 pkg_compile() {
     [ "$pkg_source_dir" ] || return 0
 
-    local is_offline build_generator
+    local is_offline= build_generator=
 
     if in_flags offline; then
         is_offline=1
@@ -443,7 +447,8 @@ pkg_compile() {
             ;;
         CMake)
             if [ "$jagen_build_verbose" ]; then
-                build_generator="${jagen_build_generator:-$jagen_cmake_generator}"
+                : ${build_generator:=$pkg_build_generator}
+                : ${build_generator:=$jagen_cmake_generator}
                 case $build_generator in
                     *Ninja)
                         jagen_cmake_build_options="-v $jagen_cmake_build_options" ;;
