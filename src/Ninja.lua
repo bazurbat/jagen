@@ -73,7 +73,7 @@ local function format_build(build)
         local lines = { '' }
         extend(lines, sort(map(function (x)
                         return indented(escape(tostring(x)), 16)
-            end, inputs)))
+            end, inputs or {})))
         return join_escaped(lines)
     end
 

@@ -4,11 +4,93 @@ local insert = table.insert
 local concat = table.concat
 local format = string.format
 
+-- compatibility with Lua 5.2
+if type(unpack) == 'function' then
+    table.unpack = unpack
+end
+
 local function assert_arg(fname, num, expected, value)
     local got = type(value)
     assert(got == expected,
         string.format("bad argument #%d to '%s' (%s expected, got %s)",
             num, fname, expected, got))
+end
+
+function comp(...)
+    local fs = {...}
+    return function(...)
+        local rs = {...}
+        for i = 1, #fs do
+            rs = { fs[i](unpack(rs)) }
+        end
+        return unpack(rs)
+    end
+end
+
+function inext(t, i)
+    if not i then i = 0 end
+    i = i+1
+    local v = t[i]
+    if v then
+        return i, v
+    end
+end
+
+function iter(t, itt)
+    if itt then
+        return itt(next), t
+    else
+        return it, t
+    end
+end
+
+function iiter(t, itt)
+    if itt then
+        return itt(inext), t, 0
+    else
+        return it, t
+    end
+end
+
+function newlist(itt, t)
+    local o = {}
+    for i, v in itt(inext), t, 0 do
+        insert(o, v)
+    end
+    return o
+end
+
+function map(f, t)
+    if t then
+        return newlist(map(f), t)
+    else
+        return function(iter)
+            return function(t, last)
+                local k, v = iter(t, last)
+                if k then return k, f(v) end
+            end
+        end
+    end
+end
+
+function filter(pred, t)
+    if t then
+        return newlist(filter(pred), t)
+    else
+        return function(iter)
+            local function step(t, last)
+                local k, v = iter(t, last)
+                if k then
+                    if pred(v) then
+                        return k, v
+                    else
+                        return step(t, k)
+                    end
+                end
+            end
+            return step
+        end
+    end
 end
 
 function apply_all(...)
@@ -60,19 +142,11 @@ function copy(o)
 end
 
 function each(t)
-    local i, n = 0, #t
+    local i = 0
     return function ()
         i = i + 1
-        if i <= n then return t[i] end
+        return t[i]
     end
-end
-
-function map(func, list)
-    local new_list = {}
-    for _, val in ipairs(list or {}) do
-        table.insert(new_list, func(val))
-    end
-    return new_list
 end
 
 function pmap(func, list)
@@ -129,6 +203,8 @@ function string.escape(s)
     return string.gsub(s, '([^%w_-])', '\\%1')
 end
 
+-- this one preserves empty fields:
+--     split('=a==b=', '=') -> [ '', 'a', '', 'b', '' ]
 function string.split(s, sep)
     local o, b, e = {}
     local init = 1
@@ -143,6 +219,8 @@ function string.split(s, sep)
     return o
 end
 
+-- does not preserve empty fields:
+--     split2('=a==b=', '=') -> [ 'a', 'b' ]
 function string.split2(s, sep)
     local o = {}
     for val in string.gmatch(s, '[^'..sep..']+') do
@@ -176,13 +254,6 @@ end
 
 function string.escape_pattern(p)
     return string.gsub(p, '%p', '%%%0')
-end
-
--- compatibility with Lua 5.1
-if type(table.unpack) ~= 'function' then
-    function table.unpack(...)
-        return unpack(...)
-    end
 end
 
 function table.keys(t)
