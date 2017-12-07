@@ -3,6 +3,7 @@
 ## Contents
 
 - [Initializing](Initializing.md)
+- [List Information](List.md)
 - [Building](Building.md)
 - [Cleaning](Cleaning.md)
 - [Targets](#targets)

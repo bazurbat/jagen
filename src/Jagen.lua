@@ -506,11 +506,16 @@ function Jagen.command.list(args)
     end
 
     local options = Options:new {
+        { 'help,h' },
         { 'depth,d=n', 0, 999 },
         { 'all,a', false }
     }
     if not options:parse(table.rest(args, 2)) then
         return 22
+    end
+
+    if options['help'] then
+        return Jagen.command['help'] { 'list' }
     end
 
     local depth, show_all = options['depth'], options['all']
@@ -568,10 +573,11 @@ function Jagen.command.list(args)
 
     -- prune up to the specified depth
     for _, pkg in pairs(packages) do
+        pkg.contexts = copy(pkg.contexts)
         for _, context in ipairs(pkg.contexts) do
             local level = 0
             while context do
-                if level > depth then
+                if level >= depth then
                     context.parent = nil
                 end
                 context = context.parent
@@ -595,7 +601,6 @@ function Jagen.command.list(args)
             table.insert(pkg.contexts, c)
         end
     end
-
 
     for _, pkg in ipairs(pkg_list) do
         io.write(pkg.name)
