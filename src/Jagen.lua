@@ -505,22 +505,15 @@ function Jagen.command.list(args)
         die("invalid list command '"..args[1].."', try 'jagen list help'")
     end
 
-    local depth, show_all = 0, false
-
-    if not Options.parse(table.rest(args, 2), {
-        { 'depth,d=', function (val) depth = val end },
-        { 'all,a', function (val) show_all = true end }
-    }) then return 22 end
-
-    if not depth or #depth == 0 then
-        depth = 999
-    else
-        local arg = depth
-        depth = tonumber(arg)
-        if not depth then
-            die("invalid list depth specified: '%s' expected to be a number", arg)
-        end
+    local options = Options:new {
+        { 'depth,d=n', 0, 999 },
+        { 'all,a', false }
+    }
+    if not options:parse(table.rest(args, 2)) then
+        return 22
     end
+
+    local depth, show_all = options['depth'], options['all']
 
     local packages = Package.load_rules()
     local pkg_list, name_max = {}, 0
