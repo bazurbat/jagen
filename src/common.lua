@@ -132,6 +132,7 @@ end
 function copy(o)
     if type(o) == 'table' then
         local c = {}
+        setmetatable(c, getmetatable(o))
         for k, v in pairs(o) do
             c[k] = copy(v)
         end
