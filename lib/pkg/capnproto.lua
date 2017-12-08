@@ -11,5 +11,19 @@ return {
             -- host.
             '-DBUILD_TESTING=NO'
         }
+    },
+    install = {
+        -- It uses absolute install prefix instead.
+        root = ''
+    },
+    configs = {
+        target = {
+            build = {
+                options = {
+                    '-DBUILD_TESTING=NO',
+                    '-DCMAKE_INSTALL_PREFIX=$jagen_target_dir'
+                }
+            }
+        }
     }
 }
