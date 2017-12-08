@@ -231,7 +231,7 @@ pkg__unpack_dist() {
     pkg_run cd "$work_dir"
 
     case $pkg_source_filename in
-        *.tar.*|*.tgz|*.tbz2|*.txz)
+        *.tar|*.tar.*|*.tgz|*.tbz2|*.txz)
             pkg_run tar -xf "$dist_path" ;;
         *.zip)
             # to emulate the tar convention on putting the directory name
