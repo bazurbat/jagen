@@ -311,7 +311,6 @@ pkg_autoreconf() {
 
 pkg_configure() {
     local IFS="$jagen_IFS" S="$jagen_FS" A=
-    local cmake_toolchain_file=
     local build_generator=
 
     [ "$pkg_source_dir" ] || return 0
@@ -367,22 +366,8 @@ pkg_configure() {
                 A="$A$S-DCMAKE_MODULE_PATH=$jagen_cmake_module_path"
             fi
 
-            cmake_toolchain_file="$jagen_cmake_toolchain_file"
-            if [ "$pkg_config" = "host" ]; then
-                if [ "$jagen_host_cmake_toolchain_file" ]; then
-                    cmake_toolchain_file="$jagen_host_cmake_toolchain_file"
-                fi
-            fi
-            if [ "$pkg_config" = "target" ]; then
-                if [ "$jagen_target_cmake_toolchain_file" ]; then
-                    cmake_toolchain_file="$jagen_target_cmake_toolchain_file"
-                fi
-            fi
             if [ "$pkg_cmake_toolchain_file" ]; then
-                cmake_toolchain_file="$pkg_cmake_toolchain_file"
-            fi
-            if [ "$cmake_toolchain_file" ]; then
-                A="$A$S-DCMAKE_TOOLCHAIN_FILE=$cmake_toolchain_file"
+                A="$A$S-DCMAKE_TOOLCHAIN_FILE=$pkg_cmake_toolchain_file"
             fi
 
             if [ "$pkg_config" = "target" ]; then
