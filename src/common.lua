@@ -433,7 +433,7 @@ function pretty(value, level)
     elseif type(value) == 'string' then
         add(format("'%s'", value))
     else
-        add(format("%s", value))
+        add(format("%s", tostring(value)))
     end
     return concat(output, '\n')
 end
