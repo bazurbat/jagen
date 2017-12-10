@@ -595,11 +595,15 @@ function define_package_alias(name, value)
 end
 
 function package(rule)
-    local info = debug.getinfo(2, 'Sl')
-    local rule_context = {
-        filename = info.source,
-        line = info.currentline
-    }
+    local rule_context, level, info = {}, 2
+    repeat
+        info = debug.getinfo(level, 'Sl')
+        level = level+1
+    until not info or info.what == 'main'
+    if info then
+        rule_context.filename = info.source
+        rule_context.line = info.currentline
+    end
     return P.define_rule(rule, rule_context)
 end
 
