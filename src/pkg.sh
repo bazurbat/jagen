@@ -388,8 +388,8 @@ pkg_configure() {
             if [ "$pkg_config" = "target" ]; then
                 A="$A$S-DCMAKE_SYSTEM_NAME=Linux"
                 A="$A$S-DCMAKE_FIND_ROOT_PATH=$pkg_install_dir"
-                A="$A$S-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY"
-                A="$A$S-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY"
+                # A="$A$S-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY"
+                # A="$A$S-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY"
                 # These might be preset by user environment or SDK
                 if [ -z "$CC" ]; then
                     A="$A$S-DCMAKE_C_COMPILER=${jagen_toolchain_prefix-}gcc"
