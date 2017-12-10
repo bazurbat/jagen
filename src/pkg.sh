@@ -188,16 +188,28 @@ pkg__download() {
     trap - EXIT
 }
 
+pkg__path_is_uri() {
+    [ "${1:?}" != "${1#*://}" ]
+}
+
+pkg__uri_is_local() {
+    [ "${1:?}" != "${1#file://}" ]
+}
+
 pkg__unpack_dist() {
     local src_path="${1:?}"
     local work_dir="${2:?}"
     local dist_path="${jagen_dist_dir:?}/${pkg_source_filename:?}"
 
     if ! [ -f "$dist_path" ]; then
-        if in_flags offline; then
-            die "could not download required source for $pkg_name in offline mode"
+        if pkg__path_is_uri "$src_path"; then
+            if in_flags offline && ! pkg__uri_is_local "$src_path"; then
+                die "unable to download $src_path: offline mode"
+            else
+                pkg__download "$src_path" "$dist_path"
+            fi
         else
-            pkg__download "$src_path" "$dist_path"
+            die "unable to unpack $dist_path: the file is not found and download location is not specified"
         fi
     fi
 
