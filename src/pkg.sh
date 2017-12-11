@@ -56,7 +56,7 @@ pkg_strip_root() {
 pkg_fix_pc() {
     local name="${1:?}"
     local filename="$pkg_install_dir/lib/pkgconfig/${name}.pc"
-    debug "fix pc $filename"
+    debug1 "fix pc $filename"
     if [ -f "$filename" -a "$pkg_sysroot" ]; then
         pkg_run sed -i "s|$pkg_sysroot||g" "$filename"
     fi
@@ -64,7 +64,7 @@ pkg_fix_pc() {
 
 pkg_fix_la() {
     local filename="${1:?}" prefix="$2"
-    debug "fix la $filename $prefix"
+    debug1 "fix la $filename $prefix"
     if [ "$prefix" ]; then
         pkg_run sed -i "s|^\(libdir=\)'\(.*\)'$|\1'${prefix}\2'|" "$filename"
     fi

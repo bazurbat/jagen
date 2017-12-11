@@ -13,8 +13,20 @@ error() {
 }
 
 debug() {
-    if [ "$jagen_debug" ]; then
-        printf "(D) %s\n" "$*" >&2
+    if [ "$jagen_debug" ] && [ "$jagen_debug" -gt 0 ]; then
+        printf "(D0) %s\n" "$*" >&2
+    fi
+}
+
+debug1() {
+    if [ "$jagen_debug" ] && [ "$jagen_debug" -gt 1 ]; then
+        printf "(D1) %s\n" "$*" >&2
+    fi
+}
+
+debug2() {
+    if [ "$jagen_debug" ] && [ "$jagen_debug" -gt 2 ]; then
+        printf "(D2) %s\n" "$*" >&2
     fi
 }
 
@@ -32,10 +44,10 @@ die() {
 include() {
     local pathname="${1:?}"
     if [ -f "${pathname}.sh" ]; then
-        debug "include ${pathname}.sh"
+        debug2 "include ${pathname}.sh"
         . "${pathname}.sh"
     elif [ -f "$pathname" ]; then
-        debug "include $pathname"
+        debug2 "include $pathname"
         . "$pathname"
     fi
 }
@@ -55,11 +67,11 @@ find_in_path() {
 
 try_require() {
     local filename
-    debug "try_require $1"
+    debug2 "try_require $1"
 
     filename="$(find_in_path "${1:?}.sh")"
     if [ "$filename" ]; then
-        debug "  using $filename"
+        debug2 "  using $filename"
         . "$filename"
     else
         return 2
@@ -69,12 +81,12 @@ try_require() {
 require() {
     local IFS="$jagen_IFS"
     local name="${1:?}" path= i=
-    debug "require $1"
+    debug2 "require $1"
 
     for i in $jagen_path; do
         path="$i/${name}.sh"
         if [ -f "$path" ]; then
-            debug "  using $path"
+            debug2 "  using $path"
             . "$path"
             return
         fi
@@ -86,7 +98,7 @@ require() {
 import() {
     local IFS="$jagen_IFS"
     local name="${1:?}" path= i= found=
-    debug "import $1"
+    debug2 "import $1"
 
     set -- $jagen_path
     i=$#
@@ -94,7 +106,7 @@ import() {
     while [ $i -gt 0 ]; do
         path="$(eval echo \$$i)/${name}.sh"
         if [ -f "$path" ]; then
-            debug "  using $path"
+            debug2 "  using $path"
             . "$path" ||
                 die "import $name: error while sourcing '$path'"
             found=1
