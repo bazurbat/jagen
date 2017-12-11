@@ -19,7 +19,7 @@ fi
 
 _pkg_stamp_name="${pkg_name}__${pkg_stage}${pkg_config:+__${pkg_config}}"
 pkg_log="${jagen_log_dir:?}/${_pkg_stamp_name}.log"
-pkg_work_dir="${jagen_build_dir:?}/$pkg_name"
+export pkg_work_dir="${jagen_build_dir:?}/$pkg_name"
 
 if [ -z "$pkg_query" ]; then
     : >"$pkg_log"
@@ -31,8 +31,8 @@ if [ "$pkg_config" ]; then
     import "config/$pkg_config"
 fi
 
-pkg_build_dir="$pkg_work_dir${pkg_config:+/$pkg_config}"
-pkg_install_dir="$pkg_sysroot$pkg_prefix"
+export pkg_build_dir="$pkg_work_dir${pkg_config:+/$pkg_config}"
+export pkg_install_dir="$pkg_sysroot$pkg_prefix"
 
 pkg_build_generator="$jagen_cmake_generator"
 
