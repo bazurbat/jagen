@@ -383,11 +383,6 @@ pkg_configure() {
             fi
 
             if [ "$pkg_config" = "target" ]; then
-                A="$A$S-DCMAKE_SYSTEM_NAME=Linux"
-                A="$A$S-DCMAKE_FIND_ROOT_PATH=$pkg_install_dir"
-                # A="$A$S-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY"
-                # A="$A$S-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY"
-                # These might be preset by user environment or SDK
                 if [ -z "$CC" ]; then
                     A="$A$S-DCMAKE_C_COMPILER=${jagen_toolchain_prefix-}gcc"
                 fi
@@ -401,9 +396,6 @@ pkg_configure() {
                 A="$A$S-DCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY=YES"
                 A="$A$S-DCMAKE_FIND_PACKAGE_NO_SYSTEM_PACKAGE_REGISTRY=YES"
             fi
-
-            A="$A$S-DCMAKE_C_FLAGS_RELEASE="
-            A="$A$S-DCMAKE_CXX_FLAGS_RELEASE="
 
             if pkg_is_debug; then
                 # assuming that global defaults are for 'release' config
