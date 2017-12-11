@@ -204,16 +204,22 @@ is_product_name() {
     esac
 }
 
-parse_path() {
+check_path() {
     local path="$1"
 
-    if [ "$path" = . ] || [ "$path" = .. ]; then
+    [ "$path" = .  ] && return # ignore to allow initializing empty projects
+
+    if [ "$path" = .. ]; then
         die "invalid layer path '$path'"
     fi
 
     if ! [ "${jagen_product-}" ] && is_product_name "$path"; then
         jagen_product="$path"
         return
+    fi
+
+    if ! [ -d "$path" ]; then
+        die "the specified layer path is not exists or not a directory: $path"
     fi
 
     if [ "$init_jagen_layers" ]; then
@@ -230,7 +236,7 @@ parse_command_line() {
         case $1 in
             --) eoa=1 ;;
             -*) if [ "${eoa:-}" ]; then
-                    parse_path "$1"
+                    check_path "$1"
                 else
                     case $1 in
                         -h)
@@ -258,7 +264,7 @@ parse_command_line() {
                             die "invalid option: '$1'"
                     esac
                 fi ;;
-             *) parse_path "$1" ;;
+             *) check_path "$1" ;;
         esac
         shift
     done
