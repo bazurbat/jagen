@@ -420,7 +420,7 @@ pkg_configure() {
 pkg_compile() {
     [ "$pkg_source_dir" ] || return 0
 
-    local is_offline=
+    local is_offline= verbose_opt=
 
     if in_flags offline; then
         is_offline=1
@@ -446,7 +446,8 @@ pkg_compile() {
             pkg_run cmake --build . -- $jagen_cmake_build_options "$@"
             ;;
         make)
-            pkg_run make $pkg_options "$@"
+            [ "$jagen_build_verbose" ] && verbose_opt="V=1"
+            pkg_run make $verbose_opt $pkg_options "$@"
             ;;
         linux_kernel)
             use_env kbuild
