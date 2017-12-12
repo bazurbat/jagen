@@ -1,9 +1,9 @@
 return {
     source = {
         type     = 'git',
-        location = 'https://github.com/google/protobuf.git',
-        -- "stable" version, newer have problems with cross-compiling
-        branch   = '3.1.x'
+        location = 'https://github.com/bazurbat/protobuf.git',
+        branch   = '3.5.x',
+        exclude_submodules = true,
     },
     build = {
         type = 'GNU',
@@ -24,6 +24,11 @@ return {
         target = {
             build = {
                 options = {
+                    '--disable-maintainer-mode',
+                    '--disable-64bit-solaris',
+                    '--enable-shared',
+                    '--enable-static',
+                    '--without-zlib',
                     '--with-protoc=$jagen_host_dir/bin/protoc'
                 }
             }
