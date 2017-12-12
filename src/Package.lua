@@ -327,6 +327,7 @@ function P:query(value, config)
 end
 
 function P:check_insource_build()
+    if self.name == 'toolchain' then return end -- the toolchain is special
     local config_count = table.count(self.configs)
     local in_source, generate
     if self.build then
@@ -341,8 +342,7 @@ function P:check_insource_build()
     end
     if config_count > 1 then
         if in_source then
-            -- ?? toolchain
-            -- Log.warning("package '%s' requires in source build but multiple configs are defined, this would not work", self.name)
+            Log.warning("the package '%s' requires in source build but have multiple configs defined, this will likely produce incorrect results", self.name)
         end
     end
 end
@@ -401,11 +401,9 @@ function P.load_rules()
         end
     end
 
-    -- some sanity checks
-    -- TODO: until toolchain improvements
-    -- for name, pkg in pairs(packages) do
-    --     pkg:check_insource_build()
-    -- end
+    for name, pkg in pairs(packages) do
+        pkg:check_insource_build()
+    end
 
     return packages
 end
