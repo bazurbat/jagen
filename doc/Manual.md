@@ -253,6 +253,12 @@ rules and also to find pkg files. The `config` is optional.
   does not need toolchain. Used internally for the "toolchain-like" packages
   themselves to break dependency cycles.
 
+- **build.target_requires_host** — If set to `true`, specifies that in order to
+  build this package in `target` config the `host` config needs to be built and
+  installed first. This is the case, for example, when the package provides
+  generator executables which need to be run on the host system. The rule for
+  the host package will be derived automatically.
+
 - **build.type** (`pkg_build_type`) — The type of the package build system.
   Supported values are: GNU, CMake, KBuild, make, linux_kernel, linux_module,
   maven.

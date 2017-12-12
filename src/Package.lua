@@ -546,6 +546,10 @@ function P.define_rule(rule, rule_context)
                 pkg:add_target({ 'compile' }, config)
                 pkg:add_target({ 'install' }, config)
             end
+
+            if config == 'target' and build.target_requires_host then
+                rule.requires = append(rule.requires or {}, { pkg.name, 'host' })
+            end
         end
     end
 
