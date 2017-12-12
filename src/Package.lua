@@ -139,6 +139,7 @@ function P:add_requires(stage, template)
             table.insert(stage, { req.name, 'install', req.config })
             P.define_rule {
                 name = req.name,
+                config = req.config,
                 template = template,
                 { 'install' }
             }
