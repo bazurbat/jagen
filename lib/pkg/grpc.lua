@@ -1,8 +1,8 @@
 return {
     source = {
         type     = 'git',
-        location = 'https://github.com/grpc/grpc.git',
-        branch   = 'v1.1.x'
+        location = 'https://github.com/bazurbat/grpc.git',
+        branch   = 'v1.7.x',
     },
     build = {
         type = 'make',
