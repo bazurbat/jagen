@@ -121,7 +121,8 @@ function GitSource:clean()
 end
 
 function GitSource:update_submodules()
-    if System.file_exists(System.mkpath(self.dir, '.gitmodules')) then
+    if not self.exclude_submodules and
+            System.file_exists(System.mkpath(self.dir, '.gitmodules')) then
         return self:git('submodule update --init --recursive'):exec()
     end
     return true
