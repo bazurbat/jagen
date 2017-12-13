@@ -97,7 +97,7 @@ local function write_build(w, pkg)
     end
 
     if build.cmake_module_path then
-        w('pkg_cmake_module_path="%s"', build.cmake_module_path)
+        w('pkg_build_cmake_module_path="%s"', build.cmake_module_path)
     end
 
     if build.cmake_toolchain_file then

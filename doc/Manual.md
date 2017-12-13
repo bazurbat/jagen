@@ -206,7 +206,7 @@ rules and also to find pkg files. The `config` is optional.
   necessary for the package. Also causes `libtool` to be installed for the
   host.
 
-- **build.cmake_module_path** (`pkg_cmake_module_path`) — specifies
+- **build.cmake_module_path** (`pkg_build_cmake_module_path`) — specifies
   `CMAKE_MODULE_PATH` for this package only. Set to empty string to disable
   passing of the module path from the environment.
 
@@ -395,7 +395,7 @@ rules and also to find pkg files. The `config` is optional.
   package; currently supported values are: GNU, KBuild, CMake, make,
   linux_kernel, linux_module
 
-- **pkg_cmake_module_path** (`build.cmake_module_path`) — specifies
+- **pkg_build_cmake_module_path** (`build.cmake_module_path`) — specifies
   `CMAKE_MODULE_PATH` for the current package.
 
 - **pkg_cmake_toolchain_file** (`build.cmake_toolchain_file`) — specifies

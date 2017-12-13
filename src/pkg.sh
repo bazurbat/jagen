@@ -376,8 +376,8 @@ pkg_configure() {
                 die "CMake build type specified but no CMakeLists.txt was found in $pkg_source_dir"
             fi
 
-            if [ "$pkg_cmake_module_path" ]; then
-                A="$A$S-DCMAKE_MODULE_PATH=$pkg_cmake_module_path"
+            if [ "$pkg_build_cmake_module_path" ]; then
+                A="$A$S-DCMAKE_MODULE_PATH=$pkg_build_cmake_module_path"
             fi
 
             if [ "$pkg_cmake_toolchain_file" ]; then
