@@ -7,7 +7,7 @@ return {
     build  = {
         type = 'GNU',
         options = {
-            '--with-libgpg-error-prefix=$pkg_staging_dir'
+            '--with-libgpg-error-prefix=$pkg_install_root'
         },
         libs = { 'assuan' }
     },

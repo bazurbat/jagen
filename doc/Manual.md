@@ -281,7 +281,7 @@ rules and also to find pkg files. The `config` is optional.
 
 - **install.prefix** (`pkg_prefix`) — Install prefix.
 
-- **install.root** (`pkg_staging_dir`) — Install root.
+- **install.root** (`pkg_install_root`) — Install root.
 
 - **install.type** (`pkg_install_type`) — The type of the build system for the
   purposes of install.  Usually the same is the `build.type` but can be
@@ -419,7 +419,7 @@ rules and also to find pkg files. The `config` is optional.
   install those with hardcoded values which might need post-install cleanup
 
 - **pkg_install_dir** — full path to the package installation directory
-  (`$pkg_staging_dir$pkg_prefix`)
+  (`$pkg_install_root$pkg_prefix`)
 
 - **pkg_install_ldconfig** (`install.ldconfig`) — a flag indicating whether to
   run `ldconfig` after the install
@@ -497,7 +497,7 @@ rules and also to find pkg files. The `config` is optional.
 - **pkg_stage** — the name of the currently executing stage (unpack, patch,
   configure, install, etc.)
 
-- **pkg_staging_dir** (`install.root`) — specifies the "root" of the package
+- **pkg_install_root** (`install.root`) — specifies the "root" of the package
   installation; can have different interpretation depending on the build system
   but in general used for various autotools workaround (cleaning `.la` and
   `.pc` files and such); sets `DESTDIR` for `make` and `CMake`

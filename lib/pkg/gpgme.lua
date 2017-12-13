@@ -14,8 +14,8 @@ return {
             '--disable-gpg-test',
             '--disable-gpgsm-test',
             '--disable-g13-test',
-            '--with-libgpg-error-prefix=$pkg_staging_dir',
-            '--with-libassuan-prefix=$pkg_staging_dir'
+            '--with-libgpg-error-prefix=$pkg_install_root',
+            '--with-libassuan-prefix=$pkg_install_root'
         },
         libs = { 'gpgme' }
     },

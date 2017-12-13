@@ -149,7 +149,7 @@ local function write_install(w, pkg)
     end
 
     if install.root then
-        w('pkg_staging_dir="%s"', install.root)
+        w('pkg_install_root="%s"', install.root)
     end
 
     if install.prefix then

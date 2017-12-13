@@ -11,7 +11,7 @@ jagen_pkg_compile_target() {
 }
 
 jagen_pkg_install() {
-    local dest="$pkg_staging_dir/bin"
+    local dest="$pkg_install_root/bin"
     pkg_run install -vd "$dest"
     pkg_run install -vm755 ntpclient "$dest"
 }
