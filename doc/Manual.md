@@ -93,7 +93,6 @@ rules and also to find pkg files. The `config` is optional.
 
         in_source = true,
         dir       = 'path',
-        work_dir  = 'path',
         requires_toolchain = false,
         profile   = 'release|debug|release_with_debug',
     },
@@ -111,6 +110,7 @@ rules and also to find pkg files. The `config` is optional.
         'name2',
         ...
     },
+    work_dir = 'path'
 }
 ```
 
@@ -154,6 +154,9 @@ rules and also to find pkg files. The `config` is optional.
 - **pkg.stages** — Stores rule targets. _Internal._
 
 - **pkg.configs** — Stores config-specific rules and targets. _Internal._
+
+- **pkg.work_dir** (`pkg_work_dir`) — The working directly for the package.
+  Default value: `$jagen_build_dir/$pkg_name`.
 
 ### Source
 
@@ -262,9 +265,6 @@ rules and also to find pkg files. The `config` is optional.
 - **build.type** (`pkg_build_type`) — The type of the package build system.
   Supported values are: GNU, CMake, KBuild, make, linux_kernel, linux_module,
   maven.
-
-- **build.work_dir** (`pkg_work_dir`) — The working directly for the package.
-  Default value: `$jagen_build_dir/$pkg_name`.
 
 ### Install
 
@@ -505,7 +505,7 @@ rules and also to find pkg files. The `config` is optional.
 - **pkg_system** — the value of `$jagen_*_system` for the currently executing
   stage depending on the current config
 
-- **pkg_work_dir** (`build.work_dir`) — a location of the toplevel working
+- **pkg_work_dir** (`pkg.work_dir`) — a location of the toplevel working
   directory for the package; can contain unpacked sources, several build
   directories, etc. depending on the configuration
 

@@ -9,6 +9,12 @@ local function write_env(w, pkg)
     end
 end
 
+local function write_common(w, pkg)
+    if pkg.work_dir then
+        w('pkg_work_dir="%s"', pkg.work_dir)
+    end
+end
+
 local function write_source(w, pkg)
     local source = pkg.source
     if not source then return end
@@ -122,10 +128,6 @@ local function write_build(w, pkg)
         w("pkg_libs='%s'", table.concat(build.libs, ' '))
     end
 
-    if build.work_dir then
-        w('pkg_work_dir="%s"', build.work_dir)
-    end
-
     if build.in_source then
         w("pkg_build_in_source='yes'")
         build_dir = '$pkg_source_dir'
@@ -192,6 +194,7 @@ local function generate_script(filename, pkg)
     end
 
     write_env(w, pkg)
+    write_common(w, pkg)
     write_source(w, pkg)
     -- write install first to allow referencing dest dir and such from
     -- configure options
