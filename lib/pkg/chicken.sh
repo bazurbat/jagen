@@ -11,7 +11,7 @@ jagen_pkg_configure_host() {
     # Newer CMake has more convenient CMAKE_FIND_NO_INSTALL_PREFIX for the same
     # purpose, but we are stuck with 2.8.12 for now.
 
-    A="-DCMAKE_SYSTEM_IGNORE_PATH=$pkg_prefix"
+    A="-DCMAKE_SYSTEM_IGNORE_PATH=$pkg_install_prefix"
 
     if in_flags new_chicken; then
         A="$A$S-DCHICKEN_COMPILER=$jagen_host_dir/bin/chicken-boot"

@@ -153,7 +153,7 @@ local function write_install(w, pkg)
     end
 
     if install.prefix then
-        w('pkg_prefix="%s"', install.prefix)
+        w('pkg_install_prefix="%s"', install.prefix)
     end
 
     if install.config_script then

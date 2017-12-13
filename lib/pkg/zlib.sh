@@ -3,8 +3,8 @@
 jagen_pkg_configure() {
     export CHOST="$pkg_system"
     pkg_run "$pkg_source_dir/configure" \
-        --prefix="$pkg_prefix" \
-        --libdir="$pkg_prefix/lib"
+        --prefix="$pkg_install_prefix" \
+        --libdir="$pkg_install_prefix/lib"
 }
 
 cleanup_headers() {
@@ -13,5 +13,5 @@ cleanup_headers() {
 
 jagen_pkg_install() {
     pkg_run make DESTDIR="$pkg_install_root" LDCONFIG=: install
-    pkg_run cleanup_headers "$pkg_install_root$pkg_prefix"/include/*.h
+    pkg_run cleanup_headers "$pkg_install_root$pkg_install_prefix"/include/*.h
 }

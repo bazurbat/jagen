@@ -88,7 +88,7 @@ jagen_pkg_configure() {
     fi
 
     pkg_run $pkg_source_dir/configure \
-        --prefix="$pkg_prefix" \
+        --prefix="$pkg_install_prefix" \
         --enable-gpl --enable-nonfree \
         --disable-static --enable-shared \
         --disable-runtime-cpudetect \

@@ -3,7 +3,7 @@
 jagen_pkg_configure_target() {
     rm -f .config
 
-    echo "BINDIR=$pkg_prefix/bin"            >> .config
+    echo "BINDIR=$pkg_install_prefix/bin"    >> .config
 
     echo "CONFIG_CTRL_IFACE=y"               >> .config
     echo "CONFIG_BACKEND=file"               >> .config
@@ -66,8 +66,8 @@ jagen_pkg_install() {
         "$pkg_build_dir/dbus/fi.w1.wpa_supplicant1.service" \
         "$pkg_install_dir/share/dbus-1/system-services"
 
-    [ "$pkg_prefix" = / ] && pkg_prefix=
+    [ "$pkg_install_prefix" = / ] && pkg_install_prefix=
     pkg_run sed -ri \
-        -e "s|^Exec=.*(/wpa_supplicant.*)|Exec=$pkg_prefix/sbin\1|" \
+        -e "s|^Exec=.*(/wpa_supplicant.*)|Exec=$pkg_install_prefix/sbin\1|" \
         $pkg_install_dir/share/dbus-1/system-services/fi.w1.wpa_supplicant1.service
 }

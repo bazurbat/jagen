@@ -76,7 +76,7 @@ pkg_fix_la() {
 pkg_fix_config_script() {
     local filename="${1:?}"
     if [ "$pkg_install_root" -a -f "$filename" ]; then
-        pkg_run sed -ri "s|^(prefix=)$pkg_prefix$|\1$pkg_install_root|" $filename
+        pkg_run sed -ri "s|^(prefix=)$pkg_install_prefix$|\1$pkg_install_root|" $filename
     fi
 }
 
@@ -350,7 +350,7 @@ pkg_configure() {
 
             pkg_run "${pkg_configure_file:-$pkg_source_dir/configure}" $A \
                 ${pkg_system:+--host="$pkg_system"} \
-                --prefix="$pkg_prefix" \
+                --prefix="$pkg_install_prefix" \
                 --disable-dependency-tracking \
                 ${pkg_install_root:+--with-sysroot="$pkg_install_root"} \
                 $pkg_options "$@"
@@ -406,7 +406,7 @@ pkg_configure() {
 
             pkg_run cmake -G"$pkg_build_generator" \
                 -DCMAKE_BUILD_TYPE="$(pkg_cmake_build_type)" \
-                -DCMAKE_INSTALL_PREFIX="$pkg_prefix" \
+                -DCMAKE_INSTALL_PREFIX="$pkg_install_prefix" \
                 $A $jagen_cmake_options $pkg_options "$@" "$pkg_source_dir"
             ;;
         linux_kernel)
@@ -479,7 +479,7 @@ pkg_install() {
 
             for name in $pkg_libs; do
                 pkg_fix_pc "$name"
-                # pkg_fix_la "$pkg_install_root$pkg_prefix/lib/lib${name}.la" "$pkg_install_root"
+                # pkg_fix_la "$pkg_install_root$pkg_install_prefix/lib/lib${name}.la" "$pkg_install_root"
 
                 if [ -z "$pkg_install_config_script" ]; then
                     pkg_install_config_script="/bin/${pkg_name}-config"

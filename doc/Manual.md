@@ -279,7 +279,7 @@ rules and also to find pkg files. The `config` is optional.
 
 - **install.modules** (`pkg_install_modules_dirs`) — Linux kernel modules.
 
-- **install.prefix** (`pkg_prefix`) — Install prefix.
+- **install.prefix** (`pkg_install_prefix`) — Install prefix.
 
 - **install.root** (`pkg_install_root`) — Install root.
 
@@ -419,7 +419,7 @@ rules and also to find pkg files. The `config` is optional.
   install those with hardcoded values which might need post-install cleanup
 
 - **pkg_install_dir** — full path to the package installation directory
-  (`$pkg_install_root$pkg_prefix`)
+  (`$pkg_install_root$pkg_install_prefix`)
 
 - **pkg_install_ldconfig** (`install.ldconfig`) — a flag indicating whether to
   run `ldconfig` after the install
@@ -452,7 +452,7 @@ rules and also to find pkg files. The `config` is optional.
 - **pkg_patches_required** (`pkg.patches.required`) — a list of absolute patch
   filenames which the current package requires
 
-- **pkg_prefix** (`install.prefix`) — specifies the install prefix of the
+- **pkg_install_prefix** (`install.prefix`) — specifies the install prefix of the
   package, depends on the build system (`--prefix=` passed to `configure`
   script or `CMAKE_INSTALL_PREFIX` for `CMake`)
 
