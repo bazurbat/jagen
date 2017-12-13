@@ -353,7 +353,7 @@ pkg_configure() {
                 --prefix="$pkg_install_prefix" \
                 --disable-dependency-tracking \
                 ${pkg_install_root:+--with-sysroot="$pkg_install_root"} \
-                $pkg_options "$@"
+                $pkg_build_options "$@"
 
             # Never add RPATH to generated binaries because libtool uses
             # various heuristics to determine when to add it, some Linux
@@ -407,7 +407,7 @@ pkg_configure() {
             pkg_run cmake -G"$pkg_build_generator" \
                 -DCMAKE_BUILD_TYPE="$(pkg_cmake_build_type)" \
                 -DCMAKE_INSTALL_PREFIX="$pkg_install_prefix" \
-                $A $jagen_cmake_options $pkg_options "$@" "$pkg_source_dir"
+                $A $jagen_cmake_options $pkg_build_options "$@" "$pkg_source_dir"
             ;;
         linux_kernel)
             use_env kbuild
@@ -450,7 +450,7 @@ pkg_compile() {
             ;;
         make)
             [ "$jagen_build_verbose" ] && verbose_opt="V=1"
-            pkg_run make $verbose_opt $pkg_options "$@"
+            pkg_run make $verbose_opt $pkg_build_options "$@"
             ;;
         linux_kernel)
             use_env kbuild
@@ -458,12 +458,12 @@ pkg_compile() {
             pkg_run make "${jagen_kernel_image:?}" modules
             ;;
         linux_module)
-            pkg_run make $pkg_options "$@"
+            pkg_run make $pkg_build_options "$@"
             ;;
         maven)
             pkg_run "${jagen_mvn_exe:-mvn}" \
                 ${is_offline:+-o} \
-                $jagen_mvn_options $pkg_options "$@" \
+                $jagen_mvn_options $pkg_build_options "$@" \
                 verify
             ;;
     esac

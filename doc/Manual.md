@@ -241,7 +241,7 @@ rules and also to find pkg files. The `config` is optional.
 - **build.libs** (`pkg_libs`) — The list of libraries installed by this
   package.
 
-- **build.options** (`pkg_options`) — The list of options for the build system.
+- **build.options** (`pkg_build_options`) — The list of options for the build system.
   It could be `configure` arguments or `CMake` defines or something else
   depending on the package build system.
 
@@ -442,7 +442,7 @@ rules and also to find pkg files. The `config` is optional.
 
 - **pkg_name** — the package name of the currently executing stage
 
-- **pkg_options** (`build.options`) — passed as and argument to the underlying
+- **pkg_build_options** (`build.options`) — passed as and argument to the underlying
   build system directly, it could be `configure` options, `CMake` defines or
   `make` variable assignments depending on the package build type
 

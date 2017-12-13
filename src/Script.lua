@@ -115,7 +115,7 @@ local function write_build(w, pkg)
         if type(build.options) == 'string' then
             o = { build.options }
         end
-        w('pkg_options="%s"', table.concat(o, '\n'))
+        w('pkg_build_options="%s"', table.concat(o, '\n'))
     end
 
     if build.libs then
