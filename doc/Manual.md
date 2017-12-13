@@ -217,7 +217,7 @@ rules and also to find pkg files. The `config` is optional.
 - **build.configure_file** (`pkg_build_configure_file`) — The location of the
   `configure` script (`$pkg_source_dir/configure`).
 
-- **build.configure_needs_install_dir** (`pkg_configure_needs_install_dir`) —
+- **build.configure_needs_install_dir** (`pkg_build_configure_needs_install_dir`) —
   if set, specifies that the `configure` requires libraries and include
   directories from the package install directory to find dependencies;
   effectively this setting adds `-I$pkg_install_dir/include` to `CFLAGS` and
@@ -405,7 +405,7 @@ rules and also to find pkg files. The `config` is optional.
 - **pkg_build_configure_file** (`build.configure_file`) — specifies the path to the
   configure file; `$pkg_source_dir/configure` if unset
 
-- **pkg_configure_needs_install_dir** (`build.configure_needs_install_dir`) —
+- **pkg_build_configure_needs_install_dir** (`build.configure_needs_install_dir`) —
   if set, specifies that the `configure` requires libraries and include
   directories from the package install directory to find dependencies;
   effectively this setting adds `-I$pkg_install_dir/include` to `CFLAGS` and

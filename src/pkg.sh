@@ -335,7 +335,7 @@ pkg_configure() {
                 LDFLAGS="$LDFLAGS -Wl,-rpath-link=$pkg_install_dir/lib"
             fi
 
-            if [ "$pkg_configure_needs_install_dir" ]; then
+            if [ "$pkg_build_configure_needs_install_dir" ]; then
                 CFLAGS="$CFLAGS -I$pkg_install_dir/include"
                 LDFLAGS="$LDFLAGS -L$pkg_install_dir/lib"
             fi

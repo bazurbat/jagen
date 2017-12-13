@@ -109,7 +109,7 @@ local function write_build(w, pkg)
     end
 
     if build.configure_needs_install_dir then
-        w("pkg_configure_needs_install_dir='yes'")
+        w("pkg_build_configure_needs_install_dir='yes'")
     end
 
     if build.profile then
