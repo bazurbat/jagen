@@ -12,6 +12,6 @@ cleanup_headers() {
 }
 
 jagen_pkg_install() {
-    pkg_run make DESTDIR="$pkg_sysroot" LDCONFIG=: install
-    pkg_run cleanup_headers "$pkg_sysroot$pkg_prefix"/include/*.h
+    pkg_run make DESTDIR="$pkg_staging_dir" LDCONFIG=: install
+    pkg_run cleanup_headers "$pkg_staging_dir$pkg_prefix"/include/*.h
 }

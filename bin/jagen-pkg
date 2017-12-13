@@ -32,7 +32,7 @@ if [ "$pkg_config" ]; then
 fi
 
 export pkg_build_dir="$pkg_work_dir${pkg_config:+/$pkg_config}"
-export pkg_install_dir="$pkg_sysroot$pkg_prefix"
+export pkg_install_dir="$pkg_staging_dir$pkg_prefix"
 
 pkg_build_generator="$jagen_cmake_generator"
 
@@ -42,8 +42,8 @@ if ! [ "$pkg_stage" = "unpack" -o "$pkg_stage" = "patch" ]; then
     include "$jagen_include_dir/${pkg_name}__${pkg_config}" || die
 fi
 
-# set it again in case sysroot or prefix was overriden in include script
-pkg_install_dir="$pkg_sysroot$pkg_prefix"
+# refresh the value because include script may change the composing variables
+pkg_install_dir="$pkg_staging_dir$pkg_prefix"
 
 _pkg_file=$(find_in_path "pkg/${pkg_name}.sh")
 if [ "$_pkg_file" ]; then

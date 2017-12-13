@@ -60,8 +60,8 @@ pkg_fix_pc() {
     local name="${1:?}"
     local filename="$pkg_install_dir/lib/pkgconfig/${name}.pc"
     debug1 "fix pc $filename"
-    if [ -f "$filename" -a "$pkg_sysroot" ]; then
-        pkg_run sed -i "s|$pkg_sysroot||g" "$filename"
+    if [ -f "$filename" -a "$pkg_staging_dir" ]; then
+        pkg_run sed -i "s|$pkg_staging_dir||g" "$filename"
     fi
 }
 
@@ -75,8 +75,8 @@ pkg_fix_la() {
 
 pkg_fix_config_script() {
     local filename="${1:?}"
-    if [ "$pkg_sysroot" -a -f "$filename" ]; then
-        pkg_run sed -ri "s|^(prefix=)$pkg_prefix$|\1$pkg_sysroot|" $filename
+    if [ "$pkg_staging_dir" -a -f "$filename" ]; then
+        pkg_run sed -ri "s|^(prefix=)$pkg_prefix$|\1$pkg_staging_dir|" $filename
     fi
 }
 
@@ -331,7 +331,7 @@ pkg_configure() {
 
     case $pkg_build_type in
         GNU)
-            if [ "$pkg_sysroot" ]; then
+            if [ "$pkg_staging_dir" ]; then
                 LDFLAGS="$LDFLAGS -Wl,-rpath-link=$pkg_install_dir/lib"
             fi
 
@@ -352,7 +352,7 @@ pkg_configure() {
                 ${pkg_system:+--host="$pkg_system"} \
                 --prefix="$pkg_prefix" \
                 --disable-dependency-tracking \
-                ${pkg_sysroot:+--with-sysroot="$pkg_sysroot"} \
+                ${pkg_staging_dir:+--with-sysroot="$pkg_staging_dir"} \
                 $pkg_options "$@"
 
             # Never add RPATH to generated binaries because libtool uses
@@ -475,11 +475,11 @@ pkg_install() {
 
     case $pkg_install_type in
         GNU|make)
-            pkg_run make ${pkg_sysroot:+DESTDIR="$pkg_sysroot"} $pkg_install_args "$@" install
+            pkg_run make ${pkg_staging_dir:+DESTDIR="$pkg_staging_dir"} $pkg_install_args "$@" install
 
             for name in $pkg_libs; do
                 pkg_fix_pc "$name"
-                # pkg_fix_la "$pkg_sysroot$pkg_prefix/lib/lib${name}.la" "$pkg_sysroot"
+                # pkg_fix_la "$pkg_staging_dir$pkg_prefix/lib/lib${name}.la" "$pkg_staging_dir"
 
                 if [ -z "$pkg_install_config_script" ]; then
                     pkg_install_config_script="/bin/${pkg_name}-config"
@@ -488,8 +488,8 @@ pkg_install() {
             done
             ;;
         CMake)
-            if [ "$pkg_sysroot" ]; then
-                export DESTDIR="$pkg_sysroot"
+            if [ "$pkg_staging_dir" ]; then
+                export DESTDIR="$pkg_staging_dir"
             fi
             pkg_run cmake --build . --target install -- $pkg_install_args "$@"
             unset DESTDIR
