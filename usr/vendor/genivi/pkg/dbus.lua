@@ -18,7 +18,6 @@ return {
         type = 'GNU',
         -- fails to find lexpat on target otherwise
         configure_needs_install_dir = true,
-        libs = { 'dbus-1' },
         options = {
             '--enable-shared',
             '--disable-static',
@@ -45,6 +44,9 @@ return {
             '--disable-stats',
             '--without-x',
         }
+    },
+    install = {
+        libs = { 'dbus-1' }
     },
     requires = { 'expat' },
 }

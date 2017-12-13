@@ -12,6 +12,8 @@ return {
             '--disable-gtk',
             '--disable-libpng'
         },
+    },
+    install = {
         libs = { 'pixman-1' }
     }
 }

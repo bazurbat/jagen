@@ -87,7 +87,6 @@ rules and also to find pkg files. The `config` is optional.
         configure_file = 'path',
         configure_needs_install_dir = true,
 
-        libs    = { 'name1', 'name2', ... },
         options = { 'option1', 'option2', ... },
         kernel_modules = true,
 
@@ -103,7 +102,8 @@ rules and also to find pkg files. The `config` is optional.
         root    = 'path',
 
         config_script = 'filename',
-        modules = { 'name1', 'name2', ...},
+        libs    = { 'name1', 'name2', ... },
+        modules = { 'name1', 'name2', ... },
     },
     requires = {
         'name1',
@@ -241,9 +241,6 @@ rules and also to find pkg files. The `config` is optional.
 - **build.kernel_modules** — If set to `true`, indicates that the package
   installs Linux kernel modules.
 
-- **build.libs** (`pkg_libs`) — The list of libraries installed by this
-  package.
-
 - **build.options** (`pkg_build_options`) — The list of options for the build system.
   It could be `configure` arguments or `CMake` defines or something else
   depending on the package build system.
@@ -276,6 +273,10 @@ rules and also to find pkg files. The `config` is optional.
 
 - **install.ldconfig** (`pkg_install_ldconfig`) — Run `ldconfig` after the
   install.
+
+- **install.libs** (`pkg_install_libs`) — A list of names of the libraries
+  installed by this package. Used for post-install processing of config
+  scripts, `*.la` files and pkg-config files.
 
 - **install.modules** (`pkg_install_modules_dirs`) — Linux kernel modules.
 
@@ -434,9 +435,8 @@ rules and also to find pkg files. The `config` is optional.
   differ if overridden; supported values: GNU, make, CMake, linux_kernel,
   linux_module, none
 
-- **pkg_libs** (`build.libs`) — a list of names of the libraries installed by
-  this package; used for post-install processing of config scripts, `la` files
-  and pkg-config files
+- **pkg_install_libs** (`install.libs`) — a list of names of the libraries
+  installed by this package
 
 - **pkg_log** — log path
 

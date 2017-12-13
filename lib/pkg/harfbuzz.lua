@@ -24,6 +24,8 @@ return {
             '--without-uniscribe',
             '--without-coretext'
         },
+    },
+    install = {
         libs = { 'harfbuzz' }
     },
     requires = { 'glib', 'freetype' }

@@ -11,6 +11,8 @@ return {
             '--enable-devel',
             '--disable-libipq'
         },
+    },
+    install = {
         libs = { 'iptc', 'ip4tc', 'ip6tc', 'xtables' }
     }
 }

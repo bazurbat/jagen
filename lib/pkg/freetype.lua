@@ -22,6 +22,8 @@ return {
             '--without-quickdraw-carbon',
             '--without-ats'
         },
+    },
+    install = {
         libs = { 'freetype' }
     }
 }

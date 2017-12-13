@@ -10,9 +10,9 @@ return {
             '--disable-rpath',
             '--disable-languages'
         },
-        libs = { 'gpg-error' }
     },
     install = {
-        config_script = '/bin/gpg-error-config'
+        config_script = '/bin/gpg-error-config',
+        libs = { 'gpg-error' }
     }
 }

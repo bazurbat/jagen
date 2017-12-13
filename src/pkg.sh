@@ -477,7 +477,7 @@ pkg_install() {
         GNU|make)
             pkg_run make ${pkg_install_root:+DESTDIR="$pkg_install_root"} $pkg_install_args "$@" install
 
-            for name in $pkg_libs; do
+            for name in $pkg_install_libs; do
                 pkg_fix_pc "$name"
                 # pkg_fix_la "$pkg_install_root$pkg_install_prefix/lib/lib${name}.la" "$pkg_install_root"
 

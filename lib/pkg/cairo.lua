@@ -58,6 +58,8 @@ return {
             '--without-skia',
             '--without-gallium',
         },
+    },
+    install = {
         libs = { 'cairo' }
     },
     requires = {

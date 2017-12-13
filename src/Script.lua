@@ -124,10 +124,6 @@ local function write_build(w, pkg)
         w('pkg_build_options="%s"', table.concat(o, '\n'))
     end
 
-    if build.libs then
-        w("pkg_libs='%s'", table.concat(build.libs, ' '))
-    end
-
     if build.in_source then
         w("pkg_build_in_source='yes'")
         build_dir = '$pkg_source_dir'
@@ -174,6 +170,10 @@ local function write_install(w, pkg)
 
     if install.ldconfig then
         w("pkg_install_ldconfig='yes'")
+    end
+
+    if install.libs then
+        w("pkg_install_libs='%s'", table.concat(install.libs, ' '))
     end
 
     if install.modules then

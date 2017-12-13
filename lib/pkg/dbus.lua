@@ -8,7 +8,6 @@ return {
         type = 'GNU',
         -- fails to find lexpat on target otherwise
         configure_needs_install_dir = true,
-        libs = { 'dbus-1' },
         options = {
             '--with-system-pid-file=/run/dbus.pid',
             '--with-system-socket=/run/dbus/system_bus_socket',
@@ -45,6 +44,9 @@ return {
             '--without-x',
             '--with-systemdsystemunitdir=$pkg_install_dir/lib/systemd/system'
         }
+    },
+    install = {
+        libs = { 'dbus-1' }
     },
     requires = { 'expat' }
 }

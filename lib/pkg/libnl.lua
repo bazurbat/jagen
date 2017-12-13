@@ -15,6 +15,8 @@ return {
             '--disable-static',
             '--disable-cli'
         },
+    },
+    install = {
         libs = { 'nl-3', 'nl-genl-3', 'nl-route-3', 'nl-nf-3', 'nl-idiag-3' }
     }
 }

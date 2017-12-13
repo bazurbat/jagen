@@ -10,7 +10,9 @@ return {
             '--enable-integer-samples=yes',
             '--enable-x86-optimizations=no'
         },
-        libs = { 'SoundTouch' },
         autoreconf = true
+    },
+    install = {
+        libs = { 'SoundTouch' }
     }
 }

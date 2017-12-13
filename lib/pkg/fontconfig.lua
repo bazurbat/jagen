@@ -13,6 +13,8 @@ return {
             '--disable-libxml2',
             '--disable-docs',
         },
+    },
+    install = {
         libs = { 'fontconfig' }
     },
     requires = { 'expat', 'freetype' }

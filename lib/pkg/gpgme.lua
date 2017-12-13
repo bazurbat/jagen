@@ -17,6 +17,8 @@ return {
             '--with-libgpg-error-prefix=$pkg_install_root',
             '--with-libassuan-prefix=$pkg_install_root'
         },
+    },
+    install = {
         libs = { 'gpgme' }
     },
     requires = { 'libassuan' }

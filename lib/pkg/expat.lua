@@ -6,6 +6,8 @@ return {
     },
     build  = {
         type = 'GNU',
+    },
+    install = {
         libs = { 'expat' }
     }
 }

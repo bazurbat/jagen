@@ -9,6 +9,8 @@ return {
         options = {
             '--with-libgpg-error-prefix=$pkg_install_root'
         },
+    },
+    install = {
         libs = { 'assuan' }
     },
     requires = { 'libgpg-error' }
