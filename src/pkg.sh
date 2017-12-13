@@ -3,6 +3,9 @@
 . "$jagen_dir/env.sh" ||
     { echo "Failed to load environment"; exit 1; }
 
+# Do not prompt on the terminal (e.g. when asking for HTTP credentials).
+export GIT_TERMINAL_PROMPT=0
+
 : ${pkg_run_jobs:=$(jagen_nproc)}
 : ${pkg_run_on_error:=exit}
 : ${jagen_cmake_generator:=Ninja}
