@@ -1,5 +1,14 @@
 #!/bin/sh
 
+jagen_pkg_compile_target() {
+    export PKG_CONFIG_SYSROOT_DIR="$jagen_target_dir"
+    export GRPC_CROSS_COMPILE='true'
+    export GRPC_CROSS_AROPTS='r'
+    # export HAS_PKG_CONFIG='false'
+    # export PROTOBUF_CONFIG_OPTS="--host='$jagen_target_system' --with-protoc='$jagen_host_dir/bin/protoc'"
+    pkg_compile HOST_CC=gcc HOST_CXX=g++ HOST_LD=gcc HOST_LDXX=g++
+}
+
 jagen_pkg_install() {
     local pc_names="grpc grpc++ grpc_unsecure grpc++_unsecure"
     local f filename
