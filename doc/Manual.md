@@ -214,7 +214,7 @@ rules and also to find pkg files. The `config` is optional.
   `CMAKE_TOOLCHAIN_FILE` for this package only. Set to empty string to disable
   passing of the toolchain file from the environment.
 
-- **build.configure_file** (`pkg_configure_file`) — The location of the
+- **build.configure_file** (`pkg_build_configure_file`) — The location of the
   `configure` script (`$pkg_source_dir/configure`).
 
 - **build.configure_needs_install_dir** (`pkg_configure_needs_install_dir`) —
@@ -402,7 +402,7 @@ rules and also to find pkg files. The `config` is optional.
 
 - **pkg_config** (`pkg.config`) — the config of the currently executing stage
 
-- **pkg_configure_file** (`build.configure_file`) — specifies the path to the
+- **pkg_build_configure_file** (`build.configure_file`) — specifies the path to the
   configure file; `$pkg_source_dir/configure` if unset
 
 - **pkg_configure_needs_install_dir** (`build.configure_needs_install_dir`) —

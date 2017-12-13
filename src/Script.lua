@@ -105,7 +105,7 @@ local function write_build(w, pkg)
     end
 
     if build.configure_file then
-        w('pkg_configure_file="%s"', build.configure_file)
+        w('pkg_build_configure_file="%s"', build.configure_file)
     end
 
     if build.configure_needs_install_dir then
