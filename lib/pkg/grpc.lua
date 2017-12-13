@@ -9,7 +9,8 @@ return {
         in_source = true
     },
     install = {
-        args = { 'prefix=$pkg_install_dir' }
+        args = { 'prefix=$pkg_install_dir' },
+        ldconfig = true
     },
     requires = {
         'protobuf',
