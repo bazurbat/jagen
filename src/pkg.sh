@@ -380,8 +380,8 @@ pkg_configure() {
                 A="$A$S-DCMAKE_MODULE_PATH=$pkg_build_cmake_module_path"
             fi
 
-            if [ "$pkg_cmake_toolchain_file" ]; then
-                A="$A$S-DCMAKE_TOOLCHAIN_FILE=$pkg_cmake_toolchain_file"
+            if [ "$pkg_build_cmake_toolchain_file" ]; then
+                A="$A$S-DCMAKE_TOOLCHAIN_FILE=$pkg_build_cmake_toolchain_file"
             fi
 
             if [ "$pkg_config" = "target" ]; then

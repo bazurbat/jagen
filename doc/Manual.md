@@ -210,7 +210,7 @@ rules and also to find pkg files. The `config` is optional.
   `CMAKE_MODULE_PATH` for this package only. Set to empty string to disable
   passing of the module path from the environment.
 
-- **build.cmake_toolchain_file** (`pkg_cmake_toolchain_file`) — specifies
+- **build.cmake_toolchain_file** (`pkg_build_cmake_toolchain_file`) — specifies
   `CMAKE_TOOLCHAIN_FILE` for this package only. Set to empty string to disable
   passing of the toolchain file from the environment.
 
@@ -398,7 +398,7 @@ rules and also to find pkg files. The `config` is optional.
 - **pkg_build_cmake_module_path** (`build.cmake_module_path`) — specifies
   `CMAKE_MODULE_PATH` for the current package.
 
-- **pkg_cmake_toolchain_file** (`build.cmake_toolchain_file`) — specifies
+- **pkg_build_cmake_toolchain_file** (`build.cmake_toolchain_file`) — specifies
   `CMAKE_TOOLCHAIN_FILE` for the current package.
 
 - **pkg_config** (`pkg.config`) — the config of the currently executing stage
