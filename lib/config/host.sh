@@ -8,4 +8,3 @@ pkg_install_prefix="$jagen_host_dir"
 
 : ${pkg_build_cmake_toolchain_file:=$jagen_host_cmake_toolchain_file}
 : ${pkg_build_cmake_toolchain_file:=$jagen_cmake_toolchain_file}
-: ${pkg_build_cmake_toolchain_file:=$(find_in_path "config/host_toolchain.cmake")}

@@ -9,4 +9,3 @@ pkg_install_root="$jagen_target_dir"
 
 : ${pkg_build_cmake_toolchain_file:=$jagen_target_cmake_toolchain_file}
 : ${pkg_build_cmake_toolchain_file:=$jagen_cmake_toolchain_file}
-: ${pkg_build_cmake_toolchain_file:=$(find_in_path "config/target_toolchain.cmake")}
