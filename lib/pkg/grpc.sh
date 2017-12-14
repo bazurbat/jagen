@@ -1,5 +1,12 @@
 #!/bin/sh
 
+jagen_pkg_configure() {
+    local filter_file="$(find_in_path src_filter.txt)"
+    pkg_run rsync -va \
+        ${filter_file:+--filter="merge $filter_file"} \
+        "$pkg_source_dir"/ "$pkg_build_dir"
+}
+
 jagen_pkg_compile_target() {
     export PKG_CONFIG_SYSROOT_DIR="$jagen_target_dir"
     export GRPC_CROSS_COMPILE='true'
@@ -19,7 +26,7 @@ jagen_pkg_install() {
         filename="$pkg_install_dir/lib/pkgconfig/${f}.pc"
         if [ -f "$filename" ]; then
             pkg_run chmod -x "$filename"
-            pkg_run sed -ri "s|^(prefix=)(.*)$|\1$pkg_install_dir|" "$filename"
+            pkg_run sed -ri "s|^(prefix=)(.*)$|\1$pkg_install_prfix|" "$filename"
         fi
     done
 }

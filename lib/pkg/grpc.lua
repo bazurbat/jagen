@@ -5,12 +5,11 @@ return {
         branch   = 'v1.7.x',
     },
     build = {
-        type = 'make',
-        in_source = true
+        type = 'make'
     },
     install = {
         args = { 'prefix=$pkg_install_dir' },
-        ldconfig = true
+        -- ldconfig = true
     },
     requires = {
         'protobuf',
