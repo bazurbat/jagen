@@ -40,7 +40,7 @@ function iter(t, itt)
     if itt then
         return itt(next), t
     else
-        return it, t
+        return next, t
     end
 end
 
@@ -48,7 +48,7 @@ function iiter(t, itt)
     if itt then
         return itt(inext), t, 0
     else
-        return it, t
+        return inext, t
     end
 end
 
