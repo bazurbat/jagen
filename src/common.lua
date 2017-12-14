@@ -260,7 +260,9 @@ end
 function table.keys(t)
     local keys = {}
     for k, v in pairs(t or {}) do
-        table.insert(keys, k)
+        if type(k) ~= 'number' then
+            table.insert(keys, k)
+        end
     end
     return keys
 end
