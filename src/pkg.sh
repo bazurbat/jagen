@@ -382,7 +382,12 @@ pkg_configure() {
 
             if [ "$pkg_build_cmake_toolchain_file" ]; then
                 A="$A$S-DCMAKE_TOOLCHAIN_FILE=$pkg_build_cmake_toolchain_file"
-            elif [ "$pkg_config" = "target" ]; then
+            fi
+
+            # Command line assignments create cache entries. They can not
+            # override settings from the toolchain file, so entries below are
+            # just the defaults.
+            if [ "$pkg_config" = "target" ]; then
                 A="$A$S-DCMAKE_SYSTEM_NAME=Linux"
                 A="$A$S-DCMAKE_FIND_ROOT_PATH=$pkg_install_dir"
                 if [ -z "$CC" ]; then

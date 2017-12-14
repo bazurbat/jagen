@@ -304,14 +304,13 @@ rules and also to find pkg files. The `config` is optional.
 - **jagen_cmake_module_path** — Override the `CMAKE_MODULE_PATH`.
 - **jagen_cmake_options** — Arguments to pass to CMake in `configure` stage.
 - **jagen_cmake_module_path** — The `CMAKE_MODULE_PATH` to pass to CMake in `configure` stage.
-- **jagen_cmake_toolchain_file** — The `CMAKE_TOOLCHAIN_FILE` to pass to CMake in `configure` stage.
+- **jagen_cmake_toolchain_file** — The `CMAKE_TOOLCHAIN_FILE` to pass to CMake in `configure` stage. It applies only to `target` config.
 - **jagen_debug** — Debug level.
 - **jagen_dir** — The location of the Jagen source directory.
 - **jagen_dist_dir** — The location of the `dist` directory (`$jagen_project_dir/dist`).
 - **jagen_flags** — Space-separated list of flags.
 - **jagen_host_cflags** — The global host cflags.
 - **jagen_host_cmake_module_path** — The `CMAKE_MODULE_PATH` to pass to CMake in `configure` stage. Overrides `jagen_cmake_module_path` for packages in `host` config. Set to empty string to disable.
-- **jagen_host_cmake_toolchain_file** — The `CMAKE_TOOLCHAIN_FILE` to pass to CMake in `configure` stage. Overrides `jagen_cmake_toolchain_file` for packages in `host` config. Set to empty string to disable.
 - **jagen_host_dir** — The location of the `host` directory (`$jagen_project_dir/host`).
 - **jagen_host_system** — The name of the current host system.
 - **jagen_include_dir** — The location of the `include` directory (`$jagen_project_dir/include`).
@@ -356,7 +355,6 @@ rules and also to find pkg files. The `config` is optional.
 - **jagen_target_board** — The name of the current target board.
 - **jagen_target_cflags** — The global target cflags.
 - **jagen_target_cmake_module_path** — The `CMAKE_MODULE_PATH` to pass to CMake in `configure` stage. Overrides `jagen_cmake_module_path` for packages in `target` config. Set to empty string to disable.
-- **jagen_target_cmake_toolchain_file** — The `CMAKE_TOOLCHAIN_FILE` to pass to CMake in `configure` stage. Overrides `jagen_cmake_toolchain_file` for packages in `target` config. Set to empty string to disable.
 - **jagen_target_cpu** — The name of the current target CPU (like cortex-a9).
 - **jagen_target_dir** — The location of the `target` directory (`$jagen_project_dir/target`).
 - **jagen_target_platform** — The name of the current target platform (currently used only for Android).
