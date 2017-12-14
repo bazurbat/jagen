@@ -13,19 +13,19 @@ error() {
 }
 
 debug() {
-    if [ "$jagen_debug" ] && [ "$jagen_debug" -gt 0 ]; then
+    if [ "$jagen_debug" ] && [ "$jagen_debug" -ge 0 ]; then
         printf "(D0) %s\n" "$*" >&2
     fi
 }
 
 debug1() {
-    if [ "$jagen_debug" ] && [ "$jagen_debug" -gt 1 ]; then
+    if [ "$jagen_debug" ] && [ "$jagen_debug" -ge 1 ]; then
         printf "(D1) %s\n" "$*" >&2
     fi
 }
 
 debug2() {
-    if [ "$jagen_debug" ] && [ "$jagen_debug" -gt 2 ]; then
+    if [ "$jagen_debug" ] && [ "$jagen_debug" -ge 2 ]; then
         printf "(D2) %s\n" "$*" >&2
     fi
 }
