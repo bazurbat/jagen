@@ -2,6 +2,20 @@ local System = require 'System'
 
 local P = {}
 
+local function write_pkg_var(w, prefix, name, value)
+    if not value then return end
+    local tp = type(value)
+    if tp == 'string' or tp == 'number' then
+        w('pkg_%s%s="%s"', prefix, name, value)
+    elseif tp == 'boolean' then
+        w("pkg_%s%s='yes'", prefix, name)
+    elseif tp == 'table' then
+        w('pkg_%s%s="%s"', prefix, name, table.concat(value, '\n'))
+    else
+        error(string.format('unable to write variable %s (%s)', name, tp))
+    end
+end
+
 local function write_env(w, pkg)
     local env = pkg.env or { pkg.config }
     for _, e in ipairs(env) do
@@ -10,69 +24,52 @@ local function write_env(w, pkg)
 end
 
 local function write_common(w, pkg)
-    if pkg.work_dir then
-        w('pkg_work_dir="%s"', pkg.work_dir)
+    local function write_var(name, value)
+        return write_pkg_var(w, '', name, value)
     end
+    write_var('work_dir', pkg.work_dir)
 end
 
 local function write_source(w, pkg)
     local source = pkg.source
     if not source then return end
 
+    local function write_var(name, value)
+        return write_pkg_var(w, 'source_', name, value)
+    end
+    local names = sort(table.keys(source))
+
     if source.type and source.location then
         w('pkg_source="%s %s"', source.type, source.location)
     end
 
-    if source.filename then
-        w('pkg_source_filename="%s"', source.filename)
+    for name in each(names) do
+        write_var(name, source[name])
     end
-    if source.basename then
-        w('pkg_source_basename="%s"', source.basename)
+end
+
+local function write_patches(w, pkg)
+    local patches = pkg.patches
+    if not patches then return end
+
+    local function write_var(name, value)
+        return write_pkg_var(w, 'patches_', name, value)
+    end
+    local names = sort(table.keys(patches))
+
+    for name in each(names) do
+        write_var(name, patches[name])
     end
 
-    if source.sha1sum then
-        w('pkg_source_sha1sum="%s"', source.sha1sum)
-    end
-    if source.sha256sum then
-        w('pkg_source_sha256sum="%s"', source.sha256sum)
-    end
-    if source.md5sum then
-        w('pkg_source_md5sum="%s"', source.md5sum)
-    end
-
-    if source.branch then
-        w('pkg_source_branch="%s"', source.branch)
-    end
-
-    if source.dir then
-        w('pkg_source_dir="%s"', source.dir)
-    end
-
-    if source.exclude then
-        w("pkg_source_exclude='yes'")
-    end
-    if source.ignore_dirty then
-        w("pkg_source_ignore_dirty='yes'")
-    end
-
-    if pkg.patches then
-        local patches = pkg.patches
-        if patches.required then
-            w('pkg_patches_required="%s"', table.concat(patches.required, '\n'))
+    if #patches > 0 then
+        assert(patches.required and #patches == #patches.required)
+        w('jagen_pkg_apply_patches() {')
+        for i, item in ipairs(patches) do
+            local name = item[1]
+            local strip = item[2]
+            w('  pkg_run_patch %d "%s"', strip, patches.required[i])
         end
-        if patches.provided then
-            w('pkg_patches_provided="%s"', table.concat(patches.provided, '\n'))
-        end
-        if #patches > 0 then
-            assert(patches.required and #patches == #patches.required)
-            w('jagen_pkg_apply_patches() {')
-            for i, item in ipairs(patches) do
-                local name = item[1]
-                local strip = item[2]
-                w('  pkg_run_patch %d "%s"', strip, patches.required[i])
-            end
-            w('}')
-        end
+        w('}')
     end
 end
 
@@ -80,54 +77,13 @@ local function write_build(w, pkg)
     local build = pkg.build
     if not build then return end
 
-    if build.type then
-        w("pkg_build_type='%s'", build.type)
+    local function write_var(name, value)
+        return write_pkg_var(w, 'build_', name, value)
     end
+    local names = sort(table.keys(build))
 
-    if build.type == 'CMake' then
-        if build.generator then
-            w('pkg_build_generator="%s"', build.generator)
-        end
-    end
-
-    if build.generate then
-        w("pkg_build_generate='yes'")
-    end
-
-    if build.cmake_module_path then
-        w('pkg_build_cmake_module_path="%s"', build.cmake_module_path)
-    end
-
-    if build.cmake_toolchain_file then
-        w('pkg_build_cmake_toolchain_file="%s"', build.cmake_toolchain_file)
-    end
-
-    if build.configure_file then
-        w('pkg_build_configure_file="%s"', build.configure_file)
-    end
-
-    if build.configure_needs_install_dir then
-        w("pkg_build_configure_needs_install_dir='yes'")
-    end
-
-    if build.profile then
-        w("pkg_build_profile='%s'", build.profile)
-    end
-
-    if build.options then
-        local o = build.options
-        if type(build.options) == 'string' then
-            o = { build.options }
-        end
-        w('pkg_build_options="%s"', table.concat(o, '\n'))
-    end
-
-    if build.in_source then
-        w("pkg_build_in_source='yes'")
-    end
-
-    if build.dir then
-        w('pkg_build_dir="%s"', build.dir)
+    for name in each(names) do
+        write_var(name, build[name])
     end
 end
 
@@ -135,47 +91,13 @@ local function write_install(w, pkg)
     local install = pkg.install
     if not install then return end
 
-    if install.type then
-        w('pkg_install_type="%s"', install.type)
+    local function write_var(name, value)
+        return write_pkg_var(w, 'install_', name, value)
     end
+    local names = sort(table.keys(install))
 
-    if install.root then
-        w('pkg_install_root="%s"', install.root)
-    end
-
-    if install.prefix then
-        w('pkg_install_prefix="%s"', install.prefix)
-    end
-
-    if install.config_script then
-        w("pkg_install_config_script='%s'", install.config_script)
-    end
-
-    if install.args then
-        local args
-        if type(install.args) == 'table' then
-            args = install.args
-        else
-            args = { tostring(install.args) }
-        end
-        w('pkg_install_args="%s"', table.concat(args, '\n'))
-    end
-
-    if install.ldconfig then
-        w("pkg_install_ldconfig='yes'")
-    end
-
-    if install.libs then
-        w("pkg_install_libs='%s'", table.concat(install.libs, ' '))
-    end
-
-    if install.module_dirs then
-        if type(install.module_dirs) == 'string' then
-            w("pkg_install_module_dirs='%s'", install.module_dirs)
-        elseif type(install.module_dirs) == 'table' then
-            w('pkg_install_module_dirs="%s"',
-                table.concat(install.module_dirs, ' '))
-        end
+    for name in each(names) do
+        write_var(name, install[name])
     end
 end
 
@@ -189,8 +111,8 @@ local function generate_script(filename, pkg)
     write_env(w, pkg)
     write_common(w, pkg)
     write_source(w, pkg)
-    -- write install first to allow referencing dest dir and such from
-    -- configure options
+    write_patches(w, pkg)
+    -- write install first to allow referencing install dir from build options
     write_install(w, pkg)
     write_build(w, pkg)
 
