@@ -67,7 +67,7 @@ function map(f, t)
         return function(iter)
             return function(t, last)
                 local k, v = iter(t, last)
-                if k then return k, f(v) end
+                if k then return k, f(v, k) end
             end
         end
     end
@@ -81,7 +81,7 @@ function filter(pred, t)
             local function step(t, last)
                 local k, v = iter(t, last)
                 if k then
-                    if pred(v) then
+                    if pred(v, k) then
                         return k, v
                     else
                         return step(t, k)
