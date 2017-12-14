@@ -17,6 +17,6 @@ return {
         in_source = true
     },
     install = {
-        modules = 'os/linux'
+        module_dirs = { 'os/linux' }
     }
 }

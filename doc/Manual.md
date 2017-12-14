@@ -103,7 +103,7 @@ rules and also to find pkg files. The `config` is optional.
 
         config_script = 'filename',
         libs    = { 'name1', 'name2', ... },
-        modules = { 'name1', 'name2', ... },
+        module_dirs = { 'name1', 'name2', ... },
     },
     requires = {
         'name1',
@@ -278,7 +278,10 @@ rules and also to find pkg files. The `config` is optional.
   installed by this package. Used for post-install processing of config
   scripts, `*.la` files and pkg-config files.
 
-- **install.modules** (`pkg_install_modules_dirs`) — Linux kernel modules.
+- **install.module_dirs** (`pkg_install_module_dirs`) — a list of directories
+  relative the the source directory containing Linux kernel modules which could
+  be installed using the standard command (`make M=$dir modules_install`) or
+  similar
 
 - **install.prefix** (`pkg_install_prefix`) — Install prefix.
 
@@ -423,7 +426,7 @@ rules and also to find pkg files. The `config` is optional.
 - **pkg_install_ldconfig** (`install.ldconfig`) — a flag indicating whether to
   run `ldconfig` after the install
 
-- **pkg_install_modules_dirs** (`install.modules`) — a list of directories
+- **pkg_install_module_dirs** (`install.module_dirs`) — a list of directories
   relative the the source directory containing Linux kernel modules which could
   be installed using the standard command (`make M=$dir modules_install`) or
   similar

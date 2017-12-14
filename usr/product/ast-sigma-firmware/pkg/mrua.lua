@@ -10,7 +10,7 @@ return {
         kernel_modules = true,
     },
     install = {
-        modules = {
+        module_dirs = {
             -- order matters to avoid warnings from depmod
             'MRUA_src/llad/direct/kernel_src',
             'MRUA_src/rua/emhwlib_kernel/kernel_src',

@@ -169,12 +169,12 @@ local function write_install(w, pkg)
         w("pkg_install_libs='%s'", table.concat(install.libs, ' '))
     end
 
-    if install.modules then
-        if type(install.modules) == 'string' then
-            w("pkg_install_modules_dirs='%s'", install.modules)
-        elseif type(install.modules) == 'table' then
-            w('pkg_install_modules_dirs="%s"',
-                table.concat(install.modules, ' '))
+    if install.module_dirs then
+        if type(install.module_dirs) == 'string' then
+            w("pkg_install_module_dirs='%s'", install.module_dirs)
+        elseif type(install.module_dirs) == 'table' then
+            w('pkg_install_module_dirs="%s"',
+                table.concat(install.module_dirs, ' '))
         end
     end
 end

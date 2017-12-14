@@ -16,6 +16,6 @@ return {
         in_source = true,
     },
     install = {
-        modules = 'tmp-d-kbuild'
+        module_dirs = { 'tmp-d-kbuild' }
     }
 }

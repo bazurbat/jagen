@@ -533,8 +533,8 @@ pkg__modules_install() {
 pkg_install_modules() {
     local dir
 
-    if [ "$pkg_install_modules_dirs" ]; then
-        for dir in $pkg_install_modules_dirs; do
+    if [ "$pkg_install_module_dirs" ]; then
+        for dir in $pkg_install_module_dirs; do
             pkg__modules_install "$dir"
         done
     else
