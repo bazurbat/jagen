@@ -504,8 +504,13 @@ function P.define_rule(rule, rule_context)
         local install = this.install or pkg.install
 
         if build then
-            if build.in_source and pkg.source:is_scm() then
-                pkg.source.ignore_dirty = true
+            if build.in_source then
+                if not build.dir then
+                    build.dir = '$pkg_source_dir'
+                end
+                if pkg.source:is_scm() then
+                    pkg.source.ignore_dirty = true
+                end
             end
 
             if build.type == 'GNU' then

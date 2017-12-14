@@ -80,8 +80,6 @@ local function write_build(w, pkg)
     local build = pkg.build
     if not build then return end
 
-    local build_dir
-
     if build.type then
         w("pkg_build_type='%s'", build.type)
     end
@@ -126,15 +124,10 @@ local function write_build(w, pkg)
 
     if build.in_source then
         w("pkg_build_in_source='yes'")
-        build_dir = '$pkg_source_dir'
     end
 
     if build.dir then
-        build_dir = build.dir
-    end
-
-    if build_dir then
-        w('pkg_build_dir="%s"', build_dir)
+        w('pkg_build_dir="%s"', build.dir)
     end
 end
 
