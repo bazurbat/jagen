@@ -118,6 +118,18 @@ pkg_link() {
     pkg_run cd "$OLDPWD"
 }
 
+pkg__get_verbose_arg() {
+    [ "$jagen_build_verbose" ] || return 0
+    case $pkg_build_type in
+        CMake)
+            case $pkg_build_generator in
+                *Ninja)     echo "-v"        ;;
+                *Makefiles) echo "VERBOSE=1" ;;
+            esac ;;
+        make) echo "V=1" ;;
+    esac
+}
+
 pkg_get_build_profile() {
     local profile="${pkg_build_profile:-$jagen_build_profile}"
     case $profile in
@@ -450,19 +462,11 @@ pkg_compile() {
                 *Makefiles)
                     jagen_cmake_build_options="-j$pkg_run_jobs $jagen_cmake_build_options" ;;
             esac
-            if [ "$jagen_build_verbose" ]; then
-                case $pkg_build_generator in
-                    *Ninja)
-                        jagen_cmake_build_options="-v $jagen_cmake_build_options" ;;
-                    *Makefiles)
-                        jagen_cmake_build_options="VERBOSE=1 $jagen_cmake_build_options" ;;
-                esac
-            fi
-            pkg_run cmake --build . -- $jagen_cmake_build_options "$@"
+            pkg_run cmake --build . -- $(pkg__get_verbose_arg) \
+                $jagen_cmake_build_options "$@"
             ;;
         make)
-            [ "$jagen_build_verbose" ] && verbose_opt="V=1"
-            pkg_run make $verbose_opt $pkg_build_options "$@"
+            pkg_run make $(pkg__get_verbose_arg) $pkg_build_options "$@"
             ;;
         linux_kernel)
             use_env kbuild
@@ -487,7 +491,9 @@ pkg_install() {
 
     case $pkg_install_type in
         GNU|make)
-            pkg_run make ${pkg_install_root:+DESTDIR="$pkg_install_root"} $pkg_install_args "$@" install
+            pkg_run make $(pkg__get_verbose_arg) \
+                ${pkg_install_root:+DESTDIR="$pkg_install_root"} \
+                $pkg_install_args "$@" install
 
             for name in $pkg_install_libs; do
                 pkg_fix_pc "$name"
@@ -503,7 +509,8 @@ pkg_install() {
             if [ "$pkg_install_root" ]; then
                 export DESTDIR="$pkg_install_root"
             fi
-            pkg_run cmake --build . --target install -- $pkg_install_args "$@"
+            pkg_run cmake --build . --target install -- $(pkg__get_verbose_arg) \
+                $pkg_install_args "$@"
             unset DESTDIR
             ;;
         linux_kernel)
