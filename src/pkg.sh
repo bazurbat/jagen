@@ -394,9 +394,8 @@ pkg_configure() {
                 A="$A$S-DCMAKE_TOOLCHAIN_FILE=$pkg_build_cmake_toolchain_file"
             fi
 
-            # Command line assignments create cache entries. They can not
-            # override settings from the toolchain file, so entries below are
-            # just the defaults.
+            # Command line assignments create cache entries, so they can not
+            # override settings from the toolchain file.
             if [ "$pkg_config" = "target" ]; then
                 A="$A$S-DCMAKE_SYSTEM_NAME=Linux"
                 A="$A$S-DCMAKE_FIND_ROOT_PATH=$pkg_install_dir"
@@ -406,12 +405,6 @@ pkg_configure() {
                 if [ -z "$CXX" ]; then
                     A="$A$S-DCMAKE_CXX_COMPILER=${jagen_toolchain_prefix-}g++"
                 fi
-            fi
-
-            if $(jagen__versions ge "$(jagen__get_cmake_version)" 3.1); then
-                A="$A$S-DCMAKE_EXPORT_NO_PACKAGE_REGISTRY=YES"
-                A="$A$S-DCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY=YES"
-                A="$A$S-DCMAKE_FIND_PACKAGE_NO_SYSTEM_PACKAGE_REGISTRY=YES"
             fi
 
             if pkg_is_debug; then
@@ -425,6 +418,12 @@ pkg_configure() {
             # and override our environment.
             A="$A$S-DCMAKE_C_FLAGS_RELEASE="
             A="$A$S-DCMAKE_CXX_FLAGS_RELEASE="
+
+            if $(jagen__versions ge "$(jagen__get_cmake_version)" 3.1); then
+                A="$A$S-DCMAKE_EXPORT_NO_PACKAGE_REGISTRY=YES"
+                A="$A$S-DCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY=YES"
+                A="$A$S-DCMAKE_FIND_PACKAGE_NO_SYSTEM_PACKAGE_REGISTRY=YES"
+            fi
 
             pkg_run cmake -G"$pkg_build_generator" \
                 -DCMAKE_BUILD_TYPE="$(pkg_cmake_build_type)" \
