@@ -407,6 +407,8 @@ pkg_configure() {
             if pkg_is_debug; then
                 # assuming that global defaults are for 'release' config
                 unset CFLAGS CXXFLAGS
+                A="$A$S-DCMAKE_C_FLAGS="
+                A="$A$S-DCMAKE_CXX_FLAGS="
             fi
 
             # Remove CMake's defaults which are appended to the generic flags
