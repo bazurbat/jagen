@@ -6,7 +6,6 @@ return {
     },
     build = {
         type = 'CMake',
-        cmake_toolchain_file = '',
         options = {
             '-DFLATBUFFERS_BUILD_TESTS=NO'
         }
