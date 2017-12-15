@@ -2,7 +2,7 @@ return {
     source = {
         type     = 'git',
         location = 'https://github.com/bazurbat/protobuf.git',
-        branch   = '3.5.x',
+        branch   = '3.4.x',
         exclude_submodules = true,
     },
     build = {
