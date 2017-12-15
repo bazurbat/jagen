@@ -80,10 +80,8 @@ pkg_fix_config_script() {
     fi
 }
 
-pkg__run_ldconfig() {
-    if [ "$pkg_install_ldconfig" ]; then
-        pkg_run ldconfig -n "$pkg_install_dir/lib"
-    fi
+pkg_run_ldconfig() {
+    pkg_run ldconfig -n "$pkg_install_dir/lib"
 }
 
 pkg_sync_dirs() {
@@ -530,7 +528,9 @@ pkg_install() {
             ;;
     esac
 
-    pkg__run_ldconfig
+    if [ "$pkg_install_ldconfig" ]; then
+        pkg_run_ldconfig
+    fi
 }
 
 pkg__modules_install() {
