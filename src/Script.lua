@@ -27,7 +27,35 @@ local function write_common(w, pkg)
     local function write_var(name, value)
         return write_pkg_var(w, '', name, value)
     end
-    write_var('work_dir', pkg.work_dir)
+
+    local predefined_keys = {
+        'build',
+        'config',
+        'configs',
+        'contexts',
+        'install',
+        'name',
+        'pass_template',
+        'patches',
+        'requires',
+        'source',
+        'stages',
+        'template',
+    }
+    local function custom_keys(_, key)
+        return type(key) ~= 'number' and
+            not find(function (k) return k == key end, predefined_keys)
+    end
+
+    local names = {}
+    for k, v in iter(pkg, filter(custom_keys)) do
+        table.insert(names, k)
+    end
+    table.sort(names)
+
+    for name in each(names) do
+        write_var(name, pkg[name])
+    end
 end
 
 local function write_source(w, pkg)
