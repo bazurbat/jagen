@@ -18,11 +18,12 @@ fi
 . "${jagen_dir:?}/src/pkg.sh" || die
 
 _pkg_stamp_name="${pkg_name}__${pkg_stage}${pkg_config:+__${pkg_config}}"
-pkg_log="${jagen_log_dir:?}/${_pkg_stamp_name}.log"
+_pkg_log_file="${jagen_log_dir:?}/${_pkg_stamp_name}.log"
+
 export pkg_work_dir="${jagen_build_dir:?}/$pkg_name"
 
 if [ -z "$pkg_query" ]; then
-    : >"$pkg_log"
+    : >"$_pkg_log_file"
 fi
 
 cd "$jagen_build_dir" || die
@@ -87,7 +88,7 @@ run_stage() {
 
     if is_function "$stage"; then
         debug "$pkg: $stage"
-        eval "$stage" $pkg_args >>"$pkg_log" 2>&1 ||
+        eval "$stage" $pkg_args >>"$_pkg_log_file" 2>&1 ||
             die "failed to run $pkg_stage stage of package $pkg"
     else
         return 2
