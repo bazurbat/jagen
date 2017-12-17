@@ -49,14 +49,14 @@ local function pop_context()
     return o
 end
 
-local function try_load_module(modname)
+local function find_module(modname)
     for path in string.gmatch(lua_package.path, '[^;]+') do
         local filename = string.gsub(path, '%?', modname)
         local file = io.open(filename, 'rb')
         if file then
             local module = assert(loadstring(assert(file:read('*a')), filename))
             file:close()
-            return module(), filename
+            return module, filename
         end
     end
 end
@@ -348,9 +348,12 @@ function P:check_insource_build()
 end
 
 function P.load_rules()
-    local dirs = string.split2(os.getenv('jagen_path'), '\t')
+    local def_loader = lua_package.loaders[2]
+    lua_package.loaders[2] = find_module
 
     packages = {}
+
+    local dirs = string.split2(os.getenv('jagen_path'), '\t')
 
     for i = #dirs, 1, -1 do
         local filename = System.mkpath(dirs[i], 'rules.lua')
@@ -405,6 +408,8 @@ function P.load_rules()
         pkg:check_insource_build()
     end
 
+    lua_package.loaders[2] = def_loader
+
     return packages
 end
 
@@ -420,9 +425,9 @@ function P.define_rule(rule, rule_context)
         if pkg.name ~= 'patches' then
             pkg:add_target { 'patch' }
         end
-        local module, filename = try_load_module('pkg/'..rule.name)
+        local module, filename = find_module('pkg/'..rule.name)
         if module then
-            table.merge(pkg, P:new(module))
+            table.merge(pkg, P:new(assert(module())))
             append(pkg.contexts, Context:new { filename = filename })
         end
         packages[rule.name] = pkg
