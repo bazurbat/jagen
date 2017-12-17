@@ -14,13 +14,21 @@ create_project() {
     "../$init_project" -f "$name"
     cp -f build/build.ninja build.ninja.orig
     rsync -a --delete include/ include.orig
+    (
+        . ./env.sh &&
+        jagen list packages -ad > list_packages.txt.orig
+    )
     cd - >/dev/null
 }
 
 refresh_project() {
     local name="$1"
     cd "$name"
-    ( . ./env.sh && jagen refresh )
+    (
+        . ./env.sh &&
+        jagen refresh
+        jagen list packages -ad > list_packages.txt
+    )
     cd - >/dev/null
 }
 
@@ -30,6 +38,9 @@ check_project() {
     echo "=== $name ==="
     diff -u build.ninja.orig build/build.ninja || true
     diff -u include.orig include || true
+    if [ -f list_packages.txt.orig ] && [ -f list_packages.txt ]; then
+        diff -u list_packages.txt.orig list_packages.txt
+    fi
     cd - >/dev/null
 }
 
