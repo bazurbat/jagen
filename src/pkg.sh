@@ -302,11 +302,6 @@ pkg_unpack() {
                 die "failed to download $pkg_name from $src_path"
             pkg_run chmod +x "$dest"
             ;;
-        *)
-            if [ "$pkg_source_dir" ]; then
-                pkg_run mkdir -p "$pkg_source_dir"
-            fi
-            ;;
     esac
 }
 
@@ -335,9 +330,9 @@ pkg_autoreconf() {
 }
 
 pkg_configure() {
-    local IFS="$jagen_IFS" S="$jagen_FS" A=
-
     [ "$pkg_source_dir" ] || return 0
+
+    local IFS="$jagen_IFS" S="$jagen_FS" A=
 
     case $pkg_build_type in
         GNU)
@@ -483,6 +478,8 @@ pkg_compile() {
 }
 
 pkg_install() {
+    [ "$pkg_source_dir" ] || return 0
+
     local IFS="$jagen_IFS"
     local pkg_install_type="${pkg_install_type:-$pkg_build_type}"
 

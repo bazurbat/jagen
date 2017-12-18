@@ -72,8 +72,9 @@ case $pkg_stage in
         cd "$jagen_build_dir"
         ;;
     patch)
-        [ "$pkg_source_dir" ] || exit 0
-        pkg_run cd "$pkg_source_dir"
+        if [ "$pkg_source_dir" ] && [ -d "$pkg_source_dir" ]; then
+            pkg_run cd "$pkg_source_dir"
+        fi
         ;;
     *)
         if [ "$pkg_build_dir" ]; then
