@@ -41,6 +41,10 @@ pkg_build_generator="$jagen_cmake_generator"
 include "$jagen_include_dir/$pkg_name" || die
 
 if ! [ "$pkg_stage" = "unpack" -o "$pkg_stage" = "patch" ]; then
+    : ${pkg_env:=$pkg_config}
+    for e in $pkg_env; do
+        use_env "$e" || true
+    done; unset e
     include "$jagen_include_dir/${pkg_name}__${pkg_config}" || die
 fi
 

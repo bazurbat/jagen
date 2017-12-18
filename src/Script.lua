@@ -16,13 +16,6 @@ local function write_pkg_var(w, prefix, name, value)
     end
 end
 
-local function write_env(w, pkg)
-    local env = pkg.env or { pkg.config }
-    for _, e in ipairs(env) do
-        w('use_env %s || true', e)
-    end
-end
-
 local function write_common(w, pkg)
     local function write_var(name, value)
         return write_pkg_var(w, '', name, value)
@@ -130,13 +123,11 @@ local function write_install(w, pkg)
 end
 
 local function generate_script(filename, pkg)
-    local file = assert(io.open(filename, 'w+'))
-
+    local lines = {}
     local function w(format, ...)
-        file:write(string.format(format..'\n', ...))
+        table.insert(lines, string.format(format, ...))
     end
 
-    write_env(w, pkg)
     write_common(w, pkg)
     write_source(w, pkg)
     write_patches(w, pkg)
@@ -144,7 +135,11 @@ local function generate_script(filename, pkg)
     write_install(w, pkg)
     write_build(w, pkg)
 
-    file:close()
+    if #lines > 0 then
+        local file = assert(io.open(filename, 'w+'))
+        file:write(table.concat(lines, '\n'))
+        file:close()
+    end
 end
 
 function P:generate(pkg, dir)
