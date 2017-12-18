@@ -213,6 +213,10 @@ function P:add_patch_dependencies()
         local stage = pkg.stages['unpack']
         stage.inputs = stage.inputs or {}
         table.iextend(stage.inputs, inputs)
+        -- Adding patch files to arguments modifies the command line which is
+        -- needed for Ninja to notice the changes in the list itself and rerun
+        -- the command.
+        stage.arg = inputs
 
         pkg.patches = pkg.patches or {}
         pkg.patches.required = extend(pkg.patches.required, inputs)
@@ -227,6 +231,10 @@ function P:add_patch_dependencies()
         end
         stage.outputs = stage.outputs or {}
         table.iextend(stage.outputs, outputs)
+        -- Adding patch files to arguments modifies the command line which is
+        -- needed for Ninja to notice the changes in the list itself and rerun
+        -- the command which then checks if the patches were indeed provided.
+        stage.arg = stage.outputs
 
         pkg.patches = pkg.patches or {}
         pkg.patches.provided = sort(extend(pkg.patches.provided, outputs))

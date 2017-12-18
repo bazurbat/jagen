@@ -20,6 +20,13 @@ local function separated(str)
     end
 end
 
+local function escape(s)
+    s = string.gsub(s, "%$", "$$")
+    s = string.gsub(s, " ", "$ ")
+    s = string.gsub(s, ":", "$:")
+    return s
+end
+
 local function join(list)
     return concat(list)
 end
@@ -36,15 +43,14 @@ local function join_escaped(list)
     return concat(list, ' $\n')
 end
 
-local function quote(s)
-    return format("'%s'", string.gsub(s or '', "%$", "$$"))
+local function join_quoted(list)
+    return join_space(newlist(map(function (i)
+                    return format("'%s'", escape(tostring(i)))
+        end), list))
 end
 
-local function escape(s)
-    s = string.gsub(s, "%$", "$$")
-    s = string.gsub(s, " ", "$ ")
-    s = string.gsub(s, ":", "$:")
-    return s
+local function quote(s)
+    return format("'%s'", string.gsub(s or '', "%$", "$$"))
 end
 
 local function binding(k, v)
@@ -99,8 +105,12 @@ local function format_stage(target)
         local command = { target.name, target.stage,
             target.config or quote('')
         }
-        if target.arg then
-            append(command, quote(target.arg))
+        local arg = target.arg
+        if type(arg) == 'string' or type(arg) == 'number' then
+            arg = { tostring(arg) }
+        end
+        if type(arg) == 'table' then
+            append(command, join_quoted(target.arg))
         end
         return join_space(command)
     end
@@ -109,6 +119,15 @@ local function format_stage(target)
         description = target:__tostring(' '),
         args        = format_args(),
     }
+
+    if target.stage == 'provide_patches' then
+        -- Each output whose modification time the command did not change will
+        -- be treated as though it had never needed to be built. This means
+        -- that the packages which require the provided patches will no be
+        -- rebuilt if the patch files themselves have not changed even though
+        -- the provide_patches stage execution making them "dirty".
+        vars.restat = 'true'
+    end
 
     return format_build {
         rule    = 'stage',
@@ -141,7 +160,7 @@ function P.generate(out_file, rules)
     local lines = {
         binding('builddir', assert(Jagen.build_dir)),
         format_rule('stage', join {
-                separated(Jagen.shell), 'jagen-pkg $args && touch $out'
+                separated(Jagen.shell), 'jagen-pkg $args'
             })
     }
 

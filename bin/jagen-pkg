@@ -18,6 +18,7 @@ fi
 . "${jagen_dir:?}/src/pkg.sh" || die
 
 _pkg_stamp_name="${pkg_name}__${pkg_stage}${pkg_config:+__${pkg_config}}"
+_pkg_stamp_file="${jagen_build_dir:?}/${_pkg_stamp_name}"
 _pkg_log_file="${jagen_log_dir:?}/${_pkg_stamp_name}.log"
 
 export pkg_work_dir="${jagen_build_dir:?}/$pkg_name"
@@ -98,4 +99,4 @@ run_stage() {
 run_stage "jagen_pkg_${pkg_stage}_${pkg_config}" ||
     run_stage "jagen_pkg_${pkg_stage}"
 
-exit 0
+touch "$_pkg_stamp_file"
