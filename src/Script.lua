@@ -6,11 +6,11 @@ local function write_pkg_var(w, prefix, name, value)
     if not value then return end
     local tp = type(value)
     if tp == 'string' or tp == 'number' then
-        w('pkg_%s%s="%s"', prefix, name, value)
+        w("pkg_%s%s='%s'", prefix, name, value)
     elseif tp == 'boolean' then
         w("pkg_%s%s='yes'", prefix, name)
     elseif tp == 'table' then
-        w('pkg_%s%s="%s"', prefix, name, table.concat(value, '\n'))
+        w("pkg_%s%s='%s'", prefix, name, table.concat(value, '\n'))
     else
         error(string.format('unable to write variable %s (%s)', name, tp))
     end
@@ -61,7 +61,7 @@ local function write_source(w, pkg)
     local names = sort(table.keys(source))
 
     if source.type and source.location then
-        w('pkg_source="%s %s"', source.type, source.location)
+        w("pkg_source='%s %s'", source.type, source.location)
     end
 
     for name in each(names) do
