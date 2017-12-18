@@ -137,7 +137,7 @@ local function generate_script(filename, pkg)
 
     if #lines > 0 then
         local file = assert(io.open(filename, 'w+'))
-        file:write(table.concat(lines, '\n'))
+        file:write(table.concat(lines, '\n'), '\n')
         file:close()
     end
 end
