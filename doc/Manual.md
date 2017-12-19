@@ -15,10 +15,6 @@
 
 ### Introduction
 
-Jagen is a tool which eases development of multiple interdependent software
-packages. It abstracts peculiarities of individual packages build systems and
-provides means to manage them as a whole.
-
 A workflow is organized around "projects" which are composed from several
 layers. Each layer can contribute rule definitions and environment variables to
 the project. These definitions are evaluated to generate meta build system

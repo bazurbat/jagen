@@ -1,12 +1,12 @@
 # Jagen
 
-Jagen is a tool which eases development of multiple interdependent software
-packages. It abstracts peculiarities of individual packages build systems and
-provides means to manage them as a whole.
+Jagen is a meta build system generator. It eases the development of multiple
+interdependent software packages by abstracting peculiarities of their own
+build systems and providing facilities to manage them as a whole.
 
 ### Requirements
 
-POSIX compatible shell, Lua 5.1 or 5.2 (or JuaJIT 2.0), [Ninja](https://ninja-build.org/).
+POSIX compatible shell, Lua 5.1 or 5.2 (or LuaJIT 2.0), [Ninja](https://ninja-build.org/).
 
 ## Getting Started
 
