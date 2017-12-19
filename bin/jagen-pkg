@@ -83,7 +83,9 @@ case $pkg_stage in
         if [ "$pkg_build_dir" ]; then
             pkg_run mkdir -p "$pkg_build_dir"
             pkg_run cd "$pkg_build_dir"
-        fi ;;
+        fi
+        in_flags ccache && use_env ccache
+        ;;
 esac
 
 run_stage() {

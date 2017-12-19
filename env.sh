@@ -54,8 +54,6 @@ export jagen_target_toolchain
 
 jagen__set_path || return
 
-in_flags ccache && use_env ccache
-
 # skip exit status check here thus allowing layers without env
 import env || true
 
