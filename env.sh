@@ -47,30 +47,7 @@ if [ "$jagen_project_dir" ]; then
     include "$jagen_project_dir/config"
 fi
 
-set_jagen_path() {
-    local layer path IFS="$jagen_IFS" FS="$jagen_FS"
-
-    for layer in $jagen_layers; do
-        case $layer in
-            /*) path="$layer" ;;
-             *) for path in "$jagen_project_dir/$layer" "$jagen_dir/usr/$layer"; do
-                    [ -d "$path" ] && break
-                done ;;
-        esac
-        if [ -d "$path" ]; then
-            path=$(real_path "$path")
-            jagen_path="$path${FS}$jagen_path"
-            LUA_PATH="$path/?.lua;$LUA_PATH"
-        else
-            error "Failed to resolve jagen path: the layer directory '$layer' does not exist"
-            return 2
-        fi
-    done
-
-    jagen_path="$jagen_project_lib_dir${FS}$jagen_path"
-    LUA_PATH="$jagen_project_lib_dir/?.lua;$LUA_PATH"
-}
-set_jagen_path || return
+jagen__set_path || return
 
 export jagen_host_dir="$jagen_project_dir/host"
 export jagen_target_dir="$jagen_project_dir/target"

@@ -195,6 +195,31 @@ jagen__expand() {
     echo "$value"
 }
 
+# Expands 'jagen_layers' and sets 'jagen_path' and 'LUA_PATH' accordingly.
+jagen__set_path() {
+    local layer path IFS="$jagen_IFS" FS="$jagen_FS"
+
+    for layer in $jagen_layers; do
+        case $layer in
+            /*) path="$layer" ;;
+             *) for path in "$jagen_project_dir/$layer" "$jagen_dir/usr/$layer"; do
+                    [ -d "$path" ] && break
+                done ;;
+        esac
+        if [ -d "$path" ]; then
+            path=$(real_path "$path")
+            jagen_path="$path${FS}$jagen_path"
+            LUA_PATH="$path/?.lua;$LUA_PATH"
+        else
+            error "Failed to resolve jagen path: the layer directory '$layer' does not exist"
+            return 2
+        fi
+    done
+
+    jagen_path="$jagen_project_lib_dir${FS}$jagen_path"
+    LUA_PATH="$jagen_project_lib_dir/?.lua;$LUA_PATH"
+}
+
 jagen_nproc() {
     case $(uname -s) in
         Darwin)
