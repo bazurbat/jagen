@@ -1,18 +1,18 @@
 #!/bin/sh
 
-# deal with it
+# We are trying to carefully handle the field splitting according to POSIX
+# behaviour, zsh by default do not split on whitespace which interferes with
+# that.
 if [ "${ZSH_VERSION-}" ]; then
     setopt shwordsplit
 fi
 
-jagen_FS=$(printf '\t')
-jagen_IFS=$(printf '\n\t')
+export jagen_FS=$(printf '\t')
+export jagen_IFS=$(printf '\n\t')
 
-# These globals are coming from env.sh
-export jagen_dir="$jagen_dir"
+# These globals are coming from project's env.sh
+export jagen_dir="${jagen_dir:?}"
 export jagen_project_dir="$jagen_project_dir"
-
-export jagen_layers=""
 
 export jagen_shell=""
 export jagen_lua="${jagen_lua-}"
@@ -22,7 +22,7 @@ export jagen_lua="${jagen_lua-}"
 export jagen_debug="${jagen_debug-}"
 export jagen_flags=""
 
-export jagen_lib_dir="${jagen_dir:?}/lib"
+export jagen_lib_dir="$jagen_dir/lib"
 export jagen_project_lib_dir="$jagen_project_dir/lib"
 
 export jagen_bin_dir="$jagen_project_dir/bin"
@@ -47,17 +47,17 @@ add_PATH "$jagen_host_dir/bin"
 add_LD_LIBRARY_PATH "$jagen_host_dir/lib"
 export PATH LD_LIBRARY_PATH
 
+export jagen_layers
 export jagen_sdk
 export jagen_source_exclude
 export jagen_target_board
 export jagen_target_toolchain
 
-jagen__set_path || return
+jagen__set_path
 
-# skip exit status check here thus allowing layers without env
-import env || true
+import env || true # it is OK if no env was found
 
-# not checking existence because it can be not checked out yet
+# May be set in layers and not exist during the env sourcing.
 if [ "${jagen_private_dir-}" ]; then
     export jagen_private_dir
     add_PATH "$jagen_private_dir/bin"
