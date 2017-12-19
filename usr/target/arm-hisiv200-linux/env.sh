@@ -11,6 +11,7 @@ jagen_target_toolchain_dir="${jagen_toolchains_dir:?}/${jagen_target_toolchain:?
 jagen_target_cflags="-march=armv7-a -mcpu=cortex-a9 -mfpu=vfpv3-d16 -mfloat-abi=softfp"
 
 toolchain_install_ldconfig() {
+    require toolchain
     local lib_path="$(toolchain_find_path libc.so.6)"
     local ldconfig_path="$(real_path "${lib_path:?}/../sbin")/ldconfig"
 

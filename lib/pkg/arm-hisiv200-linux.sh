@@ -1,5 +1,7 @@
 #!/bin/sh
 
+require toolchain
+
 jagen_pkg_unpack() {
     toolchain_unpack "$pkg_name" "$pkg_source_dir"
 }

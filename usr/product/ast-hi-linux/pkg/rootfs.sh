@@ -1,6 +1,7 @@
 #!/bin/sh
 
 require rootfs
+require toolchain
 
 install_sdk() {
     local pub_dir="$jagen_sdk_dir/pub"
