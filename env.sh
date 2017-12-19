@@ -33,8 +33,6 @@ export jagen_build_dir="$jagen_project_dir/build"
 export jagen_include_dir="$jagen_project_dir/include"
 export jagen_log_dir="$jagen_build_dir"
 
-export jagen_source_exclude
-
 . "$jagen_dir/src/common.sh" || return
 
 # Avoid import during init-root
@@ -42,20 +40,19 @@ if [ "$jagen_project_dir" ]; then
     include "$jagen_project_dir/config"
 fi
 
-jagen__set_path || return
-
 export jagen_host_dir="$jagen_project_dir/host"
 export jagen_target_dir="$jagen_project_dir/target"
 
 add_PATH "$jagen_host_dir/bin"
 add_LD_LIBRARY_PATH "$jagen_host_dir/lib"
+export PATH LD_LIBRARY_PATH
 
 export jagen_sdk
-export jagen_target_toolchain
+export jagen_source_exclude
 export jagen_target_board
+export jagen_target_toolchain
 
-export PATH
-export LD_LIBRARY_PATH
+jagen__set_path || return
 
 in_flags ccache && use_env ccache
 
@@ -68,5 +65,3 @@ if [ "${jagen_private_dir-}" ]; then
     export jagen_private_dir
     add_PATH "$jagen_private_dir/bin"
 fi
-
-return 0
