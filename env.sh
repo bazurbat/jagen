@@ -7,8 +7,8 @@ if [ "${ZSH_VERSION-}" ]; then
     setopt shwordsplit
 fi
 
-export jagen_FS=$(printf '\t')
-export jagen_IFS=$(printf '\n\t')
+export jagen_FS="$(printf '\t')"
+export jagen_IFS="$(printf '\n\t')"
 
 # These globals are coming from project's env.sh
 export jagen_dir="${jagen_dir:?}"
