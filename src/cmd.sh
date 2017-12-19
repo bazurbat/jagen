@@ -143,6 +143,12 @@ cmd_find_patch() {
     return 2
 }
 
+cmd_get_path() {
+    . "$jagen_dir/env.sh" || return
+    local IFS="$jagen_IFS"
+    jagen__expand_layers $jagen_layers
+}
+
 mode="${1:?}"
 shift
 
@@ -155,6 +161,9 @@ case $mode in
         ;;
     find_patch)
         cmd_find_patch "$@"
+        ;;
+    get_path)
+        cmd_get_path "$@"
         ;;
     *)
         die "unknown wrapper command: $1"

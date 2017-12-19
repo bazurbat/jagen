@@ -361,7 +361,7 @@ function P.load_rules()
 
     packages = {}
 
-    local dirs = string.split2(os.getenv('jagen_path'), '\t')
+    local dirs = string.split2(System.pread('*a', '"%s" get_path', Jagen.cmd), '\t')
 
     for i = #dirs, 1, -1 do
         local filename = System.mkpath(dirs[i], 'rules.lua')

@@ -195,6 +195,32 @@ jagen__expand() {
     echo "$value"
 }
 
+# Tries to expand the supplied arguments as layer paths relative to the current
+# project directory and echoes the jagen_FS-separated list of absolute
+# directory paths. The '$jagen_project_lib_dir' is always added as the first
+# entry of the result and '$jagen_dir/lib' as the last entry.
+# Dies if it is unable to find a matching directory for any argument.
+jagen__expand_layers() {
+    local FS="$jagen_FS" layer path result="${jagen_dir:?}/lib"
+    for layer; do
+        case $layer in
+            /*) path="$layer" ;;
+             *) for path in "${jagen_project_dir:?}/$layer" "$jagen_dir/usr/$layer"; do
+                    [ -d "$path" ] && break
+                done ;;
+        esac
+        if [ -d "$path" ]; then
+            path=$(real_path "$path")
+            result="${path}${FS}${result}"
+        else
+            die "failed to resolve layer dir: $layer"
+        fi
+    done
+    result="${jagen_project_lib_dir:?}${FS}${result}"
+    result="${result%$FS}"
+    echo "$result"
+}
+
 # Expands 'jagen_layers' and sets 'jagen_path' and 'LUA_PATH' accordingly.
 jagen__set_path() {
     local layer path IFS="$jagen_IFS" FS="$jagen_FS"
