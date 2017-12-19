@@ -44,24 +44,12 @@ fi
 
 export pkg_install_dir="$pkg_install_root$pkg_install_prefix"
 
-# Deferred expansion of pkg_* variables from the included scripts.
-# These elaborate manipulations with IFS and quoting are needed to preserve
-# whitespace in the variable values because we use newlines to separate items
-# in lists.
-expand_vars() {
-    local IFS name value depth
-    for name in $(set | awk -F= '/^pkg_.*=/ { print $1 }'); do
-        depth=10
-        while [ $depth -gt 0 ]; do
-            value=$(IFS= eval echo \$${name})
-            IFS= eval ${name}='$(eval echo \"$value\")'
-            [ "$value" = "${value#*$}" ] && break
-            depth=$((depth-1))
-        done
-        [ $depth = 0 ] && die "maximum recursion depth exceeded when trying to expand $name: $value"
-    done
-}
-expand_vars
+# Expand pkg_* variables. The generated scripts may refer to values such as
+# pkg_install_dir which can be calculated only with config environments in
+# scope. There will be other features which will depend on this logic.
+for name in $(set | awk -F= '/^pkg_.*=/ { print $1 }'); do
+    eval $name='$(jagen__expand "$(IFS= eval echo \$$name)")'
+done; unset name
 
 _pkg_file=$(find_in_path "pkg/${pkg_name}.sh")
 if [ "$_pkg_file" ]; then

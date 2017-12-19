@@ -180,6 +180,21 @@ to_lower() {
     echo "${1:?}" | tr '[:upper:]' '[:lower:]'
 }
 
+# Evaluates the supplied value until there are no more expansions possible (no
+# '$' symbols found in the value) and echoes the result of the expansion.
+# Dies if the maximum recursion depth is reached (10).
+# Note: command eval is needed to set IFS only for this eval instance.
+jagen__expand() {
+    local value="$1" depth=10
+    while [ $depth -gt 0 ]; do
+        IFS= command eval value='$(eval echo \"$value\")'
+        [ "$value" = "${value#*$}" ] && break
+        depth=$((depth-1))
+    done
+    [ $depth = 0 ] && die "maximum recursion depth exceeded when trying to expand value '$value'"
+    echo "$value"
+}
+
 jagen_nproc() {
     case $(uname -s) in
         Darwin)
