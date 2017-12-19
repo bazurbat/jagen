@@ -196,36 +196,13 @@ jagen__expand() {
 }
 
 # Tries to expand the supplied arguments as layer paths relative to the current
-# project directory and echoes the jagen_FS-separated list of absolute
-# directory paths. The '$jagen_project_lib_dir' is always added as the first
-# entry of the result and '$jagen_dir/lib' as the last entry.
+# project directory and prints the jagen_FS-separated list of absolute
+# directory paths. The '$jagen_dir/lib' is always added as the first entry of
+# the result and '$jagen_project_lib_dir' as the last entry.
 # Dies if it is unable to find a matching directory for any argument.
 jagen__expand_layers() {
-    local FS="$jagen_FS" layer path result="${jagen_dir:?}/lib"
+    local FS="$jagen_FS" layer path result="$jagen_dir/lib"
     for layer; do
-        case $layer in
-            /*) path="$layer" ;;
-             *) for path in "${jagen_project_dir:?}/$layer" "$jagen_dir/usr/$layer"; do
-                    [ -d "$path" ] && break
-                done ;;
-        esac
-        if [ -d "$path" ]; then
-            path=$(real_path "$path")
-            result="${path}${FS}${result}"
-        else
-            die "failed to resolve layer dir: $layer"
-        fi
-    done
-    result="${jagen_project_lib_dir:?}${FS}${result}"
-    result="${result%$FS}"
-    echo "$result"
-}
-
-# Expands 'jagen_layers' and sets 'jagen_path' and 'LUA_PATH' accordingly.
-jagen__set_path() {
-    local layer path IFS="$jagen_IFS" FS="$jagen_FS"
-
-    for layer in $jagen_layers; do
         case $layer in
             /*) path="$layer" ;;
              *) for path in "$jagen_project_dir/$layer" "$jagen_dir/usr/$layer"; do
@@ -234,16 +211,26 @@ jagen__set_path() {
         esac
         if [ -d "$path" ]; then
             path=$(real_path "$path")
-            jagen_path="$path${FS}$jagen_path"
-            LUA_PATH="$path/?.lua;$LUA_PATH"
+            result="${result}${FS}${path}"
         else
-            error "Failed to resolve jagen path: the layer directory '$layer' does not exist"
-            return 2
+            die "failed to resolve layer dir: $layer"
         fi
     done
+    result="${result}${FS}${jagen_project_lib_dir}"
+    printf '%s' "$result"
+}
 
-    jagen_path="$jagen_project_lib_dir${FS}$jagen_path"
-    LUA_PATH="$jagen_project_lib_dir/?.lua;$LUA_PATH"
+# Expands '$jagen_layers' and sets '$jagen_path' and '$LUA_PATH' accordingly.
+jagen__set_path() {
+    local layer path IFS="$jagen_IFS" FS="$jagen_FS"
+
+    export jagen_path=
+    export LUA_PATH="$jagen_dir/src/?.lua;;"
+
+    for path in $(jagen__expand_layers ${jagen_layers-}); do
+        jagen_path="${path}${FS}${jagen_path}"
+        LUA_PATH="$path/?.lua;$LUA_PATH"
+    done
 }
 
 jagen_nproc() {

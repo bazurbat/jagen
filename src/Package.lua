@@ -363,7 +363,7 @@ function P.load_rules()
 
     local dirs = string.split2(System.pread('*a', '"%s" get_path', Jagen.cmd), '\t')
 
-    for i = #dirs, 1, -1 do
+    for i = 1, #dirs do
         local filename = System.mkpath(dirs[i], 'rules.lua')
         local file = io.open(filename, 'rb')
         if file then

@@ -33,9 +33,6 @@ export jagen_build_dir="$jagen_project_dir/build"
 export jagen_include_dir="$jagen_project_dir/include"
 export jagen_log_dir="$jagen_build_dir"
 
-export jagen_path="$jagen_dir/lib"
-export LUA_PATH="$jagen_dir/lib/?.lua;$jagen_dir/src/?.lua;;"
-
 export jagen_source_exclude
 
 . "$jagen_dir/src/common.sh" || return
