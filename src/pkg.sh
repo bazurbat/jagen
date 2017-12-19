@@ -5,6 +5,8 @@
 
 # Do not prompt on the terminal (e.g. when asking for HTTP credentials).
 export GIT_TERMINAL_PROMPT=0
+# Never install the translations.
+export LINGUAS=""
 
 : ${pkg_run_jobs:=$(jagen_nproc)}
 : ${pkg_run_on_error:=exit}

@@ -61,7 +61,6 @@ export jagen_target_board
 
 export PATH
 export LD_LIBRARY_PATH
-export LINGUAS=""
 
 in_flags ccache && use_env ccache
 
