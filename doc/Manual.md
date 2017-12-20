@@ -170,6 +170,7 @@ rules and also to find pkg files. The `config` is optional.
   Essentially this means that instead of the default base rule the specified
   template will be taken and then current rule will be merged into it. This
   template is also passed to the derived rules (from the "requires" lists).
+  Can be 'false' to disable applying the template to the current rule.
 
 - **pkg.pass_template** — A template which is passed to the derived rules but
   not applied to the current rule itself. It is useful to break cycles of

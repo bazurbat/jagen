@@ -377,6 +377,7 @@ function P.load_rules()
         local cfg = pkg:has_config(config)
         if cfg and cfg.stages and cfg.stages['configure'] then
             P.define_rule { pkg.name, config,
+                template = false,
                 requires = { toolchain }
             }
         end
@@ -480,7 +481,10 @@ function P.define_rule(rule, rule_context)
         end
     end
 
-    local template = rule.template or rule.pass_template or this.template or {}
+    local template = {}
+    if rule.template ~= false then
+        template = rule.template or rule.pass_template or this.template or {}
+    end
     template.config = config
 
     rule.template, rule.pass_template = nil, nil
