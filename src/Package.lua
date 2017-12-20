@@ -388,12 +388,12 @@ function P.load_rules()
 
     for name, pkg in pairs(packages) do
         if host_toolchain and
-                pkg.build and pkg.build.requires_toolchain ~= false and
+                pkg.build and pkg.build.toolchain ~= false and
                 name ~= host_toolchain then
             add_toolchain(pkg, host_toolchain, 'host')
         end
         if target_toolchain and
-                pkg.build and pkg.build.requires_toolchain ~= false and
+                pkg.build and pkg.build.toolchain ~= false and
                 name ~= target_toolchain then
             add_toolchain(pkg, target_toolchain, 'target')
         end

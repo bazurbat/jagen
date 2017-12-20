@@ -6,7 +6,7 @@ return {
     },
     build = {
         in_source = true,
-        requires_toolchain = false
+        toolchain = false
     },
     requires = {
         'gcc-linaro-5.3_aarch64-runtime',
