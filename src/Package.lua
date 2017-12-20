@@ -335,7 +335,6 @@ function P:query(value, config)
 end
 
 function P:check_insource_build()
-    if self.name == 'toolchain' then return end -- the toolchain is special
     local config_count = table.count(self.configs)
     local in_source, generate
     if self.build then
@@ -374,24 +373,29 @@ function P.load_rules()
 
     push_context({ implicit = true })
 
-    for _, pkg in pairs(packages) do
-        if pkg.name == 'toolchain' and pkg:has_config('host') then
-            P.define_rule { 'toolchain', 'host',
-                requires = { 'gcc-native' }
+    local function add_toolchain(pkg, toolchain, config)
+        local cfg = pkg:has_config(config)
+        if cfg and cfg.stages and cfg.stages['configure'] then
+            P.define_rule { pkg.name, config,
+                requires = { toolchain }
             }
-            break
         end
     end
 
+    local host_toolchain = 'gcc-native'
     local target_toolchain = os.getenv('jagen_target_toolchain')
-    if target_toolchain then
-        P.define_rule {
-            name = target_toolchain,
-            config = 'target'
-        }
-        P.define_rule { 'toolchain', 'target',
-            requires = { target_toolchain }
-        }
+
+    for name, pkg in pairs(packages) do
+        if host_toolchain and
+                pkg.build and pkg.build.requires_toolchain ~= false and
+                name ~= host_toolchain then
+            add_toolchain(pkg, host_toolchain, 'host')
+        end
+        if target_toolchain and
+                pkg.build and pkg.build.requires_toolchain ~= false and
+                name ~= target_toolchain then
+            add_toolchain(pkg, target_toolchain, 'target')
+        end
     end
 
     -- As the add_patch_dependencies can insert new packages to the list
@@ -535,14 +539,7 @@ function P.define_rule(rule, rule_context)
                 end
             end
 
-            if pkg.name == 'toolchain' or build.requires_toolchain == false then
-                pkg:add_target({ 'configure' }, config)
-            else
-                pkg:add_target({ 'configure',
-                        { 'toolchain', 'install', config }
-                    }, config)
-                P.define_rule { 'toolchain', config }
-            end
+            pkg:add_target({ 'configure' }, config)
 
             if build.type == 'linux_module' or build.kernel_modules == true or
                     install and install.modules then
