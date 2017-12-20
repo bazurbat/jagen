@@ -330,17 +330,16 @@ local function clean_packages(args)
     end
 end
 
-local project_dirs = {
-    'jagen_bin_dir',
-    'jagen_build_dir',
-    'jagen_include_dir',
-    'jagen_log_dir',
-    'jagen_host_dir',
-    'jagen_target_dir',
-}
-
 local function clean_project()
-    assert(System.rmrf(table.unpack(System.getenv(project_dirs))))
+    local clean_dirs = {
+        'jagen_bin_dir',
+        'jagen_build_dir',
+        'jagen_include_dir',
+        'jagen_log_dir',
+        'jagen_host_dir',
+        'jagen_target_dir',
+    }
+    assert(System.rmrf(table.unpack(System.getenv(clean_dirs))))
 end
 
 function Jagen.command.clean(args)
@@ -358,7 +357,13 @@ function Jagen.command.clean(args)
 end
 
 local function prepare_root()
-    assert(System.mkdir(table.unpack(System.getenv(project_dirs))))
+    local create_dirs = {
+        'jagen_bin_dir',
+        'jagen_build_dir',
+        'jagen_include_dir',
+        'jagen_log_dir',
+    }
+    assert(System.mkdir(table.unpack(System.getenv(create_dirs))))
 end
 
 function Jagen.command.refresh(args, packages)
