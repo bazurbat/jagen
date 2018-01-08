@@ -279,9 +279,12 @@ rules and also to find pkg files. The `config` is optional.
   generator executables which need to be run on the host system. The rule for
   the host package will be derived automatically.
 
-- **build.toolchain** — If set to `false`, indicates that the package does not
-  need toolchain. Used internally for the "toolchain-like" packages themselves
-  to break dependency cycles.
+- **build.toolchain** — Specifies the package toolchain which also will be
+  added to the package requires. If not set, the default is `gcc-native` if the
+  package config name is `host` and `$jagen_target_toolchain` if the config
+  name is `target`. The `false` value indicates that the package does not
+  require a toolchain. Should be set to `false` for toolchain packages
+  themselves to break dependency cycles.
 
 - **build.type** (`pkg_build_type`) — The type of the package build system.
   Supported values are: GNU, CMake, KBuild, make, linux_kernel, linux_module,

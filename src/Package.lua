@@ -311,6 +311,16 @@ function P:each()
         end)
 end
 
+function P:each_config()
+    return function (t, i)
+        if self.configs then
+            return next(self.configs, i)
+        else
+            return nil
+        end
+    end
+end
+
 function P:query(value, config)
     local result = {}
 
@@ -387,15 +397,24 @@ function P.load_rules()
     local target_toolchain = os.getenv('jagen_target_toolchain')
 
     for name, pkg in pairs(packages) do
-        if host_toolchain and
-                pkg.build and pkg.build.toolchain ~= false and
-                name ~= host_toolchain then
-            add_toolchain(pkg, host_toolchain, 'host')
-        end
-        if target_toolchain and
-                pkg.build and pkg.build.toolchain ~= false and
-                name ~= target_toolchain then
-            add_toolchain(pkg, target_toolchain, 'target')
+        for config, _ in pkg:each_config() do
+            local build = pkg:get('build', config) or pkg.build
+            if build then
+                local toolchain = build.toolchain
+                if toolchain ~= false then
+                    if toolchain then
+                        add_toolchain(pkg, toolchain, config)
+                    else
+                        if config == 'host' and host_toolchain and
+                                name ~= host_toolchain then
+                            add_toolchain(pkg, host_toolchain, config)
+                        elseif config == 'target' and target_toolchain and
+                                name ~= target_toolchain then
+                            add_toolchain(pkg, target_toolchain, config)
+                        end
+                    end
+                end
+            end
         end
     end
 
