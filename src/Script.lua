@@ -33,6 +33,7 @@ local function write_common(w, pkg)
         'config',
         'configs',
         'contexts',
+        'export',
         'install',
         'name',
         'pass_template',
@@ -129,6 +130,20 @@ local function write_install(w, pkg)
     end
 end
 
+local function write_export(w, pkg)
+    local export = pkg.export
+    if not export then return end
+
+    local function write_var(name, value)
+        return write_pkg_var(w, 'export_', name, value)
+    end
+    local names = sort(table.keys(export))
+
+    for name in each(names) do
+        write_var(name, export[name])
+    end
+end
+
 local function generate_script(filename, pkg)
     local lines = {}
     local function w(format, ...)
@@ -141,6 +156,8 @@ local function generate_script(filename, pkg)
     -- write install first to allow referencing install dir from build options
     write_install(w, pkg)
     write_build(w, pkg)
+    -- should be the last to allow referencing other variables
+    write_export(w, pkg)
 
     if #lines > 0 then
         local file = assert(io.open(filename, 'w+'))
