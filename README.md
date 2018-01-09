@@ -1,8 +1,26 @@
 # Jagen
 
-Jagen is a meta build system generator. It eases the development of multiple
-interdependent software packages by abstracting peculiarities of their own
-build systems and providing facilities to manage them as a whole.
+Jagen eases the development of multiple interdependent software packages by
+abstracting peculiarities of their individual build systems and providing
+facilities to manage them as a whole.
+
+It mainly targets embedded development use case when things should be done
+"your way" instead of trying to fit build requirements to rigid paradigms of
+Yocto and Buildroot. In particular, integrating third-party SDKs, toolchains or
+packages with non-standard build systems intended to be much simpler. The focus
+is on ease of use and customization instead of trying to provide a library of
+recipes for every piece of software ever written. On the other hand, vendor or
+project-specific recipe libraries and patches are well-supported and
+integrating packages using mainstream build systems (such as Autotools and
+CMake) is trivial.
+
+Jagen also provides workspace management features. SCM-controlled (Git and
+Mercurial) packages can be inspected, updated, cleaned up, etc. using the same
+command replacing the most common usage of Google's Repo and gclient tools.
+The packages tracking specific SCM branches can be updated automatically. You
+can reconfigure, rebuild, reinstall, whatever a single or multiple packages and
+all dependencies will be respected. There are facilities to create filesystem
+images.
 
 ### Requirements
 
