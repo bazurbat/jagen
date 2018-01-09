@@ -14,7 +14,8 @@ local function write_pkg_var(w, prefix, name, value)
         if #values > 0 then
             w("pkg_%s%s='%s'", prefix, name, table.concat(values, '\n'))
         end
-        for _, k in ipairs(table.keys(value)) do
+        local keys = sort(table.keys(value))
+        for k in each(keys) do
             write_pkg_var(w, prefix..name, '_'..k, value[k])
         end
     else
