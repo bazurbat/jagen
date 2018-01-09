@@ -10,7 +10,13 @@ local function write_pkg_var(w, prefix, name, value)
     elseif tp == 'boolean' then
         w("pkg_%s%s='yes'", prefix, name)
     elseif tp == 'table' then
-        w("pkg_%s%s='%s'", prefix, name, table.concat(value, '\n'))
+        local values = table.ivalues(value)
+        if #values > 0 then
+            w("pkg_%s%s='%s'", prefix, name, table.concat(values, '\n'))
+        end
+        for _, k in ipairs(table.keys(value)) do
+            write_pkg_var(w, prefix..name, '_'..k, value[k])
+        end
     else
         error(string.format('unable to write variable %s (%s)', name, tp))
     end

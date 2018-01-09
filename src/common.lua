@@ -267,6 +267,14 @@ function table.keys(t)
     return keys
 end
 
+function table.ivalues(t)
+    local values = {}
+    for _, v in ipairs(t or {}) do
+        insert(values, v)
+    end
+    return values
+end
+
 function table.rest(list, start)
     assert_arg('rest', 1, 'table', list)
     local out = {}
