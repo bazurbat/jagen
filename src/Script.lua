@@ -137,8 +137,10 @@ local function write_export(w, pkg)
     local function write_var(name, value)
         return write_pkg_var(w, 'export_', name, value)
     end
-    local names = sort(table.keys(export))
 
+    write_pkg_var(w, '', 'has_export', true)
+
+    local names = sort(table.keys(export))
     for name in each(names) do
         write_var(name, export[name])
     end

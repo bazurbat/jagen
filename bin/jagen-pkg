@@ -17,6 +17,10 @@ fi
 
 . "${jagen_dir:?}/src/pkg.sh" || die
 
+pkg__get_export_file() {
+    printf '%s' "${jagen_include_dir:?}/${1:?}__export.sh"
+}
+
 _pkg_stamp_name="${pkg_name}__${pkg_stage}${pkg_config:+__${pkg_config}}"
 _pkg_stamp_file="${jagen_build_dir:?}/${_pkg_stamp_name}"
 _pkg_log_file="${jagen_log_dir:?}/${_pkg_stamp_name}.log"
@@ -50,6 +54,16 @@ export pkg_install_dir="$pkg_install_root$pkg_install_prefix"
 for name in $(set | awk -F= '/^pkg_.*=/ { print $1 }'); do
     eval $name='$(jagen__expand "$(IFS= eval echo \$$name)")'
 done; unset name
+
+if [ "$pkg_build_toolchain" ]; then
+    pkg__import_file=$(pkg__get_export_file "$pkg_build_toolchain")
+    prefix=$(to_name "$pkg_build_toolchain")
+    include "$pkg__import_file"
+    for var in $(set | sed -rn "s/^(${prefix}_[[:alnum:]_]+)=.*/\1/p"); do
+        name=${var#${prefix}_}
+        eval ": \${pkg_${name}:=\"\$$var\"}"
+    done; unset prefix var name
+fi
 
 _pkg_file=$(find_in_path "pkg/${pkg_name}.sh")
 if [ "$_pkg_file" ]; then
@@ -104,5 +118,14 @@ run_stage() {
 
 run_stage "jagen_pkg_${pkg_stage}_${pkg_config}" ||
     run_stage "jagen_pkg_${pkg_stage}"
+
+if [ "${pkg_has_export-}" ] && [ "$pkg_stage" = 'install' ]; then
+    pkg__export_file=$(pkg__get_export_file "$pkg_name")
+    >"$pkg__export_file"
+    for var in $(set | sed -rn 's/^(pkg_export_[[:alnum:]_]*)=.*/\1/p'); do
+        name=${var#pkg_export_}
+        echo $(to_name "$pkg_name")_${name}=\'$(eval echo \$$var)\' >> $pkg__export_file
+    done; unset var name
+fi
 
 touch "$_pkg_stamp_file"

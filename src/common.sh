@@ -180,6 +180,10 @@ to_lower() {
     echo "${1:?}" | tr '[:upper:]' '[:lower:]'
 }
 
+to_name() {
+    printf '%s' "${1:?}" | tr -c '[:alnum:]_' '_'
+}
+
 # Evaluates the supplied value until there are no more expansions possible (no
 # '$' symbols found in the value) and echoes the result of the expansion.
 # Dies if the maximum recursion depth is reached (10).

@@ -408,9 +408,11 @@ function P.load_rules()
                         if config == 'host' and host_toolchain and
                                 name ~= host_toolchain then
                             add_toolchain(pkg, host_toolchain, config)
+                            build.toolchain = host_toolchain
                         elseif config == 'target' and target_toolchain and
                                 name ~= target_toolchain then
                             add_toolchain(pkg, target_toolchain, config)
+                            build.toolchain = target_toolchain
                         end
                     end
                 end
