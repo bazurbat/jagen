@@ -1,28 +1,38 @@
 # Jagen
 
 Jagen eases the development of multiple interdependent software packages by
-abstracting peculiarities of their individual build systems and providing
-facilities to manage them as a whole.
+generating a meta project which abstracts the peculiarities of their respective
+build and source control systems and provides instruments to uniformly manage
+them as a whole.
 
-It mainly targets embedded development use case when things should be done
-"your way" instead of trying to fit build requirements to rigid paradigms of
-Yocto and Buildroot. In particular, integrating third-party SDKs, toolchains or
-packages with non-standard build systems intended to be much simpler. The focus
-is on ease of use and customization instead of trying to provide a library of
-recipes for every piece of software ever written. On the other hand, vendor or
-project-specific recipe libraries and patches are well-supported and
-integrating packages using mainstream build systems (such as Autotools and
-CMake) is trivial.
+It mainly targets embedded development use cases when things should be done
+"your way" instead of shoving the requirements into rigid paradigms of Yocto
+and Buildroot. In particular, integrating third-party SDKs, pre-built
+toolchains or packages with non-standard build systems intended to be a
+straightforward process. The focus is on ease of use and adoption rather than
+trying to provide yet another idiosyncratic collection of recipes for every
+possible piece of software. On the other hand, vendor and project-specific
+recipe libraries and patches are well-supported and adding packages using
+mainstream build systems (such as Autotools and CMake) is trivial.
 
-Jagen also provides workspace management features. SCM-controlled (Git and
-Mercurial) packages can be inspected, updated, cleaned up, etc. using the same
-command replacing the most common usage of Google's Repo and gclient tools.
-The packages tracking specific SCM branches can be updated automatically. You
-can reconfigure, rebuild, reinstall, whatever a single or multiple packages and
-all dependencies will be respected. There are facilities to create filesystem
-images.
+The generated build system is simple to understand and customize. It collects
+all commands outputs and allows to selectively repeat any stage (such as
+configure or compile) of a single or multiple packages respecting the
+dependencies and running to completion of a certain target such as creation of
+a filesystem image. It is possible to combine multiple projects or parts into a
+single product using the concept of "layers".
 
-### Requirements
+The built-in workspace management facilities allow SCM-controlled (Git and
+Mercurial) packages to be inspected, updated, cleaned up, etc. using universal
+commands. They replicate the most common use cases of Google's Repo and gclient
+tools such as cloning and updating of multiple repositories. The sources in the
+form of distribution archives are also supported. They will be automatically
+downloaded and verified during the build. The source repositories and archives
+are cached and can be shared between different projects.
+
+Jagen is a mature project which is used in production since 2014.
+
+## Requirements
 
 POSIX compatible shell, Lua 5.1 or 5.2 (or LuaJIT 2.0), [Ninja](https://ninja-build.org/).
 
