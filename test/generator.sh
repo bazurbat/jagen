@@ -26,6 +26,7 @@ refresh_project() {
     cd "$name"
     (
         . ./env.sh &&
+        rm -rf ./bin ./include
         jagen refresh
         jagen list packages -ad > list_packages.txt
     )
