@@ -5,6 +5,7 @@ return {
         branch   = 'master'
     },
     build = {
+        type = true,
         dir = '$jagen_target_dir'
     }
 }

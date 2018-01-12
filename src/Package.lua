@@ -564,8 +564,6 @@ function P.define_rule(rule, rule_context)
                 end
             end
 
-            pkg:add_target({ 'configure' }, config)
-
             if build.type == 'linux_module' or build.kernel_modules == true or
                     install and install.modules then
 
@@ -580,14 +578,22 @@ function P.define_rule(rule, rule_context)
                 pkg:add_target({ 'install',
                         { 'kernel', 'install', config }
                     }, config)
-            else
+            elseif build.type then
+                pkg:add_target({ 'configure' }, config)
                 pkg:add_target({ 'compile' }, config)
-                pkg:add_target({ 'install' }, config)
             end
 
             if config == 'target' and build.target_requires_host then
                 rule.requires = append(rule.requires or {}, { pkg.name, 'host' })
             end
+        end
+
+        if install then
+            if install.type and (install.type ~= 'none' or install.type ~= false) then
+                pkg:add_target({ 'install' }, config)
+            end
+        elseif build and build.type then
+            pkg:add_target({ 'install' }, config)
         end
     end
 

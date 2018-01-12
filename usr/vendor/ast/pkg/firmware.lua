@@ -1,5 +1,6 @@
 return {
     build = {
+        type = true,
         dir = '$pkg_work_dir'
     },
     source = {
