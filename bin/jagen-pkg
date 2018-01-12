@@ -124,7 +124,7 @@ if [ "${pkg_has_export-}" ] && [ "$pkg_stage" = 'install' ]; then
     >"$pkg__export_file"
     for var in $(set | sed -rn 's/^(pkg_export_[[:alnum:]_]*)=.*/\1/p'); do
         name=${var#pkg_export_}
-        echo $(to_name "$pkg_name")_${name}=\'$(eval echo \$$var)\' >> $pkg__export_file
+        echo "$(to_name "$pkg_name")_${name}='$(eval echo \"\$$var\")'" >> $pkg__export_file
     done; unset var name
 fi
 
