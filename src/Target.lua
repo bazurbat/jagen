@@ -17,10 +17,12 @@ function Target:parse(rule, name, config)
     local stage = rule[1]; assert(type(stage) == 'string')
     local target = Target:new(name, stage, config)
 
-    target.arg = rule.arg
+    for k, v in pairs(rule) do
+        target[k] = rule[k]
+    end
 
     if #rule > 1 then
-        target.inputs = {}
+        target.inputs = target.inputs or {}
     end
 
     for i = 2, #rule do
