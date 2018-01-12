@@ -39,7 +39,7 @@ check_project() {
     diff -u build.ninja.orig build/build.ninja || true
     diff -u include.orig include || true
     if [ -f list_packages.txt.orig ] && [ -f list_packages.txt ]; then
-        diff -u list_packages.txt.orig list_packages.txt
+        diff -u list_packages.txt.orig list_packages.txt || true
     fi
     cd - >/dev/null
 }
