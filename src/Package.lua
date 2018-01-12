@@ -513,11 +513,17 @@ function P.define_rule(rule, rule_context)
     this.template = template
 
     if this ~= pkg then
-        if this.build and pkg.build and not getmetatable(this.build) then
-            setmetatable(this.build, { __index = pkg.build })
+        if pkg.build then
+            if not this.build then this.build = {} end
+            if not getmetatable(this.build) then
+                setmetatable(this.build, { __index = pkg.build })
+            end
         end
-        if this.install and pkg.install and not getmetatable(this.install) then
-            setmetatable(this.install, { __index = pkg.install })
+        if pkg.install then
+            if not this.install then this.install = {} end
+            if not getmetatable(this.install) then
+                setmetatable(this.install, { __index = pkg.install })
+            end
         end
     end
 
