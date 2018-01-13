@@ -4,9 +4,11 @@ local insert = table.insert
 local concat = table.concat
 local format = string.format
 
--- compatibility with Lua 5.2
-if type(unpack) == 'function' then
+-- Lua 5.1/5.2 compatibility
+if not table.unpack and type(unpack) == 'function' then
     table.unpack = unpack
+elseif not unpack and type(table.unpack) == 'function' then
+    unpack = table.unpack
 end
 
 local function assert_arg(fname, num, expected, value)
@@ -255,6 +257,16 @@ end
 
 function string.escape_pattern(p)
     return string.gsub(p, '%p', '%%%0')
+end
+
+-- Returns a shallow copy of the supplied table.
+function table.copy(t)
+    assert_arg('copy', 1, 'table', t)
+    local o = {}
+    for k, v in next, t do
+        o[k] = v
+    end
+    return o
 end
 
 function table.keys(t)
