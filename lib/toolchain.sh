@@ -25,7 +25,7 @@ strip
 '
 
 toolchain_cc() {
-    printf "${1:-${CC:-${jagen_target_system:+${jagen_target_system}-}gcc}}"
+    printf "${1:-${CC:-${pkg_build_system:+${pkg_build_system}-}gcc}}"
 }
 
 toolchain_get_sysroot() {
@@ -33,11 +33,11 @@ toolchain_get_sysroot() {
 }
 
 toolchain_get_arch_sysroot() {
-    real_path $("$(toolchain_cc "$1")" $jagen_target_cflags --print-sysroot)
+    real_path $("$(toolchain_cc "$1")" $pkg_build_cflags --print-sysroot)
 }
 
 toolchain_find_path() {
-    local filename="$("$(toolchain_cc "$2")" $jagen_target_cflags --print-file-name="${1:?}")"
+    local filename="$("$(toolchain_cc "$2")" $pkg_build_cflags --print-file-name="${1:?}")"
     if [ "$filename" ]; then
         real_path $(dirname "$filename")
     fi

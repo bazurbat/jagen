@@ -356,7 +356,7 @@ pkg_configure() {
             export CFLAGS LDFLAGS
 
             pkg_run "${pkg_build_configure_file:-$pkg_source_dir/configure}" $A \
-                ${pkg_system:+--host="$pkg_system"} \
+                ${pkg_build_system:+--host="$pkg_build_system"} \
                 --prefix="$pkg_install_prefix" \
                 --disable-dependency-tracking \
                 ${pkg_install_root:+--with-sysroot="$pkg_install_root"} \
@@ -513,7 +513,7 @@ pkg_install() {
             use_env kbuild
             pkg_run cd "$pkg_source_dir"
             pkg_run install -vm644 \
-                "$pkg_build_dir/arch/$jagen_target_arch/boot/$jagen_kernel_image" \
+                "$pkg_build_dir/arch/$pkg_build_arch/boot/$jagen_kernel_image" \
                 "$jagen_build_dir"
             pkg_run make \
                 INSTALL_MOD_PATH="${INSTALL_MOD_PATH:-${pkg_install_dir:?}}" \
@@ -521,6 +521,13 @@ pkg_install() {
             ;;
         linux_module)
             pkg_install_modules
+            ;;
+        toolchain)
+            require toolchain
+            toolchain_generate_wrappers    \
+                "${jagen_bin_dir:?}"       \
+                "${pkg_source_dir:?}/bin"  \
+                "${pkg_build_system:?}"
             ;;
         none)
             ;;
@@ -565,7 +572,7 @@ pkg__image() {
             pkg_run cd "$pkg_source_dir"
             pkg_run make "${jagen_kernel_image:?}"
             pkg_run install -vm644 \
-                "$pkg_build_dir/arch/$jagen_target_arch/boot/$jagen_kernel_image" \
+                "$pkg_build_dir/arch/$pkg_build_arch/boot/$jagen_kernel_image" \
                 "$jagen_build_dir"
             ;;
     esac

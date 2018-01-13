@@ -5,11 +5,12 @@ return {
         sha256sum = '1941dcf6229d6706bcb89b7976d5d43d170efdd17c27d5fe1738e7ecf22adc37',
     },
     build = {
+        arch   = 'aarch64',
+        system = '${pkg_build_target_arch}-linux-gnu',
         in_source = true,
         toolchain = false
     },
-    requires = {
-        'gcc-linaro-5.3_aarch64-runtime',
-        'gcc-linaro-5.3_aarch64-sysroot'
+    install = {
+        type = 'toolchain'
     }
 }

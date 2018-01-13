@@ -17,8 +17,8 @@ jagen_sdk_staging_dir="$jagen_sdk_rootfs_dir/cross_rootfs"
 export SMP86XX_ROOTFS_PATH="$jagen_sdk_rootfs_dir"
 export INSTALL_MOD_PATH="$jagen_sdk_rootfs_root"
 
-export SMP86XX_TOOLCHAIN_PATH="${jagen_target_toolchain_dir:?}"
-export TOOLCHAIN_RUNTIME_PATH="${jagen_target_toolchain_dir:?}/mips-linux-gnu/libc/el"
+export SMP86XX_TOOLCHAIN_PATH="${pkg_toolchain_dir-}"
+export TOOLCHAIN_RUNTIME_PATH="${pkg_toolchain_dir-}/mips-linux-gnu/libc/el"
 
 # MRUA
 export RMCFLAGS="-DEM86XX_CHIP=EM86XX_CHIPID_TANGO3 \

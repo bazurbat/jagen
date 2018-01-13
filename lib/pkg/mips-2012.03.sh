@@ -2,13 +2,9 @@
 
 require toolchain
 
-jagen_pkg_unpack() {
-    toolchain_unpack "$pkg_name" "$pkg_source_dir"
-}
-
 make_tool() {
     local name="${1:?}" pre_opt="$2" post_opt="$3"
-    local path="${jagen_bin_dir}/${jagen_target_system}-${name}"
+    local path="${jagen_bin_dir:?}/${pkg_build_system:?}-${name}"
     cat >"$path" <<EOF || return
 exec \$jagen_ccache "${pkg_source_dir:?}/bin/mips-linux-gnu-${name}" $pre_opt "\$@" $post_opt
 EOF

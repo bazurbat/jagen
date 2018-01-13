@@ -37,12 +37,7 @@ fi
 cd "$jagen_build_dir" || die
 
 include "$jagen_include_dir/$pkg_name" || die
-
-if ! [ "$pkg_stage" = "unpack" -o "$pkg_stage" = "patch" ]; then
-    : ${pkg_env:=$pkg_config}
-    for e in $pkg_env; do
-        use_env "$e" || true
-    done; unset e
+if [ "$pkg_config" ]; then
     include "$jagen_include_dir/${pkg_name}__${pkg_config}" || die
 fi
 
@@ -63,6 +58,10 @@ if [ "$pkg_build_toolchain" ]; then
         name=${var#${prefix}_}
         eval ": \${pkg_${name}:=\"\$$var\"}"
     done; unset prefix var name
+fi
+
+if [ "$pkg_config" ]; then
+    use_env "$pkg_config" || true
 fi
 
 _pkg_file=$(find_in_path "pkg/${pkg_name}.sh")

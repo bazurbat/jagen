@@ -1,16 +1,16 @@
 #!/bin/sh
 
-: ${jagen_target_system:?}
+: ${pkg_build_system:?}
 
-export AR="${jagen_target_system}-ar"
-export AS="${jagen_target_system}-as"
-export CC="${jagen_target_system}-gcc"
-export CPP="${jagen_target_system}-cpp"
-export CXX="${jagen_target_system}-g++"
-export LD="${jagen_target_system}-ld"
-export NM="${jagen_target_system}-nm"
-export OBJCOPY="${jagen_target_system}-objcopy"
-export OBJDUMP="${jagen_target_system}-objdump"
-export RANLIB="${jagen_target_system}-ranlib"
-export STRIP="${jagen_target_system}-strip"
+export AR="${pkg_build_system}-ar"
+export AS="${pkg_build_system}-as"
+export CC="${pkg_build_system}-gcc"
+export CPP="${pkg_build_system}-cpp"
+export CXX="${pkg_build_system}-g++"
+export LD="${pkg_build_system}-ld"
+export NM="${pkg_build_system}-nm"
+export OBJCOPY="${pkg_build_system}-objcopy"
+export OBJDUMP="${pkg_build_system}-objdump"
+export RANLIB="${pkg_build_system}-ranlib"
+export STRIP="${pkg_build_system}-strip"
 

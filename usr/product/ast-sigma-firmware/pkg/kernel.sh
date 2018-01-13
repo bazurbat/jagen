@@ -6,7 +6,7 @@ use_env target
 : ${with_kernel_proprietary_modules:=yes}
 : ${with_kernel_extras:=yes}
 
-export CROSS_MAKE="make ARCH=${jagen_target_arch}"
+export CROSS_MAKE="make ARCH=${pkg_build_arch}"
 export KCFLAGS="-mhard-float -Wa,-mhard-float"
 
 protectordir="$jagen_sdk_ezboot_dir/protector"

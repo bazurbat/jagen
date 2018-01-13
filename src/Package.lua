@@ -590,9 +590,12 @@ function P.define_rule(rule, context)
 
             if build.target_arch or build.target_system then
                 local export = {
-                    arch   = build.target_arch,
-                    system = build.target_system,
-                    dir    = build.dir
+                    board   = build.board,
+                    arch    = build.arch,
+                    system  = build.system,
+                    cpu     = build.cpu,
+                    cflags  = build.cflags,
+                    toolchain_dir = build.dir
                 }
                 if next(export) then
                     pkg.export = pkg.export or {}

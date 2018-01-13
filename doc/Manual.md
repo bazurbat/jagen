@@ -339,10 +339,8 @@ rules and also to find pkg files. The `config` is optional.
 - **jagen_dir** — The location of the Jagen source directory.
 - **jagen_dist_dir** — The location of the `dist` directory (`$jagen_project_dir/dist`).
 - **jagen_flags** — Space-separated list of flags.
-- **jagen_host_cflags** — The global host cflags.
 - **jagen_host_cmake_module_path** — The `CMAKE_MODULE_PATH` to pass to CMake in `configure` stage. Overrides `jagen_cmake_module_path` for packages in `host` config. Set to empty string to disable.
 - **jagen_host_dir** — The location of the `host` directory (`$jagen_project_dir/host`).
-- **jagen_host_system** — The name of the current host system.
 - **jagen_include_dir** — The location of the `include` directory (`$jagen_project_dir/include`).
 - **jagen_kernel_config** — The name of the Linux kernel config to use.
 - **jagen_kernel_dir** — The location of the Linux kernel directory.
@@ -381,17 +379,11 @@ rules and also to find pkg files. The `config` is optional.
 <!-- - **jagen_sigma_xsdk_dir** — _Sigma layer specific._ -->
 - **jagen_source_exclude** — The space-separated list of package names which should be excluded from fetching.
 - **jagen_src_dir** — The location of the `src` directory (`$jagen_project_dir/src`).
-- **jagen_target_arch** — The name of the current target architecture.
 - **jagen_target_board** — The name of the current target board.
-- **jagen_target_cflags** — The global target cflags.
 - **jagen_target_cmake_module_path** — The `CMAKE_MODULE_PATH` to pass to CMake in `configure` stage. Overrides `jagen_cmake_module_path` for packages in `target` config. Set to empty string to disable.
-- **jagen_target_cpu** — The name of the current target CPU (like cortex-a9).
 - **jagen_target_dir** — The location of the `target` directory (`$jagen_project_dir/target`).
 - **jagen_target_platform** — The name of the current target platform (currently used only for Android).
-- **jagen_target_system** — The name of the current target system.
 - **jagen_target_toolchain** — The name of the current target toolchain.
-- **jagen_target_toolchain_dir** — The location of the current target toolchain directory.
-<!-- - **jagen_toolchain_dir** — Toolchain dir. __TODO CHECK USAGES__ -->
 - **jagen_toolchain_prefix** — The current toolchain prefix.
 - **jagen_toolchains_dir** — The location of the `toolchains` directory (`$jagen_project_dir/toolchains`).
 - **jagen_vendor** — The name of the current vendor.
@@ -399,6 +391,14 @@ rules and also to find pkg files. The `config` is optional.
 #### Stage-specific variables
 
 - **pkg_args** — stage arguments
+
+- **pkg_build_arch** (`build.arch`) — the target architecure
+
+- **pkg_build_board** (`build.board`) — the target board
+
+- **pkg_build_cflags** (`build.cflags`) — the target cflags
+
+- **pkg_build_cpu** (`build.cpu`) — the target cpu
 
 - **pkg_build_dir** (`build.dir`) — the location of the package build directory
 
@@ -418,6 +418,10 @@ rules and also to find pkg files. The `config` is optional.
   package (usually this setting is called the "configuration" in other build
   systems, but in Jagen "config" has another meaning); supported values:
   release, debug, release_with_debug
+
+- **pkg_build_system** (`build.system`) — the target system
+
+- **pkg_build_toolchain_dir** (`build.dir`) — the location of the target toolchain
 
 - **pkg_build_type** (`build.type`) — the type of the build system of the
   package; currently supported values are: GNU, KBuild, CMake, make,
@@ -529,9 +533,6 @@ rules and also to find pkg files. The `config` is optional.
   installation; can have different interpretation depending on the build system
   but in general used for various autotools workaround (cleaning `.la` and
   `.pc` files and such); sets `DESTDIR` for `make` and `CMake`
-
-- **pkg_system** — the value of `$jagen_*_system` for the currently executing
-  stage depending on the current config
 
 - **pkg_work_dir** (`pkg.work_dir`) — a location of the toplevel working
   directory for the package; can contain unpacked sources, several build

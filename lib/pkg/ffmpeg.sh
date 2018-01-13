@@ -47,11 +47,11 @@ jagen_pkg_configure() {
         if [ "$jagen_toolchain_prefix" ]; then
             cross_options="$cross_options --cross-prefix=$jagen_toolchain_prefix"
         fi
-        if [ "$jagen_target_arch" ]; then
-            cross_options="$cross_options --arch=$jagen_target_arch"
+        if [ "$pkg_build_arch" ]; then
+            cross_options="$cross_options --arch=$pkg_build_arch"
         fi
-        if [ "$jagen_target_cpu" ]; then
-            cross_options="$cross_options --cpu=$jagen_target_cpu"
+        if [ "$pkg_build_cpu" ]; then
+            cross_options="$cross_options --cpu=$pkg_build_cpu"
         fi
     fi
 

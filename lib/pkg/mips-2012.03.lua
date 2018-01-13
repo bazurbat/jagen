@@ -6,6 +6,9 @@ return {
         dir = 'mips-2012.03'
     },
     build = {
+        arch   = 'mips',
+        cpu    = '24kf',
+        system = 'mipsel-linux-gnu',
         in_source = true,
         toolchain = false
     }

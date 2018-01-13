@@ -7,7 +7,7 @@ return {
     build  = {
         type = 'GNU',
         options = {
-            '--target=$jagen_target_system',
+            '--target=$pkg_build_system',
             '--program-transform-name=',
             '--disable-binutils',
             '--disable-etc',

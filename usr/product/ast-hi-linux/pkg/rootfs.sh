@@ -13,6 +13,21 @@ install_sdk() {
     pkg_run rsync -rtl --delete "$pub_dir/kmod/" "kmod"
 }
 
+# this is from target/arm-hisiv200-linux
+toolchain_install_ldconfig() {
+    require toolchain
+    local lib_path="$(toolchain_find_path libc.so.6)"
+    local ldconfig_path="$(real_path "${lib_path:?}/../sbin")/ldconfig"
+
+    if [ -x "$ldconfig_path" ]; then
+        pkg_run rsync -vtp --chmod=0755 \
+            "$ldconfig_path" \
+            "$pkg_install_dir/sbin/ldconfig"
+    else
+        die "Could not find ldconfig"
+    fi
+}
+
 jagen_pkg_compile() {
     jagen_rootfs_init .
     toolchain_install_runtime
