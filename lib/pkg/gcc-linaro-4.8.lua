@@ -8,6 +8,6 @@ return {
         target_arch = 'arm',
         target_system = '${pkg_build_target_arch}-linux-gnueabi',
         in_source = true,
-        toolchain = true
+        toolchain = false
     }
 }

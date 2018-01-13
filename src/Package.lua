@@ -394,46 +394,33 @@ function P.load_rules()
     local host_toolchain = 'gcc-native'
     local target_toolchain = os.getenv('jagen_target_toolchain')
 
-    function add_toolchain()
-        for name, pkg in pairs(table.copy(packages)) do
-            for config, _ in pkg:each_config() do
-                local build = pkg:get('build', config)
-                if build then
-                    local toolchain = build.toolchain
-                    if toolchain == true then
-                        local export = pkg.export or {}
-                        export.arch = export.arch or build.target_arch
-                        export.system = export.system or build.target_system
-                        export.dir = export.dir or build.dir
-                        pkg.export = export
-                    elseif build.type and toolchain ~= false then
-                        if config == 'host' and host_toolchain and
-                            name ~= host_toolchain then
-                            toolchain = host_toolchain
-                        elseif config == 'target' and target_toolchain and
-                            name ~= target_toolchain then
-                            toolchain = target_toolchain
-                        end
-                        if toolchain then
-                            P.define_rule { name, config,
-                                template = false,
-                                requires = { toolchain }
-                            }
-                            build.toolchain = toolchain
-                        end
+    for name, pkg in pairs(table.copy(packages)) do
+        for config, _ in pkg:each_config() do
+            local build = pkg:get('build', config)
+            if build and build.type then
+                local toolchain = build.toolchain
+                if toolchain ~= false then
+                    if config == 'host' and host_toolchain and
+                        name ~= host_toolchain then
+                        toolchain = host_toolchain
+                    elseif config == 'target' and target_toolchain and
+                        name ~= target_toolchain then
+                        toolchain = target_toolchain
+                    end
+                    if toolchain then
+                        build.toolchain = toolchain
+                        push_context(table.merge(copy(current_context), {
+                                    name = name,
+                                    config = config
+                            }))
+                        local stage = { 'configure', requires = { toolchain } }
+                        pkg:add_requires(stage, { config = config })
+                        pkg:add_target(stage, config)
+                        pop_context()
                     end
                 end
             end
         end
-    end
-
-    do
-        local count, prev = 0, 0
-        repeat
-            prev = count
-            add_toolchain()
-            count = table.count(packages)
-        until count == prev
     end
 
     local source_exclude = os.getenv('jagen_source_exclude')
@@ -599,6 +586,18 @@ function P.define_rule(rule, context)
 
             if config == 'target' and build.target_requires_host then
                 rule.requires = append(rule.requires or {}, { pkg.name, 'host' })
+            end
+
+            if build.target_arch or build.target_system then
+                local export = {
+                    arch   = build.target_arch,
+                    system = build.target_system,
+                    dir    = build.dir
+                }
+                if next(export) then
+                    pkg.export = pkg.export or {}
+                    table.merge(pkg.export, export)
+                end
             end
         end
 
