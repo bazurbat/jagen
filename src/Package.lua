@@ -9,7 +9,7 @@ P.__index = P
 local lua_package = package
 local packages = {}
 
-local context
+local current_context
 local context_stack = {}
 
 local Context = {}
@@ -37,15 +37,15 @@ end
 
 local function push_context(new)
     new = Context:new(new)
-    new.parent = context
+    new.parent = current_context
     table.insert(context_stack, new)
-    context = new
+    current_context = new
     return new
 end
 
 local function pop_context()
     local o = assert(table.remove(context_stack))
-    context = context_stack[#context_stack]
+    current_context = context_stack[#context_stack]
     return o
 end
 
@@ -455,7 +455,7 @@ function P.load_rules()
     return packages
 end
 
-function P.define_rule(rule, rule_context)
+function P.define_rule(rule, context)
     rule = P:new(rule)
 
     local pkg = packages[rule.name]
@@ -480,13 +480,13 @@ function P.define_rule(rule, rule_context)
         rule = table.merge(copy(rule.template), rule)
     end
 
-    if rule_context then
-        rule_context.name = rule.name
-        rule_context.config = rule.config
-        push_context(rule_context)
+    if context then
+        context.name = rule.name
+        context.config = rule.config
+        push_context(context)
     end
 
-    append(pkg.contexts, context)
+    append(pkg.contexts, assert(current_context))
 
     local stages = table.imove({}, rule)
 
@@ -613,12 +613,12 @@ function P.define_rule(rule, rule_context)
 
     pop_context()
 
-    local new_context
-    if pkg.name ~= context.name or config ~= context.config then
-        new_context = push_context({
+    local pkg_context
+    if not context then
+        pkg_context = push_context({
                 name = pkg.name,
                 config = config,
-                implicit = context.implicit 
+                implicit = current_context.implicit 
             })
     end
 
@@ -646,9 +646,9 @@ function P.define_rule(rule, rule_context)
         pkg:add_target(stage, config)
     end
 
-    if new_context then pop_context() end
+    if pkg_context then pop_context() end
 
-    if rule_context then pop_context() end
+    if context then pop_context() end
 
     return pkg
 end
@@ -658,16 +658,16 @@ function define_package_alias(name, value)
 end
 
 function package(rule)
-    local rule_context, level, info = {}, 2
+    local context, level, info = {}, 2
     repeat
         info = debug.getinfo(level, 'Sl')
         level = level+1
     until not info or info.what == 'main'
     if info then
-        rule_context.filename = info.source
-        rule_context.line = info.currentline
+        context.filename = info.source
+        context.line = info.currentline
     end
-    return P.define_rule(rule, rule_context)
+    return P.define_rule(rule, context)
 end
 
 return P
