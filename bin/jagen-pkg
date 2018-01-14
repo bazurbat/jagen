@@ -41,13 +41,6 @@ if [ "$pkg_config" ]; then
     include "$jagen_include_dir/${pkg_name}__${pkg_config}" || die
 fi
 
-# Expand pkg_* variables. The generated scripts may refer to values such as
-# pkg_install_dir which can be calculated only with config environments in
-# scope. There will be other features which will depend on this logic.
-for name in $(set | awk -F= '/^pkg_.*=/ { print $1 }'); do
-    eval $name='$(jagen__expand "$(IFS= eval echo \$$name)")'
-done; unset name
-
 if [ "$pkg_build_toolchain" ]; then
     pkg__import_file=$(pkg__get_export_file "$pkg_build_toolchain")
     prefix=$(to_name "$pkg_build_toolchain")
@@ -63,6 +56,13 @@ if [ "$pkg_config" ]; then
 fi
 
 export pkg_install_dir="$pkg_install_root$pkg_install_prefix"
+
+# Expand still unresolved pkg_* variables. This step is performed last with all
+# values from package environments and include scripts in scope which allows
+# them to refer to each other.
+for name in $(set | awk -F= '/^pkg_.*=/ { print $1 }'); do
+    eval $name='$(jagen__expand "$(IFS= eval echo \$$name)")'
+done; unset name
 
 _pkg_file=$(find_in_path "pkg/${pkg_name}.sh")
 if [ "$_pkg_file" ]; then
