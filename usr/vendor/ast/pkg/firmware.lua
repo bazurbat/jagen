@@ -4,6 +4,6 @@ return {
         dir = '$pkg_work_dir'
     },
     source = {
-        dir = '$jagen_target_dir/firmware'
+        dir = '$jagen_target_dir'
     }
 }
