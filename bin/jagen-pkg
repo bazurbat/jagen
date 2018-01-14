@@ -41,8 +41,6 @@ if [ "$pkg_config" ]; then
     include "$jagen_include_dir/${pkg_name}__${pkg_config}" || die
 fi
 
-export pkg_install_dir="$pkg_install_root$pkg_install_prefix"
-
 # Expand pkg_* variables. The generated scripts may refer to values such as
 # pkg_install_dir which can be calculated only with config environments in
 # scope. There will be other features which will depend on this logic.
@@ -63,6 +61,8 @@ fi
 if [ "$pkg_config" ]; then
     use_env "$pkg_config" || true
 fi
+
+export pkg_install_dir="$pkg_install_root$pkg_install_prefix"
 
 _pkg_file=$(find_in_path "pkg/${pkg_name}.sh")
 if [ "$_pkg_file" ]; then
