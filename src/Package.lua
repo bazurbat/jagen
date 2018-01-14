@@ -588,19 +588,14 @@ function P.define_rule(rule, context)
                 rule.requires = append(rule.requires or {}, { pkg.name, 'host' })
             end
 
-            if build.target_arch or build.target_system then
-                local export = {
-                    board   = build.board,
-                    arch    = build.arch,
-                    system  = build.system,
-                    cpu     = build.cpu,
-                    cflags  = build.cflags,
-                    toolchain_dir = build.dir
-                }
-                if next(export) then
-                    pkg.export = pkg.export or {}
-                    table.merge(pkg.export, export)
-                end
+            local export = {}
+            local keys = { 'board', 'arch', 'system', 'cpu', 'cflags' }
+            for k in each(keys) do
+                export['build_'..k] = build[k]
+            end
+            if next(export) then
+                export['toolchain_dir'] = build.dir
+                pkg.export = table.merge(pkg.export or {}, export)
             end
         end
 
