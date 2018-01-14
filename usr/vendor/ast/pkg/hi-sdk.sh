@@ -8,9 +8,6 @@ jagen_pkg_configure() {
     pkg_link "${jagen_kernel_dir:?}" \
         "$pkg_source_dir/source/kernel/linux-3.4.y"
 
-    pkg_link "${jagen_build_dir:?}/hi-sdk-tools/tools" \
-        "$pkg_source_dir/tools"
-
     pkg_run make msp_prepare
 }
 
