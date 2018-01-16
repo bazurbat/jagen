@@ -273,6 +273,11 @@ rules and also to find pkg files. The `config` is optional.
   Supported values are: release, debug and release_with_debug. This allows
   overriding of the global setting.
 
+- **build.set_toolchain** (`pkg_build_set_toolchain`) — If set to `true`,
+  specifies that the package expects the preferred toolchain to be passed in
+  the environment (such as in CC, CXX) variables. This is usually the case for
+  packages with manually written Makefiles lacking any fallback.
+
 - **build.target_requires_host** — If set to `true`, specifies that in order to
   build this package in `target` config the `host` config needs to be built and
   installed first. This is the case, for example, when the package provides

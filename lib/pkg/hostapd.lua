@@ -6,8 +6,9 @@ return {
     },
     build = {
         type = 'make',
+        dir  = '$pkg_source_dir/hostapd',
         in_source = true,
-        dir = '$pkg_source_dir/hostapd'
+        set_toolchain = true
     },
     requires = {
         'libnl'

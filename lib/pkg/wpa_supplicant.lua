@@ -9,7 +9,8 @@ return {
     },
     build = {
         type = 'make',
-        dir  = '$pkg_source_dir/wpa_supplicant'
+        dir  = '$pkg_source_dir/wpa_supplicant',
+        set_toolchain = true
     },
     requires = { 'dbus' }
 }

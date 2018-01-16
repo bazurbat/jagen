@@ -36,12 +36,6 @@ jagen_pkg_configure_target() {
     echo "CONFIG_IEEE8021X_EAPOL=y"          >> .config
 }
 
-jagen_pkg_compile_target() {
-    use_env target_toolchain
-
-    pkg_run make
-}
-
 jagen_pkg_install() {
     pkg_run install -vd \
         "$pkg_install_dir/bin"                 \

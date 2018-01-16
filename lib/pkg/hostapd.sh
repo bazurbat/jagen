@@ -20,11 +20,6 @@ CONFIG_INTERNAL_LIBTOMMATH_FAST=y
 EOF
 }
 
-jagen_pkg_compile_target() {
-    use_env target_toolchain
-    pkg_compile
-}
-
 jagen_pkg_install() {
     pkg_run install -vm755 hostapd "$pkg_install_dir/sbin"
     pkg_run install -vm755 hostapd_cli "$pkg_install_dir/bin"

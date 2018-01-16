@@ -55,6 +55,12 @@ if [ "$pkg_config" ]; then
     use_env "$pkg_config" || true
 fi
 
+if [ "${pkg_build_toolchain-}" ]; then
+    if [ "${pkg_build_set_toolchain-}" ]; then
+        use_env set_toolchain
+    fi
+fi
+
 export pkg_install_dir="$pkg_install_root$pkg_install_prefix"
 
 # Expand still unresolved pkg_* variables. This step is performed last with all

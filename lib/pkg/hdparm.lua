@@ -10,6 +10,7 @@ return {
     },
     build = {
         type = 'make',
-        in_source = true
+        in_source = true,
+        set_toolchain = true
     }
 }
