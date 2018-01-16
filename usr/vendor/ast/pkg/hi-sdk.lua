@@ -13,6 +13,7 @@ return {
     build = {
         type = 'custom',
         in_source = true,
-        kernel_modules = true,
+        clean_cflags = true,
+        kernel_modules = true
     }
 }

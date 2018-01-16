@@ -1,6 +1,3 @@
 #!/bin/sh
 
-export CFLAGS=
-export CXXFLAGS=
-export ASMFLAGS=
-export LDFLAGS=
+unset CFLAGS CXXFLAGS ASMFLAGS LDFLAGS

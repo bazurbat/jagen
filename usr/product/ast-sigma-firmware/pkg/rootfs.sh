@@ -1,7 +1,5 @@
 #!/bin/sh
 
-use_env clean_cflags
-
 pkg_run_jobs=1
 
 # Do not assert non empty toolchain dir here as it is used only by install

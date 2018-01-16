@@ -59,6 +59,9 @@ if [ "${pkg_build_toolchain-}" ]; then
     if [ "${pkg_build_set_toolchain-}" ]; then
         use_env set_toolchain
     fi
+    if [ "${pkg_build_clean_cflags-}" ]; then
+        use_env clean_cflags
+    fi
 fi
 
 export pkg_install_dir="$pkg_install_root$pkg_install_prefix"

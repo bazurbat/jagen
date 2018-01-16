@@ -1,12 +1,5 @@
 #!/bin/sh
 
-# Reset user-supplied build flags. This SDK assumes a specific environment and
-# passing arbitrary options can break it in various ways.
-export CFLAGS=''
-export CXXFLAGS=''
-export ASMFLAGS=''
-export LDFLAGS=''
-
 jagen_pkg_patch() {
     pkg_run cp configs/ast2xx_hi3719cv100_cfg.mak cfg.mak
 }

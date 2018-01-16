@@ -5,6 +5,7 @@ return {
     },
     build = {
         type = 'make',
-        in_source = true
+        in_source = true,
+        clean_cflags = true
     }
 }
