@@ -1,7 +1,5 @@
 #!/bin/sh
 
-use_env target
-
 : ${with_kernel_config_default:=yes}
 : ${with_kernel_proprietary_modules:=yes}
 : ${with_kernel_extras:=yes}
@@ -89,4 +87,3 @@ jagen_pkg_image() {
     pkg_run "$protectordir/zbprotector" "$image" "${image}.zbc"
     pkg_run chmod 644 "${image}.zbc"
 }
-

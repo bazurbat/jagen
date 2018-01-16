@@ -4,13 +4,18 @@ use_env clean_cflags
 
 pkg_run_jobs=1
 
+# Do not assert non empty toolchain dir here as it is used only by install
+# stage which should have the config sourced and the variable defined.
+toolchain_runtime_dir="$pkg_toolchain_dir/mips-linux-gnu/libc/el"
+
 jagen_pkg_patch() {
     pkg_patch
     pkg_run cp -f config.release .config
 }
 
 jagen_pkg_compile() {
-    PATH="$SMP86XX_TOOLCHAIN_PATH/bin:$PATH"
+    export SMP86XX_TOOLCHAIN_PATH="$pkg_toolchain_dir"
+    add_PATH "${pkg_toolchain_dir:?}/bin"
 
     # Fix cp: not writing through dangling symlink '.../build_mipsel/root/init'
     pkg_run rm -f "$jagen_sdk_initfs_dir/init"
@@ -53,20 +58,20 @@ install_cleanup() {
 
 install_timezone() {
     local dest="${1:?}"
-    : ${TOOLCHAIN_RUNTIME_PATH:?}
+    : ${toolchain_runtime_dir:?}
 
     pkg_run rm -f "$dest/etc/TZ"
     pkg_run install -m644 \
-        "$TOOLCHAIN_RUNTIME_PATH/usr/share/zoneinfo/Europe/Moscow" \
+        "$toolchain_runtime_dir/usr/share/zoneinfo/Europe/Moscow" \
         "$dest/etc/localtime"
 }
 
 install_ldconfig() {
     local dest="${1:?}"
-    : ${TOOLCHAIN_RUNTIME_PATH:?}
+    : ${toolchain_runtime_dir:?}
 
     pkg_run cp -a \
-        "$TOOLCHAIN_RUNTIME_PATH/usr/lib/bin/ldconfig" \
+        "$toolchain_runtime_dir/usr/lib/bin/ldconfig" \
         "$dest/sbin"
 }
 
@@ -166,6 +171,5 @@ jagen_pkg_install() {
     install_keys  "$dest" || return
     install_files "$dest" || return
 
-    use_env target
     pkg_strip_root "${jagen_sdk_initfs_dir:?}"
 }

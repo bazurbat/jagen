@@ -74,8 +74,6 @@ install_ucode() {
 }
 
 do_cleanup() {
-    use_env target
-
     pkg_run cd "$pkg_build_dir"
 
     pkg_run find lib -type f \

@@ -6,7 +6,7 @@ export RMCFLAGS="$RMCFLAGS \
 -DWITH_PROD=1"
 
 jagen_pkg_compile() {
-    add_PATH "$SMP86XX_TOOLCHAIN_PATH/bin"
+    add_PATH "${pkg_toolchain_dir:?}/bin"
     # for genxenv2
     add_PATH "$jagen_sdk_staging_dir/bin"
 
