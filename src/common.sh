@@ -184,6 +184,12 @@ to_name() {
     printf '%s' "${1:?}" | tr -c '[:alnum:]_' '_'
 }
 
+jagen__trim() {
+    for var do
+        [ "${var-}" ] && eval "$var=\${$var# }; $var=\${$var% }"
+    done
+}
+
 # Evaluates the supplied value until there are no more expansions possible (no
 # '$' symbols found in the value) and echoes the result of the expansion.
 # Dies if the maximum recursion depth is reached (10).
