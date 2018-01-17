@@ -382,11 +382,9 @@ function Jagen.command.refresh(args, packages)
         pkg:add_ordering_dependencies()
         Script:generate(pkg, include_dir)
 
-        -- create/truncate all log files beforehand to allow tail following
-        -- them on interactive rebuild
         for stage in pkg:each() do
             local filename = string.format('%s/%s.log', log_dir, tostring(stage))
-            assert(io.open(filename, 'w+')):close()
+            assert(io.open(filename, 'a+')):close()
         end
     end
 
