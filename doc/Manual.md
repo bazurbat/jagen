@@ -481,8 +481,6 @@ rules and also to find pkg files. The `config` is optional.
 - **pkg_install_libs** (`install.libs`) — a list of names of the libraries
   installed by this package
 
-- **_pkg_log_file** — log path
-
 - **pkg_name** — the package name of the currently executing stage
 
 - **pkg_build_options** (`build.options`) — passed as and argument to the underlying
