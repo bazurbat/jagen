@@ -7,8 +7,9 @@ return {
     },
     build = {
         arch   = 'mips',
-        cpu    = '24kf',
         system = 'mipsel-linux-gnu',
+        cpu    = '24kf',
+        cflags = '-O2 -fomit-frame-pointer -fno-strict-aliasing -Wa,-mips32r2 -march=24kf -mtune=24kf -pipe',
         in_source = true,
         toolchain = false
     }
