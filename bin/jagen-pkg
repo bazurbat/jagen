@@ -58,11 +58,11 @@ if [ "$pkg_config" ]; then
     use_env "$pkg_config" || true
 fi
 
-if [ "${pkg_build_toolchain-}" ]; then
-    if [ "${pkg_build_set_toolchain-}" ]; then
+if [ "$pkg_build_toolchain" ]; then
+    if [ "$pkg_build_set_toolchain" ]; then
         use_env set_toolchain
     fi
-    if [ "${pkg_build_clean_cflags-}" ]; then
+    if [ "$pkg_build_clean_cflags" ]; then
         use_env clean_cflags
     fi
 fi
@@ -76,7 +76,7 @@ for name in $(set | awk -F= '/^pkg_.*=/ { print $1 }'); do
     eval $name='$(jagen__expand "$(IFS= eval echo \$$name)")'
 done; unset name
 
-if [ "${pkg_build_toolchain-}" ]; then
+if [ "$pkg_build_toolchain" ]; then
     use_env cflags
 fi
 
@@ -134,7 +134,7 @@ run_stage() {
 run_stage "jagen_pkg_${pkg_stage}_${pkg_config}" ||
     run_stage "jagen_pkg_${pkg_stage}"
 
-if [ "${pkg_has_export-}" ] && [ "$pkg_stage" = 'install' ]; then
+if [ "$pkg_has_export" ] && [ "$pkg_stage" = 'install' ]; then
     pkg__export_file=$(pkg__get_export_file "$pkg_name")
     >"$pkg__export_file"
     for var in $(set | sed -rn 's/^(pkg_export_[[:alnum:]_]*)=.*/\1/p'); do
