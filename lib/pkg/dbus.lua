@@ -42,7 +42,6 @@ return {
             '--with-xml=expat',
             '--without-valgrind',
             '--without-x',
-            '--with-systemdsystemunitdir=$pkg_install_dir/lib/systemd/system'
         }
     },
     install = {
