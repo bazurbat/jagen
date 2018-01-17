@@ -49,13 +49,10 @@ if [ "$pkg_build_toolchain" ]; then
         name=${var#$prefix}
         eval ": \${pkg_toolchain_${name}:=\"\$$var\"}"
     done; unset prefix var name
-    for key in board arch system cpu cflags cxxflags ldflags; do
-        eval ": \${pkg_build_${key}:=\"\$pkg_toolchain_${key}\"}"
-    done
 fi
 
 if [ "$pkg_config" ]; then
-    use_env "$pkg_config" || true
+    use_env "$pkg_config"
 fi
 
 if [ "$pkg_build_toolchain" ]; then
@@ -76,9 +73,7 @@ for name in $(set | awk -F= '/^pkg_.*=/ { print $1 }'); do
     eval $name='$(jagen__expand "$(IFS= eval echo \$$name)")'
 done; unset name
 
-if [ "$pkg_build_toolchain" ]; then
-    use_env cflags
-fi
+jagen__trim CFLAGS CXXFLAGS LDFLAGS
 
 pkg__file=$(find_in_path "pkg/${pkg_name}.sh")
 if [ "$pkg__file" ]; then

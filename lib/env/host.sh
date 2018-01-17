@@ -1,17 +1,14 @@
 #!/bin/sh
 
-: ${pkg_install_prefix:="$jagen_host_dir"}
+: ${pkg_install_prefix:=$jagen_host_dir}
 
 : ${pkg_build_cmake_module_path:=$jagen_host_cmake_module_path}
 : ${pkg_build_cmake_module_path:=$jagen_cmake_module_path}
 
-export CC="gcc"
-export CXX="g++"
-export STRIP="strip"
+CFLAGS="$pkg_toolchain_cflags -O2 $pkg_build_cflags"
+CXXFLAGS="${pkg_toolchain_cxxflags:-$pkg_toolchain_cflags}"\
+" -O2 ${pkg_build_cxxflags:-$pkg_build_cflags}"
+LDFLAGS="$pkg_toolchain_ldflags $pkg_build_ldflags"
+export CFLAGS CXXFLAGS LDFLAGS
 
-export CFLAGS="${pkg_build_cflags:--march=core2 -O2 -pipe}"
-export CXXFLAGS="$CFLAGS"
-export ASMFLAGS="$CFLAGS"
-export LDFLAGS=""
-
-export PKG_CONFIG_PATH="$jagen_host_dir/lib/pkgconfig"
+export PKG_CONFIG_PATH="$pkg_install_prefix/lib/pkgconfig"
