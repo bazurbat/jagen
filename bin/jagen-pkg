@@ -43,12 +43,15 @@ fi
 
 if [ "$pkg_build_toolchain" ]; then
     pkg__import_file=$(pkg__get_export_file "$pkg_build_toolchain")
-    prefix=$(to_name "$pkg_build_toolchain")
+    prefix="$(to_name "$pkg_build_toolchain")_build_"
     include "$pkg__import_file"
-    for var in $(set | sed -rn "s/^(${prefix}_[[:alnum:]_]+)=.*/\1/p"); do
-        name=${var#${prefix}_}
-        eval ": \${pkg_${name}:=\"\$$var\"}"
+    for var in $(set | sed -rn "s/^(${prefix}[[:alnum:]_]+)=.*/\1/p"); do
+        name=${var#$prefix}
+        eval ": \${pkg_toolchain_${name}:=\"\$$var\"}"
     done; unset prefix var name
+    for key in board arch system cpu cflags cxxflags ldflags; do
+        eval ": \${pkg_build_${key}:=\"\$pkg_toolchain_${key}\"}"
+    done
 fi
 
 if [ "$pkg_config" ]; then
@@ -72,6 +75,10 @@ export pkg_install_dir="$pkg_install_root$pkg_install_prefix"
 for name in $(set | awk -F= '/^pkg_.*=/ { print $1 }'); do
     eval $name='$(jagen__expand "$(IFS= eval echo \$$name)")'
 done; unset name
+
+if [ "${pkg_build_toolchain-}" ]; then
+    use_env cflags
+fi
 
 pkg__file=$(find_in_path "pkg/${pkg_name}.sh")
 if [ "$pkg__file" ]; then
