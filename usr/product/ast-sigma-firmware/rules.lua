@@ -128,7 +128,9 @@ package { 'firmware', 'target',
         prefix = '/firmware'
     },
     { 'compile' },
-    { 'install' }
+    { 'install',
+        { 'kernel', 'image', 'target' }
+    }
 }
 
 firmware_package { 'karaoke-player',
