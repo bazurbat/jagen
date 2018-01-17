@@ -7,6 +7,7 @@ if [ "${ZSH_VERSION-}" ]; then
     setopt shwordsplit
 fi
 
+export jagen_S="$(printf '\n!')"; jagen_S=${jagen_S%!}
 export jagen_FS="$(printf '\t')"
 export jagen_IFS="$(printf '\n\t')"
 
