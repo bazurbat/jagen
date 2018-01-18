@@ -594,7 +594,7 @@ function P.define_rule(rule, context)
             for key in each(keys) do
                 export.build[key] = build[key]
             end
-            if next(export) then
+            if next(export.build) then
                 export.build['dir'] = build.dir
                 pkg.export = table.merge(pkg.export or {}, export)
             end
