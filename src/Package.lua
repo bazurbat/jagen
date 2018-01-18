@@ -399,25 +399,25 @@ function P.load_rules()
             local build = pkg:get('build', config)
             if build and build.type then
                 local toolchain = build.toolchain
-                if toolchain ~= false then
+                if toolchain == nil then
                     if config == 'host' and host_toolchain and
-                        name ~= host_toolchain then
+                                name ~= host_toolchain then
                         toolchain = host_toolchain
                     elseif config == 'target' and target_toolchain and
-                        name ~= target_toolchain then
+                                name ~= target_toolchain then
                         toolchain = target_toolchain
                     end
-                    if toolchain then
-                        build.toolchain = toolchain
-                        push_context(table.merge(copy(current_context), {
-                                    name = name,
-                                    config = config
-                            }))
-                        local stage = { 'configure', requires = { toolchain } }
-                        pkg:add_requires(stage, { config = config })
-                        pkg:add_target(stage, config)
-                        pop_context()
-                    end
+                end
+                if toolchain then
+                    build.toolchain = toolchain
+                    push_context(table.merge(copy(current_context), {
+                                name = name,
+                                config = config
+                        }))
+                    local stage = { 'configure', requires = { toolchain } }
+                    pkg:add_requires(stage, { config = config })
+                    pkg:add_target(stage, config)
+                    pop_context()
                 end
             end
         end
