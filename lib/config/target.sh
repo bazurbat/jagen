@@ -3,7 +3,7 @@
 pkg_install_prefix=/
 pkg_install_root=$jagen_target_dir
 
-if [ "$jagen_target_cmake_module_path" ]; then
+if [ "${jagen_target_cmake_module_path+!}" ]; then
     jagen_cmake_module_path=$jagen_target_cmake_module_path
 fi
 

@@ -236,9 +236,9 @@ rules and also to find pkg files. The `config` is optional.
   sensitive to compiler settings and using this option might be necessary for
   them to build correctly or as a safety measure.
 
-- **build.cmake_module_path** (`pkg_build_cmake_module_path`) — specifies
-  `CMAKE_MODULE_PATH` for this package only. Set to empty string to disable
-  passing of the module path from the environment.
+- **build.cmake_module_path** (`pkg_build_cmake_module_path`) — Defines
+  `CMAKE_MODULE_PATH` for the package. Defaults to `$jagen_cmake_module_path`
+  if unset, empty string value disables.
 
 - **build.cmake_toolchain_file** (`pkg_build_cmake_toolchain_file`) — specifies
   `CMAKE_TOOLCHAIN_FILE` for this package only. Set to empty string to disable
@@ -341,15 +341,15 @@ rules and also to find pkg files. The `config` is optional.
 - **jagen_ccache** — The name of the ccache executable.
 - **jagen_cmake_build_options** — Arguments to pass to CMake in `compile` stage.
 - **jagen_cmake_generator** (`Ninja`) — Override CMake generator.
-- **jagen_cmake_module_path** — Override the `CMAKE_MODULE_PATH`.
 - **jagen_cmake_options** — Arguments to pass to CMake in `configure` stage.
-- **jagen_cmake_module_path** — The `CMAKE_MODULE_PATH` to pass to CMake in `configure` stage.
+- **jagen_cmake_module_path** — The default `CMAKE_MODULE_PATH`.
 - **jagen_cmake_toolchain_file** — The `CMAKE_TOOLCHAIN_FILE` to pass to CMake in `configure` stage. It applies only to `target` config.
 - **jagen_debug** — Debug level.
 - **jagen_dir** — The location of the Jagen source directory.
 - **jagen_dist_dir** — The location of the `dist` directory (`$jagen_project_dir/dist`).
 - **jagen_flags** — Space-separated list of flags.
-- **jagen_host_cmake_module_path** — The `CMAKE_MODULE_PATH` to pass to CMake in `configure` stage. Overrides `jagen_cmake_module_path` for packages in `host` config. Set to empty string to disable.
+- **jagen_host_cmake_module_path** — The `CMAKE_MODULE_PATH` for "host" config.
+  Overrides `$jagen_cmake_module_path` if set, empty value disables.
 - **jagen_host_dir** — The location of the `host` directory (`$jagen_project_dir/host`).
 - **jagen_include_dir** — The location of the `include` directory (`$jagen_project_dir/include`).
 - **jagen_kernel_config** — The name of the Linux kernel config to use.
@@ -388,7 +388,8 @@ rules and also to find pkg files. The `config` is optional.
 - **jagen_source_exclude** — The space-separated list of package names which should be excluded from fetching.
 - **jagen_src_dir** — The location of the `src` directory (`$jagen_project_dir/src`).
 - **jagen_target_board** — The name of the current target board.
-- **jagen_target_cmake_module_path** — The `CMAKE_MODULE_PATH` to pass to CMake in `configure` stage. Overrides `jagen_cmake_module_path` for packages in `target` config. Set to empty string to disable.
+- **jagen_target_cmake_module_path** — The `CMAKE_MODULE_PATH` for "target"
+  config. Overrides `$jagen_cmake_module_path` if set, empty value disables.
 - **jagen_target_dir** — The location of the `target` directory (`$jagen_project_dir/target`).
 - **jagen_target_platform** — The name of the current target platform (currently used only for Android).
 - **jagen_target_toolchain** — The name of the current target toolchain.
@@ -407,9 +408,8 @@ rules and also to find pkg files. The `config` is optional.
 
 - **pkg_build_cflags** (`build.cflags`) — additional C compiler flags (CFLAGS)
 
-- **pkg_build_cmake_module_path** (`build.cmake_module_path`) —
-  `CMAKE_MODULE_PATH` for the current package; default:
-  `$jagen_cmake_module_path`
+- **pkg_build_cmake_module_path** (`build.cmake_module_path`) — the
+  `CMAKE_MODULE_PATH` for the package; default: `$jagen_cmake_module_path`
 
 - **pkg_build_cmake_toolchain_file** (`build.cmake_toolchain_file`) —
   `CMAKE_TOOLCHAIN_FILE` for the current package

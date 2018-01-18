@@ -72,7 +72,8 @@ fi
 
 # defaults
 : ${pkg_build_generator:=$jagen_cmake_generator}
-: ${pkg_build_cmake_module_path:=$jagen_cmake_module_path}
+# null value disables, default only if unset
+: ${pkg_build_cmake_module_path=$jagen_cmake_module_path}
 
 # crutches
 if [ "$pkg_build_toolchain" ]; then
