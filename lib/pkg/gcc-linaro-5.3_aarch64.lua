@@ -6,7 +6,7 @@ return {
     },
     build = {
         arch   = 'aarch64',
-        system = '${pkg_build_target_arch}-linux-gnu',
+        system = '${pkg_build_arch}-linux-gnu',
         in_source = true,
         toolchain = false
     },
