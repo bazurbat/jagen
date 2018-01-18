@@ -589,7 +589,7 @@ function P.define_rule(rule, context)
             end
 
             local export = { build = {} }
-            local keys = { 'board', 'arch', 'system', 'cpu',
+            local keys = { 'board', 'arch', 'system', 'cpu', 'fpu',
                 'cflags', 'cxxflags', 'ldflags' }
             for key in each(keys) do
                 export.build[key] = build[key]

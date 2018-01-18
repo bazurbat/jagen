@@ -25,21 +25,30 @@ pkg__stamp_name="${pkg_name}__${pkg_stage}${pkg_config:+__${pkg_config}}"
 pkg__stamp_file="${jagen_build_dir:?}/${pkg__stamp_name}"
 pkg__log_file="${jagen_log_dir:?}/${pkg__stamp_name}.log"
 
-pkg_build_generator="$jagen_cmake_generator"
-
-export pkg_work_dir="${jagen_build_dir:?}/$pkg_name"
-export pkg_build_dir="$pkg_work_dir${pkg_config:+/$pkg_config}"
-
-if [ -z "$pkg_query" ]; then
-    : >"$pkg__log_file"
-fi
-
 cd "$jagen_build_dir" || die
+
+[ "$pkg_query" ] || : >"$pkg__log_file"
+
+pkg_work_dir="${jagen_build_dir:?}/$pkg_name"
+pkg_build_dir="${pkg_work_dir}${pkg_config:+/$pkg_config}"
+
+# override global env and set initial values for pkg env
+if [ "$pkg_config" ]; then
+    import "config/$pkg_config"
+fi
 
 include "$jagen_include_dir/$pkg_name" || die
 if [ "$pkg_config" ]; then
     include "$jagen_include_dir/${pkg_name}__${pkg_config}" || die
 fi
+
+# depends on config or pkg includes
+pkg_install_dir="$pkg_install_root$pkg_install_prefix"
+
+# expand single-quoted pkg_* variables from includes
+for name in $(set | awk -F= '/^pkg_.*=/ { print $1 }'); do
+    eval $name='$(jagen__expand "$(IFS= eval echo \$$name)")'
+done; unset name
 
 if [ "$pkg_build_toolchain" ]; then
     pkg__import_file=$(pkg__get_export_file "$pkg_build_toolchain")
@@ -49,12 +58,22 @@ if [ "$pkg_build_toolchain" ]; then
         name=${var#$prefix}
         eval ": \${pkg_toolchain_${name}:=\"\$$var\"}"
     done; unset prefix var name
+    for key in board arch system cpu fpu; do
+        eval ": \${pkg_build_$key:=\"\$pkg_toolchain_$key\"}"
+    done
+    use_env cflags
 fi
 
+# config-specific adjustment of pkg env
 if [ "$pkg_config" ]; then
     use_env "$pkg_config"
 fi
 
+# defaults
+: ${pkg_build_generator:=$jagen_cmake_generator}
+: ${pkg_build_cmake_module_path:=$jagen_cmake_module_path}
+
+# crutches
 if [ "$pkg_build_toolchain" ]; then
     if [ "$pkg_build_set_toolchain" ]; then
         use_env set_toolchain
@@ -64,15 +83,7 @@ if [ "$pkg_build_toolchain" ]; then
     fi
 fi
 
-export pkg_install_dir="$pkg_install_root$pkg_install_prefix"
-
-# Expand still unresolved pkg_* variables. This step is performed last with all
-# values from package environments and include scripts in scope which allows
-# them to refer to each other.
-for name in $(set | awk -F= '/^pkg_.*=/ { print $1 }'); do
-    eval $name='$(jagen__expand "$(IFS= eval echo \$$name)")'
-done; unset name
-
+# remove excessive whitespace from command lines, helps diffing build logs
 jagen__trim CFLAGS CXXFLAGS LDFLAGS
 
 pkg__file=$(find_in_path "pkg/${pkg_name}.sh")
