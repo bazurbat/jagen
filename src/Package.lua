@@ -325,7 +325,7 @@ function P:query(value, config)
     local result = {}
 
     local function run_query(config)
-        return assert(System.pread('*l', 'jagen-pkg -q %q %q %q',
+        return assert(System.pread('*l', 'jagen-stage -q %q %q %q',
             assert(value), assert(self.name), config or ''))
     end
 

@@ -129,7 +129,7 @@ not install it to the `host` directory.
 Run `jagen build` again to build the just added package. If some stage failed,
 note the message similar to:
 ```
-FAILED: jagen-pkg myproject compile host
+FAILED: jagen-stage myproject compile host
 ```
 and look to the `build/myproject__compile__host.log` for the build output of
 this stage.

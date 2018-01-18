@@ -160,7 +160,7 @@ function P.generate(out_file, rules)
     local lines = {
         binding('builddir', assert(Jagen.build_dir)),
         format_rule('stage', join {
-                separated(Jagen.shell), 'jagen-pkg $args'
+                separated(Jagen.shell), 'jagen-stage $args'
             })
     }
 
