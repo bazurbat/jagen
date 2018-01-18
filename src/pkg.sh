@@ -21,11 +21,11 @@ pkg_run() {
     case $cmd in
         make)
             cmd="$cmd -j$pkg_run_jobs"
-            [ "$jagen_build_verbose" = "yes" ] && cmd="$cmd V=1"
+            [ "$jagen_build_verbose" ] && cmd="$cmd V=1"
             ;;
         ninja)
             cmd="$cmd -j$pkg_run_jobs"
-            [ "$jagen_build_verbose" = "yes" ] && cmd="$cmd -v"
+            [ "$jagen_build_verbose" ] && cmd="$cmd -v"
             ;;
     esac
 
