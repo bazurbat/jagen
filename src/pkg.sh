@@ -470,12 +470,6 @@ pkg_compile() {
         linux_module)
             pkg_run make $pkg_build_options "$@"
             ;;
-        maven)
-            pkg_run "${jagen_mvn_exe:-mvn}" \
-                ${is_offline:+-o} \
-                $jagen_mvn_options $pkg_build_options "$@" \
-                verify
-            ;;
     esac
 }
 

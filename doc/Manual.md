@@ -298,8 +298,7 @@ rules and also to find pkg files. The `config` is optional.
   themselves to break dependency cycles.
 
 - **build.type** (`pkg_build_type`) — The type of the package build system.
-  Supported values are: GNU, CMake, KBuild, make, linux_kernel, linux_module,
-  maven.
+  Supported values are: GNU, CMake, KBuild, make, linux_kernel, linux_module.
 
 ### Install
 
@@ -363,8 +362,6 @@ rules and also to find pkg files. The `config` is optional.
 - **jagen_lib_dir** — The location of the `lib` dir (`$jagen_dir/lib`).
 - **jagen_log_dir** — The location of the `log` dir (`$jagen_build_dir`).
 - **jagen_lua** — The name of the Lua executable.
-- **jagen_mvn_exe** — A name or a path to the mvn executable.
-- **jagen_mvn_options** — A list of arguments which are passed to every invocaction of mvn.
 <!-- - **jagen_out_dir** — _Not used_. -->
 - **jagen_pager** — Overrides PAGER environment variable.
 - **jagen_path** — Import path. Derived from layer locations.
