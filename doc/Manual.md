@@ -403,15 +403,41 @@ rules and also to find pkg files. The `config` is optional.
 
 - **pkg_args** — stage arguments
 
-- **pkg_build_arch** (`build.arch`) — the target architecure
+- **pkg_build_arch** (`build.arch`) — the target architecture; default:
+  `$pkg_toolchain_arch`
 
-- **pkg_build_board** (`build.board`) — the target board
+- **pkg_build_board** (`build.board`) — the target board; default:
+  `$pkg_toolchain_board`
 
-- **pkg_build_cflags** (`build.cflags`) — the target cflags
+- **pkg_build_cflags** (`build.cflags`) — additional C compiler flags (CFLAGS)
 
-- **pkg_build_cpu** (`build.cpu`) — the target cpu
+- **pkg_build_cmake_module_path** (`build.cmake_module_path`) —
+  `CMAKE_MODULE_PATH` for the current package; default:
+  `$jagen_cmake_module_path`
+
+- **pkg_build_cmake_toolchain_file** (`build.cmake_toolchain_file`) —
+  `CMAKE_TOOLCHAIN_FILE` for the current package
+
+- **pkg_build_configure_file** (`build.configure_file`) — the path to the
+  configure file; default: `$pkg_source_dir/configure`
+
+- **pkg_build_configure_needs_install_dir**
+  (`build.configure_needs_install_dir`) — if set, specifies that the
+  `configure` requires libraries and include directories from the package
+  install directory to find dependencies; effectively this setting adds
+  `-I$pkg_install_dir/include` to `CFLAGS` and `-L$pkg_install_dir/lib` to
+  `LDFLAGS`.
+
+- **pkg_build_cpu** (`build.cpu`) — the target CPU; default:
+  `$pkg_toolchain_cpu`
+
+- **pkg_build_cxxflags** (`build.cxxflags`) — additional C++ compiler flags
+  (CXXFLAGS)
 
 - **pkg_build_dir** (`build.dir`) — the location of the package build directory
+
+- **pkg_build_fpu** (`build.fpu`) — the target FPU; default:
+  `$pkg_toolchain_fpu`
 
 - **pkg_build_generate** (`build.generate`) — if build type is "GNU" and
   `autogen.sh` is found in the source directory — run it
@@ -425,35 +451,28 @@ rules and also to find pkg files. The `config` is optional.
   or it does not work for some reason; can change other behaviour apart from
   setting build dir = source dir
 
+- **pkg_build_ldflags** (`build.ldflags`) — additional linker flags (LDFLAGS)
+
+- **pkg_build_options** (`build.options`) — passed as and argument to the
+  underlying build system directly, it could be `configure` options, `CMake`
+  defines or `make` variable assignments depending on the package build type
+
 - **pkg_build_profile** (`build.profile`) — specifies a "build profile" for the
   package (usually this setting is called the "configuration" in other build
   systems, but in Jagen "config" has another meaning); supported values:
   release, debug, release_with_debug
 
-- **pkg_build_system** (`build.system`) — the target system
+- **pkg_build_system** (`build.system`) — the target system; default:
+  `$pkg_toolchain_system`
 
-- **pkg_build_toolchain_dir** (`build.dir`) — the location of the target toolchain
+- **pkg_build_toolchain** (`build.toolchain`) — the name of the toolchain
+  package which should be used for the build
 
 - **pkg_build_type** (`build.type`) — the type of the build system of the
   package; currently supported values are: GNU, KBuild, CMake, make,
   linux_kernel, linux_module
 
-- **pkg_build_cmake_module_path** (`build.cmake_module_path`) — specifies
-  `CMAKE_MODULE_PATH` for the current package.
-
-- **pkg_build_cmake_toolchain_file** (`build.cmake_toolchain_file`) — specifies
-  `CMAKE_TOOLCHAIN_FILE` for the current package.
-
 - **pkg_config** (`pkg.config`) — the config of the currently executing stage
-
-- **pkg_build_configure_file** (`build.configure_file`) — specifies the path to the
-  configure file; `$pkg_source_dir/configure` if unset
-
-- **pkg_build_configure_needs_install_dir** (`build.configure_needs_install_dir`) —
-  if set, specifies that the `configure` requires libraries and include
-  directories from the package install directory to find dependencies;
-  effectively this setting adds `-I$pkg_install_dir/include` to `CFLAGS` and
-  `-L$pkg_install_dir/lib` to `LDFLAGS`.
 
 - **pkg_install_args** (`install.args`) — a list of additional install command
   arguments
@@ -468,34 +487,35 @@ rules and also to find pkg files. The `config` is optional.
 - **pkg_install_ldconfig** (`install.ldconfig`) — a flag indicating whether to
   run `ldconfig` after the install
 
+- **pkg_install_libs** (`install.libs`) — a list of names of the libraries
+  installed by this package
+
 - **pkg_install_module_dirs** (`install.module_dirs`) — a list of directories
   relative the the source directory containing Linux kernel modules which could
   be installed using the standard command (`make M=$dir modules_install`) or
   similar
 
-- **pkg_install_type** (`install.type`) — sets the type of the build system
-  for the "install" stage; generally the same as the "build type" but can
-  differ if overridden; supported values: GNU, make, CMake, linux_kernel,
-  linux_module, none
+- **pkg_install_prefix** (`install.prefix`) — specifies the install prefix of
+  the package, depends on the build system (`--prefix=` passed to `configure`
+  script or `CMAKE_INSTALL_PREFIX` for `CMake`)
 
-- **pkg_install_libs** (`install.libs`) — a list of names of the libraries
-  installed by this package
+- **pkg_install_root** (`install.root`) — specifies the "root" of the package
+  installation; can have different interpretation depending on the build system
+  but in general used for various autotools workaround (cleaning `.la` and
+  `.pc` files and such); sets `DESTDIR` for `make` and `CMake`
+
+- **pkg_install_type** (`install.type`) — sets the type of the build system for
+  the "install" stage; generally the same as the "build type" but can differ if
+  overridden; supported values: GNU, make, CMake, linux_kernel, linux_module,
+  none
 
 - **pkg_name** — the package name of the currently executing stage
-
-- **pkg_build_options** (`build.options`) — passed as and argument to the underlying
-  build system directly, it could be `configure` options, `CMake` defines or
-  `make` variable assignments depending on the package build type
 
 - **pkg_patches_provided** (`pkg.patches.provided`) — a list of absolute patch
   filenames which the current package is expected to provide
 
 - **pkg_patches_required** (`pkg.patches.required`) — a list of absolute patch
   filenames which the current package requires
-
-- **pkg_install_prefix** (`install.prefix`) — specifies the install prefix of the
-  package, depends on the build system (`--prefix=` passed to `configure`
-  script or `CMAKE_INSTALL_PREFIX` for `CMake`)
 
 - **pkg_query** — query
 
@@ -519,12 +539,12 @@ rules and also to find pkg files. The `config` is optional.
   "unpack" stage will not clean or update the package source directory (this
   rule takes precedence over the "ignore\_dirty")
 
+- **pkg_source_filename** (`source.filename`) — the "filename" part of the
+  location (the part after the last "/" if not set manually)
+
 - **pkg_source_ignore_dirty** (`source.ignore_dirty`) — if set to any value
   then the "unpack" stage will cleanup the source directory even if it has
   changes
-
-- **pkg_source_filename** (`source.filename`) — the "filename" part of the
-  location (the part after the last "/" if not set manually)
 
 - **pkg_source_md5sum** (`source.md5sum`) — MD5 hash of the source file (for
   dist sources only)
@@ -538,10 +558,26 @@ rules and also to find pkg files. The `config` is optional.
 - **pkg_stage** — the name of the currently executing stage (unpack, patch,
   configure, install, etc.)
 
-- **pkg_install_root** (`install.root`) — specifies the "root" of the package
-  installation; can have different interpretation depending on the build system
-  but in general used for various autotools workaround (cleaning `.la` and
-  `.pc` files and such); sets `DESTDIR` for `make` and `CMake`
+- **pkg_toolchain_arch** — the architecture exported by the selected toolchain
+
+- **pkg_toolchain_board** — the board exported by the selected toolchain
+
+- **pkg_toolchain_cflags** — the C compiler flags exported by the selected
+  toolchain
+
+- **pkg_toolchain_cpu** — the CPU exported by the selected toolchain
+
+- **pkg_toolchain_cxxflags** — the C++ compiler flags exported by the selected
+  toolchain
+
+- **pkg_toolchain_dir** — the build directory of the selected toolchain
+
+- **pkg_toolchain_fpu** — the FPU exported by the selected toolchain
+
+- **pkg_toolchain_ldflags** — the linker flags exported by the selected
+  toolchain
+
+- **pkg_toolchain_system** — the system exported by the selected toolchain
 
 - **pkg_work_dir** (`pkg.work_dir`) — a location of the toplevel working
   directory for the package; can contain unpacked sources, several build
