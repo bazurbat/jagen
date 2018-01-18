@@ -192,17 +192,18 @@ jagen__trim() {
 
 # Evaluates the supplied value until there are no more expansions possible (no
 # '$' symbols found in the value) and echoes the result of the expansion.
-# Dies if the maximum recursion depth is reached (10).
-# Note: command eval is needed to set IFS only for this eval instance.
+# Dies if the recursion depth exceeds 10.
 jagen__expand() {
-    local value="$1" depth=10
-    while [ $depth -gt 0 ]; do
-        IFS= command eval value='$(eval echo \"$value\")'
-        [ "$value" = "${value#*$}" ] && break
-        depth=$((depth-1))
+    local value="$1" name="$2" maxdepth=10 depth=0
+    while [ $depth -le $maxdepth ]; do
+        value=$(eval echo \""$value"\")
+        if [ "$value" = "${value#*$}" ]; then
+            echo "$value"; return
+        fi
+        depth=$((depth+1))
     done
-    [ $depth = 0 ] && die "maximum recursion depth exceeded when trying to expand value '$value'"
-    echo "$value"
+    [ $depth -gt $maxdepth ] && die "the recursion depth exceeded $maxdepth "\
+"while expanding${name:+ \$$name}: $value"
 }
 
 # Tries to expand the supplied arguments as layer paths relative to the current
