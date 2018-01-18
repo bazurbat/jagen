@@ -37,7 +37,7 @@ jagen_pkg_compile() {
 }
 
 get_start_addr() {
-    local NM="${jagen_toolchain_prefix}nm"
+    local NM="${pkg_toolchain_prefix}nm"
     echo 0x$($NM $1 | awk '/\<kernel_entry\>/ { print $1 }')
 }
 

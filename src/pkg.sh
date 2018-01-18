@@ -39,7 +39,7 @@ pkg_run_patch() {
 
 pkg_strip_root() {
     local root="${1:?}" files
-    local strip="${jagen_toolchain_prefix:?}strip"
+    local strip="${pkg_toolchain_prefix}strip"
 
     files=$(find "$root" -type f -not -name "*.ko" \
         "(" -path "*/lib*" -o -path "*/bin*" -o -path "*/sbin*" ")" | \
@@ -397,10 +397,10 @@ pkg_configure() {
                 A="$A$S-DCMAKE_SYSTEM_NAME=Linux"
                 A="$A$S-DCMAKE_FIND_ROOT_PATH=$pkg_install_dir"
                 if [ -z "$CC" ]; then
-                    A="$A$S-DCMAKE_C_COMPILER=${jagen_toolchain_prefix-}gcc"
+                    A="$A$S-DCMAKE_C_COMPILER=${pkg_toolchain_prefix}gcc"
                 fi
                 if [ -z "$CXX" ]; then
-                    A="$A$S-DCMAKE_CXX_COMPILER=${jagen_toolchain_prefix-}g++"
+                    A="$A$S-DCMAKE_CXX_COMPILER=${pkg_toolchain_prefix}g++"
                 fi
             fi
 

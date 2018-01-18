@@ -392,7 +392,6 @@ rules and also to find pkg files. The `config` is optional.
 - **jagen_target_dir** — The location of the `target` directory (`$jagen_project_dir/target`).
 - **jagen_target_platform** — The name of the current target platform (currently used only for Android).
 - **jagen_target_toolchain** — The name of the current target toolchain.
-- **jagen_toolchain_prefix** — The current toolchain prefix.
 - **jagen_toolchains_dir** — The location of the `toolchains` directory (`$jagen_project_dir/toolchains`).
 - **jagen_vendor** — The name of the current vendor.
 

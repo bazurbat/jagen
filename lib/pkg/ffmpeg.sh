@@ -44,8 +44,8 @@ jagen_pkg_configure() {
 
     if [ "$pkg_config" = "target" ]; then
         cross_options="--target-os=linux --enable-cross-compile"
-        if [ "$jagen_toolchain_prefix" ]; then
-            cross_options="$cross_options --cross-prefix=$jagen_toolchain_prefix"
+        if [ "$pkg_toolchain_prefix" ]; then
+            cross_options="$cross_options --cross-prefix=$pkg_toolchain_prefix"
         fi
         if [ "$pkg_build_arch" ]; then
             cross_options="$cross_options --arch=$pkg_build_arch"

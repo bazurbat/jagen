@@ -61,6 +61,7 @@ if [ "$pkg_build_toolchain" ]; then
     for key in board arch system cpu fpu; do
         eval ": \${pkg_build_$key:=\"\$pkg_toolchain_$key\"}"
     done
+    : ${pkg_toolchain_prefix:=${pkg_build_system+${pkg_build_system}-}}
     use_env cflags
 fi
 
