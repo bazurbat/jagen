@@ -11,7 +11,7 @@ return {
         }
     },
     build = {
-        type = 'custom',
+        type = true,
         in_source = true,
         unset_cflags = true,
         kernel_modules = true

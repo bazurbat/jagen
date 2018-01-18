@@ -5,7 +5,7 @@ return {
         branch   = '3.11.3'
     },
     build = {
-        type = 'custom',
+        type = true,
         in_source = true,
         kernel_modules = true,
     },

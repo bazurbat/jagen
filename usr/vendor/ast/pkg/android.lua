@@ -6,7 +6,7 @@ return {
         dir      = 'android'
     },
     build = {
-        type = 'android',
+        type = true,
         in_source = true
     }
 }
