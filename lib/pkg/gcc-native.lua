@@ -3,6 +3,7 @@ return {
         dir = '/usr'
     },
     build = {
+        cflags = '-march=native',
         in_source = true,
         toolchain = false
     }
