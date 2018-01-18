@@ -9,7 +9,7 @@ return {
         arch   = 'mips',
         system = 'mipsel-linux-gnu',
         cpu    = '24kf',
-        cflags = '-O2 -fomit-frame-pointer -fno-strict-aliasing -Wa,-mips32r2 -march=24kf -mtune=24kf -pipe',
+        cflags = '-march=24kf -mtune=24kf -Wa,-mips32r2',
         in_source = true,
         toolchain = false
     }
