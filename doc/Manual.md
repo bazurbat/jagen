@@ -230,8 +230,8 @@ rules and also to find pkg files. The `config` is optional.
   necessary for the package. Also causes `libtool` to be installed for the
   host.
 
-- **build.clean_cflags** (`pkg_build_clean_cflags`) — If set to `true`, causes
-  the CFLAGS, CXXFLAGS, ASMFLAGS and LDFLAGS variables to be unset overriding
+- **build.unset_cflags** (`pkg_build_clean_cflags`) — If set to `true`, causes
+  the CFLAGS, CXXFLAGS and LDFLAGS variables to be unset overriding
   config-specific and user environment. Some "SDK-type" packages are very
   sensitive to compiler settings and using this option might be necessary for
   them to build correctly or as a safety measure.
