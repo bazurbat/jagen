@@ -587,22 +587,24 @@ function P.define_rule(rule, context)
             if config == 'target' and build.target_requires_host then
                 rule.requires = append(rule.requires or {}, { pkg.name, 'host' })
             end
-
-            local export = { build = {} }
-            local keys = { 'board', 'arch', 'system', 'cpu', 'fpu',
-                'cflags', 'cxxflags', 'ldflags' }
-            for key in each(keys) do
-                export.build[key] = build[key]
-            end
-            if next(export.build) then
-                export.build['dir'] = build.dir
-                pkg.export = table.merge(pkg.export or {}, export)
-            end
         end
 
         if install then
             if install.type and (install.type ~= 'none' or install.type ~= false) then
                 pkg:add_target({ 'install' }, config)
+            end
+            if install.type == 'toolchain' then
+                pkg.export = pkg.export or {}
+                pkg.export.dir = build.dir
+                for key in each { 'arch', 'system', 'cpu' } do
+                    if pkg.export[key] == nil then
+                        pkg.export[key] = pkg.build[key]
+                    end
+                end
+                if build.cflags then
+                    pkg.export.env = pkg.export.env or {}
+                    pkg.export.env.CFLAGS = build.cflags
+                end
             end
         elseif build and build.type then
             pkg:add_target({ 'install' }, config)

@@ -6,7 +6,7 @@ return {
     },
     build = {
         arch   = 'arm',
-        system = '${pkg_build_arch}-linux-gnueabi',
+        system = 'arm-linux-gnueabi',
         cflags = '-march=armv7-a -mcpu=cortex-a9 -mfpu=vfpv3-d16 -mfloat-abi=softfp',
         in_source = true,
         toolchain = false

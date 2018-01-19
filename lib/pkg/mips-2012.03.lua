@@ -12,5 +12,8 @@ return {
         cflags = '-march=24kf -mtune=24kf -Wa,-mips32r2',
         in_source = true,
         toolchain = false
+    },
+    install = {
+        type = 'toolchain'
     }
 }

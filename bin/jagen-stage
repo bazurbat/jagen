@@ -52,17 +52,25 @@ done; unset name
 
 if [ "$pkg_build_toolchain" ]; then
     pkg__import_file=$(pkg__get_export_file "$pkg_build_toolchain")
-    prefix="$(to_name "$pkg_build_toolchain")_build_"
     include "$pkg__import_file"
-    for var in $(set | sed -rn "s/^(${prefix}[[:alnum:]_]+)=.*/\1/p"); do
-        name=${var#$prefix}
-        eval ": \${pkg_toolchain_${name}:=\"\$$var\"}"
-    done; unset prefix var name
-    for key in board arch system cpu fpu; do
-        eval ": \${pkg_build_$key:=\"\$pkg_toolchain_$key\"}"
+    name="$(to_name "$pkg_build_toolchain")"
+    # assign "<toolchain name>_*" to "toolchain_*"
+    for key in $(set | sed -rn "s/^${name}_([[:alnum:]_]+)=.*/\1/p"); do
+        eval "toolchain_${key}=\$${name}_${key}"
+    done; unset name key
+    # assign "toolchain_*" to "pkg_build_*" if unset skipping "toolchain_env_*"
+    for key in $(set | sed -rn '/^toolchain_env/! s/^toolchain_([[:alnum:]_]+)=.*/\1/p'); do
+        eval ": \${pkg_build_${key}=\${toolchain_${key}}}"
     done
-    : ${pkg_toolchain_prefix:=${pkg_build_system+${pkg_build_system}-}}
+    # concatenate cflags
     use_env cflags
+    # assign "toolchain_env_*" to "pkg_env_*" if unset
+    for key in $(set | sed -rn 's/^toolchain_env_([[:alnum:]_]+)=.*/\1/p'); do
+        eval ": \${pkg_env_${key}=\${toolchain_env_${key}}}"
+    done
+    if [ "$pkg_build_system" ]; then
+        : ${pkg_toolchain_prefix=${pkg_build_system}-}
+    fi
 fi
 
 # set pkg_env_* in the environment

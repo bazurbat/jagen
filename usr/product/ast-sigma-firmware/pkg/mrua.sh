@@ -8,7 +8,7 @@ export KCFLAGS="-mhard-float -Wa,-mhard-float"
 build_libs="rmcore rmcec rmedid rmhdmi rmhsi rmi2c rmsha1 rmvideoout rmoutput"
 
 jagen_pkg_compile() {
-    PATH="${pkg_toolchain_dir:?}/bin:$PATH"
+    PATH="${toolchain_dir:?}/bin:$PATH"
 
     # This is hardcoded somewhere, make needs lib to exist
     pkg_run mkdir -p "$jagen_sdk_rootfs_prefix/lib"
@@ -29,7 +29,7 @@ jagen_pkg_install() {
     local lib_dir="$pkg_install_dir/lib"
     local src_dir="$pkg_source_dir/modules/$jagen_kernel_release"
 
-    PATH="${pkg_toolchain_dir:?}/bin:$PATH"
+    PATH="${toolchain_dir:?}/bin:$PATH"
 
     pkg_run mkdir -p "$bin_dir" "$lib_dir"
 

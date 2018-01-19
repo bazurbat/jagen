@@ -1,9 +1,12 @@
 #!/bin/sh
 
-: ${pkg_toolchain_cxxflags:=$pkg_toolchain_cflags}
-: ${pkg_build_cxxflags:=$pkg_build_cflags}
+if [ "${toolchain_env_CFLAGS+!}" ]; then
+    : ${toolchain_env_CXXFLAGS=$toolchain_env_CFLAGS}
+fi
+if [ "${pkg_env_CFLAGS+!}" ]; then
+    : ${pkg_env_CXXFLAGS=$pkg_env_CFLAGS}
+fi
 
-CFLAGS="$pkg_toolchain_cflags $CFLAGS $pkg_build_cflags"
-CXXFLAGS="$pkg_toolchain_cxxflags $CXXFLAGS $pkg_build_cxxflags"
-LDFLAGS="$pkg_toolchain_ldflags $LDFLAGS $pkg_build_ldflags"
-export CFLAGS CXXFLAGS LDFLAGS
+pkg_env_CFLAGS="$toolchain_env_CFLAGS $CFLAGS $pkg_env_CFLAGS"
+pkg_env_CXXFLAGS="$toolchain_env_CXXFLAGS $CXXFLAGS $pkg_env_CXXFLAGS"
+pkg_env_LDFLAGS="$toolchain_env_LDFLAGS $LDFLAGS $pkg_env_LDFLAGS"

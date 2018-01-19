@@ -4,7 +4,7 @@ pkg_run_jobs=1
 
 # Do not assert non empty toolchain dir here as it is used only by install
 # stage which should have the config sourced and the variable defined.
-toolchain_runtime_dir="$pkg_toolchain_dir/mips-linux-gnu/libc/el"
+toolchain_runtime_dir="$toolchain_dir/mips-linux-gnu/libc/el"
 
 jagen_pkg_patch() {
     pkg_patch
@@ -12,8 +12,8 @@ jagen_pkg_patch() {
 }
 
 jagen_pkg_compile() {
-    export SMP86XX_TOOLCHAIN_PATH="$pkg_toolchain_dir"
-    add_PATH "${pkg_toolchain_dir:?}/bin"
+    export SMP86XX_TOOLCHAIN_PATH="$toolchain_dir"
+    add_PATH "${toolchain_dir:?}/bin"
 
     # Fix cp: not writing through dangling symlink '.../build_mipsel/root/init'
     pkg_run rm -f "$jagen_sdk_initfs_dir/init"

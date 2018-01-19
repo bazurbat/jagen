@@ -400,14 +400,6 @@ rules and also to find pkg files. The `config` is optional.
 
 - **pkg_args** — stage arguments
 
-- **pkg_build_arch** (`build.arch`) — the target architecture; default:
-  `$pkg_toolchain_arch`
-
-- **pkg_build_board** (`build.board`) — the target board; default:
-  `$pkg_toolchain_board`
-
-- **pkg_build_cflags** (`build.cflags`) — additional C compiler flags (CFLAGS)
-
 - **pkg_build_cmake_module_path** (`build.cmake_module_path`) — the
   `CMAKE_MODULE_PATH` for the package; default: `$jagen_cmake_module_path`
 
@@ -424,16 +416,7 @@ rules and also to find pkg files. The `config` is optional.
   `-I$pkg_install_dir/include` to `CFLAGS` and `-L$pkg_install_dir/lib` to
   `LDFLAGS`.
 
-- **pkg_build_cpu** (`build.cpu`) — the target CPU; default:
-  `$pkg_toolchain_cpu`
-
-- **pkg_build_cxxflags** (`build.cxxflags`) — additional C++ compiler flags
-  (CXXFLAGS)
-
 - **pkg_build_dir** (`build.dir`) — the location of the package build directory
-
-- **pkg_build_fpu** (`build.fpu`) — the target FPU; default:
-  `$pkg_toolchain_fpu`
 
 - **pkg_build_generate** (`build.generate`) — if build type is "GNU" and
   `autogen.sh` is found in the source directory — run it
@@ -447,8 +430,6 @@ rules and also to find pkg files. The `config` is optional.
   or it does not work for some reason; can change other behaviour apart from
   setting build dir = source dir
 
-- **pkg_build_ldflags** (`build.ldflags`) — additional linker flags (LDFLAGS)
-
 - **pkg_build_options** (`build.options`) — passed as and argument to the
   underlying build system directly, it could be `configure` options, `CMake`
   defines or `make` variable assignments depending on the package build type
@@ -457,9 +438,6 @@ rules and also to find pkg files. The `config` is optional.
   package (usually this setting is called the "configuration" in other build
   systems, but in Jagen "config" has another meaning); supported values:
   release, debug, release_with_debug
-
-- **pkg_build_system** (`build.system`) — the target system; default:
-  `$pkg_toolchain_system`
 
 - **pkg_build_toolchain** (`build.toolchain`) — the name of the toolchain
   package which should be used for the build
@@ -553,27 +531,6 @@ rules and also to find pkg files. The `config` is optional.
 
 - **pkg_stage** — the name of the currently executing stage (unpack, patch,
   configure, install, etc.)
-
-- **pkg_toolchain_arch** — the architecture exported by the selected toolchain
-
-- **pkg_toolchain_board** — the board exported by the selected toolchain
-
-- **pkg_toolchain_cflags** — the C compiler flags exported by the selected
-  toolchain
-
-- **pkg_toolchain_cpu** — the CPU exported by the selected toolchain
-
-- **pkg_toolchain_cxxflags** — the C++ compiler flags exported by the selected
-  toolchain
-
-- **pkg_toolchain_dir** — the build directory of the selected toolchain
-
-- **pkg_toolchain_fpu** — the FPU exported by the selected toolchain
-
-- **pkg_toolchain_ldflags** — the linker flags exported by the selected
-  toolchain
-
-- **pkg_toolchain_system** — the system exported by the selected toolchain
 
 - **pkg_work_dir** (`pkg.work_dir`) — a location of the toplevel working
   directory for the package; can contain unpacked sources, several build
