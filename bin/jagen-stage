@@ -65,6 +65,11 @@ if [ "$pkg_build_toolchain" ]; then
     use_env cflags
 fi
 
+# set pkg_env_* in the environment
+for name in $(set | sed -rn 's/^pkg_env_([[:alnum:]_]+)=.*/\1/p'); do
+    eval "export $name=\"\$pkg_env_$name\""
+done; unset name
+
 # config-specific adjustment of pkg env
 if [ "$pkg_config" ]; then
     use_env "$pkg_config"
