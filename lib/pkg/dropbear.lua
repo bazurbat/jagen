@@ -23,5 +23,9 @@ return {
             '--disable-pututxline'
         },
         in_source = true
+    },
+    env = {
+        -- install only the executable itself
+        PROGRAMS = 'dropbear'
     }
 }

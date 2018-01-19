@@ -29,5 +29,9 @@ return {
         'dbus',
         'glib',
         'xtables-addons',
+    },
+    env = {
+        -- from the upstream acinclude.m4
+        CFLAGS = '-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2'
     }
 }

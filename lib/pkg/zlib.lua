@@ -6,5 +6,9 @@ return {
     },
     build = {
         type = 'make'
+    },
+    env = {
+        -- upstream default, should be safe
+        CFLAGS = '-O3'
     }
 }

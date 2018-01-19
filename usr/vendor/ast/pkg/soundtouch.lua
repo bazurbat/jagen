@@ -14,5 +14,9 @@ return {
     },
     install = {
         libs = { 'SoundTouch' }
+    },
+    env = {
+        -- upstream default, should be safe
+        CFLAGS = '-O3'
     }
 }

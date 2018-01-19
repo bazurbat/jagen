@@ -10,5 +10,9 @@ return {
         options = { '--disable-builddir' },
         libs    = { 'ffi' },
         autoreconf = true
+    },
+    env = {
+        -- upstream default
+        CFLAGS = '-O3 -fomit-frame-pointer -fstrict-aliasing -ffast-math'
     }
 }
