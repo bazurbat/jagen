@@ -613,9 +613,8 @@ function P.define_rule(rule, context)
 
     pop_context()
 
-    local pkg_context
     if not context then
-        pkg_context = push_context({
+        context = push_context({
                 name = pkg.name,
                 config = config,
                 implicit = current_context.implicit 
@@ -645,8 +644,6 @@ function P.define_rule(rule, context)
         pkg:add_requires(stage, template)
         pkg:add_target(stage, config)
     end
-
-    if pkg_context then pop_context() end
 
     if context then pop_context() end
 
