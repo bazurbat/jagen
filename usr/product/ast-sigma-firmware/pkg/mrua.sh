@@ -1,7 +1,5 @@
 #!/bin/sh
 
-pkg_run_jobs=1
-
 export ARCH=mips
 export KCFLAGS="-mhard-float -Wa,-mhard-float"
 

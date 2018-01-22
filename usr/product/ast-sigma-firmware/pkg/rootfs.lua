@@ -6,6 +6,7 @@ return {
     build = {
         type = 'make',
         in_source = true,
-        unset_cflags = true
+        unset_cflags = true,
+        jobs = 1
     }
 }

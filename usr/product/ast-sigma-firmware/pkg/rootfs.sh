@@ -1,7 +1,5 @@
 #!/bin/sh
 
-pkg_run_jobs=1
-
 # Do not assert non empty toolchain dir here as it is used only by install
 # stage which should have the config sourced and the variable defined.
 toolchain_runtime_dir="$toolchain_dir/mips-linux-gnu/libc/el"

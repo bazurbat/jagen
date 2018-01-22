@@ -8,27 +8,26 @@ export GIT_TERMINAL_PROMPT=0
 # Never install the translations.
 export LINGUAS=""
 
-: ${pkg_run_jobs:=$(jagen_nproc)}
 : ${pkg_run_on_error:=exit}
 : ${jagen_cmake_generator:=Ninja}
 
 pkg_run() {
     local IFS; unset IFS
-    local cmd="$1"
-    debug "$*"
+    local cmd="$1" jobs="${pkg_build_jobs:-$(jagen_nproc)}"
     shift
 
     case $cmd in
         make)
-            cmd="$cmd -j$pkg_run_jobs"
+            cmd="$cmd -j$jobs"
             [ "$jagen_build_verbose" ] && cmd="$cmd V=1"
             ;;
         ninja)
-            cmd="$cmd -j$pkg_run_jobs"
+            cmd="$cmd -j$jobs"
             [ "$jagen_build_verbose" ] && cmd="$cmd -v"
             ;;
     esac
 
+    debug $cmd "$*"
     $cmd "$@" || $pkg_run_on_error
 }
 
@@ -441,7 +440,7 @@ pkg_configure() {
 pkg_compile() {
     [ "$pkg_source_dir" ] || return 0
 
-    local is_offline= verbose_opt=
+    local is_offline= verbose_opt= jobs=
 
     if in_flags offline; then
         is_offline=1
@@ -454,7 +453,8 @@ pkg_compile() {
         CMake)
             case $pkg_build_generator in
                 *Makefiles)
-                    jagen_cmake_build_options="-j$pkg_run_jobs $jagen_cmake_build_options" ;;
+                    jobs=${pkg_build_jobs:-$(jagen_nproc)}
+                    jagen_cmake_build_options="-j$jobs $jagen_cmake_build_options" ;;
             esac
             pkg_run cmake --build . -- $(pkg__get_verbose_arg) \
                 $jagen_cmake_build_options "$@"

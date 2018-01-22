@@ -8,6 +8,7 @@ return {
         type = true,
         in_source = true,
         kernel_modules = true,
+        jobs = 1
     },
     install = {
         module_dirs = {

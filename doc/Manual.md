@@ -268,6 +268,12 @@ rules and also to find pkg files. The `config` is optional.
 - **build.in_source** (`pkg_build_in_source`) — If set to `true`, indicates
   that the package can not be built outside of it's source directory.
 
+- **build.jobs** (`pkg_build_jobs`) — Specifies the number of jobs passed as a
+  `-j` argument to the `make` and `ninja` commands. If unset, defaults to the
+  number of processors in the system (`nproc`). The most useful value is
+  probably "1" which forces a single `make` instance for packages with badly
+  written Makefiles.
+
 - **build.kernel_modules** — If set to `true`, indicates that the package
   installs Linux kernel modules.
 
@@ -492,8 +498,6 @@ rules and also to find pkg files. The `config` is optional.
   filenames which the current package requires
 
 - **pkg_query** — query
-
-- **pkg_run_jobs** — jobs
 
 - **pkg_run_on_error** — error hook
 
