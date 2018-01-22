@@ -6,5 +6,8 @@ return {
         cflags = '-march=native',
         in_source = true,
         toolchain = false
+    },
+    install = {
+        type = 'toolchain'
     }
 }

@@ -521,7 +521,7 @@ pkg_install() {
             toolchain_generate_wrappers    \
                 "${jagen_bin_dir:?}"       \
                 "${pkg_source_dir:?}/bin"  \
-                "${pkg_build_system:?}"
+                "${pkg_toolchain_prefix}"
             ;;
         none)
             ;;

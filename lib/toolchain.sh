@@ -69,9 +69,14 @@ toolchain_generate_wrappers() {
     local prefix="$3"
     local name src_path dest_path
 
+    [ -d "$dest_dir" ] || \
+        die "toolchain_generate_wrappers: the dest dir '$dest_dir' does not exist"
+    [ -d "$src_dir" ] || \
+        die "toolchain_generate_wrappers: the src dir '$src_dir' does not exist"
+
     for name in ${toolchain_programs:?}; do
-        dest_path="${dest_dir}/${prefix:+$prefix-}${name}"
-        src_path="${src_dir}/${prefix:+$prefix-}${name}"
+        dest_path="${dest_dir}/${prefix}${name}"
+        src_path="${src_dir}/${prefix}${name}"
         if [ -x "$src_path" ]; then
             cat >"$dest_path" <<EOF || return
 exec \$jagen_ccache "$src_path" "\$@"
