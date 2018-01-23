@@ -506,15 +506,16 @@ function Jagen.command.list(args)
         { 'depth,d=n', 0, 999 },
         { 'all,a', false }
     }
-    if not options:parse(table.rest(args, 2)) then
+    args = options:parse(table.rest(args, 2))
+    if not args then
         return 22
     end
 
-    if options['help'] then
+    if args['help'] then
         return Jagen.command['help'] { 'list' }
     end
 
-    local depth, show_all = options['depth'], options['all']
+    local depth, show_all = args['depth'], args['all']
 
     local packages = Package.load_rules()
     local pkg_list, name_max = {}, 0

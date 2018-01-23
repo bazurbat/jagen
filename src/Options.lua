@@ -4,7 +4,10 @@ local P = {}
 P.__index = P
 
 function P:new(config)
-    local this = { config = { long = {}, short = {} } }
+    local this = {
+        config = { long = {}, short = {} },
+        init = {}
+    }
     setmetatable(this, self)
 
     for _, item in ipairs(config or {}) do
@@ -21,17 +24,17 @@ function P:new(config)
             opt.needs_value = value
         end
         if item[1] ~= nil then
-            self[long] = item[1]
+            this.init[long] = item[1]
             table.remove(item, 1)
         else
-            self[long] = false
+            this.init[long] = false
         end
         if item[1] ~= nil then
             opt.max_value = item[1]
             table.remove(item, 1)
         end
         this.config.long[long] = opt
-        if #short > 0 then
+        if short and #short > 0 then
             this.config.short[short] = opt
         end
     end
@@ -52,19 +55,20 @@ function P:is_long(arg)
 end
 
 function P:parse(args)
+    local result = copy(self.init)
     local read_nth
 
-    local function set_value(opt, val)
+    local function set_value(n, opt, val)
         if opt.needs_value == 'n' then
-            local n = tonumber(val)
-            if not n then
+            local num = tonumber(val)
+            if not num then
                 Log.error("option '%s' (%s) requires a number value but the specified value '%s' is not a number",
                     opt.long, opt.short, val)
                 return
             end
-            self[opt.long] = n
+            result[opt.long] = num
         else
-            self[opt.long] = val
+            result[opt.long] = val
         end
         return true
     end
@@ -77,7 +81,7 @@ function P:parse(args)
         else
             value = opt.max_value
         end
-        if not set_value(opt, value) then
+        if not set_value(n, opt, value) then
             return
         end
         return read_nth(n+1)
@@ -98,12 +102,12 @@ function P:parse(args)
         end
         if opt.needs_value then
             if value then
-                if not set_value(opt, value) then return end
+                if not set_value(n, opt, value) then return end
             else
                 return read_value(n+1, opt)
             end
         else
-            self[name] = true
+            result[name] = true
         end
         return read_nth(n+1)
     end
@@ -121,7 +125,7 @@ function P:parse(args)
         end
         if opt.needs_value then
             if #rest > 0 then
-                if set_value(opt, rest) then
+                if set_value(n, opt, rest) then
                     return read_nth(n+1)
                 else
                     return
@@ -130,7 +134,7 @@ function P:parse(args)
                 return read_value(n+1, opt)
             end
         else
-            self[opt.long] = true
+            result[opt.long] = true
             return read_optstring(n, rest)
         end
     end
@@ -142,11 +146,13 @@ function P:parse(args)
 
     read_nth = function (n)
         local arg = args[n]
-        if not arg then return true end
+        if not arg then return result end
         if self:is_long(arg) then
             return read_long(n)
         elseif self:is_short(arg) then
             return read_short(n)
+        else
+            table.insert(result, args[n])
         end
         return read_nth(n+1, args)
     end
