@@ -279,18 +279,11 @@ pkg_unpack() {
             pkg__unpack_dist "$src_path" "$pkg_work_dir"
             ;;
         git|hg|repo)
-            if [ -d "$pkg_source_dir" ] && ! jagen__is_empty "$pkg_source_dir"; then
-                if [ "$pkg_source_exclude" ]; then
-                    message "not updating $pkg_name: the source is excluded"
-                elif [ -z "$pkg_source_ignore_dirty" ] &&
-                     ! is_function jagen_pkg_apply_patches &&
-                     _jagen src dirty "$pkg_name"
-                then
-                    message "not updating $pkg_name: the source is dirty"
-                else
-                    _jagen src clean "$pkg_name"  || return
-                    _jagen src update "$pkg_name" || return
-                fi
+            if [ -d "$pkg_source_dir" ] &&
+               ! jagen__is_empty "$pkg_source_dir" &&
+               [ "$pkg_source_exclude" ]
+            then
+                message "not updating $pkg_name: the source is excluded"
             else
                 _jagen src update "$pkg_name" || return
             fi
