@@ -590,6 +590,9 @@ function P.define_rule(rule, context)
         end
 
         if install then
+            if install.type == nil and build and build.type then
+                install.type = build.type
+            end
             if install.type and (install.type ~= 'none' or install.type ~= false) then
                 pkg:add_target({ 'install' }, config)
             end
