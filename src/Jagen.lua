@@ -131,48 +131,49 @@ function Jagen.src.update(args)
     end)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
+        local dir = System.expand(source.dir)
         local old_head
-        if System.exists(source.dir) and not System.is_empty(source.dir) then
+        if System.exists(dir) and not System.is_empty(dir) then
             old_head = source:head()
             if source.ignore_dirty == true or not source:dirty() then
                 if offline then
                     Log.message('switching %s to %s in %s',
-                        pkg.name, source.branch, source.dir)
+                        pkg.name, source.branch, dir)
                 else
                     Log.message('updating %s to %s in %s',
-                        pkg.name, source.branch, source.dir)
+                        pkg.name, source.branch, dir)
                 end
 
                 if not offline then
                     if not source:update() then
                         die('failed to update %s from %s in %s',
-                            pkg.name, source.location, source.dir)
+                            pkg.name, source.location, dir)
                     end
                 end
 
                 if not source:switch() then
                     die('failed to switch %s to the latest %s in %s',
-                        pkg.name, source.branch, source.dir)
+                        pkg.name, source.branch, dir)
                 end
             else
-                Log.warning("not updating %s because source directory '%s' is dirty",
-                    pkg.name, source.dir)
+                Log.warning("not updating %s: source dir '%s' is dirty",
+                    pkg.name, dir)
             end
         else
             if offline then
                 die("could not clone '%s' in offline mode", pkg.name)
             end
             Log.message('clone %s from %s to %s',
-                pkg.name, source.location, source.dir)
+                pkg.name, source.location, dir)
             if not source:clone() then
                 die('failed to clone %s from %s to %s',
-                    pkg.name, source.location, source.dir)
+                    pkg.name, source.location, dir)
             end
         end
 
         if not source:fixup() then
             die('failed to fix up %s source in %s',
-                pkg.name, source.dir)
+                pkg.name, dir)
         end
 
         if source:head() ~= old_head then
