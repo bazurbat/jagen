@@ -14,6 +14,10 @@ function Source:new(o)
     return o
 end
 
+function Source:is_known(tp)
+    return tp == 'git' or tp == 'hg' or tp == 'repo'
+end
+
 local DistSource = Source:new()
 local GitSource  = Source:new()
 local HgSource   = Source:new()

@@ -7,6 +7,7 @@ local Source  = require 'Source'
 local Log     = require 'Log'
 local Ninja   = require 'Ninja'
 local Options = require 'Options'
+local Command = require 'Command'
 
 local function die(...)
     Log.error(...)
@@ -183,6 +184,44 @@ function Jagen.src.delete(args)
                 die('failed to delete %s source directory %s',
                     pkg.name, source.dir)
             end
+        end
+    end
+end
+
+function Jagen.src.each(args)
+    local options = Options:new {
+        { 'help,h' },
+        { 'type=' },
+    }
+    args = options:parse(args)
+    if not args then
+        return 22
+    end
+    if args['help'] then
+        return Jagen.command['help'] { 'src_each' }
+    end
+    local packages = scm_packages()
+    for pkg in each(packages) do
+        local arg_type, src_type = args['type'], pkg.source.type
+        if arg_type and not Source:is_known(arg_type) then
+            die('unknown source type: %s', arg_type)
+        end
+        if #args < 1 then
+            die('the command is not specified')
+        end
+        local cmd = table.concat(args, ' ')
+        if not arg_type then
+            local bin = string.match(cmd, '^(%w+)')
+            if Source:is_known(bin) then
+                arg_type = bin
+            end
+        end
+        local dir = System.expand(pkg.source.dir)
+        local cmd = string.format('cd "%s" && %s', dir, cmd)
+        if not arg_type or arg_type == src_type then
+            Log.message('%s: %s', pkg.name, dir)
+            local ok, status = Command:new(cmd):exec()
+            if not ok then return status end
         end
     end
 end

@@ -33,7 +33,9 @@ _jagen_complete() {
     local jagen_command jagen_subcommand
 
     local top_cmds='help get clean refresh build src show list'
-    local src_cmds='dirty status clean update delete'
+    local src_cmds='dirty status clean update delete each'
+    local src_each_opt='--type'
+    local src_types='git hg repo'
     local help_opt='-h --help'
     local build_opt='-n --dry-run -p --progress -P --all-progress -f --force -a --all'
     local list_packages_opt='--depth -d --all -a'
@@ -77,7 +79,15 @@ _jagen_complete() {
             if [[ "$prev" == "src" ]]; then
                 COMPREPLY=($(compgen -W "$help_opt $src_cmds" -- "$cur"))
             else
-                COMPREPLY=($(compgen -W "$(cat "$jagen_build_dir/__package_names_scm")" -- "$cur"))
+                if [[ "$jagen_subcommand" == "each" ]]; then
+                    if [[ "$prev" == "--type" ]]; then
+                        COMPREPLY=($(compgen -W "$src_types" -- "$cur"))
+                    else
+                        COMPREPLY=($(compgen -W "$help_opt $src_each_opt" -- "$cur"))
+                    fi
+                else
+                    COMPREPLY=($(compgen -W "$(cat "$jagen_build_dir/__package_names_scm")" -- "$cur"))
+                fi
             fi
             ;;
         show)

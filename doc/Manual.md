@@ -7,7 +7,7 @@
 - [Building](Building.md)
 - [Cleaning](Cleaning.md)
 - [Targets](#targets)
-- [Working with source packages](ManagingSources.md)
+- [Managing package sources](ManagingSources.md)
 - [Manage filesystem images](Images.md)
 - [Install Bash completions](Installation.md)
 - [Writing build scripts](#writing-build-scripts)
