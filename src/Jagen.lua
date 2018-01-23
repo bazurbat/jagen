@@ -122,49 +122,42 @@ end
 function Jagen.src.update(args)
     local packages = scm_packages(args)
     local offline = Jagen.flag 'offline'
-    -- Sorting from the shortest to the longest is needed for a case when the
+
+    -- Sorting from the shortest to the longest is needed for the case when the
     -- source directories are specified inside each other and we need to clone
-    -- both, deeper one is cloned first, then clone complains about already
-    -- existing directory or update fails.
+    -- both: deeper one is cloned first, then clone complains about already
+    -- existing non-empty directory.
     table.sort(packages, function (a, b)
             return a.source.dir < b.source.dir
-    end)
-    for _, pkg in ipairs(packages) do
+        end)
+
+    for pkg in each(packages) do
         local source = pkg.source
         local dir = System.expand(source.dir)
         local old_head
+
         if System.exists(dir) and not System.is_empty(dir) then
-            old_head = source:head()
-            if source.ignore_dirty == true or not source:dirty() then
-                if offline then
-                    Log.message('switching %s to %s in %s',
-                        pkg.name, source.branch, dir)
-                else
-                    Log.message('updating %s to %s in %s',
-                        pkg.name, source.branch, dir)
-                end
-
-                if not offline then
-                    if not source:update() then
-                        die('failed to update %s from %s in %s',
-                            pkg.name, source.location, dir)
-                    end
-                end
-
-                if not source:switch() then
-                    die('failed to switch %s to the latest %s in %s',
-                        pkg.name, source.branch, dir)
-                end
-            else
-                Log.warning("not updating %s: source dir '%s' is dirty",
+            if not source.ignore_dirty and source:dirty() then
+                die("could not update %s: source dir '%s' is dirty",
                     pkg.name, dir)
+            end
+            Log.message('updating %s (%s)', pkg.name, source.branch)
+            old_head = source:head()
+            if not offline then
+                if not source:update() then
+                    die('failed to update %s (%s) in %s',
+                        pkg.name, source.branch, dir)
+                end
+            end
+            if not source:switch() then
+                die('failed to switch %s to %s in %s',
+                    pkg.name, source.branch, dir)
             end
         else
             if offline then
-                die("could not clone '%s' in offline mode", pkg.name)
+                die("could not clone %s: offline mode", pkg.name)
             end
-            Log.message('clone %s from %s to %s',
-                pkg.name, source.location, dir)
+            Log.message('cloning %s from %s', pkg.name, source.location)
             if not source:clone() then
                 die('failed to clone %s from %s to %s',
                     pkg.name, source.location, dir)
@@ -172,8 +165,7 @@ function Jagen.src.update(args)
         end
 
         if not source:fixup() then
-            die('failed to fix up %s source in %s',
-                pkg.name, dir)
+            die('failed to fix up %s in %s', pkg.name, dir)
         end
 
         if source:head() ~= old_head then
