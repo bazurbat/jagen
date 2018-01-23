@@ -58,9 +58,9 @@ function Command:exec()
     local command = tostring(self) Log.debug2(command)
     local status, kind, num = os.execute(command)
     if type(status) == 'number' then        -- Lua 5.1
-        return status == 0, status % 0xFF
+        return status == 0, status % 0x7F
     else                                    -- Lua 5.2
-        return status or false, num % 0xFF
+        return status or false, num % 0x7F
     end
 end
 
