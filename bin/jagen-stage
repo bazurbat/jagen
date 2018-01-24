@@ -42,16 +42,16 @@ if [ "$pkg_config" ]; then
     include "$jagen_include_dir/${pkg_name}__${pkg_config}" || die
 fi
 
+for name in $pkg_import; do
+    include "$(pkg__get_export_file "$name")"
+done; unset name
+
 # depends on config or pkg includes
 pkg_install_dir="$pkg_install_root$pkg_install_prefix"
 
 # expand single-quoted pkg_* variables from includes
 for name in $(set | awk -F= '/^pkg_.*=/ { print $1 }'); do
     eval $name='$(jagen__expand "$(IFS= eval echo \$$name)" "$name")' || return
-done; unset name
-
-for name in $pkg_import; do
-    include "$(pkg__get_export_file "$name")"
 done; unset name
 
 if [ "$pkg_build_toolchain" ]; then
