@@ -216,7 +216,10 @@ jagen__expand_layers() {
     for layer; do
         case $layer in
             /*) path="$layer" ;;
-             *) for path in "$jagen_project_dir/$layer" "$jagen_dir/usr/$layer"; do
+      ./*|../*) for path in "$jagen_project_dir/$layer"; do
+                    [ -d "$path" ] && break
+                done ;;
+             *) for path in "$jagen_project_dir/usr/$layer" "$jagen_dir/usr/$layer"; do
                     [ -d "$path" ] && break
                 done ;;
         esac
