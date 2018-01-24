@@ -8,5 +8,9 @@ return {
         in_source = true,
         unset_cflags = true,
         jobs = 1
+    },
+    export = {
+        root = '$pkg_build_dir/build_mipsel/root',
+        prefix = '$pkg_build_dir/cross_rootfs'
     }
 }

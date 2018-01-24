@@ -407,7 +407,6 @@ rules and also to find pkg files. The `config` is optional.
 - **jagen_sdk** — The name of the current SDK.
 - **jagen_sdk_dir** — The location of the current SDK.
 <!-- - **jagen_sdk_ezboot_dir** — _Sigma layer specific._ -->
-<!-- - **jagen_sdk_initfs_dir** — _Sigma layer specific._ -->
 <!-- - **jagen_sdk_mrua_dir** — _Sigma layer specific._ -->
 <!-- - **jagen_sdk_rootfs_dir** — _Sigma layer specific._ -->
 <!-- - **jagen_sdk_rootfs_prefix** — _Sigma layer specific._ -->

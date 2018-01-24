@@ -81,8 +81,9 @@ package { 'rootfs', 'target',
 }
 
 package { 'busybox', 'target',
+    import = 'rootfs',
     install = {
-        root = '$jagen_sdk_initfs_dir',
+        root = '$rootfs_root',
         prefix = ''
     },
     { 'patch', { 'ast-files', 'unpack' } }

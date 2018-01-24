@@ -10,8 +10,6 @@ jagen_sdk_rootfs_dir="$jagen_src_dir/sigma-rootfs"
 jagen_sdk_rootfs_root="$jagen_sdk_rootfs_dir/build_mipsel/root"
 jagen_sdk_rootfs_prefix="$jagen_sdk_rootfs_dir/cross_rootfs"
 
-jagen_sdk_initfs_dir="$jagen_sdk_rootfs_root"
-
 jagen_sdk_staging_dir="$jagen_sdk_rootfs_dir/cross_rootfs"
 
 export SMP86XX_ROOTFS_PATH="$jagen_sdk_rootfs_dir"

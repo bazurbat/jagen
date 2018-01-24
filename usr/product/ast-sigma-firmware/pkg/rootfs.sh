@@ -14,7 +14,7 @@ jagen_pkg_compile() {
     add_PATH "${toolchain_dir:?}/bin"
 
     # Fix cp: not writing through dangling symlink '.../build_mipsel/root/init'
-    pkg_run rm -f "$jagen_sdk_initfs_dir/init"
+    pkg_run rm -f "${pkg_export_root:?}/init"
 
     pkg_run make
 }
@@ -152,7 +152,7 @@ install_files() {
 }
 
 jagen_pkg_install() {
-    local dest="${jagen_sdk_initfs_dir:?}"
+    local dest="${pkg_export_root:?}"
 
     install_cleanup  "$dest" || return
 
@@ -167,5 +167,5 @@ jagen_pkg_install() {
     install_keys  "$dest" || return
     install_files "$dest" || return
 
-    pkg_strip_root "${jagen_sdk_initfs_dir:?}"
+    pkg_strip_root "$dest"
 }
