@@ -1,7 +1,6 @@
 #!/bin/sh
 
 jagen_sdk="android"
-jagen_vendor="ast"
 
 jagen_target_platform="android-17"
 jagen_android_product="Hi3719CV100"
