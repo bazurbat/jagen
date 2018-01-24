@@ -259,6 +259,15 @@ function string.escape_pattern(p)
     return string.gsub(p, '%p', '%%%0')
 end
 
+function string.convert_pattern(s)
+    s = string.escape_pattern(s)
+    s = string.format('^%s$', s)
+    s = string.gsub(s, '%%%?', '[%%w%%p]')
+    s = string.gsub(s, '%%%*', '[%%w%%p]*')
+    return s
+end
+
+
 -- Returns a shallow copy of the supplied table.
 function table.copy(t)
     assert_arg('copy', 1, 'table', t)

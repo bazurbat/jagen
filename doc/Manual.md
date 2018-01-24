@@ -367,28 +367,38 @@ rules and also to find pkg files. The `config` is optional.
 - **jagen_FS** — Field separator (`<tab>`).
 - **jagen_IFS** — IFS (`<newline><tab>`).
 - **jagen_android_product** — The name of the current Android product.
-- **jagen_bin_dir** — The location of the `bin` directory (`$jagen_project_dir/bin`).
-- **jagen_build_dir** — The location of the `build` directory (`$jagen_project_dir/build`).
+- **jagen_bin_dir** — The location of the `bin` directory
+  (`$jagen_project_dir/bin`).
+- **jagen_build_dir** — The location of the `build` directory
+  (`$jagen_project_dir/build`).
 - **jagen_build_profile** — Global package build profile.
-- **jagen_build_verbose** — Indicates whether the build system should run verbosely.
+- **jagen_build_verbose** — Indicates whether the build system should run
+  verbosely.
 - **jagen_ccache** — The name of the ccache executable.
-- **jagen_cmake_build_options** — Arguments to pass to CMake in `compile` stage.
+- **jagen_cmake_build_options** — Arguments to pass to CMake in `compile`
+  stage.
 - **jagen_cmake_generator** (`Ninja`) — Override CMake generator.
-- **jagen_cmake_options** — Arguments to pass to CMake in `configure` stage.
 - **jagen_cmake_module_path** — The default `CMAKE_MODULE_PATH`.
-- **jagen_cmake_toolchain_file** — The `CMAKE_TOOLCHAIN_FILE` to pass to CMake in `configure` stage. It applies only to `target` config.
+- **jagen_cmake_options** — Arguments to pass to CMake in `configure` stage.
+- **jagen_cmake_toolchain_file** — The `CMAKE_TOOLCHAIN_FILE` to pass to CMake
+  in `configure` stage. It applies only to `target` config.
 - **jagen_debug** — Debug level.
 - **jagen_dir** — The location of the Jagen source directory.
-- **jagen_dist_dir** — The location of the `dist` directory (`$jagen_project_dir/dist`).
+- **jagen_dist_dir** — The location of the `dist` directory
+  (`$jagen_project_dir/dist`).
 - **jagen_flags** — Space-separated list of flags.
 - **jagen_host_cmake_module_path** — The `CMAKE_MODULE_PATH` for "host" config.
   Overrides `$jagen_cmake_module_path` if set, empty value disables.
-- **jagen_host_dir** — The location of the `host` directory (`$jagen_project_dir/host`).
-- **jagen_include_dir** — The location of the `include` directory (`$jagen_project_dir/include`).
+- **jagen_host_dir** — The location of the `host` directory
+  (`$jagen_project_dir/host`).
+- **jagen_include_dir** — The location of the `include` directory
+  (`$jagen_project_dir/include`).
 - **jagen_kernel_config** — The name of the Linux kernel config to use.
 - **jagen_kernel_dir** — The location of the Linux kernel directory.
-- **jagen_kernel_image** — The name of the Linux kernel image target (uImage or such).
-- **jagen_kernel_modules_dir** — The location of Linux kernel modules install directory.
+- **jagen_kernel_image** — The name of the Linux kernel image target (uImage or
+  such).
+- **jagen_kernel_modules_dir** — The location of Linux kernel modules install
+  directory.
 - **jagen_kernel_release** — The Linux kernel release.
 - **jagen_kernel_version** — The Linux kernel version.
 - **jagen_layers** — The IFS-separated list of paths for used layers.
@@ -397,24 +407,35 @@ rules and also to find pkg files. The `config` is optional.
 - **jagen_lua** — The name of the Lua executable.
 - **jagen_pager** — Overrides PAGER environment variable.
 - **jagen_path** — Import path. Derived from layer locations.
-- **jagen_private_dir** — The location of the private directory (can be set from project-specific config).
+- **jagen_private_dir** — The location of the private directory (can be set
+  from project-specific config).
 - **jagen_product** — _init-project_.
 - **jagen_product_dir** — _init-project_.
 - **jagen_project_dir** — The location of the current project directory.
-- **jagen_project_lib_dir** — The location of the current project `lib` directory (`$jagen_project_dir/lib`).
+- **jagen_project_lib_dir** — The location of the current project `lib`
+  directory (`$jagen_project_dir/lib`).
 - **jagen_relative_dir** — _env.sh_ internal.
 - **jagen_sdk** — The name of the current SDK.
 - **jagen_sdk_dir** — The location of the current SDK.
 - **jagen_shell** — Override shell used to run internal scripts.
-- **jagen_source_exclude** — The space-separated list of package names which should be excluded from fetching.
-- **jagen_src_dir** — The location of the `src` directory (`$jagen_project_dir/src`).
+- **jagen_source_exclude** — A space-separated list of package name patterns
+  which should not be updated or patched during the build. Applies only to
+  source-based (SCM) packages, i.e. having source type "git", "hg" or "repo".
+  In the patterns `*` matches zero or more characters, `?` matches any single
+  character. If the pattern starts with `!` its meaning is negated, i.e. it
+  excludes all not matching packages.
+- **jagen_src_dir** — The location of the `src` directory
+  (`$jagen_project_dir/src`).
 - **jagen_target_board** — The name of the current target board.
 - **jagen_target_cmake_module_path** — The `CMAKE_MODULE_PATH` for "target"
   config. Overrides `$jagen_cmake_module_path` if set, empty value disables.
-- **jagen_target_dir** — The location of the `target` directory (`$jagen_project_dir/target`).
-- **jagen_target_platform** — The name of the current target platform (currently used only for Android).
+- **jagen_target_dir** — The location of the `target` directory
+  (`$jagen_project_dir/target`).
+- **jagen_target_platform** — The name of the current target platform
+  (currently used only for Android).
 - **jagen_target_toolchain** — The name of the current target toolchain.
-- **jagen_toolchains_dir** — The location of shared toolchains (`$jagen_project_dir/toolchains`).
+- **jagen_toolchains_dir** — The location of shared toolchains
+  (`$jagen_project_dir/toolchains`).
 
 #### Stage-specific variables
 

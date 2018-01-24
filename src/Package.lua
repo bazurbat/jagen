@@ -424,12 +424,27 @@ function P.load_rules()
     end
 
     local source_exclude = os.getenv('jagen_source_exclude')
-    for name in string.gmatch(source_exclude, '[^%s]+') do
-        local pkg = packages[name]
-        if pkg then
-            pkg.source.exclude = true
-        else
-            Log.warning("the jagen_source_exclude list contains '%s' but no such package is defined", name)
+    local function is_scm(pkg)
+        return pkg.source and pkg.source:is_scm()
+    end
+    for item in string.gmatch(source_exclude, '%S+') do
+        local invert = item:sub(1, 1) == '!'
+        local shpat = invert and item:sub(2) or item
+        if #shpat < 1 then
+            Log.warning("invalid pattern '%s' in jagen_source_exclude list", item)
+        end
+        local luapat, match, matched = shpat:convert_pattern()
+        for name, pkg in iter(packages, filter(is_scm)) do
+            match = name:match(luapat)
+            if (match and not invert) or (invert and not match) then
+                matched = true
+                if pkg.source then
+                    pkg.source.exclude = true
+                end
+            end
+        end
+        if not matched then
+            Log.warning("could not find SCM package matching '%s' from jagen_source_exclude list", item)
         end
     end
 
