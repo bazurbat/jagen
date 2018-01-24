@@ -50,6 +50,10 @@ for name in $(set | awk -F= '/^pkg_.*=/ { print $1 }'); do
     eval $name='$(jagen__expand "$(IFS= eval echo \$$name)" "$name")' || return
 done; unset name
 
+for name in $pkg_import; do
+    include "$(pkg__get_export_file "$name")"
+done; unset name
+
 if [ "$pkg_build_toolchain" ]; then
     pkg__import_file=$(pkg__get_export_file "$pkg_build_toolchain")
     include "$pkg__import_file"

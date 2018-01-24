@@ -513,6 +513,7 @@ function P.define_rule(rule, context)
             if not getmetatable(this.build) then
                 setmetatable(this.build, { __index = pkg.build })
             end
+            if not pkg.install then pkg.install = {} end
         end
         if pkg.install then
             if not this.install then this.install = {} end
@@ -595,10 +596,14 @@ function P.define_rule(rule, context)
             end
             if install.type and (install.type ~= 'none' or install.type ~= false) then
                 pkg:add_target({ 'install' }, config)
+                local export = pkg.export or {}
+                if export.dir == nil then
+                    export.dir = pkg.source and pkg.source.dir
+                end
+                pkg.export = export
             end
             if install.type == 'toolchain' and build then
                 local export = pkg.export or {}
-                export.dir = build.dir
                 for key in each { 'arch', 'system', 'cpu' } do
                     if export[key] == nil then
                         export[key] = build[key]
