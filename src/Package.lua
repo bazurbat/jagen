@@ -596,18 +596,22 @@ function P.define_rule(rule, context)
             if install.type and (install.type ~= 'none' or install.type ~= false) then
                 pkg:add_target({ 'install' }, config)
             end
-            if install.type == 'toolchain' then
-                pkg.export = pkg.export or {}
-                pkg.export.dir = build.dir
+            if install.type == 'toolchain' and build then
+                local export = pkg.export or {}
+                export.dir = build.dir
                 for key in each { 'arch', 'system', 'cpu' } do
-                    if pkg.export[key] == nil then
-                        pkg.export[key] = pkg.build[key]
+                    if export[key] == nil then
+                        export[key] = build[key]
                     end
                 end
-                if build.cflags then
-                    pkg.export.env = pkg.export.env or {}
-                    pkg.export.env.CFLAGS = build.cflags
+                for key in each { 'cflags', 'cxxflags', 'ldflags' } do
+                    local env = export.env or {}
+                    if env[key] == nil then
+                        env[string.upper(key)] = build[key]
+                    end
+                    export.env = env
                 end
+                pkg.export = export
             end
         elseif build and build.type then
             pkg:add_target({ 'install' }, config)
