@@ -6,7 +6,7 @@ set -eu
 
 mount_path=
 image_file=
-out_dir="$jagen_root_dir/out"
+out_dir="$jagen_project_dir/../out"
 
 calculate_size() {
     local du="$(du -sm "$1")"

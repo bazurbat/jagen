@@ -568,8 +568,23 @@ pkg__image() {
 # stages
 
 jagen_pkg_unpack() {
+    local target_dir= work_dir="$pkg_work_dir" pkg_work_dir="$pkg_work_dir"
+
     pkg_run rm -rf "${pkg_work_dir:?}"
-    pkg_unpack
+
+    if [ "$pkg_install_type" = 'toolchain' ] && [ "$jagen_toolchains_dir" ]; then
+        target_dir="$jagen_toolchains_dir/$pkg_source_basename"
+        pkg_work_dir="$jagen_toolchains_dir"
+    fi
+
+    if [ -z "$target_dir" ] || ! [ -d "$target_dir" ]; then
+        pkg_unpack
+    fi
+
+    if [ "$target_dir" ]; then
+        pkg_run mkdir -p "$work_dir"
+        pkg_link "$target_dir" "$work_dir/${pkg_source_basename:?}"
+    fi
 }
 
 jagen_pkg_patch() {

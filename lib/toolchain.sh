@@ -47,22 +47,6 @@ toolchain_get_lib_dir() {
     toolchain_find_path libstdc++.a "$@"
 }
 
-toolchain_unpack() {
-    : ${jagen_toolchains_dir:?}
-    local name="${1:?}"
-    local source_dir="${2:?}"
-    local target_dir="$jagen_toolchains_dir/$(basename "$source_dir")"
-    local work_dir="$pkg_work_dir"
-    local pkg_work_dir="$jagen_toolchains_dir"
-
-    if ! [ -d "$target_dir" ]; then
-        pkg_unpack
-    fi
-
-    pkg_run mkdir -p "$work_dir"
-    pkg_link "$target_dir" "$source_dir"
-}
-
 toolchain_generate_wrappers() {
     local dest_dir="${1:?}"
     local src_dir="${2:?}"

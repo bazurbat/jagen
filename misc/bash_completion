@@ -13,7 +13,8 @@ _jagen_complete_init_project() {
     local cur prev
     local this_cmd jagen_dir
 
-    local opts='--help --list-products --share --force --flag'
+    local opts='-a -f -h --help -l -s --share-sources --share-dist --share-toolchains'
+    local flags='ccache debug devenv offline'
 
     _get_comp_words_by_ref cur prev
 
@@ -22,7 +23,8 @@ _jagen_complete_init_project() {
     jagen_dir="${this_cmd%/*}"
 
     case $prev in
-        -a|--flag) ;; # expecting flag name, freeform, no completions for them for now
+        -a|--flag)
+            COMPREPLY=($(compgen -W "$flags" -- "$cur")) ;;
          *) COMPREPLY=($(compgen -W "$opts $(_jagen_complete__list_products "$jagen_dir")" -- "$cur")) ;;
     esac
 }

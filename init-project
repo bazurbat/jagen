@@ -161,23 +161,17 @@ write_config() {
 # jagen_project_dir - refers to the current project directory
 
 # A list of directories containing layers used by this project.
-# NOTE: separate items with newlines (\\n) or tabs (\\t) here because normal
-# spaces ( ) are assumed to be a part of the pathname, so the indentation will
-# be counted too.
+# The list items should be newline (\\n) or tab (\\t) separated because normal
+# spaces (including the indentation) are assumed to be a part of the pathname.
 jagen_layers="$jagen_layers"
 
-# Toplevel working directory.
-# Note: using relative path allows sourcing this configuration both from
-# outside and inside the chrooted container.
-jagen_root_dir=\$(real_path "\$jagen_project_dir/..")
-
-# A directory where source packages will be checked out.
+# A directory for package sources.
 jagen_src_dir="$jagen_src_dir"
 
 # A directory for downloaded distribution files.
 jagen_dist_dir="$jagen_dist_dir"
 
-# A directory where unpacked toolchains are kept.
+# A directory for shared toolchains.
 jagen_toolchains_dir="$jagen_toolchains_dir"
 
 # Space separated list of optional features.
@@ -191,7 +185,7 @@ jagen_flags="$jagen_flags"
 # Example: jagen_source_exclude="chicken karaoke-player"
 jagen_source_exclude=""
 
-# Global build type.
+# Global build profile.
 # Available values: release|debug|release_with_debug
 jagen_build_profile="release"
 EOF
@@ -287,19 +281,19 @@ if [ "${jagen_product-}" ]; then
 fi
 
 if [ "${share_sources-}" ]; then
-    jagen_src_dir='$jagen_root_dir/src'
+    jagen_src_dir='$jagen_project_dir/../src'
 else
     jagen_src_dir='$jagen_project_dir/src'
 fi
 
 if [ "${share_dist-}" ]; then
-    jagen_dist_dir='$jagen_root_dir/dist'
+    jagen_dist_dir='$jagen_project_dir/../dist'
 else
     jagen_dist_dir='$jagen_project_dir/dist'
 fi
 
 if [ "${share_toolchains-}" ]; then
-    jagen_toolchains_dir='$jagen_root_dir/toolchains'
+    jagen_toolchains_dir='$jagen_project_dir/../toolchains'
 else
     jagen_toolchains_dir='$jagen_project_dir/toolchains'
 fi
