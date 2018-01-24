@@ -568,12 +568,20 @@ pkg__image() {
 # stages
 
 jagen_pkg_unpack() {
-    local target_dir= work_dir="$pkg_work_dir" pkg_work_dir="$pkg_work_dir"
+    local target_dir= source_dir=
+    local work_dir="$pkg_work_dir" pkg_work_dir="$pkg_work_dir"
 
     pkg_run rm -rf "${pkg_work_dir:?}"
 
-    if [ "$pkg_install_type" = 'toolchain' ] && [ "$jagen_toolchains_dir" ]; then
-        target_dir="$jagen_toolchains_dir/$pkg_source_basename"
+    # check source in case of system toolchains such as gcc-native which are
+    # not unpacked but linked from the source dir directly
+    if [ "$pkg_source" ] && [ "$pkg_source_dir" ] &&
+       [ "$pkg_install_type" = 'toolchain' ] &&
+       [ "$jagen_toolchains_dir" ]
+    then
+        # for packages which redefine source.dir
+        source_dir=$(basename "$pkg_source_dir"); : ${source_dir:?}
+        target_dir="$jagen_toolchains_dir/$source_dir"
         pkg_work_dir="$jagen_toolchains_dir"
     fi
 
@@ -581,9 +589,9 @@ jagen_pkg_unpack() {
         pkg_unpack
     fi
 
-    if [ "$target_dir" ]; then
+    if [ -d "$target_dir" ]; then
         pkg_run mkdir -p "$work_dir"
-        pkg_link "$target_dir" "$work_dir/${pkg_source_basename:?}"
+        pkg_link "$target_dir" "$work_dir/$source_dir"
     fi
 }
 
