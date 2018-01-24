@@ -461,6 +461,7 @@ function P.define_rule(rule, context)
         end
         packages[rule.name] = pkg
         pkg.configs = pkg.configs or {}
+        pkg.export = pkg.export or {}
     end
 
     if rule.template then
@@ -521,6 +522,10 @@ function P.define_rule(rule, context)
                 setmetatable(this.install, { __index = pkg.install })
             end
         end
+        if not this.export then this.export = {} end
+        if not getmetatable(this.export) then
+            setmetatable(this.export, { __index = pkg.export })
+        end
     end
 
     if not pkg.source or not getmetatable(pkg.source) then
@@ -541,6 +546,13 @@ function P.define_rule(rule, context)
             { 'repo', 'install', 'host' }
         }
         P.define_rule { 'repo', 'host' }
+    end
+
+    if pkg.source and pkg.source.dir then
+        local export = pkg.export
+        if export.dir == nil then
+            export.dir = pkg.source.dir
+        end
     end
 
     if config then
@@ -596,14 +608,9 @@ function P.define_rule(rule, context)
             end
             if install.type and (install.type ~= 'none' or install.type ~= false) then
                 pkg:add_target({ 'install' }, config)
-                local export = pkg.export or {}
-                if export.dir == nil then
-                    export.dir = pkg.source and pkg.source.dir
-                end
-                pkg.export = export
             end
             if install.type == 'toolchain' and build then
-                local export = pkg.export or {}
+                local export = this.export
                 for key in each { 'arch', 'system', 'cpu' } do
                     if export[key] == nil then
                         export[key] = build[key]
@@ -616,7 +623,6 @@ function P.define_rule(rule, context)
                     end
                     export.env = env
                 end
-                pkg.export = export
             end
         elseif build and build.type then
             pkg:add_target({ 'install' }, config)

@@ -130,23 +130,25 @@ local function write_install(w, pkg)
     end
 end
 
-local function write_export(w, pkg)
+local function write_export(w, pkg, config)
     local export = pkg.export
     if not export then return end
-
-    local function write_var(name, value)
-        return write_pkg_var(w, 'export_', name, value)
+    local prefix = 'export_'
+    if config then
+        prefix = string.format('_%s__%s', config, prefix)
     end
 
-    write_pkg_var(w, '', 'has_export', true)
-
+    local function write_var(name, value)
+        return write_pkg_var(w, prefix, name, value)
+    end
     local names = sort(table.keys(export))
+
     for name in each(names) do
         write_var(name, export[name])
     end
 end
 
-local function generate_script(filename, pkg)
+local function generate_script(filename, pkg, config)
     local lines = {}
     local function w(format, ...)
         table.insert(lines, string.format(format, ...))
@@ -159,7 +161,7 @@ local function generate_script(filename, pkg)
     write_install(w, pkg)
     write_build(w, pkg)
     -- should be the last to allow referencing other variables
-    write_export(w, pkg)
+    write_export(w, pkg, config)
 
     if #lines > 0 then
         local file = assert(io.open(filename, 'w+'))
@@ -173,7 +175,7 @@ function P:generate(pkg, dir)
     generate_script(filename, pkg)
     for name, config in pairs(pkg.configs) do
         filename = System.mkpath(dir, string.format('%s__%s.sh', pkg.name, name))
-        generate_script(filename, config)
+        generate_script(filename, config, name)
     end
 end
 
