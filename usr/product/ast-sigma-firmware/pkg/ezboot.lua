@@ -7,5 +7,6 @@ return {
     build = {
         type = 'sigma',
         in_source = true
-    }
+    },
+    import = { 'xsdk' }
 }
