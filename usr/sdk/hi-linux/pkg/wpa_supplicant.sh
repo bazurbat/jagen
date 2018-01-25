@@ -1,5 +1,7 @@
 #!/bin/sh
 
+include_from 'vendor/ast'
+
 jagen_pkg_configure_target() {
     rm -f .config
 

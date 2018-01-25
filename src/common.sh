@@ -65,6 +65,28 @@ find_in_path() {
     done
 }
 
+include_from() {
+    local layer name path root
+    layer=${1:?}
+    name=$(basename "${pkg__file:?}")
+
+    case $layer in
+        /*) root=       ;;
+         *) root='/usr/' ;;
+    esac
+
+    for path in \
+        "${jagen_project_dir}${root}${layer}/pkg/$name" \
+        "${jagen_dir}${root}${layer}/pkg/$name"
+    do
+        if [ -f "$path" ]; then
+            debug2 "include from $layer: $path"
+            . "$path"
+            return
+        fi
+    done
+}
+
 try_require() {
     local filename
     debug2 "try_require $1"

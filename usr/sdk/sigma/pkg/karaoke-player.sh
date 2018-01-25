@@ -1,5 +1,7 @@
 #!/bin/sh
 
+include_from 'vendor/ast'
+
 jagen_pkg_configure_target() {
     pkg_configure \
         -DSIGMA_SDK_DIR="${mrua_dir:?}" \
