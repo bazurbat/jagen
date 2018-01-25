@@ -27,7 +27,7 @@ pkg__export_fname() {
 }
 
 pkg__export() {
-    local prefix="${1:?}" outfile="${2:?}" name="$(to_name "$pkg_name")"
+    local prefix="${1:?}" outfile="${2:?}" name="$(jagen_name_to_id "$pkg_name")"
     local key= content=
     for key in $(set | sed -rn "s/^$prefix([[:alnum:]_]+)=.*/\1/p"); do
         content="${content}${jagen_S}${name}_${key}='$(eval echo \"\$${prefix}${key}\")'"
@@ -86,7 +86,7 @@ for name in $(set | sed -rn 's/^(pkg_[[:alnum:]_]+)=.*/\1/p'); do
 done; unset name
 
 if [ "$pkg_build_toolchain" ]; then
-    name="$(to_name "$pkg_build_toolchain")"
+    name="$(jagen_name_to_id "$pkg_build_toolchain")"
     # assign "<toolchain name>_*" to "toolchain_*"
     for key in $(set | sed -rn "s/^${name}_([[:alnum:]_]+)=.*/\1/p"); do
         eval "toolchain_${key}=\$${name}_${key}"

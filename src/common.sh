@@ -180,7 +180,7 @@ to_lower() {
     echo "${1:?}" | tr '[:upper:]' '[:lower:]'
 }
 
-to_name() {
+jagen_name_to_id() {
     printf '%s' "${1:?}" | tr -c '[:alnum:]_' '_'
 }
 
