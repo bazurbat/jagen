@@ -568,18 +568,19 @@ pkg__image() {
 # stages
 
 jagen_pkg_unpack() {
-    local target_dir= source_dir=
+    local source_dir= target_dir= is_toolchain=
     local work_dir="$pkg_work_dir" pkg_work_dir="$pkg_work_dir"
 
     pkg_run rm -rf "${pkg_work_dir:?}"
 
-    # check source in case of system toolchains such as gcc-native which are
-    # not unpacked but linked from the source dir directly
+    # check for source is required for system toolchains such as gcc-native
+    # which are not unpacked but linked from ther location directly
     if [ "$pkg_source" ] && [ "$pkg_source_dir" ] &&
        [ "$pkg_install_type" = 'toolchain' ] &&
        [ "$jagen_toolchains_dir" ]
     then
-        # for packages which redefine source.dir
+        is_toolchain=1
+        # in the case source.dir is redefined
         source_dir=$(basename "$pkg_source_dir"); : ${source_dir:?}
         target_dir="$jagen_toolchains_dir/$source_dir"
         pkg_work_dir="$jagen_toolchains_dir"
@@ -589,9 +590,14 @@ jagen_pkg_unpack() {
         pkg_unpack
     fi
 
-    if [ -d "$target_dir" ]; then
-        pkg_run mkdir -p "$work_dir"
-        pkg_link "$target_dir" "$work_dir/$source_dir"
+    if [ "$is_toolchain" ]; then
+        if [ -d "$target_dir" ]; then
+            pkg_run mkdir -p "$work_dir"
+            pkg_link "$target_dir" "$work_dir/$source_dir"
+        else
+            die "expected to find '$pkg_name' toolchain in shared toolchains"\
+                "dir but the directory '$target_dir' does not exist"
+        fi
     fi
 }
 
