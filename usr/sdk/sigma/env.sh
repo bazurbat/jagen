@@ -37,22 +37,9 @@ else
 fi
 
 jagen_kernel_release="2.6.32.15-21-sigma"
-jagen_sigma_cpukeys="CPU_KEYS_SMP86xx_2010-02-12"
-
-jagen_sigma_xsdk_dir="$jagen_build_dir/xsdk/$jagen_sigma_cpukeys"
 
 # to find ...-config tools and other utils
 add_PATH "$jagen_sdk_rootfs_prefix/bin"
-
-# XSDK
-export XSDK_ROOT="$jagen_sigma_xsdk_dir/signed_items"
-export XSDK_DEFAULT_KEY_DOMAIN=8644_ES1_prod
-export XSDK_DEFAULT_ZBOOT_CERTID=0000
-export XSDK_DEFAULT_CPU_CERTID=0001
-
-if [ -d "$jagen_sigma_xsdk_dir/xbin" ]; then
-    add_PATH "$jagen_sigma_xsdk_dir/xbin"
-fi
 
 jagen_kernel_dir="$jagen_src_dir/sigma-kernel"
 jagen_kernel_modules_dir="$jagen_sdk_rootfs_root/lib/modules/$jagen_kernel_release"

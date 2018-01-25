@@ -7,5 +7,6 @@ return {
     build = {
         type = 'Kbuild',
         in_source = true
-    }
+    },
+    use = 'xsdk'
 }

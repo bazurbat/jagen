@@ -65,6 +65,8 @@ jagen_pkg_image() {
     local genzbf="$jagen_sdk_staging_dir/bin/genzbf"
     local image_dir="$jagen_target_dir/kernel-image"
     local image="$jagen_target_dir/zbimage-linux-xload"
+    # for zeropad.bash
+    add_PATH "${xsdk_dir:?}/xbin"
 
     pkg_run rm -rf "$image_dir"
     pkg_run mkdir -p "$image_dir" "$image_dir/romfs"
