@@ -16,10 +16,5 @@ pkg_using_android_toolchain() {
 pkg_using_hisilicon_sdk() {
     local S="$jagen_FS" A=
     A="$A$S-DHISILICON_ROOT_DIR=$jagen_sdk_dir"
-    case $jagen_sdk in
-        android)
-            A="$A$S-DHISILICON_OBJ_DIR=$jagen_sdk_staging_dir/obj"
-            ;;
-    esac
     printf '%s' "$A"
 }

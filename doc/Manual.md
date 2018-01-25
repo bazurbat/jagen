@@ -413,7 +413,6 @@ rules and also to find pkg files. The `config` is optional.
 - **jagen_project_lib_dir** — The location of the current project `lib`
   directory (`$jagen_project_dir/lib`).
 - **jagen_relative_dir** — _env.sh_ internal.
-- **jagen_sdk** — The name of the current SDK.
 - **jagen_sdk_dir** — The location of the current SDK.
 - **jagen_shell** — Override shell used to run internal scripts.
 - **jagen_source_exclude** — A space-separated list of package name patterns

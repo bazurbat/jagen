@@ -1,7 +1,5 @@
 #!/bin/sh
 
-jagen_sdk='sigma'
-
 # MRUA
 export RMCFLAGS="-DEM86XX_CHIP=EM86XX_CHIPID_TANGO3 \
 -DEM86XX_REVISION=3 \
