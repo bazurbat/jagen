@@ -65,16 +65,21 @@ if [ "$pkg_config" ]; then
     done; unset prefix key
 fi
 
-# uses
+# include uses
 for name in $pkg_use $pkg_build_toolchain; do
     include "$(pkg__export_fname "$name")" || return
     if [ "$pkg_config" ]; then
         include "$(pkg__export_fname "$name" "$pkg_config")" || return
     fi
+done; unset name
+
+# import env from uses
+for name in $pkg_use; do
     # assign "<name>_env_*" to "pkg_env_*" if unset
-    for key in $(set | sed -rn "s/^${name}_env_([[:alnum:]_]+)=.*/\1/p"); do
-        eval ": \${pkg_env_${key}=\$${name}_env_${key}}"
-    done; unset key
+    prefix=$(jagen_name_to_id "$name")
+    for key in $(set | sed -rn "s/^${prefix}_env_([[:alnum:]_]+)=.*/\1/p"); do
+        eval ": \${pkg_env_${key}=\$${prefix}_env_${key}}"
+    done; unset prefix key
 done; unset name
 
 # depends on config or pkg includes
@@ -97,6 +102,10 @@ if [ "$pkg_build_toolchain" ]; then
     done; unset key
     # concatenate cflags
     use_env cflags
+    # assign "toolchain_env_*" to "pkg_env_*" if unset
+    for key in $(set | sed -rn "s/^toolchain_env_([[:alnum:]_]+)=.*/\1/p"); do
+        eval ": \${pkg_env_${key}=\$toolchain_env_${key}}"
+    done; unset key
 fi
 
 # may be imported from toolchain or set explicitly
