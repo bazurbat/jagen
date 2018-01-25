@@ -12,9 +12,3 @@ pkg_using_android_toolchain() {
     A="$A$S-DCMAKE_CXX_COMPILER=\${CMAKE_C_COMPILER}"
     printf '%s' "$A"
 }
-
-pkg_using_hisilicon_sdk() {
-    local S="$jagen_FS" A=
-    A="$A$S-DHISILICON_ROOT_DIR=$jagen_sdk_dir"
-    printf '%s' "$A"
-}

@@ -51,6 +51,13 @@ package { 'kernel', 'target',
     }
 }
 
+package { 'loop-aes',
+    use = { 'kernel', 'rootfs' },
+    env = {
+        INSTALL_MOD_PATH = '$rootfs_root'
+    },
+}
+
 -- rootfs
 
 local rootfs_template = {

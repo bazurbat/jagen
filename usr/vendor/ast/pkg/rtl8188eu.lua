@@ -7,10 +7,11 @@ return {
     build = {
         type = 'linux_module',
         options = {
-            'KSRC=$KERNEL_SRC'
+            'KSRC=$pkg_env_KERNEL_SRC'
         },
         in_source = true
     },
+    use = 'hi-kernel',
     -- the source tarball is distributed with hi-sdk
     { 'unpack',
         { 'hi-sdk', 'unpack' }

@@ -17,9 +17,5 @@ return {
     },
     install = {
         module_dirs = { 'tmp-d-kbuild' }
-    },
-    env = {
-        INSTALL_MOD_PATH = '$rootfs_root'
-    },
-    use = { 'kernel', 'rootfs' }
+    }
 }

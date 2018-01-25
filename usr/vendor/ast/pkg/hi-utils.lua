@@ -10,5 +10,6 @@ return {
         'cmake-modules',
         'glib',
         'hi-sdk',
-    }
+    },
+    use = 'hi-sdk'
 }

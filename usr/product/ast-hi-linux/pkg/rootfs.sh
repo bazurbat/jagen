@@ -4,10 +4,10 @@ require rootfs
 require toolchain
 
 install_sdk() {
-    local pub_dir="$jagen_sdk_dir/pub"
+    local pub_dir="${hi_sdk_dir:?}/pub"
 
     if [ -d "$pub_dir/rootfs" ]; then
-        pkg_run rsync -rtl "$jagen_sdk_dir/pub/rootfs/" "."
+        pkg_run rsync -rtl "${hi_sdk_dir:?}/pub/rootfs/" "."
     fi
     pkg_run rsync -rtl "$pub_dir/lib/share/" "lib"
     pkg_run rsync -rtl --delete "$pub_dir/kmod/" "kmod"

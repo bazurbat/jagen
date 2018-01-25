@@ -72,6 +72,10 @@ package { 'rootfs', 'target',
     }
 }
 
+package { 'loop-aes',
+    use = { 'hi-kernel' },
+}
+
 -- explicit definition of firmware utils to avoid building gpgme for host
 package { 'firmware-utils', 'host' }
 package { 'firmware-utils', 'target',
