@@ -2,7 +2,7 @@
 
 create_imaterial() {
     local workdir="$jagen_target_dir/imaterial"
-    local bmp2sdd="$jagen_sdk_mrua_dir/MRUA_src/splashscreen/utils/bmp2sdd"
+    local bmp2sdd="${mrua_dir:?}/MRUA_src/splashscreen/utils/bmp2sdd"
 
     rm -rf "$workdir" && mkdir -p "$workdir" || return $?
 

@@ -18,5 +18,6 @@ return {
     },
     install = {
         module_dirs = { 'os/linux' }
-    }
+    },
+    use = 'rootfs'
 }

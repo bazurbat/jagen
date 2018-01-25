@@ -8,5 +8,5 @@ return {
         type = 'Kbuild',
         in_source = true
     },
-    use = 'xsdk'
+    use = { 'ezboot', 'rootfs', 'xsdk' }
 }

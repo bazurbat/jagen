@@ -7,8 +7,6 @@
 export CROSS_MAKE="make ARCH=${pkg_build_arch}"
 export KCFLAGS="-mhard-float -Wa,-mhard-float"
 
-protectordir="$jagen_sdk_ezboot_dir/protector"
-
 jagen_pkg_compile() {
     pkg_run ln -sfT "$jagen_src_dir/linux" linux
 
@@ -33,7 +31,7 @@ jagen_pkg_compile() {
         pkg_run $CROSS_MAKE all
     fi
 
-    pkg_run $CROSS_MAKE -C "$protectordir"
+    pkg_run $CROSS_MAKE -C "${ezboot_dir:?}/protector"
 }
 
 get_start_addr() {
@@ -62,7 +60,7 @@ jagen_pkg_install() {
 }
 
 jagen_pkg_image() {
-    local genzbf="$jagen_sdk_staging_dir/bin/genzbf"
+    local genzbf="${rootfs_prefix:?}/bin/genzbf"
     local image_dir="$jagen_target_dir/kernel-image"
     local image="$jagen_target_dir/zbimage-linux-xload"
     # for zeropad.bash
@@ -86,6 +84,6 @@ jagen_pkg_image() {
 
     pkg_run genromfs -V MIPSLINUX_XLOAD -d romfs -f "$image"
 
-    pkg_run "$protectordir/zbprotector" "$image" "${image}.zbc"
+    pkg_run "${ezboot_dir:?}/protector/zbprotector" "$image" "${image}.zbc"
     pkg_run chmod 644 "${image}.zbc"
 }

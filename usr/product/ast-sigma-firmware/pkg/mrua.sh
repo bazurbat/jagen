@@ -9,7 +9,7 @@ jagen_pkg_compile() {
     PATH="${toolchain_dir:?}/bin:$PATH"
 
     # This is hardcoded somewhere, make needs lib to exist
-    pkg_run mkdir -p "$jagen_sdk_rootfs_prefix/lib"
+    pkg_run mkdir -p "${rootfs_prefix:?}/lib"
 
     pkg_run make
 

@@ -117,6 +117,7 @@ end
 
 package { 'firmware', 'target',
     pass_template = firmware_rule_template,
+    use = 'mrua',
     requires = {
         'ezboot',
         'karaoke-player',

@@ -10,7 +10,7 @@ return {
         jobs = 1
     },
     export = {
-        root = '$pkg_build_dir/build_mipsel/root',
-        prefix = '$pkg_build_dir/cross_rootfs'
+        root = '$pkg_source_dir/build_mipsel/root',
+        prefix = '$pkg_source_dir/cross_rootfs'
     }
 }

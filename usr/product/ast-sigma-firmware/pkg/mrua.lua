@@ -16,5 +16,6 @@ return {
             'MRUA_src/llad/direct/kernel_src',
             'MRUA_src/rua/emhwlib_kernel/kernel_src',
         }
-    }
+    },
+    use = 'rootfs'
 }

@@ -10,7 +10,7 @@ jagen_pkg_compile() {
     # for zeropad.bash, toh.bash, etc.
     add_PATH "${xsdk_dir:?}/xbin"
     # for genxenv2
-    add_PATH "$jagen_sdk_staging_dir/bin"
+    add_PATH "${rootfs_prefix:?}/bin"
 
     pkg_run cd "xos/xboot2/xmasboot/nand_st2"
     pkg_run ./build_phyblock0.bash
