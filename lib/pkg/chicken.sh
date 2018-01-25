@@ -32,22 +32,8 @@ jagen_pkg_install_host() {
 }
 
 jagen_pkg_configure_target() {
-    case $jagen_sdk in
-        sigma)
-            pkg_configure \
-                -DCMAKE_SYSTEM_PROCESSOR="mips32" \
-                $(pkg_using_host_chicken)
-            ;;
-        android)
-            pkg_configure \
-                $(pkg_using_android_toolchain) \
-                $(pkg_using_host_chicken)
-            ;;
-        *)
-            pkg_configure \
-                $(pkg_using_host_chicken)
-            ;;
-    esac
+    pkg_configure \
+        $(pkg_using_host_chicken)
 }
 
 jagen_pkg_install_target() {
