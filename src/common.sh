@@ -66,7 +66,7 @@ find_in_path() {
 }
 
 include_from() {
-    local layer name path root
+    local layer name path root found
     layer=${1:?}
     name=$(basename "${pkg__file:?}")
 
@@ -80,11 +80,15 @@ include_from() {
         "${jagen_dir}${root}${layer}/pkg/$name"
     do
         if [ -f "$path" ]; then
+            found=1
             debug2 "include from $layer: $path"
             . "$path"
             return
         fi
     done
+
+    [ "$found" ] || \
+        die "include_from $layer: failed to find $name"
 }
 
 try_require() {
