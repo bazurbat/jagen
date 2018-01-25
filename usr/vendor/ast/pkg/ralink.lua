@@ -19,5 +19,8 @@ return {
     install = {
         module_dirs = { 'os/linux' }
     },
+    env = {
+        INSTALL_MOD_PATH = '$rootfs_root'
+    },
     use = 'rootfs'
 }

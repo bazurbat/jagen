@@ -6,7 +6,6 @@ jagen_sdk_rootfs_dir="$jagen_src_dir/sigma-rootfs"
 jagen_sdk_rootfs_root="$jagen_sdk_rootfs_dir/build_mipsel/root"
 
 export SMP86XX_ROOTFS_PATH="$jagen_sdk_rootfs_dir"
-export INSTALL_MOD_PATH="$jagen_sdk_rootfs_root"
 
 # MRUA
 export RMCFLAGS="-DEM86XX_CHIP=EM86XX_CHIPID_TANGO3 \
