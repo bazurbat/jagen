@@ -97,9 +97,11 @@ if [ "$pkg_build_toolchain" ]; then
     done; unset key
     # concatenate cflags
     use_env cflags
-    if [ "$pkg_build_system" ]; then
-        : ${pkg_toolchain_prefix=${pkg_build_system}-}
-    fi
+fi
+
+# may be imported from toolchain or set explicitly
+if [ "$pkg_build_system" ]; then
+    : ${pkg_toolchain_prefix=${pkg_build_system}-}
 fi
 
 # set pkg_env_* in the environment
