@@ -17,5 +17,5 @@ return {
             'MRUA_src/rua/emhwlib_kernel/kernel_src',
         }
     },
-    use = 'rootfs'
+    use = { 'kernel', 'rootfs' }
 }

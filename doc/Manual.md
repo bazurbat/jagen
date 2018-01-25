@@ -397,8 +397,6 @@ rules and also to find pkg files. The `config` is optional.
 - **jagen_kernel_dir** — The location of the Linux kernel directory.
 - **jagen_kernel_image** — The name of the Linux kernel image target (uImage or
   such).
-- **jagen_kernel_modules_dir** — The location of Linux kernel modules install
-  directory.
 - **jagen_kernel_release** — The Linux kernel release.
 - **jagen_kernel_version** — The Linux kernel version.
 - **jagen_layers** — The IFS-separated list of paths for used layers.

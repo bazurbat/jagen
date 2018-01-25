@@ -8,5 +8,16 @@ return {
         type = 'Kbuild',
         in_source = true
     },
-    use = { 'ezboot', 'rootfs', 'xsdk' }
+    env = {
+        LINUX_KERNEL = '$pkg_source_dir/linux'
+    },
+    use = { 'ezboot', 'rootfs', 'xsdk' },
+    export = {
+        env = {
+            -- for external modules
+            KERNEL_SRC     = '$pkg_env_LINUX_KERNEL',
+            -- for mrua
+            UCLINUX_KERNEL = '$pkg_env_LINUX_KERNEL',
+        }
+    }
 }

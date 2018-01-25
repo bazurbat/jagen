@@ -6,5 +6,6 @@ return {
     },
     build = {
         type = 'CMake',
-    }
+    },
+    use = { 'mrua', 'rootfs' }
 }

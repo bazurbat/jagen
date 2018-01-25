@@ -2,11 +2,6 @@
 
 jagen_sdk='sigma'
 
-jagen_sdk_rootfs_dir="$jagen_src_dir/sigma-rootfs"
-jagen_sdk_rootfs_root="$jagen_sdk_rootfs_dir/build_mipsel/root"
-
-export SMP86XX_ROOTFS_PATH="$jagen_sdk_rootfs_dir"
-
 # MRUA
 export RMCFLAGS="-DEM86XX_CHIP=EM86XX_CHIPID_TANGO3 \
 -DEM86XX_REVISION=3 \
@@ -29,19 +24,4 @@ else
 fi
 
 jagen_kernel_release="2.6.32.15-21-sigma"
-
 jagen_kernel_dir="$jagen_src_dir/sigma-kernel"
-jagen_kernel_modules_dir="$jagen_sdk_rootfs_root/lib/modules/$jagen_kernel_release"
-jagen_kernel_extra_modules_dir="$jagen_kernel_modules_dir/extra"
-
-export LINUX_KERNEL="$jagen_src_dir/linux"
-export UCLINUX_KERNEL="$LINUX_KERNEL"
-
-KERNEL_SRC="$LINUX_KERNEL"
-
-pkg_using_sigma_sdk() {
-    local S="$jagen_FS" A=
-    A="$A$S-DSIGMA_SDK_DIR=$jagen_src_dir/sigma-mrua"
-    A="$A$S-DSIGMA_ROOTFS_DIR=$jagen_src_dir/sigma-rootfs"
-    printf '%s' "$A"
-}

@@ -12,15 +12,12 @@ return {
         type = 'linux_module',
         options = {
             'CHIPSET=5370',
-            'LINUX_SRC=$KERNEL_SRC'
+            'LINUX_SRC=$pkg_env_KERNEL_SRC'
         },
         in_source = true
     },
     install = {
         module_dirs = { 'os/linux' }
     },
-    env = {
-        INSTALL_MOD_PATH = '$rootfs_root'
-    },
-    use = 'rootfs'
+    use = { 'kernel', 'rootfs' }
 }
