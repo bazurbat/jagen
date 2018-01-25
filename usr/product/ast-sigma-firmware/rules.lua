@@ -81,7 +81,7 @@ package { 'rootfs', 'target',
 }
 
 package { 'busybox', 'target',
-    import = 'rootfs',
+    use = 'rootfs',
     install = {
         root = '$rootfs_root',
         prefix = ''

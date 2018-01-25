@@ -8,5 +8,5 @@ return {
         type = 'sigma',
         in_source = true
     },
-    import = { 'xsdk' }
+    use = { 'xsdk' }
 }

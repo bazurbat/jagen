@@ -29,8 +29,8 @@ pkg__export_fname() {
 pkg__export() {
     local prefix="${1:?}" outfile="${2:?}" name="$(jagen_name_to_id "$pkg_name")"
     local key= content=
-    for key in $(set | sed -rn "s/^$prefix([[:alnum:]_]+)=.*/\1/p"); do
-        content="${content}${jagen_S}${name}_${key}='$(eval echo \"\$${prefix}${key}\")'"
+    for key in $(set | sed -rn "s/^${prefix}_([[:alnum:]_]+)=.*/\1/p"); do
+        content="${content}${jagen_S}${name}_${key}='$(eval echo \"\$${prefix}_${key}\")'"
     done
     content=${content#$jagen_S}
     if [ "$content" ]; then
@@ -59,14 +59,14 @@ include "$jagen_include_dir/$pkg_name" || return
 if [ "$pkg_config" ]; then
     include "$jagen_include_dir/${pkg_name}__${pkg_config}" || return
     # assign "pkg__<config>__export_*" to "pkg_export_*"
-    prefix="pkg__${pkg_config}__export_"
-    for key in $(set | sed -rn "s/^$prefix([[:alnum:]_]+)=.*/\1/p"); do
-        eval "pkg_export_${key}=\$${prefix}${key}"
+    prefix="pkg__${pkg_config}__export"
+    for key in $(set | sed -rn "s/^${prefix}_([[:alnum:]_]+)=.*/\1/p"); do
+        eval "pkg_export_${key}=\$${prefix}_${key}"
     done; unset prefix key
 fi
 
-# exports
-for name in $pkg_import $pkg_build_toolchain; do
+# uses
+for name in $pkg_use $pkg_build_toolchain; do
     include "$(pkg__export_fname "$name")" || return
     if [ "$pkg_config" ]; then
         include "$(pkg__export_fname "$name" "$pkg_config")" || return
@@ -93,7 +93,7 @@ if [ "$pkg_build_toolchain" ]; then
     done; unset name key
     # assign "toolchain_*" to "pkg_build_*" if unset skipping "toolchain_env_*"
     for key in $(set | sed -rn '/^toolchain_env/! s/^toolchain_([[:alnum:]_]+)=.*/\1/p'); do
-        eval ": \${pkg_build_${key}=\${toolchain_${key}}}"
+        eval ": \${pkg_build_${key}=\$toolchain_${key}}"
     done; unset key
     # concatenate cflags
     use_env cflags
@@ -187,10 +187,10 @@ run_stage "jagen_pkg_${pkg_stage}_${pkg_config}" ||
     run_stage "jagen_pkg_${pkg_stage}"
 
 if [ "$pkg_stage" = 'unpack' ]; then
-    pkg__export "pkg_export_" "$(pkg__export_fname "$pkg_name")"
+    pkg__export "pkg_export" "$(pkg__export_fname "$pkg_name")"
 fi
 if [ "$pkg_stage" = 'install' -a "$pkg_config" ]; then
-    pkg__export "pkg__${pkg_config}__export_" "$(pkg__export_fname "$pkg_name" "$pkg_config")"
+    pkg__export "pkg__${pkg_config}__export" "$(pkg__export_fname "$pkg_name" "$pkg_config")"
 fi
 
 touch "$pkg__stamp_file"
