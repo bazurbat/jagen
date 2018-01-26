@@ -422,7 +422,7 @@ function P.load_rules()
     end
 
     -- another pass, with the toolchains this time
-    for name, pkg in pairs(table.copy(packages)) do
+    for name, pkg in pairs(packages) do
         for config, _ in pkg:each_config() do
             local build = pkg:get('build', config)
             if build then
