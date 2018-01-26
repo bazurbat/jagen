@@ -20,5 +20,3 @@ if [ "$jagen_build_profile" = "debug" ]; then
 else
     COMPILKIND="$COMPILKIND release"
 fi
-
-jagen_kernel_release="2.6.32.15-21-sigma"

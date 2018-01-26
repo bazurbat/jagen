@@ -55,7 +55,7 @@ jagen_pkg_install() {
         pkg_run $CROSS_MAKE modules_install
     fi
 
-    pkg_run cd "${rootfs_root:?}/lib/modules/${jagen_kernel_release:?}"
+    pkg_run cd "${rootfs_root:?}/lib/modules/${pkg_build_release:?}"
     pkg_run rm -f "build" "source"
 }
 

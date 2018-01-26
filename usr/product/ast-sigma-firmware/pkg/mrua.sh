@@ -25,7 +25,7 @@ jagen_pkg_compile() {
 jagen_pkg_install() {
     local bin_dir="$pkg_install_dir/bin"
     local lib_dir="$pkg_install_dir/lib"
-    local src_dir="$pkg_source_dir/modules/$jagen_kernel_release"
+    local src_dir="$pkg_source_dir/modules/${kernel_release:?}"
 
     PATH="${toolchain_dir:?}/bin:$PATH"
 
