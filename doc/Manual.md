@@ -381,7 +381,6 @@ rules and also to find pkg files. The `config` is optional.
   (`$jagen_project_dir/host`).
 - **jagen_include_dir** — The location of the `include` directory
   (`$jagen_project_dir/include`).
-- **jagen_kernel_version** — The Linux kernel version.
 - **jagen_layers** — The IFS-separated list of paths for used layers.
 - **jagen_lib_dir** — The location of the `lib` dir (`$jagen_dir/lib`).
 - **jagen_log_dir** — The location of the `log` dir (`$jagen_build_dir`).
