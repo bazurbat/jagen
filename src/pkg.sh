@@ -440,7 +440,7 @@ pkg_compile() {
     fi
 
     case $pkg_build_type in
-        GNU|kbuild)
+        GNU)
             pkg_run make "$@"
             ;;
         CMake)
@@ -452,7 +452,7 @@ pkg_compile() {
             pkg_run cmake --build . -- $(pkg__get_verbose_arg) \
                 $jagen_cmake_build_options "$@"
             ;;
-        make)
+        make|kbuild)
             pkg_run make $(pkg__get_verbose_arg) $pkg_build_options "$@"
             ;;
         linux_kernel)
@@ -473,7 +473,7 @@ pkg_install() {
     local pkg_install_type="${pkg_install_type:-$pkg_build_type}"
 
     case $pkg_install_type in
-        GNU|make)
+        GNU|make|kbuild)
             pkg_run make $(pkg__get_verbose_arg) \
                 ${pkg_install_root:+DESTDIR="$pkg_install_root"} \
                 $pkg_install_args "$@" install
