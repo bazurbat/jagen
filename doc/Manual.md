@@ -357,7 +357,6 @@ rules and also to find pkg files. The `config` is optional.
 
 - **jagen_FS** — Field separator (`<tab>`).
 - **jagen_IFS** — IFS (`<newline><tab>`).
-- **jagen_android_product** — The name of the current Android product.
 - **jagen_bin_dir** — The location of the `bin` directory
   (`$jagen_project_dir/bin`).
 - **jagen_build_dir** — The location of the `build` directory
@@ -402,7 +401,6 @@ rules and also to find pkg files. The `config` is optional.
 - **jagen_project_lib_dir** — The location of the current project `lib`
   directory (`$jagen_project_dir/lib`).
 - **jagen_relative_dir** — _env.sh_ internal.
-- **jagen_sdk_dir** — The location of the current SDK.
 - **jagen_shell** — Override shell used to run internal scripts.
 - **jagen_source_exclude** — A space-separated list of package name patterns
   which should not be updated or patched during the build. Applies only to
@@ -417,8 +415,6 @@ rules and also to find pkg files. The `config` is optional.
   config. Overrides `$jagen_cmake_module_path` if set, empty value disables.
 - **jagen_target_dir** — The location of the `target` directory
   (`$jagen_project_dir/target`).
-- **jagen_target_platform** — The name of the current target platform
-  (currently used only for Android).
 - **jagen_target_toolchain** — The name of the current target toolchain.
 - **jagen_toolchains_dir** — The location of shared toolchains
   (`$jagen_project_dir/toolchains`).
