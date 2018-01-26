@@ -411,7 +411,7 @@ pkg_configure() {
         linux_kernel)
             use_env kbuild
             pkg_run cd "$pkg_source_dir"
-            pkg_run make "${jagen_kernel_config:?}"
+            pkg_run make "${pkg_build_config:?build.config is not set}"
             pkg_run make prepare
             ;;
         *)

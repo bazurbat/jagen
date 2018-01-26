@@ -6,7 +6,8 @@ return {
     },
     build = {
         type = 'linux_kernel',
-        in_source = true
+        config = 'ast2xx_hi3719cv100_defconfig',
+        in_source = true,
     },
     export = {
         env = {

@@ -381,7 +381,6 @@ rules and also to find pkg files. The `config` is optional.
   (`$jagen_project_dir/host`).
 - **jagen_include_dir** — The location of the `include` directory
   (`$jagen_project_dir/include`).
-- **jagen_kernel_config** — The name of the Linux kernel config to use.
 - **jagen_kernel_dir** — The location of the Linux kernel directory.
 - **jagen_kernel_image** — The name of the Linux kernel image target (uImage or
   such).
