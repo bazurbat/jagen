@@ -6,6 +6,7 @@ return {
     },
     build = {
         type = 'linux_kernel',
+        image = 'uImage',
         config = 'ast2xx_hi3719cv100_defconfig',
         in_source = true,
     },

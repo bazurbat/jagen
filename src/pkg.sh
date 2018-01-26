@@ -441,7 +441,7 @@ pkg_compile() {
         linux_kernel)
             use_env kbuild
             pkg_run cd "$pkg_source_dir"
-            pkg_run make "${jagen_kernel_image:?}" modules
+            pkg_run make "${pkg_build_image:?}" modules
             ;;
         linux_module)
             pkg_run make $pkg_build_options "$@"
@@ -483,7 +483,7 @@ pkg_install() {
             use_env kbuild
             pkg_run cd "$pkg_source_dir"
             pkg_run install -vm644 \
-                "$pkg_build_dir/arch/$pkg_build_arch/boot/$jagen_kernel_image" \
+                "$pkg_build_dir/arch/$pkg_build_arch/boot/${pkg_build_image:?}" \
                 "$jagen_build_dir"
             pkg_run make \
                 INSTALL_MOD_PATH="${INSTALL_MOD_PATH:-${pkg_install_dir:?}}" \
@@ -540,9 +540,9 @@ pkg__image() {
         linux_kernel)
             use_env kbuild
             pkg_run cd "$pkg_source_dir"
-            pkg_run make "${jagen_kernel_image:?}"
+            pkg_run make "${pkg_build_image:?}"
             pkg_run install -vm644 \
-                "$pkg_build_dir/arch/$pkg_build_arch/boot/$jagen_kernel_image" \
+                "$pkg_build_dir/arch/$pkg_build_arch/boot/${pkg_build_image:?}" \
                 "$jagen_build_dir"
             ;;
     esac
