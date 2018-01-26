@@ -15,9 +15,9 @@ return {
     export = {
         env = {
             -- for external modules
-            KERNEL_SRC     = '$pkg_env_LINUX_KERNEL',
+            KERNEL_SRC     = '$LINUX_KERNEL',
             -- for mrua
-            UCLINUX_KERNEL = '$pkg_env_LINUX_KERNEL',
+            UCLINUX_KERNEL = '$LINUX_KERNEL',
         }
     }
 }

@@ -12,7 +12,7 @@ return {
         type = 'linux_module',
         options = {
             'CHIPSET=5370',
-            'LINUX_SRC=$pkg_env_KERNEL_SRC'
+            'LINUX_SRC=$KERNEL_SRC'
         },
         in_source = true
     },

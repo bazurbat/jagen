@@ -7,8 +7,8 @@ return {
     build  = {
         type = 'linux_module',
         options = {
-            'LINUX_SOURCE=$pkg_env_KERNEL_SRC',
-            'KBUILD_OUTPUT=$pkg_env_KERNEL_SRC',
+            'LINUX_SOURCE=$KERNEL_SRC',
+            'KBUILD_OUTPUT=$KERNEL_SRC',
             'USE_KBUILD=y',
             'RUNDM=n',
             'MODINST=n'

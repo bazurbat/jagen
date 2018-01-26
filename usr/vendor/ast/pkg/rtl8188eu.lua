@@ -7,7 +7,7 @@ return {
     build = {
         type = 'linux_module',
         options = {
-            'KSRC=$pkg_env_KERNEL_SRC'
+            'KSRC=$KERNEL_SRC'
         },
         in_source = true
     },
