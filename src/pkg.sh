@@ -168,16 +168,6 @@ pkg_is_release_with_debug() {
     test "$(pkg_get_build_profile)" = "release_with_debug"
 }
 
-# usings
-
-pkg_using_host_chicken() {
-    local S="$jagen_FS" A=
-    A="$A$S-DCHICKEN_COMPILER=$jagen_host_dir/bin/chicken"
-    A="$A$S-DCHICKEN_INTERPRETER=$jagen_host_dir/bin/csi"
-    A="$A$S-DCHICKEN_SYSROOT=$jagen_target_dir"
-    printf '%s' "$A"
-}
-
 # default stages
 
 pkg__on_download_exit() {

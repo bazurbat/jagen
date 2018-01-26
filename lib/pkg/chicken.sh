@@ -33,7 +33,9 @@ jagen_pkg_install_host() {
 
 jagen_pkg_configure_target() {
     pkg_configure \
-        $(pkg_using_host_chicken)
+        -DCHICKEN_COMPILER="$jagen_host_dir/bin/chicken" \
+        -DCHICKEN_INTERPRETER="$jagen_host_dir/bin/csi" \
+        -DCHICKEN_SYSROOT="$jagen_target_dir"
 }
 
 jagen_pkg_install_target() {
