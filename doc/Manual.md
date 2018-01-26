@@ -103,7 +103,7 @@ rules and also to find pkg files. The `config` is optional.
         ...
     },
     build = {
-        type = 'GNU|CMake|KBuild|make|linux_kernel|linux_module',
+        type = 'GNU|CMake|kbuild|make|linux_kernel|linux_module',
 
         autoreconf = true,
         generate   = true,
@@ -322,7 +322,7 @@ rules and also to find pkg files. The `config` is optional.
   themselves to break dependency cycles.
 
 - **build.type** (`pkg_build_type`) — The type of the package build system.
-  Supported values are: GNU, CMake, KBuild, make, linux_kernel, linux_module.
+  Supported values are: GNU, CMake, kbuild, make, linux_kernel, linux_module.
 
 ### Install
 
@@ -472,7 +472,7 @@ rules and also to find pkg files. The `config` is optional.
   package which should be used for the build
 
 - **pkg_build_type** (`build.type`) — the type of the build system of the
-  package; currently supported values are: GNU, KBuild, CMake, make,
+  package; currently supported values are: GNU, kbuild, CMake, make,
   linux_kernel, linux_module
 
 - **pkg_config** (`pkg.config`) — the config of the currently executing stage

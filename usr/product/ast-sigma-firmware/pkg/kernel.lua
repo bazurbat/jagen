@@ -5,7 +5,7 @@ return {
         branch   = 'sigma-2.6'
     },
     build = {
-        type = 'Kbuild',
+        type = 'kbuild',
         in_source = true
     },
     env = {

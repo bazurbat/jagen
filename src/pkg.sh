@@ -440,7 +440,7 @@ pkg_compile() {
     fi
 
     case $pkg_build_type in
-        GNU|KBuild)
+        GNU|kbuild)
             pkg_run make "$@"
             ;;
         CMake)
