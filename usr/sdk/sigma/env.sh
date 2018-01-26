@@ -22,4 +22,3 @@ else
 fi
 
 jagen_kernel_release="2.6.32.15-21-sigma"
-jagen_kernel_dir="$jagen_src_dir/sigma-kernel"

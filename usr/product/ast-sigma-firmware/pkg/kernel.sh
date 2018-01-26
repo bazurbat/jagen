@@ -45,13 +45,13 @@ jagen_pkg_install() {
     pkg_run $CROSS_MAKE modules_install
 
     if [ $with_kernel_proprietary_modules = yes ]; then
-        pkg_run cd "$jagen_kernel_dir/proprietary"
+        pkg_run cd "$pkg_source_dir/proprietary"
         pkg_run $CROSS_MAKE -C spinor modules_install
         pkg_run $CROSS_MAKE -C sd_block modules_install
     fi
 
     if [ $with_kernel_extras = yes ]; then
-        pkg_run cd "$jagen_kernel_dir/extra"
+        pkg_run cd "$pkg_source_dir/extra"
         pkg_run $CROSS_MAKE modules_install
     fi
 
