@@ -62,4 +62,4 @@ fi
 # export all jagen_* variables
 for var in $(set | sed -rn 's/^(jagen_[[:alnum:]][[:alnum:]_]*)=.*/\1/p'); do
     export $var
-done
+done; unset var

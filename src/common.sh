@@ -211,6 +211,7 @@ jagen_name_to_id() {
 }
 
 jagen__trim() {
+    local var
     for var do
         [ "${var-}" ] && eval "$var=\${$var# }; $var=\${$var% }"
     done
