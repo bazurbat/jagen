@@ -178,10 +178,6 @@ pkg_using_host_chicken() {
     printf '%s' "$A"
 }
 
-pkg_using_target_board() {
-    printf '%s' "-DTARGET_BOARD=${jagen_target_board:-unknown}"
-}
-
 # default stages
 
 pkg__on_download_exit() {
