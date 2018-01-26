@@ -5,7 +5,7 @@ jagen_pkg_patch() {
 }
 
 jagen_pkg_configure() {
-    pkg_link "${hi_kernel_dir:?}" \
+    pkg_link "${kernel_dir:?}" \
         "$pkg_source_dir/source/kernel/linux-3.4.y"
 
     pkg_run make msp_prepare

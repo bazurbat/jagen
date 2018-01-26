@@ -16,5 +16,5 @@ return {
         unset_cflags = true,
         kernel_modules = true
     },
-    use = 'hi-kernel'
+    use = 'kernel'
 }

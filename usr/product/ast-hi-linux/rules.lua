@@ -17,11 +17,9 @@ local firmware_template_rule = {
     }
 }
 
-define_package_alias('kernel', 'hi-kernel')
-
 package { 'hi-sdk', 'target',
     { 'configure',
-        { 'hi-kernel', 'unpack' }
+        { 'kernel', 'unpack' }
     }
 }
 
@@ -67,7 +65,7 @@ package { 'rootfs', 'target',
             'gnupg',
             'hdparm',
             'hi-drivers',
-            'hi-kernel',
+            'kernel',
             'hi-sdk',
             'hia-astdisplayservice',
             'loop-aes',
@@ -79,7 +77,7 @@ package { 'rootfs', 'target',
 }
 
 package { 'loop-aes',
-    use = { 'hi-kernel' },
+    use = { 'kernel' },
 }
 
 -- explicit definition of firmware utils to avoid building gpgme for host

@@ -11,7 +11,7 @@ return {
         },
         in_source = true
     },
-    use = 'hi-kernel',
+    use = 'kernel',
     -- the source tarball is distributed with hi-sdk
     { 'unpack',
         { 'hi-sdk', 'unpack' }
