@@ -81,8 +81,6 @@ function P:parse(rule)
         error("invalid rule type")
     end
 
-    rule.name = Jagen.package_aliases[rule.name] or rule.name
-
     if type(rule.source) == 'string' then
         if string.match(rule.source, '^https?://') then
             rule.source = { type = 'curl', location = rule.source }
@@ -686,10 +684,6 @@ function P.define_rule(rule, context)
     if context then pop_context() end
 
     return pkg
-end
-
-function define_package_alias(name, value)
-    Jagen.package_aliases[name] = value
 end
 
 function package(rule)

@@ -5,7 +5,7 @@ Target.__index = Target
 
 function Target:new(name, stage, config)
     local target = {
-        name   = Jagen.package_aliases[name] or name,
+        name   = name,
         stage  = stage,
         config = config,
     }

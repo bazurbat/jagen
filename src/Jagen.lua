@@ -23,8 +23,6 @@ Jagen =
     flags = os.getenv('jagen_flags'),
 
     build_dir = assert(os.getenv('jagen_build_dir')),
-
-    package_aliases = {}
 }
 
 Jagen.cmd = System.mkpath(Jagen.dir, 'src', 'cmd.sh')
