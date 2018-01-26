@@ -120,12 +120,12 @@ pkg_link() {
 pkg__get_verbose_arg() {
     [ "$jagen_build_verbose" ] || return 0
     case $pkg_build_type in
+        GNU|make|kbuild) echo "V=1" ;;
         CMake)
             case $pkg_build_generator in
                 *Ninja)     echo "-v"        ;;
                 *Makefiles) echo "VERBOSE=1" ;;
             esac ;;
-        make) echo "V=1" ;;
     esac
 }
 
