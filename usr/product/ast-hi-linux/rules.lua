@@ -19,6 +19,12 @@ local firmware_template_rule = {
 
 define_package_alias('kernel', 'hi-kernel')
 
+package { 'hi-sdk', 'target',
+    { 'configure',
+        { 'hi-kernel', 'unpack' }
+    }
+}
+
 package { 'karaoke-player', 'target',
     template = firmware_template_rule,
     requires = {

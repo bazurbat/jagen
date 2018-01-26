@@ -15,5 +15,6 @@ return {
         in_source = true,
         unset_cflags = true,
         kernel_modules = true
-    }
+    },
+    use = 'hi-kernel'
 }
