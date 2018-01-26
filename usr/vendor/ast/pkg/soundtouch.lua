@@ -10,13 +10,11 @@ return {
             '--enable-integer-samples=yes',
             '--enable-x86-optimizations=no'
         },
-        autoreconf = true
+        autoreconf = true,
+        -- upstream default, should be safe
+        cflags = '-O3'
     },
     install = {
         libs = { 'SoundTouch' }
-    },
-    env = {
-        -- upstream default, should be safe
-        CFLAGS = '-O3'
     }
 }

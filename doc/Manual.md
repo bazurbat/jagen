@@ -226,9 +226,8 @@ rules and also to find pkg files. The `config` is optional.
 
 ### Build
 
-- **build.arch** — Specifies the target machine architecture. It does not set
-  compiler flags by itself but can be used in pkg scripts to do so. For
-  packages with the "toolchain" install type it is exported automatically.
+- **build.arch** — Specifies the target machine architecture. Assigned from
+  toolchain if unset. Exported automatically.
 
 - **build.autoreconf** — If set to `true`, indicates that `autoreconf` stage is
   necessary for the package. Also causes `libtool` to be installed for the
@@ -240,10 +239,8 @@ rules and also to find pkg files. The `config` is optional.
   sensitive to compiler settings and using this option might be necessary for
   them to build correctly or as a safety measure.
 
-- **build.cflags** — Specifies the C compiler flags. It does not set
-  environment variables by itself but intended to be used scripts. For the
-  packages with the "toolchain" install type it is exported automatically as
-  `CFLAGS`.
+- **build.cflags** — Specifies additional C compiler flags. Exported
+  automatically.
 
 - **build.cmake_module_path** (`pkg_build_cmake_module_path`) — Defines
   `CMAKE_MODULE_PATH` for the package. Defaults to `$jagen_cmake_module_path`
@@ -262,19 +259,15 @@ rules and also to find pkg files. The `config` is optional.
   effectively this setting adds `-I$pkg_install_dir/include` to `CFLAGS` and
   `-L$pkg_install_dir/lib` to `LDFLAGS`.
 
-- **build.cpu** — Specifies the target machine CPU. It does not set compiler
-  flags by itself but can be used in pkg scripts to do so. For packages with
-  the "toolchain" install type it is exported automatically.
+- **build.cpu** — Specifies the target machine CPU. Assigned from toolchain if
+  unset. Exported automatically.
 
-- **build.cxxflags** — Specifies the C++ compiler flags. It does not set
-  environment variables by itself but intended to be used scripts. For the
-  packages with the "toolchain" install type it is exported automatically as
-  `CXXFLAGS`.
+- **build.cxxflags** — Specifies additional C++ compiler flags. Copied from the
+  **build.cflags** if unset. Exported automatically.
 
 - **build.dir** (`pkg_build_dir`) — The location of the package build
   directory. Default: `$pkg_work_dir` or `$pkg_work_dir/$pkg_config` if
-  `$pkg_config` is set. For packages with the "toolchain" install type it is
-  exported automatically.
+  `$pkg_config` is set. Exported automatically.
 
 - **build.generate** (`pkg_build_generate`) — If set to `true`, indicates that
   `autoreconf` stage is necessary for the package. Specifically `autoreconf`
@@ -296,9 +289,8 @@ rules and also to find pkg files. The `config` is optional.
 - **build.kernel_modules** — If set to `true`, indicates that the package
   installs Linux kernel modules.
 
-- **build.ldflags** — Specifies linker flags. It does not set environment
-  variables by itself but intended to be used scripts. For the packages with
-  the "toolchain" install type it is exported automatically as `LDFLAGS`.
+- **build.ldflags** — Specifies additional linker flags. Exported
+  automatically.
 
 - **build.options** (`pkg_build_options`) — The list of options for the build system.
   It could be `configure` arguments or `CMake` defines or something else
@@ -313,9 +305,8 @@ rules and also to find pkg files. The `config` is optional.
   the environment (such as in CC, CXX) variables. This is usually the case for
   packages with manually written Makefiles lacking any fallback.
 
-- **build.system** — Specifies the target system. It does not set compiler
-  flags by itself but can be used in pkg scripts to do so. For packages with
-  the "toolchain" install type it is exported automatically.
+- **build.system** — Specifies the target system. Assigned from toolchain if
+  unset. Exported automatically.
 
 - **build.target_requires_host** — If set to `true`, specifies that in order to
   build this package in `target` config the `host` config needs to be built and

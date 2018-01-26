@@ -423,6 +423,26 @@ function P.load_rules()
         end
     end
 
+    -- another pass, with the toolchains this time
+    for name, pkg in pairs(table.copy(packages)) do
+        for config, _ in pkg:each_config() do
+            local build = pkg:get('build', config)
+            if build then
+                if build.cflags and build.cxxflags == nil then
+                    build.cxxflags = build.cflags
+                end
+                local export = assert(pkg:get('export', config))
+                for key in each { 'arch', 'system', 'cpu',
+                                  'cflags', 'cxxflags', 'ldflags'
+                                } do
+                    if export[key] == nil then
+                        export[key] = build[key]
+                    end
+                end
+            end
+        end
+    end
+
     local source_exclude = os.getenv('jagen_source_exclude')
     local function is_scm(pkg)
         return pkg.source and pkg.source:is_scm()
@@ -623,21 +643,6 @@ function P.define_rule(rule, context)
             end
             if install.type and (install.type ~= 'none' or install.type ~= false) then
                 pkg:add_target({ 'install' }, config)
-            end
-            if install.type == 'toolchain' and build then
-                local export = this.export
-                for key in each { 'arch', 'system', 'cpu' } do
-                    if export[key] == nil then
-                        export[key] = build[key]
-                    end
-                end
-                for key in each { 'cflags', 'cxxflags', 'ldflags' } do
-                    local env = export.env or {}
-                    if env[key] == nil then
-                        env[string.upper(key)] = build[key]
-                    end
-                    export.env = env
-                end
             end
         elseif build and build.type then
             pkg:add_target({ 'install' }, config)

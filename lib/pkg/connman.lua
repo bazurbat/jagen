@@ -23,15 +23,13 @@ return {
             '--disable-wispr',
             '--disable-tools',
             '--disable-client',
-        }
+        },
+        -- from the upstream acinclude.m4
+        cflags = '-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2'
     },
     requires = {
         'dbus',
         'glib',
         'xtables-addons',
-    },
-    env = {
-        -- from the upstream acinclude.m4
-        CFLAGS = '-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2'
     }
 }

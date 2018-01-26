@@ -55,9 +55,9 @@ if [ "$pkg_config" ]; then
 fi
 
 # include scripts
-include "$jagen_include_dir/$pkg_name" || return
+include "$jagen_include_dir/$(pkg__fname "$pkg_name")" || return
 if [ "$pkg_config" ]; then
-    include "$jagen_include_dir/${pkg_name}__${pkg_config}" || return
+    include "$jagen_include_dir/$(pkg__fname "$pkg_name" "$pkg_config")" || return
     # assign "pkg__<config>__export_*" to "pkg_export_*"
     prefix="pkg__${pkg_config}__export"
     for key in $(set | sed -rn "s/^${prefix}_([[:alnum:]_]+)=.*/\1/p"); do
@@ -66,28 +66,16 @@ if [ "$pkg_config" ]; then
 fi
 
 # include uses
-for name in $pkg_use $pkg_build_toolchain; do
+for name in $pkg_build_toolchain $pkg_use; do
     include "$(pkg__export_fname "$name")" || return
     if [ "$pkg_config" ]; then
         include "$(pkg__export_fname "$name" "$pkg_config")" || return
     fi
-done; unset name
-
-# import env from uses
-for name in $pkg_use; do
     # assign "<name>_env_*" to "pkg_env_*" if unset
     prefix=$(jagen_name_to_id "$name")
     for key in $(set | sed -rn "s/^${prefix}_env_([[:alnum:]_]+)=.*/\1/p"); do
         eval ": \${pkg_env_${key}=\$${prefix}_env_${key}}"
     done; unset prefix key
-done; unset name
-
-# depends on config or pkg includes
-pkg_install_dir="$pkg_install_root$pkg_install_prefix"
-
-# expand single-quoted pkg_* variables from includes
-for name in $(set | sed -rn 's/^(pkg_[[:alnum:]_]+)=.*/\1/p'); do
-    eval $name='$(jagen__expand "$(IFS= eval echo \$$name)" "$name")' || return
 done; unset name
 
 if [ "$pkg_build_toolchain" ]; then
@@ -96,37 +84,40 @@ if [ "$pkg_build_toolchain" ]; then
     for key in $(set | sed -rn "s/^${name}_([[:alnum:]_]+)=.*/\1/p"); do
         eval "toolchain_${key}=\$${name}_${key}"
     done; unset name key
-    # assign "toolchain_*" to "pkg_build_*" if unset skipping "toolchain_env_*"
-    for key in $(set | sed -rn '/^toolchain_env/! s/^toolchain_([[:alnum:]_]+)=.*/\1/p'); do
+    # assign some "toolchain_*" to "pkg_build_*" if unset
+    for key in $(set | sed -rn '/^toolchain_(env|cflags|cxxflags|ldflags)/! s/^toolchain_([[:alnum:]_]+)=.*/\1/p'); do
         eval ": \${pkg_build_${key}=\$toolchain_${key}}"
     done; unset key
     # concatenate cflags
     use_env cflags
-    # assign "toolchain_env_*" to "pkg_env_*" if unset
-    for key in $(set | sed -rn "s/^toolchain_env_([[:alnum:]_]+)=.*/\1/p"); do
-        eval ": \${pkg_env_${key}=\$toolchain_env_${key}}"
-    done; unset key
 fi
 
-# may be imported from toolchain or set explicitly
+# useful pkg-specific variables for scripts
+pkg_install_dir="$pkg_install_root$pkg_install_prefix"
+
 if [ "$pkg_build_system" ]; then
-    : ${pkg_toolchain_prefix=${pkg_build_system}-}
+    pkg_toolchain_prefix=${pkg_build_system}-
 fi
 
-# set pkg_env_* in the environment
-for key in $(set | sed -rn 's/^pkg_env_([[:alnum:]_]+)=.*/\1/p'); do
-    eval "export $key=\"\$pkg_env_$key\""
-done; unset key
+# defaults
+: ${pkg_build_generator=$jagen_cmake_generator}
+: ${pkg_build_cmake_module_path=$jagen_cmake_module_path}
+
+# set pkg_env_* in the environment, collecting names for later expand
+for name in $(set | sed -rn 's/^pkg_env_([[:alnum:]_]+)=.*/\1/p'); do
+    eval "export $name=\"\$pkg_env_$name\""
+    pkg__expand_names=${pkg__expand_names}${jagen_FS}${name}
+done; unset name
+
+# expand single-quoted pkg_* and collected variables
+for name in $(set | sed -rn 's/^(pkg_[[:alnum:]_]+)=.*/\1/p') $pkg__expand_names; do
+    eval $name='$(jagen__expand "$(IFS= eval echo \$$name)" "$name")' || return
+done; unset name
 
 # config-specific adjustment of pkg env
 if [ "$pkg_config" ]; then
     use_env "$pkg_config"
 fi
-
-# defaults
-: ${pkg_build_generator:=$jagen_cmake_generator}
-# null value disables, default only if unset
-: ${pkg_build_cmake_module_path=$jagen_cmake_module_path}
 
 # crutches
 if [ "$pkg_build_toolchain" ]; then

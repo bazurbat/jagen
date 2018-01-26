@@ -1,16 +1,15 @@
 #!/bin/sh
 
-: ${pkg_build_system:?}
+: ${pkg_toolchain_prefix:?}
 
-export AR="${pkg_build_system}-ar"
-export AS="${pkg_build_system}-as"
-export CC="${pkg_build_system}-gcc"
-export CPP="${pkg_build_system}-cpp"
-export CXX="${pkg_build_system}-g++"
-export LD="${pkg_build_system}-ld"
-export NM="${pkg_build_system}-nm"
-export OBJCOPY="${pkg_build_system}-objcopy"
-export OBJDUMP="${pkg_build_system}-objdump"
-export RANLIB="${pkg_build_system}-ranlib"
-export STRIP="${pkg_build_system}-strip"
-
+export AR="${pkg_toolchain_prefix}ar"
+export AS="${pkg_toolchain_prefix}as"
+export CC="${pkg_toolchain_prefix}gcc"
+export CPP="${pkg_toolchain_prefix}cpp"
+export CXX="${pkg_toolchain_prefix}g++"
+export LD="${pkg_toolchain_prefix}ld"
+export NM="${pkg_toolchain_prefix}nm"
+export OBJCOPY="${pkg_toolchain_prefix}objcopy"
+export OBJDUMP="${pkg_toolchain_prefix}objdump"
+export RANLIB="${pkg_toolchain_prefix}ranlib"
+export STRIP="${pkg_toolchain_prefix}strip"

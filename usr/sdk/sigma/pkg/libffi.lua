@@ -9,10 +9,8 @@ return {
         type    = 'GNU',
         options = { '--disable-builddir' },
         libs    = { 'ffi' },
-        autoreconf = true
-    },
-    env = {
+        autoreconf = true,
         -- upstream default + -mno-compact-eh
-        CFLAGS = '-O3 -fomit-frame-pointer -fstrict-aliasing -ffast-math -mno-compact-eh'
+        cflags  = '-O3 -fomit-frame-pointer -fstrict-aliasing -ffast-math -mno-compact-eh'
     }
 }
