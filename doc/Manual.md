@@ -366,8 +366,6 @@ rules and also to find pkg files. The `config` is optional.
 - **jagen_build_verbose** — Indicates whether the build system should run
   verbosely.
 - **jagen_ccache** — The name of the ccache executable.
-- **jagen_cmake_build_options** — Arguments to pass to CMake in `compile`
-  stage.
 - **jagen_cmake_generator** (`Ninja`) — Override CMake generator.
 - **jagen_cmake_module_path** — The default `CMAKE_MODULE_PATH`.
 - **jagen_cmake_options** — Arguments to pass to CMake in `configure` stage.

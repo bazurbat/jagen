@@ -117,12 +117,19 @@ pkg_link() {
     pkg_run cd "$OLDPWD"
 }
 
-pkg__get_cmake_verbose_arg() {
-    [ "$jagen_build_verbose" ] || return 0
+pkg__get_cmake_args() {
+    local args= v_arg= j_arg=
+    if [ "$jagen_build_verbose" ]; then
+        case $pkg_build_generator in
+            *Ninja)     v_arg="-v"        ;;
+            *Makefiles) v_arg="VERBOSE=1" ;;
+        esac
+    fi
     case $pkg_build_generator in
-        *Ninja)     echo "-v"        ;;
-        *Makefiles) echo "VERBOSE=1" ;;
+        *Makefiles) j_arg=${pkg_build_jobs:-$(jagen_nproc)} ;;
     esac
+    args="$v_arg $j_arg"; args=${args# }; args=${args% }
+    printf '%s' "$args"
 }
 
 pkg_get_build_profile() {
@@ -440,13 +447,7 @@ pkg_compile() {
             pkg_run make "$@"
             ;;
         CMake)
-            case $pkg_build_generator in
-                *Makefiles)
-                    jobs=${pkg_build_jobs:-$(jagen_nproc)}
-                    jagen_cmake_build_options="-j$jobs $jagen_cmake_build_options" ;;
-            esac
-            pkg_run cmake --build . -- $(pkg__get_cmake_verbose_arg) \
-                $jagen_cmake_build_options "$@"
+            pkg_run cmake --build . -- $(pkg__get_cmake_args) "$@"
             ;;
         make|kbuild)
             pkg_run make $pkg_build_options "$@"
@@ -489,7 +490,7 @@ pkg_install() {
                 export DESTDIR="$pkg_install_root"
             fi
             pkg_run cmake --build . --target install -- \
-                $(pkg__get_cmake_verbose_arg) $pkg_install_args "$@"
+                $(pkg__get_cmake_args) $pkg_install_args "$@"
             unset DESTDIR
             ;;
         linux_kernel)
