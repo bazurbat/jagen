@@ -5,7 +5,7 @@ return {
         sha1sum = '03e6cfc8ddb2f709f308719a9b9f4818bc0a28d0'
     },
     build  = {
-        type = 'make',
+        type = 'kbuild',
         in_source = true
     }
 }
