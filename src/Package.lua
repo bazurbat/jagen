@@ -441,25 +441,6 @@ function P.load_rules()
         end
     end
 
-    for name, pkg in pairs(packages) do
-        if pkg.use then
-            for use in each(pkg.use) do
-                pkg:add_target { 'unpack',
-                    { use, 'unpack' }
-                }
-                -- this causes dependency cycles, need better algorithm
-                -- for target in pkg:each() do
-                --     if target.config then
-                --         target:add_inputs(Target:parse({ target.name,
-                --                     { use, 'install', target.config }
-                --             }, name, target.config))
-                --         break
-                --     end
-                -- end
-            end
-        end
-    end
-
     local source_exclude = os.getenv('jagen_source_exclude')
     local function is_scm(pkg)
         return pkg.source and pkg.source:is_scm()
