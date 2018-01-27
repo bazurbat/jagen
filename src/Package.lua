@@ -272,6 +272,8 @@ function P:add_ordering_dependencies()
         if curr.stage == 'provide_patches' then
             local unpack = assert(self.stages['unpack'])
             curr.inputs = append(curr.inputs, unpack)
+        elseif curr.stage == 'export' then
+            curr.inputs = append(curr.inputs, assert(common))
         else
             if prev then
                 if common and curr.config ~= prev.config then
@@ -427,7 +429,15 @@ function P.load_rules()
 
     -- another pass, with the toolchains this time
     for name, pkg in pairs(packages) do
-        for config, _ in pkg:each_config() do
+        if pkg.export and not pkg.stages['export'] then
+            pkg:add_target { 'export' }
+        end
+        for config, this in pkg:each_config() do
+            if this.export and not this.stages['export'] then
+                local target = Target:new(name, 'export', config)
+                this.stages['export'] = target
+                table.insert(this.stages, 1, target)
+            end
             local build = pkg:get('build', config)
             if build then
                 if build.cflags and build.cxxflags == nil then

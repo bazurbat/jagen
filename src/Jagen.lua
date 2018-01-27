@@ -418,40 +418,6 @@ function Jagen.command.refresh(args, packages)
         end
     end
 
-    do
-        local exported, ok, status = {}
-        local function write_export(name, config)
-            local cmd = string.format("jagen-stage -q export '%s' '%s'",
-                name, config or '')
-            return Command:new(cmd):exec()
-        end
-        local function export_env(pkg)
-            if exported[pkg.name] then return true end
-            for name in each(pkg.use or {}) do
-                ok, status = export_env(assert(packages[name]))
-                if not ok then return false, status end
-            end
-            ok, status = write_export(pkg.name)
-            if not ok then return false, status end
-            for config, _ in pkg:each_config() do
-                local build = pkg:get('build', config)
-                if build and build.toolchain then
-                    ok, status = export_env(assert(packages[build.toolchain]), config)
-                    if not ok then return false, status end
-                end
-                ok, status = write_export(pkg.name, config)
-                if not ok then return false, status end
-            end
-            exported[pkg.name] = true
-            return true
-        end
-        local count = 0
-        for name, pkg in pairs(packages) do
-            ok, status = export_env(pkg)
-            if not ok then return status end
-        end
-    end
-
     local build_file = System.mkpath(Jagen.build_dir, 'build.ninja')
     Ninja.generate(build_file, packages)
 

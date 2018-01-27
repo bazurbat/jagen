@@ -601,6 +601,35 @@ jagen_pkg_provide_patches() {
     done
 }
 
+pkg__fname() {
+    local name="${1:?}" config="$2"
+    printf '%s' "${name}${config:+__$config}"
+}
+
+pkg__export_fname() {
+    printf '%s' "${jagen_include_dir:?}/$(pkg__fname "$1" "$2")__export.sh"
+}
+
+pkg__export() {
+    local prefix="${1:?}" outfile="${2:?}" name="$(jagen_name_to_id "$pkg_name")"
+    local key= content=
+    for key in $(set | sed -rn "s/^${prefix}_([[:alnum:]_]+)=.*/\1/p"); do
+        content="${content}${jagen_S}${name}_${key}='$(eval echo \"\$${prefix}_${key}\")'"
+    done
+    content=${content#$jagen_S}
+    if [ "$content" ]; then
+        echo "$content" > "$outfile"
+    fi
+}
+
+jagen_pkg_export() {
+    if [ "$pkg_config" ]; then
+        pkg__export "pkg__${pkg_config}__export" "$(pkg__export_fname "$pkg_name" "$pkg_config")"
+    else
+        pkg__export "pkg_export" "$(pkg__export_fname "$pkg_name")"
+    fi
+}
+
 jagen_pkg_autoreconf() {
     pkg_autoreconf
 }
