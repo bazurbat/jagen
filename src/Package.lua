@@ -115,6 +115,12 @@ function P:add_config(name)
     end
 end
 
+function P:cget(key, config)
+    if config and self.configs and self.configs[config] then
+        return self.configs[config][key]
+    end
+end
+
 function P:get(key, config)
     if config and self.configs and self.configs[config] then
         return self.configs[config][key]
@@ -449,6 +455,27 @@ function P.load_rules()
                                 } do
                     if export[key] == nil then
                         export[key] = build[key]
+                    end
+                end
+            end
+        end
+    end
+
+    for name, pkg in pairs(packages) do
+        for use in each(pkg.use or {}) do
+            local used = assert(packages[use])
+            if used.export then
+                pkg:add_target { 'unpack', { use, 'export' } }
+            end
+            for config, this in pkg:each_config() do
+                if next(used:cget('export', config) or {}) then
+                    for target in each(this.stages) do
+                        if target.stage ~= 'export' then
+                            target:add_inputs(Target:parse({ target.name,
+                                        { use, 'export', config }
+                                }, name, config))
+                            break
+                        end
                     end
                 end
             end
