@@ -89,6 +89,10 @@ function P:parse(rule)
         end
     end
 
+    if type(rule.use) == 'string' then
+        rule.use = { rule.use }
+    end
+
     return rule
 end
 
