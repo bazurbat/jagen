@@ -147,6 +147,12 @@ if [ "$pkg_query" ]; then
             printf '%s\n' "$pkg_build_dir" ;;
         install_dir)
             printf '%s\n' "$pkg_install_dir" ;;
+        export)
+            if [ "$pkg_config" ]; then
+                pkg__export "pkg__${pkg_config}__export" "$(pkg__export_fname "$pkg_name" "$pkg_config")"
+            else
+                pkg__export "pkg_export" "$(pkg__export_fname "$pkg_name")"
+            fi ;;
     esac
     exit 0
 fi
@@ -185,12 +191,5 @@ run_stage() {
 
 run_stage "jagen_pkg_${pkg_stage}_${pkg_config}" ||
     run_stage "jagen_pkg_${pkg_stage}"
-
-if [ "$pkg_stage" = 'unpack' ]; then
-    pkg__export "pkg_export" "$(pkg__export_fname "$pkg_name")"
-fi
-if [ "$pkg_stage" = 'install' -a "$pkg_config" ]; then
-    pkg__export "pkg__${pkg_config}__export" "$(pkg__export_fname "$pkg_name" "$pkg_config")"
-fi
 
 touch "$pkg__stamp_file"
