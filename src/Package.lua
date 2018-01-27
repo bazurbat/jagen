@@ -461,27 +461,6 @@ function P.load_rules()
         end
     end
 
-    for name, pkg in pairs(packages) do
-        for use in each(pkg.use or {}) do
-            local used = assert(packages[use])
-            if used.export then
-                pkg:add_target { 'unpack', { use, 'export' } }
-            end
-            for config, this in pkg:each_config() do
-                if next(used:cget('export', config) or {}) then
-                    for target in each(this.stages) do
-                        if target.stage ~= 'export' then
-                            target:add_inputs(Target:parse({ target.name,
-                                        { use, 'export', config }
-                                }, name, config))
-                            break
-                        end
-                    end
-                end
-            end
-        end
-    end
-
     local source_exclude = os.getenv('jagen_source_exclude')
     local function is_scm(pkg)
         return pkg.source and pkg.source:is_scm()
@@ -548,7 +527,9 @@ function P.define_rule(rule, context)
         push_context(context)
     end
 
-    append(pkg.contexts, assert(current_context))
+    if current_context then
+        append(pkg.contexts, current_context)
+    end
 
     local stages = table.imove({}, rule)
 
@@ -694,7 +675,7 @@ function P.define_rule(rule, context)
         context = push_context({
                 name = pkg.name,
                 config = config,
-                implicit = current_context.implicit 
+                implicit = current_context and current_context.implicit 
             })
     end
 
@@ -723,6 +704,25 @@ function P.define_rule(rule, context)
     end
 
     if context then pop_context() end
+
+    for use in each(pkg.use or {}) do
+        local used = packages[use] or P.define_rule { use }
+        if used.export then
+            pkg:add_target { 'unpack', { use, 'export' } }
+        end
+        for config, this in pkg:each_config() do
+            if next(used:cget('export', config) or {}) then
+                for target in each(this.stages) do
+                    if target.stage ~= 'export' then
+                        target:add_inputs(Target:parse({ target.name,
+                                    { use, 'export', config }
+                            }, name, config))
+                        break
+                    end
+                end
+            end
+        end
+    end
 
     return pkg
 end
