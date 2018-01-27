@@ -66,7 +66,6 @@ function Target:__tostring(sep)
 end
 
 function Target:add_inputs(target)
-    self.arg = target.arg
     if target.inputs then
         self.inputs = self.inputs or {}
         for _, input in ipairs(target.inputs) do
