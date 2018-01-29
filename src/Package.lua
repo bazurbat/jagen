@@ -551,8 +551,6 @@ function P.define_rule(rule, context)
         append(pkg.contexts, current_context)
     end
 
-    local stages = table.imove({}, rule)
-
     local config = rule.config
     local this
 
@@ -699,26 +697,17 @@ function P.define_rule(rule, context)
             })
     end
 
-    -- add global stages to every config
-    if config then
-        for _, stage in ipairs(pkg) do
-            pkg:add_requires(stage, template)
-            pkg:add_target(stage, config)
-        end
+    local stages = extend({}, pkg)
+
+    local requires = extend(extend({}, pkg.requires), rule.requires)
+    if #requires > 0 then
+        local name = config and this.build and this.build.type and 'configure' or 'install'
+        append(stages, { name, requires = requires })
     end
 
-    -- always evaluate shared requires in config-specific context
-    local requires = copy(pkg.requires or {})
-    for_each(rule.requires, append_uniq, requires)
-    if config and #requires > 0 then
-        local name = pkg.build and 'configure' or 'install'
-        local stage = { name, requires = requires }
-        pkg:add_requires(stage, template)
-        pkg:add_target(stage, config)
-    end
+    extend(stages, rule)
 
-    -- stages collected from this rule should go last to maintain ordering
-    for _, stage in ipairs(stages) do
+    for stage in each(stages) do
         pkg:add_requires(stage, template)
         pkg:add_target(stage, config)
     end
