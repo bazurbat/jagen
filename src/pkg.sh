@@ -126,7 +126,7 @@ pkg__get_cmake_args() {
         esac
     fi
     case $pkg_build_generator in
-        *Makefiles) j_arg=${pkg_build_jobs:-$(jagen_nproc)} ;;
+        *Makefiles) j_arg="-j${pkg_build_jobs:-$(jagen_nproc)}" ;;
     esac
     args="$v_arg $j_arg"; args=${args# }; args=${args% }
     printf '%s' "$args"
