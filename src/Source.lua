@@ -137,8 +137,13 @@ function GitSource:update()
     if not branch then return false end
     local line = self:git('ls-remote --heads --tags origin', quote(branch)):read()
     if not line then
-        Log.error("could not find tag or branch '%s' in '%s'", branch, self.location)
-        return false
+        line = self:git('branch --list', quote(branch)):read()
+        if line then -- local branch, no update
+            return true
+        else
+            Log.error("could not find tag or branch '%s' in '%s'", branch, self.location)
+            return false
+        end
     end
     local src, dst = match(line, '^%S+%s+(%S+)$')
     local name = assert(match(src, '^.+/([^/]+)$'))
