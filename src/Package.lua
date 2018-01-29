@@ -305,6 +305,7 @@ function P:add_export_stages()
         self:add_target { 'export' }
     end
     for config, this in self:each_config() do
+        if not this.stages then this.stages = {} end
         if this.export and not this.stages['export'] then
             local target = Target:new(self.name, 'export', config)
             this.stages['export'] = target
@@ -700,8 +701,8 @@ function P.define_rule(rule, context)
     local stages = extend({}, pkg)
 
     local requires = extend(extend({}, pkg.requires), rule.requires)
-    if #requires > 0 then
-        local name = config and this.build and this.build.type and 'configure' or 'install'
+    if config and #requires > 0 then
+        local name = this.build and this.build.type and 'configure' or 'install'
         append(stages, { name, requires = requires })
     end
 
