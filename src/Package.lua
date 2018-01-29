@@ -116,8 +116,12 @@ function P:add_config(name)
 end
 
 function P:cget(key, config)
-    if config and self.configs and self.configs[config] then
-        return self.configs[config][key]
+    if config then
+        if self.configs and self.configs[config] then
+            return self.configs[config][key]
+        end
+    else
+        return self[key]
     end
 end
 
@@ -268,6 +272,44 @@ function P:add_patch_dependencies()
     add_inputs(self, filenames)
     if provider then
         add_outputs(provider, filenames)
+    end
+end
+
+function P:export_build_env()
+    local function export_build_env(this, config)
+        local build = self:cget('build', config)
+        if build then
+            if build.cflags and build.cxxflags == nil then
+                build.cxxflags = build.cflags
+            end
+            local export = self:cget('export', config)
+            if export then
+                for key in each { 'arch', 'system', 'cpu',
+                                  'cflags', 'cxxflags', 'ldflags'
+                                } do
+                    if export[key] == nil then
+                        export[key] = build[key]
+                    end
+                end
+            end
+        end
+    end
+    export_build_env(self, config)
+    for config, this in self:each_config() do
+        export_build_env(this, config)
+    end
+end
+
+function P:add_export_stages()
+    if self.export and not self.stages['export'] then
+        self:add_target { 'export' }
+    end
+    for config, this in self:each_config() do
+        if this.export and not this.stages['export'] then
+            local target = Target:new(self.name, 'export', config)
+            this.stages['export'] = target
+            table.insert(this.stages, 1, target)
+        end
     end
 end
 
@@ -434,33 +476,9 @@ function P.load_rules()
     end
 
     -- another pass, with the toolchains this time
-    for name, pkg in pairs(packages) do
-        if pkg.export and not pkg.stages['export'] then
-            pkg:add_target { 'export' }
-        end
-        for config, this in pkg:each_config() do
-            if this.export and not this.stages['export'] then
-                local target = Target:new(name, 'export', config)
-                this.stages['export'] = target
-                table.insert(this.stages, 1, target)
-            end
-            local build = pkg:get('build', config)
-            if build then
-                if build.cflags and build.cxxflags == nil then
-                    build.cxxflags = build.cflags
-                end
-                local export = pkg:get('export', config)
-                if export then
-                    for key in each { 'arch', 'system', 'cpu',
-                                      'cflags', 'cxxflags', 'ldflags'
-                                    } do
-                        if export[key] == nil then
-                            export[key] = build[key]
-                        end
-                    end
-                end
-            end
-        end
+    for _, pkg in pairs(packages) do
+        pkg:export_build_env()
+        pkg:add_export_stages()
     end
 
     local source_exclude = os.getenv('jagen_source_exclude')
