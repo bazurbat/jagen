@@ -449,12 +449,14 @@ function P.load_rules()
                 if build.cflags and build.cxxflags == nil then
                     build.cxxflags = build.cflags
                 end
-                local export = assert(pkg:get('export', config))
-                for key in each { 'arch', 'system', 'cpu',
-                                  'cflags', 'cxxflags', 'ldflags'
-                                } do
-                    if export[key] == nil then
-                        export[key] = build[key]
+                local export = pkg:get('export', config)
+                if export then
+                    for key in each { 'arch', 'system', 'cpu',
+                                      'cflags', 'cxxflags', 'ldflags'
+                                    } do
+                        if export[key] == nil then
+                            export[key] = build[key]
+                        end
                     end
                 end
             end
