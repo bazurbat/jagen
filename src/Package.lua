@@ -143,10 +143,10 @@ function P:set(key, value, config)
     end
 end
 
-function P:add_requires(stage, template)
+function P:add_requires(stage, config, template)
     for _, item in ipairs(stage.requires or {}) do
         local req = P:parse(item)
-        req.config = req.config or template.config
+        req.config = req.config or config or template and template.config
         if req.config ~= 'system' then
             table.insert(stage, { req.name, 'install', req.config })
             P.define_rule {
@@ -468,7 +468,7 @@ function P.load_rules()
                                 config = config
                         }))
                     local stage = { 'configure', requires = { toolchain } }
-                    pkg:add_requires(stage, { config = config })
+                    pkg:add_requires(stage, config)
                     pkg:add_target(stage, config)
                     pop_context()
                 end
@@ -709,7 +709,7 @@ function P.define_rule(rule, context)
     extend(stages, rule)
 
     for stage in each(stages) do
-        pkg:add_requires(stage, template)
+        pkg:add_requires(stage, config, template)
         pkg:add_target(stage, config)
     end
 
