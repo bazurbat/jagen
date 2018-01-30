@@ -115,19 +115,11 @@ function P:add_config(name)
     end
 end
 
-function P:cget(key, config)
+function P:get(key, config)
     if config then
         if self.configs and self.configs[config] then
             return self.configs[config][key]
         end
-    else
-        return self[key]
-    end
-end
-
-function P:get(key, config)
-    if config and self.configs and self.configs[config] then
-        return self.configs[config][key]
     else
         return self[key]
     end
@@ -277,12 +269,12 @@ end
 
 function P:export_build_env()
     local function export_build_env(this, config)
-        local build = self:cget('build', config)
+        local build = self:get('build', config)
         if build then
             if build.cflags and build.cxxflags == nil then
                 build.cxxflags = build.cflags
             end
-            local export = self:cget('export', config)
+            local export = self:get('export', config)
             if export then
                 for key in each { 'arch', 'system', 'cpu',
                                   'cflags', 'cxxflags', 'ldflags'
@@ -723,7 +715,7 @@ function P.define_rule(rule, context)
             pkg:add_target { 'unpack', { use, 'export' } }
         end
         for config, this in pkg:each_config() do
-            if next(used:cget('export', config) or {}) then
+            if next(used:get('export', config) or {}) then
                 for target in each(this.stages) do
                     if target.stage ~= 'export' then
                         target:add_inputs(Target:parse({ target.name,
