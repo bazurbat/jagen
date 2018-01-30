@@ -668,14 +668,6 @@ function Jagen.command.image(args)
     return status
 end
 
-function Jagen.command.test(args)
-    if help_requested(args) then
-        return Jagen.command['help'] { 'test' }
-    end
-
-    return 0
-end
-
 function Jagen.command._compare_versions(args)
     assert(#args == 3, "function 'compare_versions' requires 3 arguments")
     local op_arg = assert(args[1])
