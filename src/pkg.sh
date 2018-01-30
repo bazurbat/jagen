@@ -608,23 +608,22 @@ pkg__export_fname() {
     printf '%s' "${jagen_include_dir:?}/$(pkg__fname "$1" "$2")__export.sh"
 }
 
-pkg__export() {
-    local prefix="${1:?}" outfile="${2:?}" name="$(jagen_name_to_id "$pkg_name")"
-    local key= content=
+jagen_pkg_export() {
+    local prefix= content= key=
+    local name="$(jagen_name_to_id "$pkg_name")"
+    local outfile="$(pkg__export_fname "$pkg_name" "$pkg_config")"
+    if [ "$pkg_config" ]; then
+        prefix="pkg__${pkg_config}__export"
+        content="${name}_install_dir='$pkg_install_dir'"
+    else
+        prefix="pkg_export"
+    fi
     for key in $(set | sed -rn "s/^${prefix}_([[:alnum:]_]+)=.*/\1/p"); do
         content="${content}${jagen_S}${name}_${key}='$(eval echo \"\$${prefix}_${key}\")'"
     done
     content=${content#$jagen_S}
     if [ "$content" ]; then
         echo "$content" > "$outfile"
-    fi
-}
-
-jagen_pkg_export() {
-    if [ "$pkg_config" ]; then
-        pkg__export "pkg__${pkg_config}__export" "$(pkg__export_fname "$pkg_name" "$pkg_config")"
-    else
-        pkg__export "pkg_export" "$(pkg__export_fname "$pkg_name")"
     fi
 }
 
