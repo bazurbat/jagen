@@ -581,6 +581,9 @@ function P.define_rule(rule, context)
     table.merge(this, rule)
     this.template = template
 
+    -- do not collect stage rules in the config
+    table.iclean(this)
+
     if this ~= pkg then
         if pkg.build then
             if not this.build then this.build = {} end

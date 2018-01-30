@@ -267,6 +267,12 @@ function string.convert_pattern(s)
     return s
 end
 
+function table.iclean(t)
+    if not t then return end
+    for i, _ in ipairs(t) do
+        t[i] = nil
+    end
+end
 
 -- Returns a shallow copy of the supplied table.
 function table.copy(t)
