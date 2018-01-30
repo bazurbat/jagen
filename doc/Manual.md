@@ -119,7 +119,7 @@ rules and also to find pkg files. The `config` is optional.
         profile   = 'release|debug|release_with_debug',
     },
     install = {
-        type    = 'GNU|CMake|make|linux_kernel|linux_module|none',
+        type    = 'GNU|CMake|make|linux_kernel|linux_module',
 
         prefix  = 'path',
         root    = 'path',
@@ -348,10 +348,18 @@ rules and also to find pkg files. The `config` is optional.
 
 - **install.root** (`pkg_install_root`) — Install root.
 
-- **install.type** (`pkg_install_type`) — The type of the build system for the
-  purposes of install.  Usually the same is the `build.type` but can be
-  overridden. Supported values: GNU, CMake, make, linux_kernel, linux_module,
-  none.
+- **install.type** (`pkg_install_type`) — Specifies the installation type of
+  the package. If not set defaults to the value of `build.type`. An additional
+  special type "toolchain" can be used to install toolchain wrappers.
+
+The rules of the form:
+```
+install = { type = value }
+```
+can be shortened to:
+```
+install = value
+```
 
 ### Global variables
 
@@ -495,10 +503,9 @@ rules and also to find pkg files. The `config` is optional.
   but in general used for various autotools workaround (cleaning `.la` and
   `.pc` files and such); sets `DESTDIR` for `make` and `CMake`
 
-- **pkg_install_type** (`install.type`) — sets the type of the build system for
-  the "install" stage; generally the same as the "build type" but can differ if
-  overridden; supported values: GNU, make, CMake, linux_kernel, linux_module,
-  none
+- **pkg_install_type** (`install.type`) — Specifies the installation type of
+  the package. If not set defaults to the value of `build.type`. An additional
+  special type "toolchain" can be used to install toolchain wrappers.
 
 - **pkg_name** — the package name of the currently executing stage
 

@@ -93,6 +93,10 @@ function P:parse(rule)
         rule.use = { rule.use }
     end
 
+    if rule.install ~= nil and type(rule.install) ~= 'table' then
+        rule.install = { type = rule.install }
+    end
+
     return rule
 end
 
@@ -584,7 +588,7 @@ function P.define_rule(rule, context)
             end
             if not pkg.install then pkg.install = {} end
         end
-        if pkg.install then
+        if pkg.install or this.build then
             if not this.install then this.install = {} end
             if not getmetatable(this.install) then
                 setmetatable(this.install, { __index = pkg.install })
@@ -674,7 +678,7 @@ function P.define_rule(rule, context)
             if install.type == nil and build and build.type then
                 install.type = build.type
             end
-            if install.type and (install.type ~= 'none' or install.type ~= false) then
+            if install.type and install.type ~= false then
                 pkg:add_target({ 'install' }, config)
             end
         elseif build and build.type then

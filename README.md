@@ -116,15 +116,15 @@ package { 'myproject', 'host',
     build = {
         type = 'CMake'
     },
-    install = {
-        type = 'none'
-    }
+    install = false
 }
 ```
 
 Assuming it uses `CMake` as the build system. Note that you can use shell
-variables in the values. Paths with spaces are also OK. Install 'none' means do
-not install it to the `host` directory.
+variables in the values. Paths with spaces are also OK. The special value
+`false` for the `install` key inhibits the default behaviour of installing the
+built packages into the subdirectory of the project corresponding to the used
+config (`host` in this case).
 
 Run `jagen build` again to build the just added package. If some stage failed,
 note the message similar to:

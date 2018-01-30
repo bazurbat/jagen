@@ -499,8 +499,6 @@ pkg_install() {
                 "${pkg_source_dir:?}/bin"  \
                 "${pkg_toolchain_prefix}"
             ;;
-        none)
-            ;;
     esac
 
     if [ "$pkg_install_ldconfig" ]; then
