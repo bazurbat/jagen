@@ -93,6 +93,10 @@ function P:parse(rule)
         rule.use = { rule.use }
     end
 
+    if rule.build ~= nil and type(rule.build) ~= 'table' then
+        rule.build = { type = rule.build }
+    end
+
     if rule.install ~= nil and type(rule.install) ~= 'table' then
         rule.install = { type = rule.install }
     end

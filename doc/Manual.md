@@ -324,6 +324,15 @@ rules and also to find pkg files. The `config` is optional.
 - **build.type** (`pkg_build_type`) — The type of the package build system.
   Supported values are: GNU, CMake, kbuild, make, linux_kernel, linux_module.
 
+The rules of the form:
+```
+build = { type = value }
+```
+can be shortened to:
+```
+build = value
+```
+
 ### Install
 
 - **install.args** (`pkg_install_args`) — A list of additional arguments for
