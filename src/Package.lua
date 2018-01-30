@@ -572,11 +572,10 @@ function P.define_rule(rule, context)
         end
     end
 
-    local template = {}
+    local template
     if rule.template ~= false then
-        template = rule.template or rule.pass_template or this.template or {}
+        template = rule.template or rule.pass_template or this.template
     end
-    template.config = config
 
     rule.template, rule.pass_template = nil, nil
     table.merge(this, rule)
