@@ -397,31 +397,40 @@ function P:query(value, config)
     return result
 end
 
-function P:check_config_defined()
+function P:check_build_configs()
     if self.build and self.build.type and table.count(self.configs) == 0 then
-        Log.warning("the package '%s' specifies build type '%s' but has no configs defined -- it will not be built",
-            self.name, self.build.type)
+        Log.warning("the package '%s' requires a build but has no configs defined",
+            self.name)
     end
 end
 
-function P:check_insource_build()
-    local config_count = table.count(self.configs)
-    local in_source, generate
-    if self.build then
-        in_source = self.build.in_source
-        generate = self.build.generate
-    end
-    for _, config in pairs(self.configs or {}) do
-        if config.build then
-            in_source = in_source or config.build.in_source
-            generate = generate or config.build.generate
+function P:check_build_insource()
+    local count, had_warnings, build = table.count(self.configs)
+    for config, this in self:each_config() do
+        build = this.build
+        if build and build.in_source and count > 1 then
+            Log.warning("the package '%s' requires an in source build but "..
+                "has multiple configs defined -- this is not supported",
+                self.name)
+            had_warnings = true
+            break
         end
     end
-    if config_count > 1 then
-        if in_source then
-            Log.warning("the package '%s' requires in source build but have multiple configs defined, this will likely produce incorrect results", self.name)
+    return had_warnings
+end
+
+function P:check_build_toolchain()
+    local had_warnings, build
+    for config, this in self:each_config() do
+        build = this.build
+        if build and build.type and not build.toolchain then
+            Log.warning("the package '%s' requires '%s' build for "..
+                "config '%s' but does not have a toolchain set", self.name,
+                build.type, config)
+            had_warnings = true
         end
     end
+    return had_warnings
 end
 
 function P.load_rules()
@@ -514,9 +523,15 @@ function P.load_rules()
         end
     end
 
+    local had_warnings = false
     for name, pkg in pairs(packages) do
-        pkg:check_config_defined()
-        pkg:check_insource_build()
+        had_warnings = pkg:check_build_configs() or had_warnings
+        had_warnings = pkg:check_build_insource() or had_warnings
+        had_warnings = pkg:check_build_toolchain() or had_warnings
+    end
+
+    if had_warnings then
+        error('failed to load rules due to warnings')
     end
 
     lua_package.loaders[2] = def_loader
