@@ -397,6 +397,13 @@ function P:query(value, config)
     return result
 end
 
+function P:check_config_defined()
+    if self.build and self.build.type and table.count(self.configs) == 0 then
+        Log.warning("the package '%s' specifies build type '%s' but has no configs defined -- it will not be built",
+            self.name, self.build.type)
+    end
+end
+
 function P:check_insource_build()
     local config_count = table.count(self.configs)
     local in_source, generate
@@ -508,6 +515,7 @@ function P.load_rules()
     end
 
     for name, pkg in pairs(packages) do
+        pkg:check_config_defined()
         pkg:check_insource_build()
     end
 
