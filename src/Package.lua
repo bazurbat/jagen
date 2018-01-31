@@ -152,8 +152,7 @@ function P:add_requires(stage, config, template)
             P.define_rule {
                 name = req.name,
                 config = req.config,
-                template = template,
-                { 'install' }
+                template = template
             }
         end
     end
