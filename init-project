@@ -16,10 +16,6 @@ die() {
     exit 1
 }
 
-real_path() {
-    echo $(cd "${1:?}"; pwd -P)
-}
-
 show_usage() {
     cat <<EOF
 Usage: init-project [OPTIONS...] [PRODUCT] [LAYERS...]
