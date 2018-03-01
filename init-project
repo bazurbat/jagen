@@ -6,9 +6,6 @@ env_file="env.sh"
 config_file="config.sh"
 
 jagen_dir=$(dirname "$0")
-jagen_flags=
-jagen_layers=
-init_jagen_layers=
 
 message() {
     echo init-project: $*
@@ -163,7 +160,7 @@ write_config() {
 # A list of directories containing layers used by this project.
 # The list items should be newline (\\n) or tab (\\t) separated because normal
 # spaces (including the indentation) are assumed to be a part of the pathname.
-jagen_layers="$jagen_layers"
+jagen_layers="${jagen_layers-}"
 
 # A directory for package sources.
 jagen_src_dir="$jagen_src_dir"
@@ -179,7 +176,7 @@ jagen_toolchains_dir="$jagen_toolchains_dir"
 #   debug   - build debugging tools
 #   devenv  - enable features pertinent to development environment
 #   offline - skip network operations
-jagen_flags="$jagen_flags"
+jagen_flags="${jagen_flags-}"
 
 # Space separated list of package names excluded from cleaning and updating.
 # Example: jagen_source_exclude="chicken karaoke-player"
@@ -216,7 +213,7 @@ check_path() {
         die "the specified layer path is not exists or not a directory: $path"
     fi
 
-    if [ "$init_jagen_layers" ]; then
+    if [ "${init_jagen_layers-}" ]; then
         init_jagen_layers="$init_jagen_layers $path"
     else
         init_jagen_layers="$path"
@@ -248,7 +245,7 @@ parse_command_line() {
                         -f|--force)
                             use_force=1 ;;
                         -a|--flag)
-                            if [ "$jagen_flags" ]; then
+                            if [ "${jagen_flags-}" ]; then
                                 jagen_flags="$jagen_flags $2"
                             else
                                 jagen_flags="$2"
@@ -305,7 +302,7 @@ do_init() {
 
     trap on_layer_init_error EXIT
 
-    for layer in ${jagen_product_dir-} $init_jagen_layers; do
+    for layer in ${jagen_product_dir-} ${init_jagen_layers-}; do
         if [ -f "$layer/init.sh" ]; then
             . "$layer/init.sh"
         fi
@@ -314,14 +311,14 @@ do_init() {
     trap - EXIT
 
     # prepend jagen_layers in case it was set by layer init (product)
-    init_jagen_layers="$jagen_layers $init_jagen_layers"
+    init_jagen_layers="${jagen_layers-} ${init_jagen_layers-}"
 
     # construct newline-separated list of layers -- it looks prettier in
     # the config and allows having spaces in the paths
     jagen_layers="
 "
-    for layer in $init_jagen_layers; do
-        jagen_layers="$jagen_layers$layer
+    for layer in ${init_jagen_layers-}; do
+        jagen_layers="${jagen_layers-}$layer
 "
     done
 
