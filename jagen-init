@@ -1,0 +1,35 @@
+#!/bin/sh
+
+set -u
+
+jagen_uri="https://github.com/bazurbat/jagen.git"
+jagen_dir=".jagen"
+
+say() {
+    echo "jagen-init: $*"
+}
+
+die() {
+    say "$*" >&2
+    exit 1
+}
+
+need_cmd() {
+    if ! $(command -v "$1" >/dev/null); then
+        die "could not find '$1' command"
+    fi
+}
+
+ensure_cloned() {
+    if ! [ -d "$jagen_dir" ]; then
+        need_cmd git
+        git clone "$jagen_uri" "$jagen_dir"
+    fi
+}
+
+main() {
+    ensure_cloned || return
+    "$jagen_dir/init-project" "$@"
+}
+
+main "$@"
