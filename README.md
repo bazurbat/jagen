@@ -42,7 +42,7 @@ To start using Jagen execute the following commands:
 
 ```
 mkdir -p ~/root-genivi && cd ~/root-genivi
-curl -fsSL https://raw.githubusercontent.com/bazurbat/jagen/master/jagen-init | sh -s -- genivi -a ccache
+curl -fsSL https://git.io/vADit | sh -s -- genivi -a ccache
 . ./env.sh
 jagen build
 ```
