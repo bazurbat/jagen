@@ -48,7 +48,7 @@ _jagen_complete() {
     _get_comp_words_by_ref -n : cur prev
 
     # Special case to avoid a level of nesting
-    if [[ "$prev" == "jagen" ]]; then
+    if [[ "${prev##*/}" == "jagen" ]]; then
         jagen_command="jagen"
     else
         jagen_command=${COMP_WORDS[1]}
