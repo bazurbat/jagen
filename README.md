@@ -41,29 +41,24 @@ POSIX compatible shell, Lua 5.1 or 5.2 (or LuaJIT 2.0), [Ninja](https://ninja-bu
 To start using Jagen execute the following commands:
 
 ```
-cd ~/src                                          # 1
-git clone https://github.com/bazurbat/jagen.git   # 2
-mkdir root-genivi                                 # 3
-cd root-genivi                                    # 4
-../jagen/init-project genivi -a ccache            # 5
-. ./env.sh                                        # 6
-jagen build                                       # 7
+mkdir -p ~/root-genivi && cd ~/root-genivi
+curl -fsSL https://raw.githubusercontent.com/bazurbat/jagen/master/jagen-init | sh -s -- genivi -a ccache
+. ./env.sh
+jagen build
 ```
 
-1. Go to the work directory. Can be anything but we assume `~/src`.
-2. Clone the Jagen itself into the `~/src/jagen` directory.
-3. Create the `root-genivi` (`~/src/root-genivi`) directory alongside the Jagen
-   clone which will become the root of the project.
-4. Go to the just created directory.
-5. Initialize the this directory as a project. The name "genivi" is one of the
-   project templates distributed with Jagen. The "-a" option enables the
-   "ccache" for the project.
-6. Source the generated `env.sh` file to initialize the project environment.
-   Repeat starting from this step each time you want to resume working with
-   this project (i.e. to be able to run `jagen` command).
-7. Build the project. The `build` command runs to completion, i.e. it ensures
-   that all default targets are built, if it already the case — it does nothing
-   (just as "make" for example).
+1. Create work directory and go into it.
+2. Clone Jagen and initialize the project.
+3. Source the generated `env.sh`.
+4. Build the project.
+
+The `curl` command fetches a `jagen-init` script which clones Jagen to the
+`.jagen` subdirectory and runs `init-project` from it with the supplied
+arguments. The name "genivi" is one of the project templates distributed with
+Jagen. The "-a" option enables the "ccache". Source the `env.sh` again when you
+want to resume working with the project. The `build` command runs to
+completion, i.e. it ensures that all default targets are built, if it is
+already the case, similarly to "make", it does nothing.
 
 See [Initializing](doc/Initializing.md) section in the manual for more details.
 
