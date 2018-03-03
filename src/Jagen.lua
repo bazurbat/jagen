@@ -499,11 +499,8 @@ function Jagen.command.build(args)
         end
     end
 
-    local cmd = System.mkpath(Jagen.dir, 'src', 'cmd.sh')
-    local err, status = System.exec('%s build %s', cmd,
-        System.quote(table.unpack(options)))
-
-    return status
+    return Command:new(quote(System.mkpath(Jagen.dir, 'src', 'cmd.sh')),
+        'build', quote(unpack(options))):exec()
 end
 
 function Jagen.command.src(args)
@@ -661,11 +658,8 @@ function Jagen.command.image(args)
         return Jagen.command['help'] { 'image' }
     end
 
-    local cmd = System.mkpath(Jagen.dir, 'src', 'cmd.sh')
-    local err, status = System.exec('%s image %s', cmd,
-        System.quote(table.unpack(args)))
-
-    return status
+    return Command:new(quote(System.mkpath(Jagen.dir, 'src', 'cmd.sh')),
+        'image', quote(unpack(args)))
 end
 
 function Jagen.command._compare_versions(args)
@@ -736,4 +730,4 @@ function Jagen:run(args)
     end
 end
 
-os.exit(Jagen:run(arg) or 0)
+os.exit(Jagen:run(arg) and 0 or 1)

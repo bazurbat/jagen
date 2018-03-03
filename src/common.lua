@@ -192,9 +192,12 @@ function append_uniq(value, list)
     return list
 end
 
-function quote(arg)
-    assert_arg('quote', 1, 'string', arg)
-    return string.format('"%s"', arg)
+function quote(...)
+    local result = {}
+    for arg in each {...} do
+        table.insert(result, string.format('"%s"', tostring(arg)))
+    end
+    return unpack(result)
 end
 
 function string.empty(s)

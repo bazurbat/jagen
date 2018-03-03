@@ -1,4 +1,4 @@
-local System = require 'System'
+local Command = require 'Command'
 
 local Target = {}
 Target.__index = Target
@@ -87,13 +87,11 @@ function Target:append(input)
 end
 
 function Target:touch()
-    return System.exec('cd "$jagen_build_dir" && touch "%s"',
-        tostring(self))
+    return Command:new('cd "$jagen_build_dir" && touch', quote(self)):exec()
 end
 
 function Target:remove()
-    return System.exec('cd "$jagen_build_dir" && rm -f "%s"',
-        tostring(self))
+    return Command:new('cd "$jagen_build_dir" && rm -f', quote(self)):exec()
 end
 
 return Target
