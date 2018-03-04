@@ -113,7 +113,7 @@ function Jagen.src.clean(args)
         Log.message('clean %s in %s', pkg.name, source.dir)
         if not pkg.source:clean() then
             die('failed to clean %s (%s) in %s',
-                pkg.name, source.branch, source.dir)
+                pkg.name, source:rev(), source.dir)
         end
     end
 end
@@ -136,21 +136,20 @@ function Jagen.src.update(args)
         local old_head
 
         if System.exists(dir) and not System.is_empty(dir) then
+            local rev = source:rev() or ''
             if not source.ignore_dirty and source:dirty() then
                 die("could not update %s: source dir '%s' is dirty",
                     pkg.name, dir)
             end
-            Log.message('updating %s (%s)', pkg.name, source.branch)
+            Log.message('updating %s (%s)', pkg.name, rev)
             old_head = source:head()
             if not offline then
                 if not source:update() then
-                    die('failed to update %s (%s) in %s',
-                        pkg.name, source.branch, dir)
+                    die('failed to update %s (%s) in %s', pkg.name, rev, dir)
                 end
             end
             if not source:switch() then
-                die('failed to switch %s to %s in %s',
-                    pkg.name, source.branch, dir)
+                die('failed to switch %s to %s in %s', pkg.name, rev, dir)
             end
         else
             if offline then

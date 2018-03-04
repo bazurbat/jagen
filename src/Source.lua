@@ -2,15 +2,23 @@ local Command = require 'Command'
 local System = require 'System'
 local Log    = require 'Log'
 
-local format = string.format
-local match = string.match
-
 local Source = {}
 
 function Source:new(o)
     local o = o or {}
     setmetatable(o, self)
     self.__index = self
+
+    if type(o.branch) == 'string' then
+        o.branch = { o.branch }
+    end
+    if type(o.tag) == 'string' then
+        o.tag = { o.tag }
+    end
+    if type(o.bookmark) == 'string' then
+        o.bookmark = { o.bookmark }
+    end
+
     return o
 end
 
@@ -81,63 +89,52 @@ function Source:create(source, name)
     return source
 end
 
+function Source:rev()
+    return self.tag and self.tag[1] or
+           self.bookmark and self.bookmark[1] or
+           self.branch and self.branch[1]
+end
+
+function Source:head()
+end
+
 function Source:fixup()
     return true
 end
 
--- DistSource
-
-function DistSource:new(o)
-    local source = Source.new(DistSource, o)
-    return source
-end
-
 -- GitSource
 
-function GitSource:new(o)
-    local source = Source.new(GitSource, o)
-    source.branch = source.branch or 'master'
-    return source
-end
-
-function GitSource:git(...)
-    return Command:new('git -C', quote(self.dir), ...)
-end
-
-function GitSource:command(command, ...)
-    return string.format('git --git-dir .git -C "%s" '..command, self.dir, ...)
-end
-
-function GitSource:exec(command, ...)
-    return System.exec('git --git-dir .git -C "%s" '..command, self.dir, ...)
+function GitSource:command(...)
+    return Command:new('git', '--no-pager', '-C', quote(assert(self.dir)), ...)
 end
 
 function GitSource:head()
-    return self:git('rev-parse HEAD'):read()
+    return self:command('rev-parse HEAD'):read()
 end
 
 function GitSource:dirty()
-    return self:git('status --porcelain'):read() ~= nil
+    return self:command('status --porcelain'):read() ~= nil
 end
 
 function GitSource:clean()
-    return self:git('checkout HEAD .'):exec() and self:git('clean -fxd'):exec()
+    return self:command('checkout HEAD -- .'):exec() and
+           self:command('clean -fxd'):exec()
 end
 
 function GitSource:update_submodules()
     if not self.exclude_submodules and
             System.file_exists(System.mkpath(self.dir, '.gitmodules')) then
-        return self:git('submodule update --init --recursive'):exec()
+        return self:command('submodule update --init --recursive'):exec()
     end
     return true
 end
 
 function GitSource:update()
-    local branch = self.branch
+    local branch = self:rev()
     if not branch then return false end
-    local line = self:git('ls-remote --heads --tags origin', quote(branch)):read()
+    local line = self:command('ls-remote --heads --tags origin', quote(branch)):read()
     if not line then
-        line = self:git('branch --list', quote(branch)):read()
+        line = self:command('branch --list', quote(branch)):read()
         if line then -- local branch, no update
             return true
         else
@@ -145,44 +142,44 @@ function GitSource:update()
             return false
         end
     end
-    local src, dst = match(line, '^%S+%s+(%S+)$')
-    local name = assert(match(src, '^.+/([^/]+)$'))
-    if match(src, '/tags/') then
-        dst = format('refs/tags/%s', name)
+    local src, dst = string.match(line, '^%S+%s+(%S+)$')
+    local name = assert(string.match(src, '^.+/([^/]+)$'))
+    if string.match(src, '/tags/') then
+        dst = string.format('refs/tags/%s', name)
     else
-        dst = format('refs/remotes/origin/%s', name)
+        dst = string.format('refs/remotes/origin/%s', name)
     end
-    local refspec = format('+%s:%s', src, dst)
-    return self:git('fetch --prune origin', quote(refspec)):exec() and
+    local refspec = string.format('+%s:%s', src, dst)
+    return self:command('fetch --prune origin', quote(refspec)):exec() and
            self:update_submodules()
 end
 
 function GitSource:switch()
-    local branch = self.branch
+    local branch = self:rev()
     if not branch then return false end
 
-    local name = self:git('branch --list', quote(branch)):read()
+    local name = self:command('branch --list', quote(branch)):read()
     if name then
         if string.sub(name, 1, 1) == '*' then -- already active
             return true
         else -- switch to matching local branch
             name = string.trim(name)
-            return self:git('checkout -q', quote(name)):exec() and
-                   self:git('merge --ff-only', quote('origin/'..name)):read() and
+            return self:command('checkout -q', quote(name)):exec() and
+                   self:command('merge --ff-only', quote('origin/'..name)):read() and
                    self:update_submodules()
         end
     end
 
-    name = self:git('branch --list --remotes', quote('origin/'..branch)):read()
+    name = self:command('branch --list --remotes', quote('origin/'..branch)):read()
     if name then -- switch to a new remote branch
         name = assert(string.match(name, '^%s+origin/(%S+)'))
-        return self:git('checkout -b', quote(name), quote('origin/'..name)):exec() and
+        return self:command('checkout -b', quote(name), quote('origin/'..name)):exec() and
                self:update_submodules()
     end
 
-    local tag = self:git('tag --list', quote(branch)):read()
+    local tag = self:command('tag --list', quote(branch)):read()
     if tag then
-        return self:git('checkout', quote(tag)):exec() and
+        return self:command('checkout', quote(tag)):exec() and
                self:update_submodules()
     end
 
@@ -192,180 +189,141 @@ function GitSource:switch()
 end
 
 function GitSource:clone()
-    local clone = Command:new('git clone --progress')
-    if self.branch then
-        clone:append('--branch', quote(self.branch))
+    assert(self.location) assert(self.dir)
+    local clone_cmd = Command:new('git clone_cmd --progress')
+    for branch in each(self.branch) do
+        clone_cmd:append('--branch', branch)
     end
     -- try to detect if the server is "smart"
     -- https://stackoverflow.com/questions/9270488/is-it-possible-to-detect-whether-a-http-git-remote-is-smart-or-dumb
-    local headers = Command:new('curl -si', quote(self.location..'/info/refs?service=git-upload-pack')):read('*a')
+    local headers = Command:new('curl -sSi', quote(self.location..'/info/refs?service=git-upload-pack')):read('*a')
     if string.match(headers, 'Content%-Type: application/x%-git') then -- smart
-        clone:append('--depth', 1)
+        clone_cmd:append('--depth', 1)
     end
-    clone:append('--', quote(self.location), quote(self.dir))
-
-    local ok, status = clone:exec()
-    if ok then return self:update_submodules() end
-    return ok, status
+    clone_cmd:append('--', quote(self.location), quote(self.dir))
+    return clone_cmd:exec() and self:update_submodules()
 end
 
 function GitSource:fixup()
     if self.assume_unchanged then
-        return self:exec('update-index --assume-unchanged %s',
-            System.quote(table.unpack(self.assume_unchanged)))
+        return self:command('update-index --assume-unchanged',
+                            quote(unpack(self.assume_unchanged)))
     end
     return true
 end
 
 -- HgSource
 
-function HgSource:new(o)
-    local source = Source.new(HgSource, o)
-    source.branch = source.branch or 'default'
-    return source
-end
-
-function HgSource:exec(command, ...)
-    return System.exec('hg -R "%s" '..command, self.dir, ...)
-end
-
-function HgSource:pread(format, command, ...)
-    return System.pread(format, 'hg -R "%s" '..command, self.dir, ...)
+function HgSource:command(...)
+    return Command:new('hg', '-y', '--pager', 'never', '-R', quote(assert(self.dir)), ...)
 end
 
 function HgSource:head()
-    return self:pread('*l', 'id -i')
+    return self:command('id', '-i'):read()
 end
 
 function HgSource:dirty()
-    return self:pread('*l', 'status') ~= nil
+    return self:command('status'):read() ~= nil
 end
 
 function HgSource:clean()
-    return self:exec('update -C "%s"', assert(self.branch)) and
-           self:exec('purge --all')
+    local purge_cmd = self:command('purge', '--all')
+    local update_cmd = self:command('update', '--clean')
+    local rev = self:rev()
+    if rev then update_cmd:append('--rev', rev) end
+    return purge_cmd:exec() and update_cmd:exec()
 end
 
 function HgSource:update()
-    return self:exec('pull -r "%s"', assert(self.branch))
-end
-
-function HgSource:_branch()
-    local s = self:pread('*l', 'branch')
-    if s then
-        return string.match(s, '^[%w_-]+')
+    local cmd = self:command('pull')
+    for branch in each(self.branch or {}) do
+        cmd:append('--branch', branch)
     end
-end
-
-function HgSource:_is_bookmark(pattern)
-    local bm = self:pread('*a', "bookmarks | grep '^..."..pattern.."\\s'")
-    local exists, active = false, false
-
-    if bm and #bm > 0 then
-        exists = true
-        active = string.sub(bm, 2, 2) == '*'
+    for bookmark in each(self.bookmark or {}) do
+        cmd:append('--bookmark', bookmark)
     end
-
-    return exists, active
+    for rev in each(self.tag or {}) do
+        cmd:append('--rev', rev)
+    end
+    return cmd:exec()
 end
 
 function HgSource:switch()
-    local branch = assert(self.branch)
-    local exists = self:_is_bookmark(branch)
-    if exists then
-        return self:exec('update -r "%s"', branch)
-    elseif branch == self:_branch() then
-        return true
-    else
-        Log.error("could not find bookmark '%s' in local repository", branch)
-        return false
-    end
+    local cmd = self:command('update', '--check')
+    local rev = self:rev()
+    if rev then cmd:append('--rev', rev) end
+    return cmd:exec()
 end
 
 function HgSource:clone()
-    return System.exec('hg clone -r "%s" "%s" "%s"',
-        assert(self.branch), assert(self.location), assert(self.dir))
+    local cmd = Command:new('hg clone')
+    for branch in each(self.branch or {}) do
+        cmd:append('--branch', branch)
+    end
+    for rev in each(extend(self.bookmark, self.tag)) do
+        cmd:append('--rev', rev)
+    end
+    cmd:append(quote(assert(self.location)))
+    cmd:append(quote(assert(self.dir)))
+    return cmd:exec()
 end
 
 -- RepoSource
 
-function RepoSource:new(o)
-    local source = Source.new(RepoSource, o)
-    source.jobs = Jagen.nproc() * 2
-    return source
+function RepoSource:command(...)
+    return Command:new('cd', quote(assert(self.dir)), '&&',
+                       'repo', '--no-pager', ...)
 end
 
-function RepoSource:exec(command, ...)
-    return System.exec('cd "%s" && repo '..command, assert(self.dir), ...)
-end
-
-function RepoSource:pread(format, command, ...)
-    return System.pread(format, 'cd "%s" && repo '..command, assert(self.dir), ...)
-end
-
-function RepoSource:_load_projects(...)
-    local o = {}
-    local file = System.popen('cd "%s" && repo list', assert(self.dir))
-    for line in file:lines() do
-        local path, name = string.match(line, '(.+)%s:%s(.+)')
-        if name then
-            o[name] = path
-        end
+function RepoSource:manifest_rev()
+    local line = self:command('info', '-o'):read() or ''
+    if line:match('^Manifest branch: ') then
+        return assert(line:match('^.*/(.+)$') or line)
+    else
+        error(string.format('unexpected repo info format: %s', line))
     end
-    file:close()
-    return o
 end
 
-function RepoSource:_is_dirty(path)
-    return System.pread('*l', 'git -C "%s" status --porcelain', path) ~= nil
+function RepoSource:reinit()
+    local rev, manifest_rev = assert(self:rev()), self:manifest_rev()
+    if rev ~= manifest_rev then
+        -- pipe to cat to inhibit prompting a user on a terminal
+        return self:command('init', '-b', rev, '|', 'cat'):exec()
+    end
+    return true
 end
 
 function RepoSource:head()
-    return self:pread('*a', 'status -j1 --orphans')
+    return self:manifest_rev()
 end
 
 function RepoSource:dirty()
-    local projects = self:_load_projects()
-    for n, p in pairs(projects) do
-        local path = System.mkpath(assert(self.dir), p)
-        if System.exists(path) and not System.is_empty(path)
-                and self:_is_dirty(path) then
-            return true
-        end
-    end
-    return false
+    return not string.match(self:command('status'):read() or '', '^nothing')
 end
 
 function RepoSource:clean()
-    local projects = self:_load_projects()
-    for n, p in pairs(projects) do
-        local path = System.mkpath(assert(self.dir), p)
-        if System.exists(path) then
-            if self:_is_dirty(path) then
-                return System.exec('git -C "%s" checkout HEAD .', path) and
-                       System.exec('git -C "%s" clean -fxd', path)
-            end
-        end
+    local clean_cmd = 'if [ \"$(ls)\" ]; then git checkout HEAD -- . && git clean -fxd; fi'
+    local sync_cmd = self:command('sync', '--detach', '--no-tags')
+    if Jagen.flag 'offline' then
+        sync_cmd:append('-l')
     end
-    return true
+    return sync_cmd:exec() and
+           self:command('forall', '-pc', squote(clean_cmd)):exec()
 end
 
 function RepoSource:update()
-    return self:exec('sync -j%d --current-branch --no-tags --optimized-fetch',
-        self.jobs)
+    return self:reinit() and self:command('sync', '-nc'):exec()
 end
 
 function RepoSource:switch()
-    -- Not doing Android development at the time.
-    Log.warning('branch switching is not implemented for repo sources')
-    return true
+    return self:reinit() and self:command('sync', '-l'):exec()
 end
 
 function RepoSource:clone()
-    return System.exec('mkdir -p "%s"', self.dir) and
-           self:exec('init -u "%s" -b "%s" -p linux --depth 1',
-               assert(self.location), assert(self.branch)) and
-           self:update()
+    return Command:new('mkdir', '-p', quote(assert(self.dir))):exec() and
+           self:command('init', '-u', quote(assert(self.location)),
+                                '-b', quote(assert(self:rev()))
+                                '--depth', 1):exec()
 end
 
 return Source

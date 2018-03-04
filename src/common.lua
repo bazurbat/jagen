@@ -200,6 +200,14 @@ function quote(...)
     return unpack(result)
 end
 
+function squote(...)
+    local result = {}
+    for arg in each {...} do
+        table.insert(result, string.format("'%s'", tostring(arg)))
+    end
+    return unpack(result)
+end
+
 function string.empty(s)
     return not s or #s == 0
 end
