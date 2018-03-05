@@ -499,6 +499,10 @@ pkg_install() {
                 "${pkg_source_dir:?}/bin"  \
                 "${pkg_toolchain_prefix}"
             ;;
+        android_ndk_toolchain)
+            require toolchain
+            toolchain_install_android_ndk
+            ;;
     esac
 
     if [ "$pkg_install_ldconfig" ]; then
