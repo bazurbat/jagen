@@ -249,9 +249,7 @@ pkg__unpack_dist() {
         *.tar|*.tar.*|*.tgz|*.tbz2|*.txz)
             pkg_run tar -xf "$dist_path" ;;
         *.zip)
-            # to emulate the tar convention on putting the directory name
-            # inside the archive
-            pkg_run unzip -d "$pkg_source_basename" "$dist_path" ;;
+            pkg_run unzip "$dist_path" ;;
         *)
             die "unable to unpack '$pkg_source_filename': unknown archive format" ;;
     esac
