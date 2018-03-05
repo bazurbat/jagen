@@ -450,6 +450,8 @@ function Jagen.command.refresh(args, packages)
     scm_names_file:close()
     configs_file:close()
     targets_file:close()
+
+    return true
 end
 
 local function find_targets(packages, arg)
@@ -650,6 +652,8 @@ function Jagen.command.list(args)
         end
         io.write(table.concat(lines, '\n'..string.rep(' ', col2_pos)), '\n')
     end
+
+    return true
 end
 
 function Jagen.command.image(args)
