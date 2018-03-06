@@ -301,6 +301,15 @@ function P:export_build_env()
     end
 end
 
+function P:export_dirs()
+    local export = self.export
+    local source = self.source
+    if source then
+        export.source = export.source or {}
+        export.source.dir = source.dir
+    end
+end
+
 function P:add_export_stages()
     if self.export and not self.stages['export'] then
         self:add_target { 'export' }
@@ -508,6 +517,7 @@ function P.load_rules()
 
     -- another pass, with the toolchains this time
     for _, pkg in pairs(packages) do
+        pkg:export_dirs()
         pkg:export_build_env()
         pkg:add_export_stages()
     end
@@ -663,9 +673,6 @@ function P.define_rule(rule, context)
 
     if pkg.source and pkg.source.dir then
         local export = pkg.export
-        if export.source_dir == nil then
-            export.source_dir = pkg.source.dir
-        end
         if export.dir == nil then
             export.dir = pkg.source.dir
         end
