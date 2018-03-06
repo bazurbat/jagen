@@ -695,10 +695,15 @@ function P.define_rule(rule, context)
         local build = this.build or pkg.build
         local install = this.install or pkg.install
 
-        if build.in_source then
-            if not build.dir then
+        if not build.dir then
+            if build.in_source then
                 build.dir = '$pkg_source_dir'
+            else
+                build.dir = System.mkpath('${pkg_work_dir:?}', config)
             end
+        end
+
+        if build.in_source then
             if pkg.source:is_scm() then
                 pkg.source.ignore_dirty = true
             end
