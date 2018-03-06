@@ -302,6 +302,24 @@ function P:export_build_env()
 end
 
 function P:export_dirs()
+    local function export_build_dir(this, config)
+        local export = this.export
+        local build = this.build
+        if build then
+            export.build = rawget(export, 'build') or {}
+            local dir = rawget(build, 'dir')
+            if export.build.dir == nil then
+                export.build.dir = dir
+            end
+            if export.dir == nil then
+                export.dir = dir
+            end
+        end
+    end
+    export_build_dir(self)
+    for config, this in self:each_config() do
+        export_build_dir(this, config)
+    end
     local export = self.export
     local source = self.source
     if source then
@@ -312,20 +330,6 @@ function P:export_dirs()
         if export.dir == nil then
             export.dir = source.dir
         end
-    end
-    local function export_build_dir(this, config)
-        local export = this.export
-        local build = this.build
-        if build then
-            export.build = rawget(export, 'build') or {}
-            if export.build.dir == nil then
-                export.build.dir = rawget(build, 'dir')
-            end
-        end
-    end
-    export_build_dir(self)
-    for config, this in self:each_config() do
-        export_build_dir(this, config)
     end
 end
 
