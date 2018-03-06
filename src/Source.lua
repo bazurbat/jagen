@@ -190,8 +190,8 @@ end
 
 function GitSource:clone()
     assert(self.location) assert(self.dir)
-    local clone_cmd = Command:new('git clone_cmd --progress')
-    for branch in each(self.branch) do
+    local clone_cmd = Command:new('git clone --progress')
+    for branch in each(self.branch or {}) do
         clone_cmd:append('--branch', branch)
     end
     -- try to detect if the server is "smart"
