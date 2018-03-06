@@ -6,7 +6,10 @@ return {
     },
     build  = {
         type = 'GNU',
+        unset_cflags = true,
         options = {
+            '--build=x86_64-linux-gnu',
+            '--host=x86_64-linux-gnu',
             '--target=$pkg_build_system',
             '--program-transform-name=',
             '--disable-binutils',
@@ -17,7 +20,7 @@ return {
             '--disable-gdbserver',
             '--disable-readline',
             '--with-system-readline',
-            '--with-zlib'
+            '--with-system-zlib',
         }
     }
 }
