@@ -306,10 +306,26 @@ function P:export_dirs()
     local source = self.source
     if source then
         export.source = export.source or {}
-        export.source.dir = source.dir
+        if export.source.dir == nil then
+            export.source.dir = source.dir
+        end
         if export.dir == nil then
             export.dir = source.dir
         end
+    end
+    local function export_build_dir(this, config)
+        local export = this.export
+        local build = this.build
+        if build then
+            export.build = rawget(export, 'build') or {}
+            if export.build.dir == nil then
+                export.build.dir = rawget(build, 'dir')
+            end
+        end
+    end
+    export_build_dir(self)
+    for config, this in self:each_config() do
+        export_build_dir(this, config)
     end
 end
 
