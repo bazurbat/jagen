@@ -594,6 +594,10 @@ function P.define_rule(rule, context)
     if not pkg then
         pkg = P:new { rule.name }
         pkg.contexts = {}
+        pkg.configs = {}
+        pkg.build = {}
+        pkg.install = {}
+        pkg.export = {}
         pkg:add_target { 'unpack' }
         if pkg.name ~= 'patches' then
             pkg:add_target { 'patch' }
@@ -604,8 +608,6 @@ function P.define_rule(rule, context)
             append(pkg.contexts, Context:new { filename = filename })
         end
         packages[rule.name] = pkg
-        pkg.configs = pkg.configs or {}
-        pkg.export = pkg.export or {}
     end
 
     if rule.template then
@@ -655,18 +657,13 @@ function P.define_rule(rule, context)
     table.iclean(this)
 
     if this ~= pkg then
-        if pkg.build then
-            if not this.build then this.build = {} end
-            if not getmetatable(this.build) then
-                setmetatable(this.build, { __index = pkg.build })
-            end
-            if not pkg.install then pkg.install = {} end
+        if not this.build then this.build = {} end
+        if not getmetatable(this.build) then
+            setmetatable(this.build, { __index = pkg.build })
         end
-        if pkg.install or this.build then
-            if not this.install then this.install = {} end
-            if not getmetatable(this.install) then
-                setmetatable(this.install, { __index = pkg.install })
-            end
+        if not this.install then this.install = {} end
+        if not getmetatable(this.install) then
+            setmetatable(this.install, { __index = pkg.install })
         end
         if not this.export then this.export = {} end
         if not getmetatable(this.export) then
@@ -698,57 +695,51 @@ function P.define_rule(rule, context)
         local build = this.build or pkg.build
         local install = this.install or pkg.install
 
-        if build then
-            if build.in_source then
-                if not build.dir then
-                    build.dir = '$pkg_source_dir'
-                end
-                if pkg.source:is_scm() then
-                    pkg.source.ignore_dirty = true
-                end
+        if build.in_source then
+            if not build.dir then
+                build.dir = '$pkg_source_dir'
             end
-
-            if build.type == 'GNU' then
-                if build.generate or build.autoreconf then
-                    pkg:add_target { 'autoreconf',
-                        { 'libtool', 'install', 'host' }
-                    }
-                    P.define_rule { 'libtool', 'host' }
-                end
-            end
-
-            if build.type == 'linux_module' or build.kernel_modules == true or
-                    install and install.modules then
-
-                P.define_rule { 'kernel', config }
-
-                pkg:add_target({ 'configure',
-                        { 'kernel', 'configure', config }
-                    }, config)
-                pkg:add_target({ 'compile',
-                        { 'kernel', 'compile', config }
-                    }, config)
-                pkg:add_target({ 'install',
-                        { 'kernel', 'install', config }
-                    }, config)
-            elseif build.type then
-                pkg:add_target({ 'configure' }, config)
-                pkg:add_target({ 'compile' }, config)
-            end
-
-            if config == 'target' and build.target_requires_host then
-                rule.requires = append(rule.requires or {}, { pkg.name, 'host' })
+            if pkg.source:is_scm() then
+                pkg.source.ignore_dirty = true
             end
         end
 
-        if install then
-            if install.type == nil and build and build.type then
-                install.type = build.type
+        if build.type == 'GNU' then
+            if build.generate or build.autoreconf then
+                pkg:add_target { 'autoreconf',
+                    { 'libtool', 'install', 'host' }
+                }
+                P.define_rule { 'libtool', 'host' }
             end
-            if install.type and install.type ~= false then
-                pkg:add_target({ 'install' }, config)
-            end
-        elseif build and build.type then
+        end
+
+        if build.type == 'linux_module' or build.kernel_modules == true or
+            install and install.modules then
+
+            P.define_rule { 'kernel', config }
+
+            pkg:add_target({ 'configure',
+                    { 'kernel', 'configure', config }
+                }, config)
+            pkg:add_target({ 'compile',
+                    { 'kernel', 'compile', config }
+                }, config)
+            pkg:add_target({ 'install',
+                    { 'kernel', 'install', config }
+                }, config)
+        elseif build.type then
+            pkg:add_target({ 'configure' }, config)
+            pkg:add_target({ 'compile' }, config)
+        end
+
+        if config == 'target' and build.target_requires_host then
+            rule.requires = append(rule.requires or {}, { pkg.name, 'host' })
+        end
+
+        if install.type == nil and build and build.type then
+            install.type = build.type
+        end
+        if install.type and install.type ~= false then
             pkg:add_target({ 'install' }, config)
         end
     end
