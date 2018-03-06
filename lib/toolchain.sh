@@ -118,7 +118,7 @@ toolchain_install_ldconfig() {
 }
 
 toolchain_install_android_ndk() {
-    local make_script="${android_ndk_dir:?}/build/tools/make_standalone_toolchain.py"
+    local make_script="${android_ndk_source_dir:?}/build/tools/make_standalone_toolchain.py"
     "$make_script" --force \
                    --arch "${pkg_build_arch:?}" \
                    --install-dir "${pkg_build_dir:?}"
