@@ -307,6 +307,9 @@ function P:export_dirs()
     if source then
         export.source = export.source or {}
         export.source.dir = source.dir
+        if export.dir == nil then
+            export.dir = source.dir
+        end
     end
 end
 
@@ -669,13 +672,6 @@ function P.define_rule(rule, context)
             { 'repo', 'install', 'host' }
         }
         P.define_rule { 'repo', 'host' }
-    end
-
-    if pkg.source and pkg.source.dir then
-        local export = pkg.export
-        if export.dir == nil then
-            export.dir = pkg.source.dir
-        end
     end
 
     if config then
