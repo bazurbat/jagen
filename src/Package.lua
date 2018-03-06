@@ -663,6 +663,9 @@ function P.define_rule(rule, context)
 
     if pkg.source and pkg.source.dir then
         local export = pkg.export
+        if export.source_dir == nil then
+            export.source_dir = pkg.source.dir
+        end
         if export.dir == nil then
             export.dir = pkg.source.dir
         end
