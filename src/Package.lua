@@ -305,7 +305,7 @@ function P:export_dirs()
     local function export_build_dir(this, config)
         local export = this.export
         local build = this.build
-        if build then
+        if build and export then
             export.build = rawget(export, 'build') or {}
             local dir = rawget(build, 'dir')
             if export.build.dir == nil then
