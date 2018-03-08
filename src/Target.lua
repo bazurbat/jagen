@@ -50,6 +50,11 @@ function Target:from_arg(arg)
     return Target:new(name, stage, config)
 end
 
+function Target:from_qname(qname, stage)
+    local name, config = unpack(string.split2(qname, ':'))
+    return Target:new(name, stage, config)
+end
+
 function Target:__eq(other)
     return self.name   == other.name   and
            self.stage  == other.stage  and

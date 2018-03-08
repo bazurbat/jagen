@@ -1,5 +1,6 @@
 local P = {}
 local System = require 'System'
+local Target = require 'Target'
 
 local format = string.format
 local concat = table.concat
@@ -83,10 +84,22 @@ local function format_build(build)
         return join_escaped(lines)
     end
 
-    append(lines, format('build %s: %s%s',
+    local function format_uses(uses)
+        local lines = {}
+        if #uses > 0 then
+            append(lines, ' ||')
+            extend(lines, sort(map(function (x)
+                            return indented(escape(tostring(x)), 16)
+                end, uses or {})))
+        end
+        return join_escaped(lines)
+    end
+
+    append(lines, format('build %s: %s%s%s',
             format_outputs(build.outputs),
             assert(build.rule),
-            format_inputs(build.inputs)))
+            format_inputs(build.inputs),
+            format_uses(build.uses)))
 
     extend(lines, map(function (key)
                 return indented(binding(key, build.vars[key]))
@@ -95,7 +108,7 @@ local function format_build(build)
     return join_nl(lines)
 end
 
-local function format_stage(target)
+local function format_stage(target, pkg)
     local function get_outputs()
         local outputs = { tostring(target) }
         return extend(outputs, target.outputs or {})
@@ -120,6 +133,25 @@ local function format_stage(target)
         args        = format_args(),
     }
 
+    local uses = {}
+
+    if target.stage == 'unpack' then
+        for use in each(pkg.use or {}) do
+            append(uses, Target:new(Target:from_qname(use).name, 'export'))
+        end
+        for _, this in pkg:each_config() do
+            for use in each(this.use or {}) do
+                append(uses, Target:new(Target:from_qname(use).name, 'export'))
+            end
+        end
+    elseif target.stage == 'export' and target.config then
+        local this = assert(pkg.configs[target.config])
+        for use in each(pkg.use or {}, this.use or {}) do
+            local t = Target:from_qname(use)
+            append(uses, Target:new(t.name, 'export', t.config or target.config))
+        end
+    end
+
     if target.stage == 'provide_patches' then
         -- Each output whose modification time the command did not change will
         -- be treated as though it had never needed to be built. This means
@@ -131,6 +163,7 @@ local function format_stage(target)
 
     return format_build {
         rule    = 'stage',
+        uses    = uses,
         inputs  = target.inputs,
         outputs = get_outputs(),
         vars    = vars
@@ -140,7 +173,7 @@ end
 local function format_package(name, pkg)
     local lines = {}
     for stage in pkg:each() do
-        append(lines, format_stage(stage))
+        append(lines, format_stage(stage, pkg))
     end
     return join(lines)
 end

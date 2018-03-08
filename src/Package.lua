@@ -782,23 +782,9 @@ function P.define_rule(rule, context)
 
     if context then pop_context() end
 
-    for use in each(pkg.use or {}) do
-        local used = packages[use] or P.define_rule { use }
-        if used.export then
-            pkg:add_target { 'unpack', { use, 'export' } }
-        end
-        for config, this in pkg:each_config() do
-            if next(used:get('export', config) or {}) then
-                for target in each(this.stages) do
-                    if target.stage ~= 'export' then
-                        target:add_inputs(Target:parse({ target.name,
-                                    { use, 'export', config }
-                            }, name, config))
-                        break
-                    end
-                end
-            end
-        end
+    for use in each(pkg.use or {}, this.use or {}) do
+        local uname, uconfig = unpack(string.split2(use, ':'))
+        P.define_rule { uname, uconfig or config }
     end
 
     return pkg
