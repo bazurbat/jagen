@@ -1,5 +1,5 @@
 return {
-    source = {
+     source = {
         type = 'dist',
         location = 'https://capnproto.org/capnproto-c++-0.6.1.tar.gz'
     },
@@ -21,7 +21,9 @@ return {
             build = {
                 options = {
                     '-DBUILD_TESTING=NO',
-                    '-DCMAKE_INSTALL_PREFIX=$jagen_target_dir'
+                    '-DCMAKE_INSTALL_PREFIX=$jagen_target_dir',
+                    -- needed for android toolchain
+                    -- '-DCMAKE_BUILD_WITH_INSTALL_RPATH=YES',
                 }
             }
         }
