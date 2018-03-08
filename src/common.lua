@@ -437,6 +437,7 @@ end
 function pretty(value, level)
     local level = level or 0
     local output = {}
+    local insert, concat, format = table.insert, table.concat, string.format
 
     local function add(line, indent)
         insert(output, format('%s%s', string.rep('  ', indent or 0), line))
