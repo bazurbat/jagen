@@ -644,9 +644,9 @@ function P.define_rule(rule, context)
         end
     end
 
-    local template
+    local template = {}
     if rule.template ~= false then
-        template = rule.template or rule.pass_template or this.template
+        template = rule.template or rule.pass_template or this.template or {}
     end
 
     rule.template, rule.pass_template = nil, nil
@@ -692,8 +692,14 @@ function P.define_rule(rule, context)
     end
 
     if config then
-        local build = this.build or pkg.build
-        local install = this.install or pkg.install
+        local build, install = this.build, this.install
+
+        if build.toolchain and not template.build or
+            template.build and template.build.toolchain == nil
+        then
+            template.build = template.build or {}
+            template.build.toolchain = build.toolchain
+        end
 
         if not build.dir then
             if build.in_source then
