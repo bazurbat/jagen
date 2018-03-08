@@ -144,12 +144,21 @@ function copy(o)
     end
 end
 
-function each(t)
-    local i = 0
-    return function ()
-        i = i + 1
-        return t[i]
+function each(...)
+    local i, j, ts = 1, 1, {...}
+    local function iter()
+        local t = ts[i]
+        if t == nil then return end
+        local v = t[j]
+        if v == nil then
+            i, j = i + 1, 1
+            return iter()
+        else
+            j = j + 1
+        end
+        return v
     end
+    return iter
 end
 
 function pmap(func, list)
@@ -236,6 +245,7 @@ end
 -- does not preserve empty fields:
 --     split2('=a==b=', '=') -> [ 'a', 'b' ]
 function string.split2(s, sep)
+    sep = sep or ' '
     local o = {}
     for val in string.gmatch(s, '[^'..sep..']+') do
         table.insert(o, val)
