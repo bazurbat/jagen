@@ -368,21 +368,26 @@ pkg_configure() {
                 A="$A$S-DCMAKE_MODULE_PATH=$pkg_build_cmake_module_path"
             fi
 
+            if [ "$pkg_config" = "target" ]; then
+                cat >"$pkg_work_dir/toolchain.cmake" <<EOF
+set(CMAKE_SYSTEM_NAME "Linux")
+set(CMAKE_FIND_ROOT_PATH "$pkg_install_dir")
+set(CMAKE_C_COMPILER "${pkg_toolchain_prefix}gcc")
+set(CMAKE_CXX_COMPILER "${pkg_toolchain_prefix}g++")
+EOF
+                A="$A$S-DCMAKE_TOOLCHAIN_FILE=$pkg_work_dir/toolchain.cmake"
+            fi
+
             if [ "$pkg_build_cmake_toolchain_file" ]; then
                 A="$A$S-DCMAKE_TOOLCHAIN_FILE=$pkg_build_cmake_toolchain_file"
             fi
 
-            # Command line assignments create cache entries, so they can not
-            # override settings from the toolchain file.
-            if [ "$pkg_config" = "target" ]; then
-                A="$A$S-DCMAKE_SYSTEM_NAME=Linux"
-                A="$A$S-DCMAKE_FIND_ROOT_PATH=$pkg_install_dir"
-                if [ -z "$CC" ]; then
-                    A="$A$S-DCMAKE_C_COMPILER=${pkg_toolchain_prefix}gcc"
-                fi
-                if [ -z "$CXX" ]; then
-                    A="$A$S-DCMAKE_CXX_COMPILER=${pkg_toolchain_prefix}g++"
-                fi
+            # This can be important from a toolchain, the placement here is
+            # important to still be able to override the CFLAGS.
+            if [ "$pkg_build_cmake_options" ]; then
+                for option in $pkg_build_cmake_options; do
+                    A="$A$S$option"
+                done
             fi
 
             if pkg_is_debug; then
