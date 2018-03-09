@@ -57,6 +57,14 @@ for name in $pkg_build_toolchain $pkg_use; do
     done; unset prefix key
 done; unset name
 
+# remap aliases
+for alias_to in $(set | sed -rn "s/^pkg_use_alias_([[:alnum:]_]+)=.*/\1/p"); do
+    alias_from=$(eval echo "\$pkg_use_alias_$alias_to")
+    for key in $(set | sed -rn "s/^${alias_from}_([[:alnum:]_]+)=.*/\1/p"); do
+        eval "${alias_to}_${key}=\$${alias_from}_${key}"
+    done; unset key
+done; unset alias_to alias_from
+
 if [ "$pkg_build_toolchain" ]; then
     name="$(jagen_name_to_id "$pkg_build_toolchain")"
     # assign "<toolchain name>_*" to "toolchain_*"

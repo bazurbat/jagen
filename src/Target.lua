@@ -60,6 +60,7 @@ function Target:from_use(use)
         return Target:from_qname(use)
     elseif type(use) == 'table' then
         local t = Target:from_qname(use[1])
+        t.alias = use[2]
         return t
     else
         error('invalid use specification: '..pretty(use))

@@ -64,6 +64,10 @@ local function write_common(w, pkg)
     for use in each(pkg.use) do
         local t = Target:from_use(use)
         append(uses, t.name)
+        if t.alias then
+            write_var('use_alias_'..string.to_identifier(t.alias),
+                                    string.to_identifier(t.name))
+        end
     end
     write_var('use', uses)
 end

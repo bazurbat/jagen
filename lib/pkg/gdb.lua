@@ -10,7 +10,7 @@ return {
         options = {
             '--build=x86_64-linux-gnu',
             '--host=x86_64-linux-gnu',
-            '--target=$pkg_build_system',
+            '--target=${target_toolchain_system}',
             '--program-transform-name=',
             '--disable-binutils',
             '--disable-etc',
