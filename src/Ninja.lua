@@ -5,6 +5,8 @@ local Target = require 'Target'
 local format = string.format
 local concat = table.concat
 
+local packages = {}
+
 local function indent(n)
     return string.rep(' ', n or 4)
 end
@@ -146,9 +148,18 @@ local function format_stage(target, pkg)
         end
     elseif target.stage == 'export' and target.config then
         local this = assert(pkg.configs[target.config])
-        for use in each(pkg.use or {}, this.use or {}) do
-            local t = Target:from_use(use)
-            append(uses, Target:new(t.name, 'export', t.config or target.config))
+        for spec in each(pkg.use or {}) do
+            local use = Target:from_use(spec)
+            local config = use.config or target.config
+            local used = packages[use.name]
+            if used and used:has_config(config) then
+                append(uses, Target:new(use.name, 'export', config))
+            end
+        end
+        for spec in each(this.use or {}) do
+            local use = Target:from_use(spec)
+            local config = use.config or target.config
+            append(uses, Target:new(use.name, 'export', config))
         end
     end
 
@@ -179,14 +190,10 @@ local function format_package(name, pkg)
 end
 
 function P.generate(out_file, rules)
+    packages = rules
     local file = assert(io.open(out_file, 'w'))
-    local packages = {}
-
-    for k, v in pairs(rules) do
-        table.insert(packages, v)
-    end
-
-    table.sort(packages, function (a, b)
+    local sorted_rules = sort(table.tolist(rules),
+        function (a, b)
             return a.name < b.name
         end)
 
@@ -197,7 +204,7 @@ function P.generate(out_file, rules)
             })
     }
 
-    extend(lines, pmap(format_package, packages))
+    extend(lines, pmap(format_package, sorted_rules))
 
     file:write(join_nl(lines))
     file:write('\n')

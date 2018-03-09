@@ -6,6 +6,17 @@ local Log    = require 'Log'
 local P = {}
 P.__index = P
 
+local had_errors = false
+local had_warnings = false
+local function print_error(...)
+    Log.error(...)
+    had_errors = true
+end
+local function print_warning(...)
+    Log.warning(...)
+    had_warnings = true
+end
+
 local lua_package = package
 local packages = {}
 
@@ -19,6 +30,25 @@ function Context:new(o)
     setmetatable(o, self)
     self.__index = self
     return o
+end
+
+function Context:__tostring()
+    local str = {}
+    if self.filename then
+        table.insert(str, '...')
+        table.insert(str, (self.filename:remove_prefix(System.dirname(Jagen.project_dir))))
+    end
+    if self.line then
+        table.insert(str, ':')
+        table.insert(str, self.line)
+    end
+    if self.implicit then
+        if #str > 0 then
+            table.insert(str, ' ')
+        end
+        table.insert(str, '*')
+    end
+    return table.concat(str)
 end
 
 function Context:__unm()
@@ -63,6 +93,18 @@ end
 
 function P:__tostring()
     return string.format('%s__%s', self.name or '', self.config or '')
+end
+
+function P:toqname(config)
+    local str = { self.name }
+    if config then
+        table.insert(str, ':'..config)
+    end
+    return table.concat(str)
+end
+
+function P:last_rule_location()
+    return tostring(self.contexts[#self.contexts]) or '<none>'
 end
 
 function P:parse(rule)
@@ -782,9 +824,31 @@ function P.define_rule(rule, context)
 
     if context then pop_context() end
 
-    for use in each(pkg.use or {}, this.use or {}) do
-        local t = Target:from_use(use)
-        P.define_rule { t.name, t.config or config }
+    if this ~= pkg then
+        for spec in each(this.use or {}) do
+            local use = Target:from_use(spec)
+            P.define_rule { use.name, use.config or config }
+        end
+    end
+
+    for spec in each(pkg.use or {}) do
+        local use = Target:from_use(spec)
+        if use.config or not config then
+            P.define_rule { use.name, use.config }
+        else
+            --[[ sanity checks disabled for now
+            local used = packages[use.name]
+            if not used then
+                print_warning("generic part of the rule %s at %s uses %s"..
+                    " which is not defined", pkg:toqname(config),
+                    pkg:last_rule_location(), spec)
+            elseif table.count(used.configs) > 1 then
+                print_warning("generic part of the rule %s at %s uses %s"..
+                    " without specifying a config", pkg:toqname(config),
+                    pkg:last_rule_location(pkg), spec)
+            end
+            --]]
+        end
     end
 
     return pkg
