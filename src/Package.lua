@@ -783,8 +783,8 @@ function P.define_rule(rule, context)
     if context then pop_context() end
 
     for use in each(pkg.use or {}, this.use or {}) do
-        local uname, uconfig = unpack(string.split2(use, ':'))
-        P.define_rule { uname, uconfig or config }
+        local t = Target:from_use(use)
+        P.define_rule { t.name, t.config or config }
     end
 
     return pkg

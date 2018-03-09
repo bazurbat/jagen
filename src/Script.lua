@@ -1,4 +1,5 @@
 local System = require 'System'
+local Target = require 'Target'
 
 local P = {}
 
@@ -42,6 +43,7 @@ local function write_common(w, pkg)
         'source',
         'stages',
         'template',
+        'use',
     }
     local function custom_keys(_, key)
         return type(key) ~= 'number' and
@@ -57,6 +59,13 @@ local function write_common(w, pkg)
     for name in each(names) do
         write_var(name, pkg[name])
     end
+
+    local uses = {}
+    for use in each(pkg.use) do
+        local t = Target:from_use(use)
+        append(uses, t.name)
+    end
+    write_var('use', uses)
 end
 
 local function write_source(w, pkg)

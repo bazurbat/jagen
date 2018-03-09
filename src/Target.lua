@@ -55,6 +55,17 @@ function Target:from_qname(qname, stage)
     return Target:new(name, stage, config)
 end
 
+function Target:from_use(use)
+    if type(use) == 'string' then
+        return Target:from_qname(use)
+    elseif type(use) == 'table' then
+        local t = Target:from_qname(use[1])
+        return t
+    else
+        error('invalid use specification: '..pretty(use))
+    end
+end
+
 function Target:__eq(other)
     return self.name   == other.name   and
            self.stage  == other.stage  and
