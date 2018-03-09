@@ -292,6 +292,14 @@ function string.convert_pattern(s)
     return s
 end
 
+function table.tolist(t)
+    local list = {}
+    for k, v in pairs(t) do
+        table.insert(list, v)
+    end
+    return list
+end
+
 function table.iclean(t)
     if not t then return end
     for i, _ in ipairs(t) do
