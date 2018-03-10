@@ -2,7 +2,7 @@ return {
     source = {
         type     = 'git',
         location = 'https://github.com/GENIVI/node-health-monitor.git',
-        branch   = '1.3.5',
+        tag      = '1.3.5',
     },
     build = {
         type = 'GNU',

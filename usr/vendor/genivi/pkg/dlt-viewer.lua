@@ -1,8 +1,8 @@
 return {
     source = {
-        type = 'git',
+        type     = 'git',
         location = 'https://github.com/GENIVI/dlt-viewer.git',
-        branch = 'v2.18.0'
+        tag      = 'v2.18.0'
     },
     build = {
         type = 'CMake',

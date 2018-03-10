@@ -103,7 +103,7 @@ function Source:getbookmark()
 end
 
 function Source:getrev()
-    return self:gettag() or self:getbookmark() or self:getbranch()
+    return self.rev or self:gettag() or self:getbookmark() or self:getbranch()
 end
 
 function Source:head()
@@ -182,6 +182,9 @@ function GitSource:update()
         append(refspecs, string.format('"+refs/tags/%s:refs/tags/%s"',
             tag, tag))
     end
+    if self.rev then
+        append(refspecs, string.format("%s", self.rev))
+    end
     return self:command('fetch', quote(self.origin),
                table.concat(refspecs, ' ')):exec() and
            self:_update_submodules()
@@ -189,7 +192,9 @@ end
 
 function GitSource:switch()
     local tag, branch, ref = self:gettag(), self:getbranch() or 'master'
-    if tag then
+    if self.rev then
+        ref = self.rev
+    elseif tag then
         ref = string.format('tags/%s', tag)
     elseif branch then
         ref = string.format('%s/%s', assert(self.origin), branch)
@@ -259,7 +264,7 @@ function HgSource:update()
     for bookmark in each(self:getbookmarks()) do
         cmd:append('--bookmark', bookmark)
     end
-    for tag in each(self:gettags()) do
+    for tag in each(append(self:gettags(), self.rev)) do
         cmd:append('--rev', tag)
     end
     return cmd:exec()

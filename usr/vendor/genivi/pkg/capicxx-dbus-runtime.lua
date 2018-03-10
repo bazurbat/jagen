@@ -2,7 +2,7 @@ return {
     source = {
         type     = 'git',
         location = 'https://github.com/GENIVI/capicxx-dbus-runtime.git',
-        branch   = '3.1.12'
+        tag      = '3.1.12'
     },
     build = {
         type = 'CMake',

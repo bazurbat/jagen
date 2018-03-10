@@ -1,8 +1,8 @@
 return {
     source = {
-        type = 'git',
+        type     = 'git',
         location = 'https://github.com/GENIVI/persistence-client-library.git',
-        branch = 'v1.1.0',
+        tag      = 'v1.1.0',
     },
     build = {
         type = 'GNU',

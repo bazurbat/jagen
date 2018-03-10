@@ -2,7 +2,7 @@ return {
     source = {
         type     = 'git',
         location = 'https://github.com/GENIVI/node-state-manager.git',
-        branch   = '2.0.0',
+        tag      = '2.0.0',
     },
     patches = {
         { 'node-state-manager-2.0.0-fix-libsystemd-pc-filename', 1 },

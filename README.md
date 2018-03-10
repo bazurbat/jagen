@@ -85,7 +85,7 @@ package { 'nanomsg', 'host',
     source = {
         type = 'git',
         location = 'https://github.com/nanomsg/nanomsg.git',
-        branch = '1.1.2'
+        tag = '1.1.2'
     },
     build = {
         type = 'CMake'

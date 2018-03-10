@@ -1,8 +1,8 @@
 return {
     source = {
-        type = 'git',
+        type     = 'git',
         location = 'https://github.com/GENIVI/persistence-administrator.git',
-        branch = '1.0.5'
+        tag      = '1.0.5'
     },
     patches = {
         { 'persistence-administrator-1.0.5-fix-libsystemd-pc-filename', 1 },

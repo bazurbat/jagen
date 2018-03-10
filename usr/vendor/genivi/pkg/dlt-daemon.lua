@@ -1,8 +1,8 @@
 return {
     source = {
-        type = 'git',
+        type     = 'git',
         location = 'https://github.com/GENIVI/dlt-daemon.git',
-        branch = 'v2.16.0',
+        tag      = 'v2.16.0',
     },
     build = {
         type = 'CMake',

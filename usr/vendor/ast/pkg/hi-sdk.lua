@@ -2,7 +2,6 @@ return {
     source = {
         type     = 'git',
         location = 'git@bitbucket.org:art-system/hi-sdk.git',
-        branch   = 'master',
         assume_unchanged = {
             'pub/include/hi_go_bliter.h',
             'source/boot/fastboot/include/configs/s40_config.h',

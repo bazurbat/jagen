@@ -1,8 +1,8 @@
 return {
     source = {
-        type = 'git',
+        type     = 'git',
         location = 'https://github.com/google/flatbuffers.git',
-        branch = 'v1.8.0'
+        tag      = 'v1.8.0'
     },
     build = {
         type = 'CMake',

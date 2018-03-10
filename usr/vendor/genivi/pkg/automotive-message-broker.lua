@@ -1,8 +1,8 @@
 return {
     source = {
-        type = 'git',
+        type     = 'git',
         location = 'https://github.com/otcshare/automotive-message-broker.git',
-        branch = '0.13',
+        branch   = '0.13',
     },
     build = {
         type = 'CMake',

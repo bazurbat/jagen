@@ -2,7 +2,7 @@ return {
     source = {
         type     = 'git',
         location = 'https://github.com/bazurbat/grpc.git',
-        branch   = 'v1.6.x',
+        tag      = 'v1.6.x',
     },
     build = {
         type = 'make'

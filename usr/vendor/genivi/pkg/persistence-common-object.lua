@@ -1,8 +1,8 @@
 return {
     source = {
-        type = 'git',
+        type     = 'git',
         location = 'https://github.com/GENIVI/persistence-common-object.git',
-        branch = '1.0.3',
+        tag      = '1.0.3',
     },
     build = {
         type = 'GNU',

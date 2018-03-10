@@ -2,7 +2,7 @@ return {
     source = {
         type     = 'git',
         location = 'https://github.com/GENIVI/node-startup-controller.git',
-        branch   = 'node-startup-controller-1.0.2',
+        tag      = 'node-startup-controller-1.0.2',
     },
     build = {
         type = 'GNU',

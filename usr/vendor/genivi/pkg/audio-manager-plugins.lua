@@ -2,7 +2,6 @@ return {
     source = {
         type     = 'git',
         location = 'https://github.com/GENIVI/AudioManagerPlugins.git',
-        branch   = 'master'
     },
     build = {
         type = 'CMake',

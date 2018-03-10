@@ -83,7 +83,6 @@ rules and also to find pkg files. The `config` is optional.
     source = {
         type     = 'dist|git|hg|repo',
         location = 'filename|URL',
-        branch   = 'branch|tag|revision',
 
         md5sum    = 'hash string',
         sha1sum   = 'hash string',
@@ -191,8 +190,14 @@ rules and also to find pkg files. The `config` is optional.
 - **source.basename** (`pkg_source_basename`) — The source filename without an
   extension, `.git` is also considered an extension in this case.
 
-- **source.branch** (`pkg_source_branch`) — The source branch, tag or revision
-  to checkout on _unpack_ stage (for SCM source only).
+- **source.bookmark** — The bookmark to pull on update (Hg sources only).
+
+- **source.bookmarks** — Additional bookmarks to pull on update (Hg sources
+  only).
+
+- **source.branch** — The branch to checkout/fetch on update (SCM sources only).
+
+- **source.branches** — Additional branches to fetch on update (SCM source only).
 
 - **source.dir** (`pkg_source_dir`) — A directory name or path of the source
   relative to the `base_dir`.
@@ -219,6 +224,15 @@ rules and also to find pkg files. The `config` is optional.
 
 - **source.sha256sum** (`pkg_source_sha256sum`) — SHA256 hash of the source
   file (for dist sources only)
+
+- **source.rev** — A revision identifier to checkout or update. Takes priority
+  over other revision specifiers (branch, tag, bookmark), the interpretation
+  depends on the underlying SCM.
+
+- **source.tag** — The tag (Git) or revision (Hg) to checkout and fetch on
+  update, takes priority over a branch.
+
+- **source.tags** — Additional tags (Git) or revisions (Hg) to fetch on update.
 
 - **source.type** — A type of the source: dist, git, hg, repo. The packages
   with the source types of "git", "hg" and "repo" are considered "SCM" packages
