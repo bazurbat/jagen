@@ -237,7 +237,7 @@ end
 -- HgSource
 
 function HgSource:command(...)
-    return Command:new('hg --pager never -yR', quote(assert(self.dir)), ...)
+    return Command:new('hg -y --pager never -R', quote(assert(self.dir)), ...)
 end
 
 function HgSource:head()
