@@ -37,6 +37,10 @@ package { 'karaoke-player', 'target',
     }
 }
 
+package { 'hi-utils', 'target',
+    requires = { 'karaoke-player' }
+}
+
 package { 'firmware', 'target',
     pass_template = firmware_template_rule,
     { 'compile',
