@@ -6,7 +6,6 @@ return {
     },
     build  = {
         type = 'GNU',
-        unset_cflags = true,
         options = {
             '--build=x86_64-linux-gnu',
             '--host=x86_64-linux-gnu',
