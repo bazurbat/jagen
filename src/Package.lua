@@ -307,7 +307,7 @@ function P:add_patch_dependencies()
         -- Adding patch files to arguments modifies the command line which is
         -- needed for Ninja to notice the changes in the list itself and rerun
         -- the command which then checks if the patches were indeed provided.
-        stage.arg = stage.outputs
+        stage.arg = sort(stage.outputs)
 
         pkg.patches = pkg.patches or {}
         pkg.patches.provided = sort(extend(pkg.patches.provided, outputs))
