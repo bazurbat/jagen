@@ -112,16 +112,26 @@ end
 
 function append(list, ...)
     list = list or {}
-    for _, arg in ipairs({...}) do
-        table.insert(list, arg)
+    for i = 1, select('#', ...) do
+        local val = select(i, ...)
+        if val ~= nil then
+            insert(list, val)
+        end
     end
     return list
 end
 
-function extend(list, other_list)
-    list = list or {}
-    for _, val in ipairs(other_list or {}) do
-        table.insert(list, val)
+function prepend(list, ...)
+    return extend({...}, list)
+end
+
+function extend(list, other)
+    list, other = list or {}, other or {}
+    for i = 1, #other do
+        local val = other[i]
+        if val ~= nil then
+            insert(list, val)
+        end
     end
     return list
 end
@@ -202,11 +212,16 @@ function append_uniq(value, list)
 end
 
 function quote(...)
-    local result = {}
-    for arg in each {...} do
-        table.insert(result, string.format('"%s"', tostring(arg)))
+    local n = select('#', ...)
+    if n == 1 then
+        return format('"%s"', tostring((select(1, ...))))
+    else
+        local result = {}
+        for i = 1, n do
+            insert(result, format('"%s"', tostring((select(i, ...)))))
+        end
+        return unpack(result)
     end
-    return unpack(result)
 end
 
 function squote(...)
