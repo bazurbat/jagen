@@ -559,48 +559,19 @@ function Jagen.command.list(args)
         table.insert(pkg_list, pkg)
     end
     table.sort(pkg_list, function (a, b) return a.name < b.name end)
+    local start_col = name_max + 2
 
-    local dirname = System.dirname(Jagen.project_dir)
-    local col2_pos = name_max + 2
-
-    local function format_context(c, level)
-        level = level or 0
-        local s = ''
-        local function name()
-            local s = ''
-            if c.name then
-                s = string.format('%s', c.name)
-            end
-            if c.config then
-                s = string.format('%s:%s', s, c.config)
-            end
-            return s
-        end
-        local function filename()
-            local s = ''
-            if c.filename then
-                local name, rem = string.remove_prefix(c.filename, dirname)
-                s = string.format('%s%s', rem and '...' or '', name)
-                if c.line then
-                    s = string.format('%s:%d', s, c.line)
+    if not show_all then
+        -- prune implicit contexts
+        for _, pkg in pairs(packages) do
+            local contexts = {}
+            for context in each(pkg.contexts) do
+                if not context.implicit then
+                    table.insert(contexts, context)
                 end
             end
-            return s
+            pkg.contexts = contexts
         end
-        if c.name and c.filename then
-            s = string.format('%s (%s)', name(), filename())
-        elseif c.name then
-            s = name()
-        elseif c.filename then
-            s = filename()
-        end
-        if c.implicit and #s > 0 then
-            s = string.format('%s *', s)
-        end
-        if #s > 0 then
-            s = string.format('%s%s', string.rep(' ', level * 2), s)
-        end
-        return s
     end
 
     -- prune up to the specified depth
@@ -618,7 +589,7 @@ function Jagen.command.list(args)
         end
     end
 
-    -- prune duplicate context entries
+    -- prune duplicate entries left after pruning
     for name, pkg in pairs(packages) do
         local tt, tag = {}
         for _, c in ipairs(pkg.contexts) do
@@ -635,22 +606,7 @@ function Jagen.command.list(args)
     end
 
     for _, pkg in ipairs(pkg_list) do
-        io.write(pkg.name)
-        io.write(string.rep(' ', col2_pos - #pkg.name))
-        local lines = {}
-        for _, context in ipairs(pkg.contexts) do
-            local level = 0
-            while context do
-                if not show_all and context.implicit then break end
-                local str = format_context(context, level)
-                if #str > 0 then
-                    table.insert(lines, str)
-                end
-                context = context.parent
-                level = level + 1
-            end
-        end
-        io.write(table.concat(lines, '\n'..string.rep(' ', col2_pos)), '\n')
+        io.write(pkg.name, pkg:format_contexts(start_col, start_col - #pkg.name), '\n')
     end
 
     return true

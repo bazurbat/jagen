@@ -32,23 +32,31 @@ function Context:new(o)
     return o
 end
 
-function Context:__tostring()
-    local str = {}
-    if self.filename then
-        table.insert(str, '...')
-        table.insert(str, (self.filename:remove_prefix(System.dirname(Jagen.project_dir))))
-    end
-    if self.line then
-        table.insert(str, ':')
-        table.insert(str, self.line)
-    end
-    if self.implicit then
-        if #str > 0 then
-            table.insert(str, ' ')
+function Context:__tostring(level)
+    level = level or 0
+    local insert, concat = table.insert, table.concat
+    local lines = {}
+    local function append(...)
+        for i = 1, select('#', ...) do
+            insert(lines, (select(i, ...)))
         end
-        table.insert(str, '*')
     end
-    return table.concat(str)
+    if self.name or self.config then
+        append(concat({ self.name, self.config }, ':'))
+    end
+    if self.filename then
+        if #lines > 0 then append(' ') end
+        if self.name or self.config then append('(') end
+        local filename, removed = self.filename:remove_prefix(System.dirname(Jagen.project_dir))
+        if removed then append('...') end append(filename)
+        if self.line then append(':', self.line) end
+        if self.name or self.config then append(')') end
+    end
+    if self.implicit and #lines > 0 then
+        append(' *')
+        insert(lines, 1, string.rep('  ', level))
+    end
+    return table.concat(lines)
 end
 
 function Context:__unm()
@@ -91,20 +99,30 @@ local function find_module(modname)
     end
 end
 
-function P:__tostring()
-    return string.format('%s__%s', self.name or '', self.config or '')
+function P:__tostring(sep)
+    return string.format('%s%s%s', self.name or '', sep or ':', self.config or '')
 end
 
-function P:toqname(config)
-    local str = { self.name }
-    if config then
-        table.insert(str, ':'..config)
+function P:format_contexts(start_col, start_1col)
+    start_col = start_col or 0
+    start_1col = start_1col or start_col
+    local lines = {}
+    for i = 1, #self.contexts do
+        local context, level = self.contexts[i], 0
+        while context do
+            local str = context:__tostring(level)
+            if #str > 0 then
+                if i == 1 then
+                    table.insert(lines, string.rep(' ', start_1col)..str)
+                else
+                    table.insert(lines, string.rep('  ', level)..str)
+                end
+            end
+            context = context.parent
+            level = level + 1
+        end
     end
-    return table.concat(str)
-end
-
-function P:last_rule_location()
-    return tostring(self.contexts[#self.contexts]) or '<none>'
+    return table.concat(lines, '\n'..string.rep(' ', start_col))
 end
 
 function P:parse(rule)
