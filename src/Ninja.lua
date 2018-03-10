@@ -150,16 +150,18 @@ local function format_stage(target, pkg)
         local this = assert(pkg.configs[target.config])
         for spec in each(pkg.use or {}) do
             local use = Target:from_use(spec)
-            local config = use.config or target.config
-            local used = packages[use.name]
-            if used and used:has_config(config) then
+            local used = assert(packages[use.name])
+            local config = use.config or next(used.configs)
+            if config then
                 append(uses, Target:new(use.name, 'export', config))
             end
         end
         for spec in each(this.use or {}) do
             local use = Target:from_use(spec)
             local config = use.config or target.config
-            append(uses, Target:new(use.name, 'export', config))
+            if config then
+                append(uses, Target:new(use.name, 'export', config))
+            end
         end
     end
 

@@ -125,6 +125,10 @@ function P:format_contexts(start_col, start_1col)
     return table.concat(lines, '\n'..string.rep(' ', start_col))
 end
 
+function P:format_last_context()
+    return tostring(self.contexts[#self.contexts]) or '<unknown>'
+end
+
 function P:parse(rule)
     if type(rule) == 'string' then
         rule = { name = rule }
@@ -492,38 +496,34 @@ end
 
 function P:check_build_configs()
     if self.build and self.build.type and table.count(self.configs) == 0 then
-        Log.warning("the package '%s' requires a build but has no configs defined",
+        print_error("the package '%s' requires a build but has no configs defined",
             self.name)
     end
 end
 
 function P:check_build_insource()
-    local count, had_warnings, build = table.count(self.configs)
+    local count, build = table.count(self.configs)
     for config, this in self:each_config() do
         build = this.build
         if build and build.in_source and count > 1 then
-            Log.warning("the package '%s' requires an in source build but "..
+            print_error("the package '%s' requires an in source build but "..
                 "has multiple configs defined -- this is not supported",
                 self.name)
-            had_warnings = true
             break
         end
     end
-    return had_warnings
 end
 
 function P:check_build_toolchain()
-    local had_warnings, build
+    local build
     for config, this in self:each_config() do
         build = this.build
         if build and build.type and not build.toolchain then
-            Log.warning("the package '%s' requires '%s' build for "..
+            print_error("the package '%s' requires '%s' build for "..
                 "config '%s' but does not have a toolchain set", self.name,
                 build.type, config)
-            had_warnings = true
         end
     end
-    return had_warnings
 end
 
 function P.load_rules()
@@ -630,18 +630,17 @@ function P.load_rules()
         end
     end
 
-    local had_warnings = false
     for name, pkg in pairs(packages) do
-        had_warnings = pkg:check_build_configs() or had_warnings
-        had_warnings = pkg:check_build_insource() or had_warnings
-        had_warnings = pkg:check_build_toolchain() or had_warnings
-    end
-
-    if had_warnings then
-        error('failed to load rules due to warnings')
+        pkg:check_build_configs()
+        pkg:check_build_insource()
+        pkg:check_build_toolchain()
     end
 
     lua_package.loaders[2] = def_loader
+
+    if had_errors or had_warnings then
+        return {}
+    end
 
     return packages
 end
@@ -717,6 +716,9 @@ function P.define_rule(rule, context)
     table.iclean(this)
 
     if this ~= pkg then
+        if not getmetatable(this) then
+            setmetatable(this, P)
+        end
         if not this.build then this.build = {} end
         if not getmetatable(this.build) then
             setmetatable(this.build, { __index = pkg.build })
@@ -854,18 +856,22 @@ function P.define_rule(rule, context)
         if use.config or not config then
             P.define_rule { use.name, use.config }
         else
-            --[[ sanity checks disabled for now
             local used = packages[use.name]
-            if not used then
-                print_warning("generic part of the rule %s at %s uses %s"..
-                    " which is not defined", pkg:toqname(config),
-                    pkg:last_rule_location(), spec)
-            elseif table.count(used.configs) > 1 then
-                print_warning("generic part of the rule %s at %s uses %s"..
-                    " without specifying a config", pkg:toqname(config),
-                    pkg:last_rule_location(pkg), spec)
+            if used then
+                if table.count(used.configs) > 1 then
+                    print_error(
+"the %s uses %s without specifying a config but %s has multiple configs defined (%s), unable to determine which config to use\n"..
+"    at %s:\n%s\n", tostring(this), spec, spec, table.concat(table.keys(used.configs), ', '),
+                pkg:format_last_context(), pkg:format_contexts(6))
+                else
+                    P.define_rule { use.name, (next(used.configs)) }
+                end
+            else
+                print_error(
+"the %s uses %s without specifying a config but %s is not defined yet, unable to determine the config to use\n"..
+"    at %s:\n%s\n", tostring(this), spec, spec,
+                pkg:format_last_context(), pkg:format_contexts(6))
             end
-            --]]
         end
     end
 

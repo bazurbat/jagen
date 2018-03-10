@@ -14,6 +14,10 @@ package { 'ucode', 'target',
     { 'install' }
 }
 
+package { 'rootfs', 'target' }
+
+package { 'ezboot', 'target' }
+
 -- host
 
 package { 'utils', 'host' }
@@ -159,7 +163,8 @@ firmware_package { 'karaoke-player',
     { 'configure',
         { 'astindex', 'unpack' },
         { 'chicken-eggs', 'install', 'host' }
-    }
+    },
+    use = { 'mrua', 'rootfs' }
 }
 
 -- additional packages should come last to apply all templates defined here
