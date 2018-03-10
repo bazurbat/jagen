@@ -79,15 +79,15 @@ function Source:create(source, name)
 end
 
 function Source:getbranches()
-    return { self.branch, unpack(self.branches or {}) }
+    return prepend(self.branches or {}, self.branch)
 end
 
 function Source:gettags()
-    return { self.tag, unpack(self.tags or {}) }
+    return prepend(self.tags or {}, self.tag)
 end
 
 function Source:getbookmarks()
-    return { self.bookmark, unpack(self.bookmarks or {}) }
+    return prepend(self.bookmarks or {}, self.bookmark)
 end
 
 function Source:getbranch()
@@ -107,6 +107,27 @@ function Source:getrev()
 end
 
 function Source:head()
+    return ''
+end
+
+function Source:dirty()
+    return false
+end
+
+function Source:clean()
+    return true
+end
+
+function Source:update()
+    return true
+end
+
+function Source:switch()
+    return true
+end
+
+function Source:clone()
+    return true
 end
 
 function Source:fixup()
@@ -115,8 +136,26 @@ end
 
 -- GitSource
 
+function GitSource:new(o)
+    local o = Source.new(self, o)
+    o.origin = o.origin or 'origin'
+    return o
+end
+
+function GitSource:_needs_submodules()
+    return not self.exclude_submodules and
+        System.file_exists(System.mkpath(assert(self.dir), '.gitmodules'))
+end
+
+function GitSource:_update_submodules(...)
+    if self:_needs_submodules() then
+        return self:command('submodule update --init --recursive', ...):exec()
+    end
+    return true
+end
+
 function GitSource:command(...)
-    return Command:new('git', '--no-pager', '-C', quote(assert(self.dir)), ...)
+    return Command:new('git --no-pager -C', quote(assert(self.dir)), ...)
 end
 
 function GitSource:head()
@@ -132,93 +171,60 @@ function GitSource:clean()
            self:command('clean -fxd'):exec()
 end
 
-function GitSource:update_submodules()
-    if not self.exclude_submodules and
-            System.file_exists(System.mkpath(self.dir, '.gitmodules')) then
-        return self:command('submodule update --init --recursive'):exec()
-    end
-    return true
-end
-
 function GitSource:update()
-    local branch = self:getrev()
-    if not branch then return false end
-    local line = self:command('ls-remote --heads --tags origin', quote(branch)):read()
-    if not line then
-        line = self:command('branch --list', quote(branch)):read()
-        if line then -- local branch, no update
-            return true
-        else
-            Log.error("could not find tag or branch '%s' in '%s'", branch, self.location)
-            return false
-        end
+    assert(self.origin)
+    local refspecs = {}
+    for branch in each(self:getbranches()) do
+        append(refspecs, string.format('"+refs/heads/%s:refs/remotes/%s/%s"',
+            branch, self.origin, branch))
     end
-    local src, dst = string.match(line, '^%S+%s+(%S+)$')
-    local name = assert(string.match(src, '^.+/([^/]+)$'))
-    if string.match(src, '/tags/') then
-        dst = string.format('refs/tags/%s', name)
-    else
-        dst = string.format('refs/remotes/origin/%s', name)
+    for tag in each(self:gettags()) do
+        append(refspecs, string.format('"+refs/tags/%s:refs/tags/%s"',
+            tag, tag))
     end
-    local refspec = string.format('+%s:%s', src, dst)
-    return self:command('fetch --prune origin', quote(refspec)):exec() and
-           self:update_submodules()
+    return self:command('fetch', quote(self.origin),
+               table.concat(refspecs, ' ')):exec() and
+           self:_update_submodules()
 end
 
 function GitSource:switch()
-    local branch = self:getrev()
-    if not branch then return true end
-
-    local name = self:command('branch --list', quote(branch)):read()
-    if name then
-        if string.sub(name, 1, 1) == '*' then -- already active
-            return true
-        else -- switch to matching local branch
-            name = string.trim(name)
-            return self:command('checkout -q', quote(name)):exec() and
-                   self:command('merge --ff-only', quote('origin/'..name)):read() and
-                   self:update_submodules()
-        end
-    end
-
-    name = self:command('branch --list --remotes', quote('origin/'..branch)):read()
-    if name then -- switch to a new remote branch
-        name = assert(string.match(name, '^%s+origin/(%S+)'))
-        return self:command('checkout -b', quote(name), quote('origin/'..name)):exec() and
-               self:update_submodules()
-    end
-
-    local tag = self:command('tag --list', quote(branch)):read()
+    local tag, branch, ref = self:gettag(), self:getbranch() or 'master'
     if tag then
-        return self:command('checkout', quote(tag)):exec() and
-               self:update_submodules()
+        ref = string.format('tags/%s', tag)
+    elseif branch then
+        ref = string.format('%s/%s', assert(self.origin), branch)
     end
-
-    Log.error("could not find tag or branch '%s' in '%s'", branch, self.dir)
-
-    return false
+    if ref then
+        return self:command('checkout -q', quote(ref), '--'):exec() and
+               self:_update_submodules('--no-fetch')
+    end
 end
 
 function GitSource:clone()
     assert(self.location) assert(self.dir)
+    -- even for unattended cases the progress is useful to watch in logs
     local clone_cmd = Command:new('git clone --progress')
-    for branch in each(self.branch or {}) do
-        clone_cmd:append('--branch', branch)
+    for branch in each(self:getbranches()) do
+        clone_cmd:append('--branch', quote(branch))
     end
-    -- try to detect if the server is "smart"
-    -- https://stackoverflow.com/questions/9270488/is-it-possible-to-detect-whether-a-http-git-remote-is-smart-or-dumb
-    local headers = Command:new('curl -sSi', quote(self.location..'/info/refs?service=git-upload-pack')):read('*a')
-    if string.match(headers, 'Content%-Type: application/x%-git') then -- smart
-        clone_cmd:append('--depth', 1)
+    if self.shallow then
+        -- try to detect if the server is "smart"
+        -- https://stackoverflow.com/questions/9270488/is-it-possible-to-detect-whether-a-http-git-remote-is-smart-or-dumb
+        local url = self.location..'/info/refs?service=git-upload-pack'
+        local pattern = 'Content%-Type: application/x%-git'
+        local command = Command:new('curl -fisS', quote(url))
+        if command:exists() and command:read('*a'):match(pattern) then -- smart
+            clone_cmd:append('--depth', 1)
+        end
     end
     clone_cmd:append('--', quote(self.location), quote(self.dir))
-    return clone_cmd:exec() and self:update_submodules()
+    return clone_cmd:exec() and self:_update_submodules()
 end
 
 function GitSource:fixup()
     if self.assume_unchanged then
         return self:command('update-index --assume-unchanged',
-                            quote(unpack(self.assume_unchanged)))
+                   quote(unpack(self.assume_unchanged)))
     end
     return true
 end
@@ -226,11 +232,11 @@ end
 -- HgSource
 
 function HgSource:command(...)
-    return Command:new('hg', '-y', '--pager', 'never', '-R', quote(assert(self.dir)), ...)
+    return Command:new('hg --pager never -yR', quote(assert(self.dir)), ...)
 end
 
 function HgSource:head()
-    return self:command('id', '-i'):read()
+    return self:command('id -i'):read()
 end
 
 function HgSource:dirty()
@@ -238,8 +244,8 @@ function HgSource:dirty()
 end
 
 function HgSource:clean()
-    local purge_cmd = self:command('purge', '--all')
-    local update_cmd = self:command('update', '--clean')
+    local purge_cmd = self:command('purge --all')
+    local update_cmd = self:command('update --clean')
     local rev = self:getrev()
     if rev then update_cmd:append('--rev', rev) end
     return purge_cmd:exec() and update_cmd:exec()
@@ -260,7 +266,7 @@ function HgSource:update()
 end
 
 function HgSource:switch()
-    local cmd = self:command('update', '--check')
+    local cmd = self:command('update --check')
     local rev = self:getrev()
     if rev then cmd:append('--rev', rev) end
     return cmd:exec()
@@ -287,7 +293,7 @@ function RepoSource:command(...)
 end
 
 function RepoSource:manifest_rev()
-    local line = self:command('info', '-o'):read() or ''
+    local line = self:command('info -o'):read() or ''
     if line:match('^Manifest branch: ') then
         return assert(line:match('^.*/(.+)$') or line)
     else
@@ -299,7 +305,7 @@ function RepoSource:reinit()
     local rev, manifest_rev = assert(self:getrev()), self:manifest_rev()
     if rev ~= manifest_rev then
         -- pipe to cat to inhibit prompting a user on a terminal
-        return self:command('init', '-b', rev, '|', 'cat'):exec()
+        return self:command('init -b', quote(rev), '| cat'):exec()
     end
     return true
 end
@@ -314,23 +320,25 @@ end
 
 function RepoSource:clean()
     local clean_cmd = 'if [ \"$(ls)\" ]; then git checkout HEAD -- . && git clean -fxd; fi'
-    local sync_cmd = self:command('sync', '--detach', '--no-tags')
+    local sync_cmd = self:command('sync --detach --no-tags')
     if Jagen.flag 'offline' then
         sync_cmd:append('-l')
     end
     return sync_cmd:exec() and
-           self:command('forall', '-pc', squote(clean_cmd)):exec()
+           self:command('forall -pc', squote(clean_cmd)):exec()
 end
 
 function RepoSource:update()
-    return self:reinit() and self:command('sync', '-nc'):exec()
+    return self:reinit() and self:command('sync -nc'):exec()
 end
 
 function RepoSource:switch()
-    return self:reinit() and self:command('sync', '-l'):exec()
+    return self:reinit() and self:command('sync -l'):exec()
 end
 
 function RepoSource:clone()
+    -- repo sources are used for Android mostly, which is huge, always specify
+    -- depth to save disk space and let the Repo tool deal with it
     return Command:new('mkdir', '-p', quote(assert(self.dir))):exec() and
            self:command('init', '-u', quote(assert(self.location)),
                                 '-b', quote(assert(self:getrev()))
