@@ -223,7 +223,7 @@ jagen__trim() {
 jagen__expand() {
     local value="$1" name="$2" maxdepth=10 depth=0
     while [ $depth -le $maxdepth ]; do
-        value=$(eval echo \""$value"\")
+        value=$(eval echo \""$value"\") || return
         if [ "$value" = "${value#*$}" ]; then
             echo "$value"; return
         fi
