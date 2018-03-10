@@ -55,15 +55,15 @@ function Target:from_qname(qname, stage)
     return Target:new(name, stage, config)
 end
 
-function Target:from_use(use)
-    if type(use) == 'string' then
-        return Target:from_qname(use)
-    elseif type(use) == 'table' then
-        local t = Target:from_qname(use[1])
-        t.alias = use[2]
-        return t
+function Target:from_use(spec)
+    if type(spec) == 'string' then
+        return Target:from_qname(spec)
+    elseif type(spec) == 'table' then
+        local use = Target:from_qname(spec[1])
+        use.alias = spec[2]
+        return use
     else
-        error('invalid use specification: '..pretty(use))
+        error('invalid use specification: '..pretty(spec))
     end
 end
 
