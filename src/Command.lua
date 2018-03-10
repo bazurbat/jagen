@@ -18,6 +18,10 @@ function Command:__tostring()
     return table.concat(self.command, ' ')
 end
 
+function Command:exists()
+    return Command:new('command -v', tostring(self)):read()
+end
+
 function Command:exec()
     local cmdstr = tostring(self) Log.debug2(cmdstr)
     local ok = os.execute(cmdstr)
