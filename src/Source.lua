@@ -8,17 +8,6 @@ function Source:new(o)
     local o = o or {}
     setmetatable(o, self)
     self.__index = self
-
-    if type(o.branch) == 'string' then
-        o.branch = { o.branch }
-    end
-    if type(o.tag) == 'string' then
-        o.tag = { o.tag }
-    end
-    if type(o.bookmark) == 'string' then
-        o.bookmark = { o.bookmark }
-    end
-
     return o
 end
 
@@ -89,10 +78,32 @@ function Source:create(source, name)
     return source
 end
 
-function Source:rev()
-    return self.tag and self.tag[1] or
-           self.bookmark and self.bookmark[1] or
-           self.branch and self.branch[1]
+function Source:getbranches()
+    return { self.branch, unpack(self.branches or {}) }
+end
+
+function Source:gettags()
+    return { self.tag, unpack(self.tags or {}) }
+end
+
+function Source:getbookmarks()
+    return { self.bookmark, unpack(self.bookmarks or {}) }
+end
+
+function Source:getbranch()
+    return self:getbranches()[1]
+end
+
+function Source:gettag()
+    return self:gettags()[1]
+end
+
+function Source:getbookmark()
+    return self:getbookmarks()[1]
+end
+
+function Source:getrev()
+    return self:gettag() or self:getbookmark() or self:getbranch()
 end
 
 function Source:head()
@@ -130,7 +141,7 @@ function GitSource:update_submodules()
 end
 
 function GitSource:update()
-    local branch = self:rev()
+    local branch = self:getrev()
     if not branch then return false end
     local line = self:command('ls-remote --heads --tags origin', quote(branch)):read()
     if not line then
@@ -155,8 +166,8 @@ function GitSource:update()
 end
 
 function GitSource:switch()
-    local branch = self:rev()
-    if not branch then return false end
+    local branch = self:getrev()
+    if not branch then return true end
 
     local name = self:command('branch --list', quote(branch)):read()
     if name then
@@ -229,38 +240,38 @@ end
 function HgSource:clean()
     local purge_cmd = self:command('purge', '--all')
     local update_cmd = self:command('update', '--clean')
-    local rev = self:rev()
+    local rev = self:getrev()
     if rev then update_cmd:append('--rev', rev) end
     return purge_cmd:exec() and update_cmd:exec()
 end
 
 function HgSource:update()
     local cmd = self:command('pull')
-    for branch in each(self.branch or {}) do
+    for branch in each(self:getbranches()) do
         cmd:append('--branch', branch)
     end
-    for bookmark in each(self.bookmark or {}) do
+    for bookmark in each(self:getbookmarks()) do
         cmd:append('--bookmark', bookmark)
     end
-    for rev in each(self.tag or {}) do
-        cmd:append('--rev', rev)
+    for tag in each(self:gettags()) do
+        cmd:append('--rev', tag)
     end
     return cmd:exec()
 end
 
 function HgSource:switch()
     local cmd = self:command('update', '--check')
-    local rev = self:rev()
+    local rev = self:getrev()
     if rev then cmd:append('--rev', rev) end
     return cmd:exec()
 end
 
 function HgSource:clone()
     local cmd = Command:new('hg clone')
-    for branch in each(self.branch or {}) do
+    for branch in each(self:getbranches()) do
         cmd:append('--branch', branch)
     end
-    for rev in each(extend(self.bookmark, self.tag)) do
+    for rev in each(extend(self:getbookmarks(), self.gettags())) do
         cmd:append('--rev', rev)
     end
     cmd:append(quote(assert(self.location)))
@@ -285,7 +296,7 @@ function RepoSource:manifest_rev()
 end
 
 function RepoSource:reinit()
-    local rev, manifest_rev = assert(self:rev()), self:manifest_rev()
+    local rev, manifest_rev = assert(self:getrev()), self:manifest_rev()
     if rev ~= manifest_rev then
         -- pipe to cat to inhibit prompting a user on a terminal
         return self:command('init', '-b', rev, '|', 'cat'):exec()
@@ -322,7 +333,7 @@ end
 function RepoSource:clone()
     return Command:new('mkdir', '-p', quote(assert(self.dir))):exec() and
            self:command('init', '-u', quote(assert(self.location)),
-                                '-b', quote(assert(self:rev()))
+                                '-b', quote(assert(self:getrev()))
                                 '--depth', 1):exec()
 end
 
