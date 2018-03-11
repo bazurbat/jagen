@@ -475,22 +475,17 @@ end
 
 function P:each()
     return coroutine.wrap(function ()
-            for _, target in ipairs(self.stages) do
-                coroutine.yield(target)
+            if self.stages then
+                for target in each(self.stages) do
+                    coroutine.yield(target)
+                end
             end
             if self.configs then
-                -- Having consistent order everywhere helps with debugging and
-                -- diffing of output files. Actually sort algorithm in Lua 5.1
-                -- is not stable but this is not an issue for now.
-                local names = {}
-                for name, _ in pairs(self.configs) do
-                    table.insert(names, name)
-                end
-                table.sort(names)
-                for _, name in ipairs(names) do
-                    local config = self.configs[name]
-                    for _, target in ipairs(config.stages or {}) do
-                        coroutine.yield(target)
+                for config, this in pairs(self.configs) do
+                    if this.stages then
+                        for target in each(this.stages) do
+                            coroutine.yield(target)
+                        end
                     end
                 end
             end
