@@ -480,14 +480,14 @@ function P:each()
     return coroutine.wrap(function ()
             if self.stages then
                 for target in each(self.stages) do
-                    coroutine.yield(target)
+                    coroutine.yield(target, self)
                 end
             end
             if self.configs then
                 for config, this in pairs(self.configs) do
                     if this.stages then
                         for target in each(this.stages) do
-                            coroutine.yield(target)
+                            coroutine.yield(target, this)
                         end
                     end
                 end
