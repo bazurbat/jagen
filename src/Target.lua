@@ -3,29 +3,24 @@ local Command = require 'Command'
 local Target = {}
 Target.__index = Target
 
-function Target:new(name, stage, config)
-    local target = {
-        name   = name,
-        stage  = stage,
-        config = config,
-    }
-    setmetatable(target, self)
-    return target
+function Target:new(o)
+    o = o or {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
 end
 
 function Target:from_args(name, stage, config)
-    local target = {
+    return Target:new {
         name   = name,
         stage  = stage,
         config = config,
     }
-    setmetatable(target, self)
-    return target
 end
 
 function Target:parse(rule, name, config)
     local stage = rule[1]; assert(type(stage) == 'string')
-    local target = Target:new(name, stage, config)
+    local target = Target:from_args(name, stage, config)
 
     for k, v in pairs(rule) do
         target[k] = rule[k]
@@ -37,7 +32,7 @@ function Target:parse(rule, name, config)
 
     for i = 2, #rule do
         local input = rule[i]
-        append(target.inputs, Target:new(input[1], input[2], input[3]))
+        append(target.inputs, Target:from_args(input[1], input[2], input[3]))
     end
 
     return target
@@ -57,12 +52,12 @@ function Target:from_arg(arg)
         config = c[3]
     end
 
-    return Target:new(name, stage, config)
+    return Target:from_args(name, stage, config)
 end
 
 function Target:from_qname(qname, stage)
     local name, config = unpack(string.split2(qname, ':'))
-    return Target:new(name, stage, config)
+    return Target:from_args(name, stage, config)
 end
 
 function Target:from_use(spec)

@@ -399,7 +399,7 @@ function P:add_export_stages()
     for config, this in self:each_config() do
         if not this.stages then this.stages = {} end
         if this.export and not this.stages['export'] then
-            local target = Target:new(self.name, 'export', config)
+            local target = Target:from_args(self.name, 'export', config)
             this.stages['export'] = target
             table.insert(this.stages, 1, target)
         end

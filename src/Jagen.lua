@@ -167,7 +167,7 @@ function Jagen.src.update(args)
         end
 
         if source:head() ~= old_head then
-            assert(Target:new(pkg.name, 'unpack'):touch())
+            assert(Target:from_args(pkg.name, 'unpack'):touch())
         end
     end
 end
@@ -325,7 +325,7 @@ local function clean_packages(args)
     local packages = Package.load_rules()
 
     function force_reconfigure(name, config)
-        assert(Target:new(name, 'configure', config):remove())
+        assert(Target:from_args(name, 'configure', config):remove())
     end
 
     for _, arg in ipairs(args) do
