@@ -292,5 +292,5 @@ jagen__get_cmake_version() {
 }
 
 jagen__is_empty() {
-    test "$(cd "${1:?}" 2>/dev/null && ls -A)"
+    test -z "$(cd "${1:?}" 2>/dev/null && ls -A)"
 }
