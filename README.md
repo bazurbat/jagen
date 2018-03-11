@@ -82,14 +82,8 @@ directory. For example, write the following:
 
 ```lua
 package { 'nanomsg', 'host',
-    source = {
-        type = 'git',
-        location = 'https://github.com/nanomsg/nanomsg.git',
-        tag = '1.1.2'
-    },
-    build = {
-        type = 'cmake'
-    }
+    source = 'https://github.com/nanomsg/nanomsg.git',
+    build  = 'cmake'
 }
 ```
 
