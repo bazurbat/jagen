@@ -196,17 +196,21 @@ function find(pred, list)
 end
 
 function contains(member, list)
-    for i, v in ipairs(list) do
-        if v == member then
-            return true, i
+    if list then
+        for i = 1, #list do
+            v = list[i]
+            if v == member then
+                return true, i
+            end
         end
     end
     return false, nil
 end
 
 function append_uniq(value, list)
+    list = list or {}
     if not contains(value, list) then
-        table.insert(list, value)
+        insert(list, value)
     end
     return list
 end
