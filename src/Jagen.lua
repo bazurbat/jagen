@@ -428,6 +428,9 @@ function Jagen.command.refresh(args, packages)
             assert(configs_file:write(string.format('%s:%s\n', name, config)))
         end
         assert(configs_file:write(string.format('%s\n', name)))
+        for config, _ in pkg:each_config() do
+            assert(targets_file:write(string.format('%s::%s\n', name, config)))
+        end
         for target in pkg:each() do
             assert(targets_file:write(string.format('%s\n', target)))
         end
