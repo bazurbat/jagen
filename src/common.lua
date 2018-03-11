@@ -311,6 +311,19 @@ function string.convert_pattern(s)
     return s
 end
 
+function string.to_target_pattern(s)
+    if not s:match(':') then
+        s = s..'*'
+    end
+    s = s:gsub('::', ':*:*')
+    s = s:gsub(':$', ':*')
+    s = s:escape_pattern(s)
+    s = string.format('^%s$', s)
+    s = s:gsub('%%%?', '[%%w%%p]')
+    s = s:gsub('%%%*', '[%%w%%p]*')
+    return s
+end
+
 function string.tocanon(s)
     s = string.lower(s)
     s = string.gsub(s, '_', '-')
