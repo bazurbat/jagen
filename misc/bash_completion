@@ -34,6 +34,11 @@ _jagen_complete() {
     local cur prev
     local jagen_command jagen_subcommand
 
+    local names_file="$jagen_build_dir/.jagen-names"
+    local scm_names_file="$jagen_build_dir/.jagen-scm-names"
+    local configs_file="$jagen_build_dir/.jagen-configs"
+    local targets_file="$jagen_build_dir/.jagen-targets"
+
     local top_cmds='help get clean refresh build src show list'
     local src_cmds='dirty status clean update delete each'
     local src_each_opt='--type'
@@ -61,22 +66,22 @@ _jagen_complete() {
             COMPREPLY=($(compgen -W "$help_opt $top_cmds" -- "$cur")) ;;
         get)
             if [[ "$prev" == "get" ]]; then
-                COMPREPLY=($(compgen -W "$help_opt $(cat "$jagen_build_dir/__package_configs")" -- "$cur"))
+                COMPREPLY=($(compgen -W "$help_opt $(cat "$configs_file")" -- "$cur"))
             else
                 COMPREPLY=($(compgen -W "work_dir source_dir woo build_dir install_dir" -- "$cur"))
             fi
             ;;
         clean)
             if [[ "$prev" == "clean" ]]; then
-                COMPREPLY=($(compgen -W "$help_opt $(cat "$jagen_build_dir/__package_configs")" -- "$cur"))
+                COMPREPLY=($(compgen -W "$help_opt $(cat "$configs_file")" -- "$cur"))
             else
-                COMPREPLY=($(compgen -W "$(cat "$jagen_build_dir/__package_configs")" -- "$cur"))
+                COMPREPLY=($(compgen -W "$(cat "$configs_file")" -- "$cur"))
             fi
             ;;
         refresh)
             COMPREPLY=($(compgen -W "$help_opt" -- "$cur")) ;;
         build)
-            COMPREPLY=($(compgen -W "$help_opt $build_opt $(cat "$jagen_build_dir/__package_targets")" -- "$cur")) ;;
+            COMPREPLY=($(compgen -W "$help_opt $build_opt $(cat "$targets_file")" -- "$cur")) ;;
         src)
             if [[ "$prev" == "src" ]]; then
                 COMPREPLY=($(compgen -W "$help_opt $src_cmds" -- "$cur"))
@@ -88,13 +93,13 @@ _jagen_complete() {
                         COMPREPLY=($(compgen -W "$help_opt $src_each_opt" -- "$cur"))
                     fi
                 else
-                    COMPREPLY=($(compgen -W "$(cat "$jagen_build_dir/__package_names_scm")" -- "$cur"))
+                    COMPREPLY=($(compgen -W "$(cat "$scm_names_file")" -- "$cur"))
                 fi
             fi
             ;;
         show)
             if [[ "$prev" == "show" ]]; then
-                COMPREPLY=($(compgen -W "$help_opt $(cat "$jagen_build_dir/__package_targets")" -- "$cur"))
+                COMPREPLY=($(compgen -W "$help_opt $(cat "$targets_file")" -- "$cur"))
             fi ;;
         list)
             if [[ "$prev" == "list" ]]; then

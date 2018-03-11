@@ -413,10 +413,10 @@ function Jagen.command.refresh(args, packages)
     end
     table.sort(names)
 
-    local names_file = assert(io.open(System.mkpath(Jagen.build_dir, '__package_names'), 'wb'))
-    local scm_names_file = assert(io.open(System.mkpath(Jagen.build_dir, '__package_names_scm'), 'wb'))
-    local configs_file = assert(io.open(System.mkpath(Jagen.build_dir, '__package_configs'), 'wb'))
-    local targets_file = assert(io.open(System.mkpath(Jagen.build_dir, '__package_targets'), 'wb'))
+    local names_file = assert(io.open(System.mkpath(Jagen.build_dir, '.jagen-names'), 'wb'))
+    local scm_names_file = assert(io.open(System.mkpath(Jagen.build_dir, '.jagen-scm-names'), 'wb'))
+    local configs_file = assert(io.open(System.mkpath(Jagen.build_dir, '.jagen-configs'), 'wb'))
+    local targets_file = assert(io.open(System.mkpath(Jagen.build_dir, '.jagen-targets'), 'wb'))
 
     for _, name in ipairs(names) do
         local pkg = packages[name]
