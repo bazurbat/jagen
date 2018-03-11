@@ -312,10 +312,12 @@ function string.convert_pattern(s)
 end
 
 function string.to_target_pattern(s)
+    if #s == 0 then return s end
     if not s:match(':') then
         s = s..':*'
     end
-    s = s:gsub('::', ':*:*')
+    s = s:gsub('::', ':*:')
+    s = s:gsub('^:', '*:')
     s = s:gsub(':$', ':*')
     s = s:escape_pattern(s)
     s = string.format('^%s$', s)
