@@ -219,6 +219,43 @@ function P:add_require(spec, config, template)
     end
 end
 
+function P:gettoolchain(config)
+    local host_toolchain = 'gcc-native'
+    local target_toolchain = os.getenv('jagen_target_toolchain')
+    local build, toolchain = self:get('build', config)
+    if build then
+        if build.toolchain ~= nil then
+            toolchain = build.toolchain
+        elseif build.type then
+            if config == 'host' and host_toolchain and
+                self.name ~= host_toolchain
+            then
+                toolchain = host_toolchain
+            elseif config == 'target' and target_toolchain and
+                self.name ~= target_toolchain
+            then
+                toolchain = target_toolchain
+            end
+        end
+    end
+    return toolchain
+end
+
+function P:add_toolchain(toolchain, config)
+    local build = self:get('build', config)
+    local stage = build and build.type and 'configure' or 'install'
+    self:add_stage({ stage,
+            { toolchain, 'install', config }
+        }, config)
+    push_context(table.merge(copy(current_context), {
+                name = self.name,
+                config = config
+        }))
+    local pkg = self:add_require(toolchain, config)
+    pop_context()
+    return pkg
+end
+
 function P:add_stage(rule, config)
     local target = Target:parse(rule, self.name, config)
     local name   = target.stage
@@ -548,42 +585,14 @@ function P.load_rules()
             function (pkg) return pkg.patches end),
         P.add_patch_dependencies)
 
-    local host_toolchain = 'gcc-native'
-    local target_toolchain = os.getenv('jagen_target_toolchain')
-
     function add_toolchains(pkglist)
         local added = {}
         for _, pkg in pairs(pkglist) do
             for config, _ in pkg:each_config() do
-                local build = pkg:get('build', config)
-                if build and (build.type or build.toolchain) then
-                    local toolchain = build.toolchain
-                    if toolchain == nil then
-                        if config == 'host' and host_toolchain and
-                            pkg.name ~= host_toolchain then
-                            toolchain = host_toolchain
-                        elseif config == 'target' and target_toolchain and
-                            pkg.name ~= target_toolchain then
-                            toolchain = target_toolchain
-                        end
-                    end
-                    if toolchain then
-                        build.toolchain = toolchain
-                        push_context(table.merge(copy(current_context), {
-                                    name = pkg.name,
-                                    config = config
-                            }))
-                        local stage = { build.type and 'configure' or 'install',
-                            requires = { toolchain }
-                        }
-                        local req = pkg:add_require(toolchain, config)
-                        if req then
-                            append(stage, { toolchain, 'install', config })
-                            extend(added, req)
-                        end
-                        pkg:add_stage(stage, config)
-                        pop_context()
-                    end
+                local toolchain = pkg:gettoolchain(config)
+                if toolchain then
+                    pkg:get('build', config).toolchain = toolchain
+                    append(added, pkg:add_toolchain(toolchain, config))
                 end
             end
         end
