@@ -71,52 +71,41 @@ Usage: jagen refresh
 ]]
 
 local build = [[
-Usage: jagen build [OPTION...] [TARGET...]
+Usage: jagen build [OPTION...] [PATTERN...]
 
   Builds or rebuilds the specified targets.
 
 OPTIONS
 
   -h, --help          print this help message
-  -n, --dry-run       print expanded value of TARGET... arguments and exit
-  -p, --progress      show TARGET's build progress
+  -m, --match         print expanded value of target patterns and exit
+  -c, --clean         clean package's build directories before the build
+  -a, --all           continue until everything is up to date
+  -n, --no-rebuild    do not rebuild targets which are already up to date
+  -p, --progress      show build progress
   -P, --all-progress  show all build output
-  -f, --force         force rebuild of the specified targets
-  -a, --all           build everything out of date
 
-  Use command 'jagen help targets' for information about targets.
+  Use the command 'jagen help targets' for information about targets.
 
 SYNOPSIS
 
-  If no targets were specified the command builds everything not already built;
-  otherwise it expands TARGET... arguments and builds the resulting targets if
-  they are out of date. The '--force' option causes the specified targets to be
-  rebuilt unconditionally. Use '--all' option to also build dependencies with a
-  single command.
+  The specified patterns are expanded and matching targets are rebuilt. Use the
+  '--match' option to print the matches without building anything.
 
-  Short options can be combined into a single argument, for example:
+  Use the '--clean' option to remove the package's build directories before the
+  start. It also causes the 'configure' stage of the affected packages to
+  become out of date.
 
-    jagen build -fap libuv
+  Use the '--all' option to build everything out of date in the current project
+  in addition to the specified targets.
 
-  will rebuild all targets of libuv package (starting from 'unpack', see below)
-  showing progress on the console. Afterwards it will continue building
-  dependent targets until everything is up to date.
+  The '--no-rebuild' option causes the command to behave similarly to 'make':
+  it ensures that targets are up to date instead of rebuilding them
+  unconditionally.
 
-  Note that all packages start with 'unpack' stage which removes working
-  directories from previous builds, cleans sources from extra files, unpacks
-  distributions and updates the sources from scm. It does not touch scm sources
-  if there are changes detected (jagen src dirty returns true) but still
-  removes build directory if it is separate from source directory. This is
-  especially important to remember when working on packages with "in source"
-  builds.
-
-  For development and testing it can be more convenient to select specific
-  targets, like:
-
-    jagen build -fp libuv:compile:target
-
-  This will recompile libuv for target configuration showing output on the
-  console and do nothing else.
+  The '--progress' option enables the printing of the build progress for the
+  specified targets, the '--all-progress' option prints all build output
+  instead.
 
 ]]
 

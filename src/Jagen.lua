@@ -476,12 +476,12 @@ function Jagen.command.build(args)
 
     local options = Options:new {
         { 'help,h' },
-        { 'dry-run,n' },
+        { 'match,m' },
+        { 'clean,c' },
         { 'all,a' },
-        { 'force,f' },
+        { 'no-rebuild,n' },
         { 'progress,p' },
         { 'all-progress,P' },
-        { 'clean,c' }
     }
     args = options:parse(args)
     if not args then
@@ -515,6 +515,13 @@ function Jagen.command.build(args)
         if not found then
             Log.warning('could not find targets matching: %s', args[i])
         end
+    end
+
+    if args['match'] then
+        for target in each(targets) do
+            print(target)
+        end
+        return true
     end
 
     -- some targets were specified but none matched, consider this an error

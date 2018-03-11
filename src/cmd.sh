@@ -27,7 +27,7 @@ maybe_sync() {
 
 cmd_build() {
     local IFS="$(printf '\n\t')"
-    local dry_run show_progress show_all build_force build_all
+    local no_rebuild show_progress show_all build_all
     local targets logs sts arg i
     local cmd_log="$jagen_log_dir/$mode.log"
 
@@ -35,25 +35,16 @@ cmd_build() {
 
     while [ $# -gt 0 ]; do
         case $1 in
-            --dry-run) dry_run=1 ;;
+            --all) build_all=1 ;;
+            --no-rebuild) no_rebuild=1 ;;
             --progress) show_progress=1 ;;
             --all-progress) show_all=1 ;;
-            --force) build_force=1 ;;
-            --all) build_all=1 ;;
             -*) ;; # ignore unknown options
              *) targets="${targets}${S}${1}"
                 logs="${logs}${S}${jagen_log_dir}/${1}.log" ;;
         esac
         shift
     done
-
-    if [ "$dry_run" ]; then
-        set -- $targets
-        if [ $# != 0 ]; then
-            printf "$*\n"
-        fi
-        return 0
-    fi
 
     cd "$jagen_build_dir" || return
 
@@ -62,14 +53,14 @@ cmd_build() {
         : > "$log" || return
     done
 
-    if [ "$build_force" ]; then
+    if [ -z "${no_rebuild-}" ]; then
         rm -f $targets || return
     fi
 
-    if [ "$show_progress" ]; then
-        tail -qFn+1 "$cmd_log" $logs 2>/dev/null &
-    elif [ "$show_all" ]; then
+    if [ "$show_all" ]; then
         tail -qFn0 *.log 2>/dev/null &
+    elif [ "$show_progress" ]; then
+        tail -qFn+1 "$cmd_log" $logs 2>/dev/null &
     else
         tail -qFn+1 "$cmd_log" &
     fi
