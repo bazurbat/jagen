@@ -596,6 +596,7 @@ function P.load_rules()
                 local toolchain = pkg:gettoolchain(config)
                 if toolchain then
                     pkg:get('build', config).toolchain = toolchain
+                    pkg.use = append_uniq(toolchain, pkg.use)
                     append(added, pkg:add_toolchain(toolchain, config))
                 end
             end
