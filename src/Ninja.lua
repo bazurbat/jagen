@@ -111,6 +111,8 @@ local function format_build(build)
 end
 
 local function format_stage(target, pkg)
+    local config = target.config
+
     local function get_outputs()
         local outputs = { tostring(target) }
         return extend(outputs, target.outputs or {})
@@ -118,7 +120,7 @@ local function format_stage(target, pkg)
 
     local function format_args()
         local command = { target.name, target.stage,
-            target.config or quote('')
+            config or quote('')
         }
         local arg = target.arg
         if type(arg) == 'string' or type(arg) == 'number' then
@@ -146,8 +148,12 @@ local function format_stage(target, pkg)
                 append(uses, Target:from_args(Target:from_use(use).name, 'export'))
             end
         end
-    elseif target.stage == 'export' and target.config then
-        local this = assert(pkg.configs[target.config])
+    elseif config and (not pkg._added_exports or
+            (pkg._added_exports and not pkg._added_exports[config]))
+                  and target.stage ~= 'export' then
+        pkg._added_exports = pkg._added_exports or {}
+        pkg._added_exports[config] = true
+        local this = assert(pkg.configs[config])
         for spec in each(pkg.use or {}) do
             local use = Target:from_use(spec)
             local used = assert(packages[use.name])
@@ -158,7 +164,7 @@ local function format_stage(target, pkg)
         end
         for spec in each(this.use or {}) do
             local use = Target:from_use(spec)
-            local config = use.config or target.config
+            local config = use.config or config
             if config then
                 append(uses, Target:from_args(use.name, 'export', config))
             end
