@@ -59,17 +59,6 @@ local function write_common(w, pkg)
     for name in each(names) do
         write_var(name, pkg[name])
     end
-
-    local uses = {}
-    for spec in each(pkg.use) do
-        local use = Target:from_use(spec)
-        append(uses, use.name)
-        if use.alias then
-            write_var('use_alias_'..string.to_identifier(use.alias),
-                                    string.to_identifier(use.name))
-        end
-    end
-    write_var('use', uses)
 end
 
 local function write_source(w, pkg)
@@ -161,6 +150,29 @@ local function write_export(w, pkg, config)
     end
 end
 
+local function write_use(w, pkg, config)
+    local use = pkg.use
+    if not use then return end
+    prefix = ''
+    if config then
+        prefix = string.format('_%s__', config)
+    end
+    local function write_var(name, value)
+        return write_pkg_var(w, prefix, name, value)
+    end
+
+    local specs, names = sort(use), {}
+    for spec in each(specs) do
+        local use = Target:from_use(spec)
+        append(names, use.name)
+        if use.alias then
+            write_var('alias_'..string.to_identifier(use.alias),
+                                string.to_identifier(use.name))
+        end
+    end
+    write_var('use', names)
+end
+
 local function generate_script(filename, pkg, config)
     local lines = {}
     local function w(format, ...)
@@ -175,6 +187,7 @@ local function generate_script(filename, pkg, config)
     write_build(w, pkg)
     -- should be the last to allow referencing other variables
     write_export(w, pkg, config)
+    write_use(w, pkg, config)
 
     if #lines > 0 then
         local file = assert(io.open(filename, 'w+'))

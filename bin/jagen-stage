@@ -44,6 +44,18 @@ if [ "$pkg_config" ]; then
     done; unset prefix key
 fi
 
+if [ "$pkg_config" ]; then
+    # append config-specific uses but filter out the toolchain to make sure its
+    # included first on import
+    new_use= pkg_use="$pkg_use $(eval echo \${pkg__${pkg_config}__use})"
+    for use in $pkg_use; do
+        if [ "$use" != "$pkg_build_toolchain" ]; then
+            new_use="$new_use $use"
+        fi
+    done; unset use
+    pkg_use=${new_use# }; unset new_use
+fi
+
 # include uses
 for name in $pkg_build_toolchain $pkg_use; do
     include "$(pkg__export_fname "$name")" || exit
