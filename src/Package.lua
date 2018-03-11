@@ -207,21 +207,16 @@ function P:set(key, value, config)
     end
 end
 
-function P:add_requires(stage, config, template)
-    local added = {}
-    for _, item in ipairs(stage.requires or {}) do
-        local req = P:parse(item)
-        req.config = req.config or config or template and template.config
-        if req.config ~= 'system' then
-            table.insert(stage, { req.name, 'install', req.config })
-            table.insert(added, P.define_rule {
-                    name = req.name,
-                    config = req.config,
-                    template = template
-                })
-        end
+function P:add_require(spec, config, template)
+    local req = P:parse(spec)
+    req.config = req.config or config or template and template.config
+    if req.config ~= 'system' then
+        return P.define_rule {
+            name = req.name,
+            config = req.config,
+            template = template
+        }, config
     end
-    return added
 end
 
 function P:add_target(rule, config)
@@ -581,7 +576,11 @@ function P.load_rules()
                         local stage = { build.type and 'configure' or 'install',
                             requires = { toolchain }
                         }
-                        extend(added, pkg:add_requires(stage, config))
+                        local req = pkg:add_require(toolchain, config)
+                        if req then
+                            append(stage, { toolchain, 'install', config })
+                            extend(added, req)
+                        end
                         pkg:add_target(stage, config)
                         pop_context()
                     end
@@ -838,7 +837,12 @@ function P.define_rule(rule, context)
     extend(stages, rule)
 
     for stage in each(stages) do
-        pkg:add_requires(stage, config, template)
+        for spec in each(stage.requires) do
+            local req, config = pkg:add_require(spec, config, template)
+            if req then
+                append(stage, { req.name, 'install', config })
+            end
+        end
         pkg:add_target(stage, config)
     end
 
