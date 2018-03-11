@@ -4,7 +4,7 @@ return {
         location = 'git@bitbucket.org:art-system/hi-drivers.git',
     },
     build = {
-        type = 'linux_module',
+        type = 'linux-module',
         in_source = true
     },
     use = 'kernel',

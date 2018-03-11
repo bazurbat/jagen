@@ -5,7 +5,7 @@ return {
         sha1sum  = '771bd818345a8569606724f157544a54ac3c0245'
     },
     build  = {
-        type    = 'GNU',
+        type    = 'gnu',
         options = { '--without-kbuild' },
         libs    = { 'xt_ACCOUNT_cl' }
     },

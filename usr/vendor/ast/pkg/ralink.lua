@@ -9,7 +9,7 @@ return {
         { 'DPO_RT5572_LinuxSTA_2.6.1.3_20121022-encrypt',     1 }
     },
     build = {
-        type = 'linux_module',
+        type = 'linux-module',
         options = {
             'CHIPSET=5370',
             'LINUX_SRC=$KERNEL_SRC'

@@ -5,7 +5,7 @@ return {
         tag      = 'v2.16.0',
     },
     build = {
-        type = 'CMake',
+        type = 'cmake',
         options = {
             '-DBUILD_SHARED_LIBS=YES',
             '-DWITH_SYSTEMD=NO',

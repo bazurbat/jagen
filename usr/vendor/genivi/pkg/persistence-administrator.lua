@@ -8,7 +8,7 @@ return {
         { 'persistence-administrator-1.0.5-fix-libsystemd-pc-filename', 1 },
     },
     build = {
-        type = 'GNU',
+        type = 'gnu',
         autoreconf = true,
         in_source = true,
         options = {

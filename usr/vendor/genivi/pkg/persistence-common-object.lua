@@ -5,7 +5,7 @@ return {
         tag      = '1.0.3',
     },
     build = {
-        type = 'GNU',
+        type = 'gnu',
         autoreconf = true,
         in_source = true,
         options = {

@@ -5,7 +5,7 @@ return {
         tag      = '1.3.5',
     },
     build = {
-        type = 'GNU',
+        type = 'gnu',
         autoreconf = true,
     },
     requires = {

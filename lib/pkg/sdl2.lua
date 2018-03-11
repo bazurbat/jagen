@@ -5,7 +5,7 @@ return {
         sha256sum = 'da55e540bf6331824153805d58b590a29c39d2d506c6d02fa409aedeab21174b'
     },
     build = {
-        type = 'GNU',
+        type = 'gnu',
         options = {
             '--disable-joystick',
             '--disable-haptic',

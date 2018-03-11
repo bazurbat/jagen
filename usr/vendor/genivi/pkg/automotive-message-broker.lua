@@ -5,7 +5,7 @@ return {
         branch   = '0.13',
     },
     build = {
-        type = 'CMake',
+        type = 'cmake',
         options = {
             '-Denable_icecc=OFF'
         }

@@ -5,7 +5,7 @@ return {
         tag      = 'v2.18.0'
     },
     build = {
-        type = 'CMake',
+        type = 'cmake',
         options = {
             '-DCMAKE_CXX_FLAGS=-std=c++11'
         }

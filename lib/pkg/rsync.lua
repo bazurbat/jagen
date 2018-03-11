@@ -5,6 +5,6 @@ return {
         sha256sum = 'ecfa62a7fa3c4c18b9eccd8c16eaddee4bd308a76ea50b5c02a5840f09c0a1c2'
     },
     build = {
-        type = 'GNU'
+        type = 'gnu'
     }
 }

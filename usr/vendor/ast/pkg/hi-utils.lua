@@ -4,7 +4,7 @@ return {
         location = 'git@bitbucket.org:art-system/hi-utils.git'
     },
     build = {
-        type = 'CMake'
+        type = 'cmake'
     },
     requires = {
         'cmake-modules',

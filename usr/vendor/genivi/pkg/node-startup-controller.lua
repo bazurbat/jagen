@@ -5,7 +5,7 @@ return {
         tag      = 'node-startup-controller-1.0.2',
     },
     build = {
-        type = 'GNU',
+        type = 'gnu',
         autoreconf = true,
     },
     requires = {

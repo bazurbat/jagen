@@ -4,7 +4,7 @@ return {
         location = 'https://github.com/GENIVI/AudioManagerPlugins.git',
     },
     build = {
-        type = 'CMake',
+        type = 'cmake',
         options = {
             -- CAPI examples hardcode paths in cmake, will fail to configure
             '-DWITH_COMMAND_INTERFACE_CAPI=OFF',

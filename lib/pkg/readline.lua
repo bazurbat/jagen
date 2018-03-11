@@ -11,7 +11,7 @@ return {
         { "${pkg_name}-6.3-read-eof", 2 },
     },
     build  = {
-        type = 'GNU',
+        type = 'gnu',
         options = {
             '--disable-static',
             '--without-curses',

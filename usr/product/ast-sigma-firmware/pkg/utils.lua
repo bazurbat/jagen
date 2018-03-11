@@ -3,5 +3,5 @@ return {
         type     = 'git',
         location = 'git@bitbucket.org:art-system/sigma-utils.git'
     },
-    build = { type = 'CMake' }
+    build = { type = 'cmake' }
 }

@@ -5,6 +5,6 @@ return {
         tag      = 'release-1.8.0'
     },
     build = {
-        type = 'CMake'
+        type = 'cmake'
     }
 }

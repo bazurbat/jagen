@@ -4,7 +4,7 @@ return {
         location = 'git@bitbucket.org:art-system/soundtouch.git',
     },
     build = {
-        type = 'GNU',
+        type = 'gnu',
         options = {
             '--enable-integer-samples=yes',
             '--enable-x86-optimizations=no'

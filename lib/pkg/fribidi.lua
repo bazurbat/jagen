@@ -9,7 +9,7 @@ return {
         { 'fribidi-0.19.6-page-size-header', 1 }
     },
     build = {
-        type    = 'GNU',
+        type    = 'gnu',
         options = { '--with-glib=yes' },
         libs    = { 'fribidi' },
         autoreconf = true

@@ -5,7 +5,7 @@ return {
         sha256sum = '1006c4055cb3fb34293bb716be127d396550a68ac0bdfc21a6631c8d7a49ce0b'
     },
     build  = {
-        type    = 'GNU',
+        type    = 'gnu',
         options = { '--disable-static' },
         libs    = { 'uv' },
         generate = true

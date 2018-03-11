@@ -5,7 +5,7 @@ return {
         tag      = '3.1.12.1'
     },
     build = {
-        type = 'CMake',
+        type = 'cmake',
         options = {
             '-DUSE_CONSOLE=ON',
             '-DUSE_FILE=ON',

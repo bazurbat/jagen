@@ -5,7 +5,7 @@ return {
         sha256sum = 'b7b5fdda78849955e0cdbc5a085f3a08f8b7fba126c622085debb62def5d6388'
     },
     build  = {
-        type = 'GNU',
+        type = 'gnu',
         options = {
             '--enable-minimal',
             '--disable-card-support',

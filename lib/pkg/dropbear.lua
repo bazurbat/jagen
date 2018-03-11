@@ -5,7 +5,7 @@ return {
         sha256sum = 'ab3fe2670a517cc0bbe398ff5d15e9ca12cd14f2fc18930a8111ae2baa64ab76'
     },
     build = {
-        type    = 'GNU',
+        type    = 'gnu',
         options = {
             '--disable-zlib',
             '--disable-pam',

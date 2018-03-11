@@ -4,6 +4,6 @@ return {
         location = 'git@bitbucket.org:art-system/firmware-utils.git',
     },
     build = {
-        type = 'CMake'
+        type = 'cmake'
     }
 }

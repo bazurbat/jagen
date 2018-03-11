@@ -5,7 +5,7 @@ return {
         branch   = 'release'
     },
     build = {
-        type = 'CMake'
+        type = 'cmake'
     },
     requires = { 'chicken' }
 }

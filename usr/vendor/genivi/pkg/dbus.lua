@@ -15,7 +15,7 @@ return {
         { 'capi-dbus-send-with-reply-and-block-delete-reply-on-error', 1 },
     },
     build  = {
-        type = 'GNU',
+        type = 'gnu',
         -- fails to find lexpat on target otherwise
         configure_needs_install_dir = true,
         options = {

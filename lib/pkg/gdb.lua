@@ -5,7 +5,7 @@ return {
         sha256sum = '9b315651a16528f7af8c7d8284699fb0c965df316cc7339bb0b7bae335848392'
     },
     build  = {
-        type = 'GNU',
+        type = 'gnu',
         options = {
             '--build=x86_64-linux-gnu',
             '--host=x86_64-linux-gnu',

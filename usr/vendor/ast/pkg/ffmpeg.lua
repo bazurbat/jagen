@@ -4,6 +4,6 @@ return {
         location = 'git@bitbucket.org:art-system/ffmpeg.git'
     },
     build = {
-        type = 'GNU'
+        type = 'gnu'
     }
 }

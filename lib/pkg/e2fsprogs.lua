@@ -11,7 +11,7 @@ return {
         { 'e2fsprogs-1.43-sysmacros', 1 },
     },
     build = {
-        type = 'GNU',
+        type = 'gnu',
         -- fails to find external libuuid otherwise
         configure_needs_install_dir = true,
         options = {

@@ -153,6 +153,13 @@ function P:parse(rule)
         end
     end
 
+    if rule.build and type(rule.build.type) == 'string' then
+        rule.build.type = rule.build.type:tocanon()
+    end
+    if rule.install and type(rule.install.type) == 'string' then
+        rule.install.type = rule.install.type:tocanon()
+    end
+
     if type(rule.use) == 'string' then
         rule.use = { rule.use }
     end
@@ -785,7 +792,7 @@ function P.define_rule(rule, context)
             end
         end
 
-        if build.type == 'GNU' then
+        if build.type == 'gnu' then
             if build.generate or build.autoreconf then
                 pkg:add_stage { 'autoreconf',
                     { 'libtool', 'install', 'host' }
@@ -794,7 +801,7 @@ function P.define_rule(rule, context)
             end
         end
 
-        if build.type == 'linux_module' or build.kernel_modules == true or
+        if build.type == 'linux-module' or build.kernel_modules == true or
             install and install.modules then
 
             P.define_rule { 'kernel', config }

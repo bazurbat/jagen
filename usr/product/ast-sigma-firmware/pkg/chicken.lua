@@ -5,7 +5,7 @@ return {
         branch   = 'release-cmake'
     },
     build = {
-        type = 'CMake',
+        type = 'cmake',
         options = {
             '-DCMAKE_SYSTEM_PROCESSOR=mips32'
         }

@@ -10,7 +10,7 @@ return {
         { 'freetype-2.4.12-clean-include', 1 }
     },
     build = {
-        type    = 'GNU',
+        type    = 'gnu',
         options = {
             '--disable-static',
             '--without-bzip2',

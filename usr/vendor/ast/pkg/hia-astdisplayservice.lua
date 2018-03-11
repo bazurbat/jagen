@@ -4,7 +4,7 @@ return {
         location = 'git@bitbucket.org:art-system/hia-astdisplayservice.git',
     },
     build = {
-        type = 'CMake'
+        type = 'cmake'
     },
     requires = {
         'karaoke-player'

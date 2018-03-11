@@ -8,7 +8,7 @@ return {
         { 'connman-1.32-add-missing-gnu-source', 1 }
     },
     build  = {
-        type = 'GNU',
+        type = 'gnu',
         -- NOTE: connmand SEGVs on start without pie on MIPS
         options = {
             '--sysconfdir=/etc',

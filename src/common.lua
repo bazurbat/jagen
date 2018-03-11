@@ -307,6 +307,12 @@ function string.convert_pattern(s)
     return s
 end
 
+function string.tocanon(s)
+    s = string.lower(s)
+    s = string.gsub(s, '_', '-')
+    return s
+end
+
 function table.tolist(t)
     local list = {}
     for k, v in pairs(t) do

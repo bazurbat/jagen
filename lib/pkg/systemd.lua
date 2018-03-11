@@ -5,7 +5,7 @@ return {
         tag      = 'v208'
     },
     build = {
-        type = 'GNU',
+        type = 'gnu',
         generate = true,
         options = {
         },

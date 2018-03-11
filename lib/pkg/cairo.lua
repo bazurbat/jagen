@@ -5,7 +5,7 @@ return {
         sha256sum = 'c919d999ddb1bbbecd4bbe65299ca2abd2079c7e13d224577895afa7005ecceb'
     },
     build = {
-        type = 'GNU',
+        type = 'gnu',
         -- fails to find lz otherwise and other build failures assuming zlib in
         -- default paths
         configure_needs_install_dir = true,

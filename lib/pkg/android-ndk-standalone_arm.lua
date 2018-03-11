@@ -5,7 +5,7 @@ return {
         toolchain = 'android-ndk'
     },
     install = {
-        type = 'android_ndk_toolchain'
+        type = 'android-ndk-toolchain'
     },
     export = {
         cmake_options = {

@@ -6,7 +6,7 @@ return {
         dir       = 'soundtouch'
     },
     build = {
-        type = 'GNU',
+        type = 'gnu',
         options = {
             '--enable-integer-samples=yes',
             '--enable-x86-optimizations=no'

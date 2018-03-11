@@ -318,7 +318,7 @@ pkg_configure() {
     local IFS="$jagen_IFS" S="$jagen_FS" A=
 
     case $pkg_build_type in
-        GNU)
+        gnu)
             if [ "$pkg_install_root" ]; then
                 LDFLAGS="$LDFLAGS -Wl,-rpath-link=$pkg_install_dir/lib"
             fi
@@ -359,7 +359,7 @@ pkg_configure() {
             fi
 
             ;;
-        CMake)
+        cmake)
             if ! [ -f "$pkg_source_dir/CMakeLists.txt" ]; then
                 die "CMake build type specified but no CMakeLists.txt was found in $pkg_source_dir"
             fi
@@ -413,7 +413,7 @@ EOF
                 -DCMAKE_INSTALL_PREFIX="$pkg_install_prefix" \
                 $A $jagen_cmake_options $pkg_build_options "$@" "$pkg_source_dir"
             ;;
-        linux_kernel)
+        linux-kernel)
             use_env kbuild
             pkg_run cd "$pkg_source_dir"
             pkg_run make "${pkg_build_config:?build.config is not set}"
@@ -434,21 +434,21 @@ pkg_compile() {
     fi
 
     case $pkg_build_type in
-        GNU)
+        gnu)
             pkg_run make "$@"
             ;;
-        CMake)
+        cmake)
             pkg_run cmake --build . -- $(pkg__get_cmake_args) "$@"
             ;;
         make|kbuild)
             pkg_run make $pkg_build_options "$@"
             ;;
-        linux_kernel)
+        linux-kernel)
             use_env kbuild
             pkg_run cd "$pkg_source_dir"
             pkg_run make "${pkg_build_image:?}" modules
             ;;
-        linux_module)
+        linux-module)
             pkg_run make $pkg_build_options "$@"
             ;;
     esac
@@ -461,7 +461,7 @@ pkg_install() {
     local pkg_install_type="${pkg_install_type:-$pkg_build_type}"
 
     case $pkg_install_type in
-        GNU|make|kbuild)
+        gnu|make|kbuild)
             pkg_run make \
                 ${pkg_install_root:+DESTDIR="$pkg_install_root"} \
                 $pkg_install_args "$@" install
@@ -476,7 +476,7 @@ pkg_install() {
                 pkg_fix_config_script "${pkg_install_dir:?}${pkg_install_config_script}"
             done
             ;;
-        CMake)
+        cmake)
             if [ "$pkg_install_root" ]; then
                 export DESTDIR="$pkg_install_root"
             fi
@@ -484,7 +484,7 @@ pkg_install() {
                 $(pkg__get_cmake_args) $pkg_install_args "$@"
             unset DESTDIR
             ;;
-        linux_kernel)
+        linux-kernel)
             use_env kbuild
             pkg_run cd "$pkg_source_dir"
             pkg_run install -vm644 \
@@ -494,7 +494,7 @@ pkg_install() {
                 INSTALL_MOD_PATH="${INSTALL_MOD_PATH:-${pkg_install_dir:?}}" \
                 $pkg_install_args "$@" modules_install
             ;;
-        linux_module)
+        linux-module)
             pkg_install_modules
             ;;
         toolchain)
@@ -504,7 +504,7 @@ pkg_install() {
                 "${pkg_source_dir:?}/bin"  \
                 "${pkg_toolchain_prefix}"
             ;;
-        android_ndk_toolchain)
+        android-ndk-toolchain)
             require toolchain
             toolchain_install_android_ndk
             ;;
@@ -544,7 +544,7 @@ pkg_install_file() {
 
 pkg__image() {
     case $pkg_build_type in
-        linux_kernel)
+        linux-kernel)
             use_env kbuild
             pkg_run cd "$pkg_source_dir"
             pkg_run make "${pkg_build_image:?}"

@@ -5,7 +5,7 @@ return {
         sha256sum = '7085a0895a9eb11a952394cdbea6d8b4358e17cb991fed0e8fb85e2b9e686dcd'
     },
     build  = {
-        type = 'GNU',
+        type = 'gnu',
         -- fails to find lexpat on target otherwise
         configure_needs_install_dir = true,
         options = {

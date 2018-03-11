@@ -5,7 +5,7 @@ return {
         sha256sum = '037d1e1ec90fd86bfa37af23665758a72708afe5fb7955848d45ffadfc30bbcf'
     },
     build = {
-        type = 'linux_module',
+        type = 'linux-module',
         options = {
             'KSRC=$KERNEL_SRC'
         },

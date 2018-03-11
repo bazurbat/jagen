@@ -5,7 +5,7 @@ return {
         md5sum   = '536d048c8e8eeebcd9757d0863ebb0c0'
     },
     build  = {
-        type    = 'GNU',
+        type    = 'gnu',
         options = {
             '--disable-ipv6',
             '--enable-devel',

@@ -5,7 +5,7 @@ return {
         tag      = 'v1.8.0'
     },
     build = {
-        type = 'CMake',
+        type = 'cmake',
         options = {
             '-DFLATBUFFERS_BUILD_TESTS=NO'
         }

@@ -5,7 +5,7 @@ return {
         sha256sum = '266743a326986c3dbcee9d89b640595f6b16a293fd02b37d8c91348d317b73f9'
     },
     build  = {
-        type = 'GNU',
+        type = 'gnu',
     },
     install = {
         libs = { 'png16' }

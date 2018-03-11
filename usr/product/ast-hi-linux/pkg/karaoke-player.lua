@@ -4,7 +4,7 @@ return {
         location = 'ssh://hg@bitbucket.org/art-system/karaoke-player',
     },
     build = {
-        type = 'CMake'
+        type = 'cmake'
     },
     requires = {
         'cmake-modules'

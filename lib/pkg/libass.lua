@@ -5,7 +5,7 @@ return {
         sha256sum = '673c1b15bde182168b17e17ee1c8d9e01173f20af352134216135b5bf15bf1e3'
     },
     build  = {
-        type    = 'GNU',
+        type    = 'gnu',
         options = {
             '--disable-static',
             '--disable-enca',

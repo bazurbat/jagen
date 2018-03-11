@@ -8,7 +8,7 @@ return {
         { 'audio-manager-pass-all-LDFLAGS-to-linker-when-building-wrappers', 1 }
     },
     build = {
-        type = 'CMake',
+        type = 'cmake',
         options = {
             '-DWITH_TESTS=OFF',
             '-DWITH_DOCUMENTATION=OFF',

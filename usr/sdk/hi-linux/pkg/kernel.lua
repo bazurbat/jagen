@@ -4,7 +4,7 @@ return {
         location = 'git@bitbucket.org:art-system/hi-kernel.git',
     },
     build = {
-        type = 'linux_kernel',
+        type = 'linux-kernel',
         image = 'uImage',
         config = 'ast2xx_hi3719cv100_defconfig',
         in_source = true,

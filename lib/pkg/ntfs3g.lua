@@ -5,7 +5,7 @@ return {
         sha256sum = 'd7b72c05e4b3493e6095be789a760c9f5f2b141812d5b885f3190c98802f1ea0'
     },
     build  = {
-        type = 'GNU',
+        type = 'gnu',
         options = {
             '--disable-shared',
             '--disable-static',

@@ -8,7 +8,7 @@ return {
         { 'util-linux-2.23.2', 1 }
     },
     build = {
-        type = 'GNU',
+        type = 'gnu',
         autoreconf = true,
         options = {
             '--enable-shared',

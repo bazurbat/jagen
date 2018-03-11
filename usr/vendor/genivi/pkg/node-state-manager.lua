@@ -9,7 +9,7 @@ return {
         { 'node-state-manager-2.0.0-mkdir-before-gdbus-codegen', 1 },
     },
     build = {
-        type = 'GNU',
+        type = 'gnu',
         autoreconf = true,
         in_source = true,
         options = {

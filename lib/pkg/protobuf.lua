@@ -6,7 +6,7 @@ return {
         exclude_submodules = true,
     },
     build = {
-        type = 'GNU',
+        type = 'gnu',
         generate = true,
         target_requires_host = true,
         options = {

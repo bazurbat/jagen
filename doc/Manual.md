@@ -102,7 +102,7 @@ rules and also to find pkg files. The `config` is optional.
         ...
     },
     build = {
-        type = 'GNU|CMake|kbuild|make|linux_kernel|linux_module',
+        type = 'gnu|cmake|kbuild|make|linux-kernel|linux-module',
 
         autoreconf = true,
         generate   = true,
@@ -118,7 +118,7 @@ rules and also to find pkg files. The `config` is optional.
         profile   = 'release|debug|release_with_debug',
     },
     install = {
-        type    = 'GNU|CMake|make|linux_kernel|linux_module',
+        type    = 'gnu|cmake|make|linux-kernel|linux-module',
 
         prefix  = 'path',
         root    = 'path',
@@ -289,7 +289,7 @@ rules and also to find pkg files. The `config` is optional.
   causes `libtool` to be install for the host.
 
 - **build.generator** (`pkg_build_generator`) — If the package build type is
-  'CMake' sets its CMake generator.
+  'cmake' sets its CMake generator.
 
 - **build.in_source** (`pkg_build_in_source`) — If set to `true`, indicates
   that the package can not be built outside of it's source directory.
@@ -336,7 +336,7 @@ rules and also to find pkg files. The `config` is optional.
   themselves to break dependency cycles.
 
 - **build.type** (`pkg_build_type`) — The type of the package build system.
-  Supported values are: GNU, CMake, kbuild, make, linux_kernel, linux_module.
+  Supported values are: gnu, cmake, kbuild, make, linux-kernel, linux-module.
 
 The rules of the form:
 ```
@@ -466,7 +466,7 @@ install = value
 
 - **pkg_build_dir** (`build.dir`) — the location of the package build directory
 
-- **pkg_build_generate** (`build.generate`) — if build type is "GNU" and
+- **pkg_build_generate** (`build.generate`) — if build type is "gnu" and
   `autogen.sh` is found in the source directory — run it
 
 - **pkg_build_generator** (`build.generator`) — if build type is "CMake" sets
@@ -491,8 +491,8 @@ install = value
   package which should be used for the build
 
 - **pkg_build_type** (`build.type`) — the type of the build system of the
-  package; currently supported values are: GNU, kbuild, CMake, make,
-  linux_kernel, linux_module
+  package; currently supported values are: gnu, kbuild, cmake, make,
+  linux-kernel, linux-module
 
 - **pkg_config** (`pkg.config`) — the config of the currently executing stage
 
@@ -500,7 +500,7 @@ install = value
   arguments
 
 - **pkg_install_config_script** (`install.config_script`) — specifies the
-  location of the `*-config` script relative to the sysroot; some GNU packages
+  location of the `*-config` script relative to the sysroot; some gnu packages
   install those with hardcoded values which might need post-install cleanup
 
 - **pkg_install_dir** — full path to the package installation directory

@@ -5,7 +5,7 @@ return {
         sha256sum = 'd81aa53d0c02b437beeaac159d7fc16394d676bbce0860fb6f6a10b587dc057c'
     },
     build = {
-        type = 'GNU',
+        type = 'gnu',
         options = {
             '--disable-silent-rules',
             '--disable-static',

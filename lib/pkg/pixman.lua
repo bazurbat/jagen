@@ -5,7 +5,7 @@ return {
         sha1sum = 'c1119bbdb587c56009b653e6f81c083f98a20135'
     },
     build = {
-        type    = 'GNU',
+        type    = 'gnu',
         options = {
             '--disable-static',
             '--disable-mips-dspr2',

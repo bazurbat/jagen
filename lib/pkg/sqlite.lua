@@ -8,7 +8,7 @@ return {
         { 'sqlite-3.8.1-autoconf-dlopen_check', 0 }
     },
     build = {
-        type    = 'GNU',
+        type    = 'gnu',
         options = { '--disable-static' },
         libs    = { 'sqlite3' },
         autoreconf = true,

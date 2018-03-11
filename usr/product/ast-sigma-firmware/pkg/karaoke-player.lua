@@ -5,6 +5,6 @@ return {
         branch   = 'stable'
     },
     build = {
-        type = 'CMake',
+        type = 'cmake',
     }
 }

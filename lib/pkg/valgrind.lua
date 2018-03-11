@@ -9,7 +9,7 @@ return {
         { 'valgrind-3.9.0-glibc-2.19',          1 },
     },
     build = {
-        type    = 'GNU',
+        type    = 'gnu',
         options = {
             '--enable-only32bit',
             '--disable-tls',

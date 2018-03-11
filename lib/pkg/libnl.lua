@@ -9,7 +9,7 @@ return {
         { 'libnl-3.2.20-cache-api',       1 },
     },
     build = {
-        type    = 'GNU',
+        type    = 'gnu',
         options = {
             '--enable-shared',
             '--disable-static',

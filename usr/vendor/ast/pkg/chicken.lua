@@ -5,7 +5,7 @@ local pkg = {
         branch   = 'release-cmake'
     },
     build = {
-        type = 'CMake'
+        type = 'cmake'
     }
 }
 

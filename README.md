@@ -88,7 +88,7 @@ package { 'nanomsg', 'host',
         tag = '1.1.2'
     },
     build = {
-        type = 'CMake'
+        type = 'cmake'
     }
 }
 ```
@@ -109,7 +109,7 @@ package { 'myproject', 'host',
         dir = '$HOME/src/myproject'
     },
     build = {
-        type = 'CMake'
+        type = 'cmake'
     },
     install = false
 }
