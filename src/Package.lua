@@ -653,11 +653,7 @@ function P.load_rules()
 
     lua_package.loaders[2] = def_loader
 
-    if had_errors or had_warnings then
-        os.exit(22)
-    end
-
-    return packages
+    return packages, not (had_errors or had_warnings)
 end
 
 function P.define_rule(rule, context)

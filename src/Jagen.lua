@@ -490,7 +490,12 @@ function Jagen.command.build(args)
         return Jagen.command['help'] { 'build' }
     end
 
-    local packages = Package.load_rules()
+    local packages, ok = Package.load_rules()
+    if not ok then
+        Log.error('aborting the build due to rule errors')
+        return false
+    end
+
     Jagen.command.refresh(nil, packages)
     local options, rest = find_options(args)
 
