@@ -454,6 +454,9 @@ function P:add_ordering_dependencies()
         if curr.stage == 'provide_patches' then
             local unpack = assert(self.stages['unpack'])
             curr.inputs = append(curr.inputs, unpack)
+        elseif curr.stage == 'export' and curr.config then
+            curr:append(assert(common))
+            curr:append(Target:from_args(common.name, 'export'))
         elseif curr.stage == 'export' then
             curr.inputs = append(curr.inputs, assert(common))
         else
