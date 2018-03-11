@@ -153,23 +153,26 @@ function P:parse(rule)
         end
     end
 
-    if rule.build and type(rule.build.type) == 'string' then
-        rule.build.type = rule.build.type:tocanon()
+    if rule.build ~= nil then
+        if type(rule.build) ~= 'table' then
+            rule.build = { type = rule.build }
+        end
+        if type(rule.build.type) == 'string' then
+            rule.build.type = rule.build.type:tocanon()
+        end
     end
-    if rule.install and type(rule.install.type) == 'string' then
-        rule.install.type = rule.install.type:tocanon()
+
+    if rule.install ~= nil then
+        if type(rule.install) ~= 'table' then
+            rule.install = { type = rule.install }
+        end
+        if type(rule.install.type) == 'string' then
+            rule.install.type = rule.install.type:tocanon()
+        end
     end
 
     if type(rule.use) == 'string' then
         rule.use = { rule.use }
-    end
-
-    if rule.build ~= nil and type(rule.build) ~= 'table' then
-        rule.build = { type = rule.build }
-    end
-
-    if rule.install ~= nil and type(rule.install) ~= 'table' then
-        rule.install = { type = rule.install }
     end
 
     return rule
