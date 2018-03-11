@@ -55,16 +55,15 @@ function Target:from_arg(arg)
     return Target:from_args(name, stage, config)
 end
 
-function Target:from_qname(qname, stage)
-    local name, config = unpack(string.split2(qname, ':'))
-    return Target:from_args(name, stage, config)
-end
-
 function Target:from_use(spec)
+    local function parse(spec)
+        local name, config = unpack(string.split2(spec, ':'))
+        return Target:from_args(name, nil, config)
+    end
     if type(spec) == 'string' then
-        return Target:from_qname(spec)
+        return parse(spec)
     elseif type(spec) == 'table' then
-        local use = Target:from_qname(spec[1])
+        local use = parse(spec[1])
         use.alias = spec[2]
         return use
     else
