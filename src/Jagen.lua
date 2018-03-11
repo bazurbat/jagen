@@ -104,6 +104,7 @@ function Jagen.src.status(args)
             print(string.format("%s (%s): not exists", pkg.name, source.location))
         end
     end
+    return true
 end
 
 function Jagen.src.clean(args)
