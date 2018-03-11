@@ -236,19 +236,6 @@ local function help_requested(args)
         (args[1] == '-h' or string.match(args[1], '^%--help$'))
 end
 
-local function find_options(args)
-    local options, rest = {}, {}
-    for i = 1, #args do
-        local arg = args[i]
-        if is_option(arg) then
-            table.insert(options, arg)
-        else
-            table.insert(rest, arg)
-        end
-    end
-    return options, rest
-end
-
 local function complex_command(command, args)
     if help_requested(args) then
         return Jagen.command['help'] { command }
@@ -454,40 +441,26 @@ function Jagen.command.refresh(args, packages)
     return true
 end
 
-local function find_targets(packages, arg)
-    local targets = {}
-
-    local function match_config(a, b)
-        return not a.config or a.config == b.config
-    end
-    local function match_stage(a, b)
-        return not a.stage or a.stage == b.stage
-    end
-    local function match_target(target, stage)
-        return match_stage(target, stage) and match_config(target, stage)
-    end
-
-    local target = Target:from_arg(arg)
-    local packages = target.name and { packages[target.name] } or packages
-
-    for _, pkg in pairs(packages) do
-        for stage in pkg:each() do
-            if match_target(target, stage) then
-                table.insert(targets, stage)
-            end
-        end
-    end
-
-    if #targets == 0 then
-        die('could not find targets matching argument: %s', arg)
-    end
-
-    return targets
-end
-
 function Jagen.command.build(args)
     if help_requested(args) then
         return Jagen.command['help'] { 'build' }
+    end
+
+    local options = Options:new {
+        { 'help,h' },
+        { 'dry-run,n' },
+        { 'all,a' },
+        { 'force,f' },
+        { 'progress,p' },
+        { 'all-progress,P' },
+    }
+    args = options:parse(args)
+    if not args then
+        return false
+    end
+
+    if args['help'] then
+        return Jagen.command['help'] { 'list' }
     end
 
     local packages, ok = Package.load_rules()
@@ -496,17 +469,37 @@ function Jagen.command.build(args)
         return false
     end
 
-    Jagen.command.refresh(nil, packages)
-    local options, rest = find_options(args)
-
-    for _, arg in ipairs(rest) do
-        for _, target in ipairs(find_targets(packages, arg)) do
-            table.insert(options, target)
+    local targets = {}
+    for i, pattern in iter(extend({}, args), map(string.to_target_pattern)) do
+        local found = false
+        for name, pkg in iter(packages) do
+            for target in each(pkg.stages) do
+                local stage = target:__tostring(':')
+                if stage:match(pattern) then
+                    append(targets, tostring(target)) found = true
+                end
+            end
+            for config, this in pkg:each_config() do
+                for target in each(this.stages) do
+                    local stage = target:__tostring(':')
+                    if stage:match(pattern) then
+                        append(targets, tostring(target)) found = true
+                    end
+                end
+            end
+        end
+        if not found then
+            Log.warning('could not find targets matching: %s', args[i])
         end
     end
 
-    return Command:new(quote(System.mkpath(Jagen.dir, 'src', 'cmd.sh')),
-        'build', quote(unpack(options))):exec()
+    -- some targets were specified but none matched, consider this an error
+    if #args > 0 and #targets == 0 then
+        return false
+    end
+
+    Jagen.command.refresh(nil, packages)
+    return Command:new(quote(Jagen.cmd), 'build', tostring(args), unpack(targets)):exec()
 end
 
 function Jagen.command.src(args)

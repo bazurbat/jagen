@@ -35,31 +35,12 @@ cmd_build() {
 
     while [ $# -gt 0 ]; do
         case $1 in
-            -dry-run|--dry-run)
-                dry_run=1 ;;
-            -progress|--progress)
-                show_progress=1 ;;
-            -all-progress|--all-progress)
-                show_all=1 ;;
-            -force|--force)
-                build_force=1 ;;
-            -all|--all)
-                build_all=1 ;;
-            --*)
-                die "invalid option '$1'" ;;
-            -*) arg="${1#-}"
-                while [ "$arg" ]; do
-                    i=${arg%${arg#?}}
-                    case $i in
-                        n) dry_run=1 ;;
-                        p) show_progress=1 ;;
-                        P) show_all=1 ;;
-                        f) build_force=1 ;;
-                        a) build_all=1 ;;
-                        *) die "invalid flag '$i' in '$1'" ;;
-                    esac
-                    arg=${arg#?}
-                done ;;
+            --dry-run) dry_run=1 ;;
+            --progress) show_progress=1 ;;
+            --all-progress) show_all=1 ;;
+            --force) build_force=1 ;;
+            --all) build_all=1 ;;
+            -*) ;; # ignore unknown options
              *) targets="${targets}${S}${1}"
                 logs="${logs}${S}${jagen_log_dir}/${1}.log" ;;
         esac
