@@ -13,6 +13,16 @@ function Target:new(name, stage, config)
     return target
 end
 
+function Target:from_args(name, stage, config)
+    local target = {
+        name   = name,
+        stage  = stage,
+        config = config,
+    }
+    setmetatable(target, self)
+    return target
+end
+
 function Target:parse(rule, name, config)
     local stage = rule[1]; assert(type(stage) == 'string')
     local target = Target:new(name, stage, config)
