@@ -11,9 +11,9 @@ return {
         }
     },
     requires = {
-        { 'Qt5Core', 'system' },
-        { 'Qt5Quick', 'system' },
-        { 'Qt5Widgets', 'system' },
-        { 'Qt5SerialPort', 'system' },
+        'Qt5Core:system',
+        'Qt5Quick:system',
+        'Qt5Widgets:system',
+        'Qt5SerialPort:system',
     }
 }

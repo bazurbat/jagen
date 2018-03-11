@@ -208,7 +208,7 @@ function P:set(key, value, config)
 end
 
 function P:add_require(spec, config, template)
-    local req = P:parse(spec)
+    local req = Target:from_use(spec)
     req.config = req.config or config or template and template.config
     if req.config ~= 'system' then
         return P.define_rule {

@@ -11,9 +11,9 @@ return {
         }
     },
     requires = {
-        { 'boost',  'system' },
-        { 'glib',   'system' },
-        { 'json-c', 'system' },
-        { 'uuid',   'system' },
+        'boost:system',
+        'glib:system',
+        'json-c:system',
+        'uuid:system',
     }
 }

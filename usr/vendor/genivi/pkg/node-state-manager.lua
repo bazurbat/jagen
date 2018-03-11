@@ -21,6 +21,6 @@ return {
         'dlt-daemon', -- >= 2.2.0
         'glib', -- >= 2.30.0
         'persistence-client-library', -- >= 0.6.0
-        { 'systemd', 'system' }, -- >= 37
+        'systemd:system', -- >= 37
     }
 }

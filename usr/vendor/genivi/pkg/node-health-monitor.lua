@@ -14,6 +14,6 @@ return {
         'glib',
         'node-state-manager',
         'persistence-client-library',
-        { 'systemd', 'system' }
+        'systemd:system',
     }
 }

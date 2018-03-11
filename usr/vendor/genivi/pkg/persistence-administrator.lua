@@ -26,9 +26,9 @@ return {
         'glib', -- >= 2.30.0
         'node-state-manager',
         'persistence-common-object', -- >= 1.0.1
-        { 'json', 'system' }, -- >= 0.9
-        { 'libarchite', 'system' }, -- >= 3.0.4
-        { 'systemd', 'system' }, -- >= 37
-        { 'zlib', 'system' }, -- >= 1.2.5
+        'json:system', -- >= 0.9
+        'libarchive:system', -- >= 3.0.4
+        'systemd:system', -- >= 37
+        'zlib:system', -- >= 1.2.5
     }
 }
