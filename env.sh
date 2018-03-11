@@ -32,7 +32,7 @@ jagen_dist_dir="$jagen_project_dir/dist"
 jagen_toolchains_dir="$jagen_project_dir/toolchains"
 jagen_build_dir="$jagen_project_dir/build"
 jagen_include_dir="$jagen_project_dir/include"
-jagen_log_dir="$jagen_build_dir"
+jagen_log_dir="$jagen_project_dir/log"
 
 jagen_build_verbose=${jagen_build_verbose-}
 
