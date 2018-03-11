@@ -429,7 +429,7 @@ function Jagen.command.refresh(args, packages)
         end
         assert(configs_file:write(string.format('%s\n', name)))
         for target in pkg:each() do
-            assert(targets_file:write(string.format('%s\n', target:__tostring(':'))))
+            assert(targets_file:write(string.format('%s\n', target)))
         end
     end
 
@@ -474,16 +474,16 @@ function Jagen.command.build(args)
         local found = false
         for name, pkg in iter(packages) do
             for target in each(pkg.stages) do
-                local stage = target:__tostring(':')
+                local stage = tostring(target)
                 if stage:match(pattern) then
-                    append(targets, tostring(target)) found = true
+                    append(targets, stage) found = true
                 end
             end
             for config, this in pkg:each_config() do
                 for target in each(this.stages) do
-                    local stage = target:__tostring(':')
+                    local stage = tostring(target)
                     if stage:match(pattern) then
-                        append(targets, tostring(target)) found = true
+                        append(targets, stage) found = true
                     end
                 end
             end

@@ -79,7 +79,7 @@ end
 
 function Target:__tostring(sep)
     local o = {}
-    sep = sep or '__'
+    sep = sep or ':'
     if self.name   then table.insert(o, self.name)   end
     if self.stage  then table.insert(o, self.stage)  end
     if self.config then table.insert(o, self.config) end

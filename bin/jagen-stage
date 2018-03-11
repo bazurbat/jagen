@@ -17,7 +17,7 @@ fi
 
 . "${jagen_dir:?}/src/pkg.sh" || exit
 
-pkg__stamp_name="${pkg_name}__${pkg_stage}${pkg_config:+__${pkg_config}}"
+pkg__stamp_name="${pkg_name}:${pkg_stage}${pkg_config:+:${pkg_config}}"
 pkg__stamp_file="${jagen_build_dir:?}/${pkg__stamp_name}"
 pkg__log_file="${jagen_log_dir:?}/${pkg__stamp_name}.log"
 
