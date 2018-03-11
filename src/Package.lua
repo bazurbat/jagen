@@ -145,13 +145,7 @@ function P:parse(rule)
         error("invalid rule type")
     end
 
-    if type(rule.source) == 'string' then
-        if string.match(rule.source, '^https?://') then
-            rule.source = { type = 'curl', location = rule.source }
-        else
-            rule.source = { type = 'dist', location = rule.source }
-        end
-    end
+    rule.source = Source:parse(rule.source)
 
     if rule.build ~= nil then
         if type(rule.build) ~= 'table' then

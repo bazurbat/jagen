@@ -11,6 +11,32 @@ function Source:new(o)
     return o
 end
 
+function Source:parse(rule)
+    local source
+
+    if type(rule) == 'table' then
+        source = rule
+    elseif type(rule) == 'string' then
+        source = { location = rule }
+    end
+
+    if source and not source.type and source.location then
+        local url = source.location
+        if url:match('%.hg$') then
+            source.type = 'hg'
+        elseif url:match('%.git$') or url:match('^git@') or
+               url:match('^[%w._-]+@[%w._-]+:') then
+            source.type = 'git'
+        elseif url:match('^https?://') or url:match('^file://') then 
+            source.type = 'curl'
+        else
+            source.type = 'dist'
+        end
+    end
+
+    return source
+end
+
 function Source:is_known(tp)
     return tp == 'git' or tp == 'hg' or tp == 'repo'
 end
