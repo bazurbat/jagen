@@ -27,8 +27,6 @@ function Source:parse(rule)
         elseif url:match('%.git$') or url:match('^git@') or
                url:match('^[%w._-]+@[%w._-]+:') then
             source.type = 'git'
-        elseif url:match('^https?://') or url:match('^file://') then 
-            source.type = 'curl'
         else
             source.type = 'dist'
         end

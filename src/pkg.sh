@@ -277,14 +277,6 @@ pkg_unpack() {
                 _jagen src update "$pkg_name" || return
             fi
             ;;
-        curl)
-            local install_dir="${pkg_install_dir:-$jagen_host_dir}/bin"
-            local dest="$install_dir/$pkg_name"
-            pkg_run mkdir -p "$install_dir"
-            curl -L "$src_path" > "$dest" ||
-                die "failed to download $pkg_name from $src_path"
-            pkg_run chmod +x "$dest"
-            ;;
     esac
 }
 
