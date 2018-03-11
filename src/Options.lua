@@ -54,8 +54,23 @@ function P:is_long(arg)
     return arg and string.sub(arg, 1, 1) == '-' and string.sub(arg, 2, 2) == '-'
 end
 
+local function result_tostring(self)
+    local lines = {}
+    local function append(value)
+        table.insert(lines, value)
+    end
+    for k, v in pairs(self) do
+        if v == true then
+            append(string.format('--%s', k))
+        end
+    end
+    return table.concat(lines, ' ')
+
+end
+
 function P:parse(args)
     local result = copy(self.init)
+    setmetatable(result, { __tostring = result_tostring })
     local read_nth
 
     local function set_value(n, opt, val)
