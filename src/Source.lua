@@ -155,7 +155,7 @@ function GitSource:_update_submodules(...)
 end
 
 function GitSource:command(...)
-    return Command:new('git --no-pager -C', quote(assert(self.dir)), ...)
+    return Command:new('git --no-pager --git-dir=.git -C', quote(assert(self.dir)), ...)
 end
 
 function GitSource:head()
