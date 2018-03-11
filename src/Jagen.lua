@@ -308,6 +308,30 @@ function Jagen.command.get(args)
     return 0
 end
 
+function Jagen.query(pkg, value, config)
+    return Command:new('jagen-stage -q', value, pkg.name, config):read()
+end
+
+function Jagen.clean_package(pkg, spec)
+    local use = Target:from_use(spec)
+    local config = use.config
+    local build = pkg:get('build', config)
+    if build then
+        if build.in_source and pkg.source:is_scm() then
+            Jagen.src.clean({ name })
+        else
+            local build_dir = Jagen.query(pkg, 'build_dir', config)
+            if build_dir then
+                System.rmrf(build_dir)
+            end
+        end
+        if config then
+            Target:from_args(use.name, 'configure', config):remove()
+        end
+    end
+    return true
+end
+
 local function clean_packages(args)
     local packages = Package.load_rules()
 
@@ -456,6 +480,7 @@ function Jagen.command.build(args)
         { 'force,f' },
         { 'progress,p' },
         { 'all-progress,P' },
+        { 'clean,c' }
     }
     args = options:parse(args)
     if not args then
@@ -472,21 +497,16 @@ function Jagen.command.build(args)
         return false
     end
 
-    local targets = {}
+    local targets, to_clean, arg_clean = {}, {}, args['clean']
     for i, pattern in iter(extend({}, args), map(string.to_target_pattern)) do
         local found = false
         for name, pkg in iter(packages) do
-            for target in each(pkg.stages) do
+            for target, this in pkg:each() do
                 local stage = tostring(target)
                 if stage:match(pattern) then
                     append(targets, stage) found = true
-                end
-            end
-            for config, this in pkg:each_config() do
-                for target in each(this.stages) do
-                    local stage = tostring(target)
-                    if stage:match(pattern) then
-                        append(targets, stage) found = true
+                    if arg_clean then
+                        to_clean[tostring(this)] = pkg
                     end
                 end
             end
@@ -501,7 +521,14 @@ function Jagen.command.build(args)
         return false
     end
 
+    for spec, pkg in pairs(to_clean) do
+        if not Jagen.clean_package(pkg, spec) then
+            return false
+        end
+    end
+
     Jagen.command.refresh(nil, packages)
+
     return Command:new(quote(Jagen.cmd), 'build', tostring(args), unpack(targets)):exec()
 end
 
