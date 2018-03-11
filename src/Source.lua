@@ -213,12 +213,20 @@ function GitSource:clone()
         clone_cmd:append('--branch', quote(branch))
     end
     if self.shallow then
+        local smart = false
         -- try to detect if the server is "smart"
         -- https://stackoverflow.com/questions/9270488/is-it-possible-to-detect-whether-a-http-git-remote-is-smart-or-dumb
-        local url = self.location..'/info/refs?service=git-upload-pack'
-        local pattern = 'Content%-Type: application/x%-git'
-        local command = Command:new('curl -fisS', quote(url))
-        if command:exists() and command:read('*a'):match(pattern) then -- smart
+        if self.location:match('^https?://') then
+            local url = self.location..'/info/refs?service=git-upload-pack'
+            local pattern = 'Content%-Type: application/x%-git'
+            local command = Command:new('curl -fisS', quote(url))
+            if command:exists() and command:read('*a'):match(pattern) then
+                smart = true
+            end
+        else
+            smart = true
+        end
+        if smart then
             clone_cmd:append('--depth', 1)
         end
     end
