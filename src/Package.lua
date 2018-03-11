@@ -219,7 +219,7 @@ function P:add_require(spec, config, template)
     end
 end
 
-function P:add_target(rule, config)
+function P:add_stage(rule, config)
     local target = Target:parse(rule, self.name, config)
     local name   = target.stage
     local config = target.config
@@ -298,7 +298,7 @@ function P:add_patch_dependencies()
         local name = 'provide_patches'
         local stage = pkg.stages[name]
         if not stage then
-            pkg:add_target { name }
+            pkg:add_stage { name }
             stage = assert(pkg.stages[name])
         end
         stage.outputs = stage.outputs or {}
@@ -394,7 +394,7 @@ end
 
 function P:add_export_stages()
     if self.export and not self.stages['export'] then
-        self:add_target { 'export' }
+        self:add_stage { 'export' }
     end
     for config, this in self:each_config() do
         if not this.stages then this.stages = {} end
@@ -581,7 +581,7 @@ function P.load_rules()
                             append(stage, { toolchain, 'install', config })
                             extend(added, req)
                         end
-                        pkg:add_target(stage, config)
+                        pkg:add_stage(stage, config)
                         pop_context()
                     end
                 end
@@ -656,9 +656,9 @@ function P.define_rule(rule, context)
         pkg.build = {}
         pkg.install = {}
         pkg.export = {}
-        pkg:add_target { 'unpack' }
+        pkg:add_stage { 'unpack' }
         if pkg.name ~= 'patches' then
-            pkg:add_target { 'patch' }
+            pkg:add_stage { 'patch' }
         end
         local module, filename = find_module('pkg/'..rule.name)
         if module then
@@ -746,7 +746,7 @@ function P.define_rule(rule, context)
         })
 
     if pkg.source and pkg.source.type == 'repo' then
-        pkg:add_target { 'unpack',
+        pkg:add_stage { 'unpack',
             { 'repo', 'install', 'host' }
         }
         P.define_rule { 'repo', 'host' }
@@ -778,7 +778,7 @@ function P.define_rule(rule, context)
 
         if build.type == 'GNU' then
             if build.generate or build.autoreconf then
-                pkg:add_target { 'autoreconf',
+                pkg:add_stage { 'autoreconf',
                     { 'libtool', 'install', 'host' }
                 }
                 P.define_rule { 'libtool', 'host' }
@@ -790,18 +790,18 @@ function P.define_rule(rule, context)
 
             P.define_rule { 'kernel', config }
 
-            pkg:add_target({ 'configure',
+            pkg:add_stage({ 'configure',
                     { 'kernel', 'configure', config }
                 }, config)
-            pkg:add_target({ 'compile',
+            pkg:add_stage({ 'compile',
                     { 'kernel', 'compile', config }
                 }, config)
-            pkg:add_target({ 'install',
+            pkg:add_stage({ 'install',
                     { 'kernel', 'install', config }
                 }, config)
         elseif build.type then
-            pkg:add_target({ 'configure' }, config)
-            pkg:add_target({ 'compile' }, config)
+            pkg:add_stage({ 'configure' }, config)
+            pkg:add_stage({ 'compile' }, config)
         end
 
         if config == 'target' and build.target_requires_host then
@@ -812,7 +812,7 @@ function P.define_rule(rule, context)
             install.type = build.type
         end
         if install.type and install.type ~= false then
-            pkg:add_target({ 'install' }, config)
+            pkg:add_stage({ 'install' }, config)
         end
     end
 
@@ -843,7 +843,7 @@ function P.define_rule(rule, context)
                 append(stage, { req.name, 'install', config })
             end
         end
-        pkg:add_target(stage, config)
+        pkg:add_stage(stage, config)
     end
 
     if context then pop_context() end
