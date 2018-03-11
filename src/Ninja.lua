@@ -68,10 +68,10 @@ local function format_build(build)
     local lines = { '' }
 
     local function format_outputs(outputs)
-        local lines = { outputs[1] }
+        local lines = { escape(outputs[1]) }
         if #outputs > 1 then
             extend(lines, map(function (x)
-                        return indented(escape(x), 8)
+                        return indented(escape(tostring(x)), 8)
                 end, sort(table.rest(outputs, 2))))
             append(lines, indent(12))
         end
