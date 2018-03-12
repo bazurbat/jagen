@@ -313,7 +313,7 @@ end
 
 function string.to_target_pattern(s)
     if #s == 0 then return s end
-    if not s:match(':') then
+    if not (s:match(':') or s:match('*') or s:match('?')) then
         s = s..':*'
     end
     s = s:gsub('::', ':*:')
