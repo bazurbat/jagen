@@ -21,9 +21,10 @@ pkg__stamp_name="${pkg_name}:${pkg_stage}${pkg_config:+:${pkg_config}}"
 pkg__stamp_file="${jagen_build_dir:?}/${pkg__stamp_name}"
 pkg__log_file="${jagen_log_dir:?}/${pkg__stamp_name}.log"
 
-cd "$jagen_build_dir" || exit
-
 [ "$pkg_stage" ] && : >"$pkg__log_file"
+exec >>"$pkg__log_file" 2>&1 3>&1
+
+cd "$jagen_build_dir" || exit
 
 pkg_work_dir="${jagen_build_dir:?}/$pkg_name"
 pkg_build_dir="${pkg_work_dir}${pkg_config:+/$pkg_config}"
@@ -180,7 +181,7 @@ run_stage() {
 
     if is_function "$stage"; then
         debug "$pkg: $stage"
-        eval "$stage" $pkg_args >>"$pkg__log_file" 2>&1 ||
+        eval "$stage" $pkg_args ||
             die "failed to run $pkg_stage stage of package $pkg"
     else
         return 2
