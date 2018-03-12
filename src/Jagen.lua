@@ -442,6 +442,7 @@ function Jagen.command.refresh(args, packages)
     local scm_names_file = assert(io.open(System.mkpath(Jagen.build_dir, '.jagen-scm-names'), 'wb'))
     local configs_file = assert(io.open(System.mkpath(Jagen.build_dir, '.jagen-configs'), 'wb'))
     local targets_file = assert(io.open(System.mkpath(Jagen.build_dir, '.jagen-targets'), 'wb'))
+    local stages, cstages, configs = {}, {}, {}
 
     for _, name in ipairs(names) do
         local pkg = packages[name]
@@ -450,15 +451,30 @@ function Jagen.command.refresh(args, packages)
             assert(scm_names_file:write(string.format('%s\n', name)))
         end
         for config, _ in pairs(pkg.configs or {}) do
+            configs[config] = true
             assert(configs_file:write(string.format('%s:%s\n', name, config)))
-        end
-        assert(configs_file:write(string.format('%s\n', name)))
-        for config, _ in pkg:each_config() do
             assert(targets_file:write(string.format('%s::%s\n', name, config)))
         end
+        assert(configs_file:write(string.format('%s\n', name)))
         for target in pkg:each() do
+            if target.config then
+                cstages[target.stage] = true
+            else
+                stages[target.stage] = true
+            end
             assert(targets_file:write(string.format('%s\n', tostring(target))))
         end
+    end
+    for stage in pairs(stages) do
+        assert(targets_file:write(string.format(':%s\n', stage)))
+    end
+    for stage in pairs(cstages) do
+        for config in pairs(configs) do
+            assert(targets_file:write(string.format(':%s:%s\n', stage, config)))
+        end
+    end
+    for config in pairs(configs) do
+        assert(targets_file:write(string.format('::%s\n', config)))
     end
 
     names_file:close()
