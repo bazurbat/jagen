@@ -47,9 +47,9 @@ local function join_escaped(list)
 end
 
 local function join_quoted(list)
-    return join_space(newlist(map(function (i)
+    return join_space(tolist(list, map(function (i)
                     return format("'%s'", escape(tostring(i)))
-        end), list))
+        end)))
 end
 
 local function quote(s)

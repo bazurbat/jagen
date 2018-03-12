@@ -54,7 +54,7 @@ function iiter(t, itt)
     end
 end
 
-function newlist(itt, t)
+function tolist(t, itt)
     local o = {}
     for i, v in itt(inext), t, 0 do
         insert(o, v)
@@ -64,7 +64,7 @@ end
 
 function map(f, t)
     if t then
-        return newlist(map(f), t)
+        return tolist(t, map(f))
     else
         return function(iter)
             return function(t, last)
@@ -77,7 +77,7 @@ end
 
 function filter(pred, t)
     if t then
-        return newlist(filter(pred), t)
+        return tolist(t, filter(pred))
     else
         return function(iter)
             local function step(t, last)
