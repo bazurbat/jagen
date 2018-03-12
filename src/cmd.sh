@@ -29,7 +29,6 @@ cmd_build() {
     local IFS="$(printf '\n\t')"
     local no_rebuild show_progress show_all build_all
     local targets logs sts arg i
-    local cmd_log="$jagen_log_dir/$mode.log"
 
     assert_ninja_found
 
@@ -48,7 +47,6 @@ cmd_build() {
 
     cd "$jagen_build_dir" || return
 
-    : > "$cmd_log" || return
     for log in $logs; do
         : > "$log" || return
     done
@@ -60,9 +58,7 @@ cmd_build() {
     if [ "$show_all" ]; then
         tail -qFn0 *.log 2>/dev/null &
     elif [ "$show_progress" ]; then
-        tail -qFn+1 "$cmd_log" $logs 2>/dev/null &
-    else
-        tail -qFn+1 "$cmd_log" &
+        tail -qFn+1 $logs 2>/dev/null &
     fi
 
     # catch SIGINT to kill background tail process and exit cleanly
@@ -75,13 +71,13 @@ cmd_build() {
 
     maybe_sync
     if [ "$build_all" ]; then
-        ninja > "$cmd_log"; sts=$?
+        ninja; sts=$?
     else
-        ninja $targets > "$cmd_log"; sts=$?
+        ninja $targets; sts=$?
     fi
     maybe_sync
 
-    kill $!
+    [ "$!" ] && kill $!
 
     return $sts
 }
