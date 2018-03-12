@@ -161,16 +161,18 @@ local function write_use(w, pkg, config)
         return write_pkg_var(w, prefix, name, value)
     end
 
-    local names, targets = {}, sort(map(Target.from_use, use),
+    local names, aliases, targets = {}, {}, sort(map(Target.from_use, use),
         function (a, b) return a.name < b.name end)
     for target in each(targets) do
         append(names, target.name)
         if target.alias then
-            write_var('alias_'..string.to_identifier(target.alias),
-                                string.to_identifier(target.name))
+            append(aliases, string.format('%s=%s',
+                    string.to_identifier(target.alias),
+                    string.to_identifier(target.name)))
         end
     end
     write_var('use', names)
+    write_var('use_alias', aliases)
 end
 
 local function generate_script(filename, pkg, config)
