@@ -602,11 +602,11 @@ jagen_pkg_provide_patches() {
 
 pkg__fname() {
     local name="${1:?}" config="$2"
-    printf '%s' "${name}${config:+__$config}"
+    printf '%s' "${name}${config:+:$config}"
 }
 
 pkg__export_fname() {
-    printf '%s' "${jagen_include_dir:?}/$(pkg__fname "$1" "$2")__export.sh"
+    printf '%s' "${jagen_include_dir:?}/$(pkg__fname "$1" "$2"):export.sh"
 }
 
 jagen_pkg_export() {

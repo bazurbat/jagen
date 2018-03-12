@@ -202,7 +202,7 @@ function P:generate(pkg, dir)
     local filename = System.mkpath(dir, string.format('%s.sh', pkg.name))
     generate_script(filename, pkg)
     for name, config in pairs(pkg.configs) do
-        filename = System.mkpath(dir, string.format('%s__%s.sh', pkg.name, name))
+        filename = System.mkpath(dir, string.format('%s:%s.sh', pkg.name, name))
         generate_script(filename, config, name)
     end
 end
