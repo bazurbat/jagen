@@ -163,7 +163,7 @@ local function write_use(w, pkg, config)
 
     local specs, names = sort(use), {}
     for spec in each(specs) do
-        local use = Target:from_use(spec)
+        local use = Target.from_use(spec)
         append(names, use.name)
         if use.alias then
             write_var('alias_'..string.to_identifier(use.alias),

@@ -168,7 +168,7 @@ function Jagen.src.update(args)
         end
 
         if source:head() ~= old_head then
-            assert(Target:from_args(pkg.name, 'unpack'):touch())
+            assert(Target.from_args(pkg.name, 'unpack'):touch())
         end
     end
 end
@@ -314,7 +314,7 @@ function Jagen.query(pkg, value, config)
 end
 
 function Jagen.clean_package(pkg, spec)
-    local use = Target:from_use(spec)
+    local use = Target.from_use(spec)
     local config = use.config
     local build = pkg:get('build', config)
     if build then
@@ -327,7 +327,7 @@ function Jagen.clean_package(pkg, spec)
             end
         end
         if config then
-            Target:from_args(use.name, 'configure', config):remove()
+            Target.from_args(use.name, 'configure', config):remove()
         end
     end
     return true
@@ -337,7 +337,7 @@ local function clean_packages(args)
     local packages = Package.load_rules()
 
     function force_reconfigure(name, config)
-        assert(Target:from_args(name, 'configure', config):remove())
+        assert(Target.from_args(name, 'configure', config):remove())
     end
 
     for _, arg in ipairs(args) do

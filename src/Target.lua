@@ -10,7 +10,7 @@ function Target:new(o)
     return o
 end
 
-function Target:from_args(name, stage, config)
+function Target.from_args(name, stage, config)
     return Target:new {
         name   = name,
         stage  = stage,
@@ -20,7 +20,7 @@ end
 
 function Target:parse(rule, name, config)
     local stage = rule[1]; assert(type(stage) == 'string')
-    local target = Target:from_args(name, stage, config)
+    local target = Target.from_args(name, stage, config)
 
     for k, v in pairs(rule) do
         target[k] = rule[k]
@@ -32,7 +32,7 @@ function Target:parse(rule, name, config)
 
     for i = 2, #rule do
         local input = rule[i]
-        append(target.inputs, Target:from_args(input[1], input[2], input[3]))
+        append(target.inputs, Target.from_args(input[1], input[2], input[3]))
     end
 
     return target
@@ -52,13 +52,13 @@ function Target:from_arg(arg)
         config = c[3]
     end
 
-    return Target:from_args(name, stage, config)
+    return Target.from_args(name, stage, config)
 end
 
-function Target:from_use(spec)
+function Target.from_use(spec)
     local function parse(spec)
         local name, config = unpack(string.split2(spec, ':'))
-        return Target:from_args(name, nil, config)
+        return Target.from_args(name, nil, config)
     end
     if type(spec) == 'string' then
         return parse(spec)

@@ -141,11 +141,11 @@ local function format_stage(target, pkg)
 
     if target.stage == 'unpack' then
         for use in each(pkg.use or {}) do
-            append(uses, Target:from_args(Target:from_use(use).name, 'export'))
+            append(uses, Target.from_args(Target.from_use(use).name, 'export'))
         end
         for _, this in pkg:each_config() do
             for use in each(this.use or {}) do
-                append(uses, Target:from_args(Target:from_use(use).name, 'export'))
+                append(uses, Target.from_args(Target.from_use(use).name, 'export'))
             end
         end
     elseif config and (not pkg._added_exports or
@@ -155,18 +155,18 @@ local function format_stage(target, pkg)
         pkg._added_exports[config] = true
         local this = assert(pkg.configs[config])
         for spec in each(pkg.use or {}) do
-            local use = Target:from_use(spec)
+            local use = Target.from_use(spec)
             local used = assert(packages[use.name])
             local config = use.config or next(used.configs)
             if config then
-                append(uses, Target:from_args(use.name, 'export', config))
+                append(uses, Target.from_args(use.name, 'export', config))
             end
         end
         for spec in each(this.use or {}) do
-            local use = Target:from_use(spec)
+            local use = Target.from_use(spec)
             local config = use.config or config
             if config then
-                append(uses, Target:from_args(use.name, 'export', config))
+                append(uses, Target.from_args(use.name, 'export', config))
             end
         end
     end

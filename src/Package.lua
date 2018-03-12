@@ -212,7 +212,7 @@ function P:set(key, value, config)
 end
 
 function P:add_require(spec, config, template)
-	local req = Target:from_use(spec)
+	local req = Target.from_use(spec)
 	local config = config or template and template.config
 	if req.config == 'system' then -- skip those for now
 		return
@@ -448,7 +448,7 @@ function P:add_export_stages()
     for config, this in self:each_config() do
         if not this.stages then this.stages = {} end
         if this.export and not this.stages['export'] then
-            local target = Target:from_args(self.name, 'export', config)
+            local target = Target.from_args(self.name, 'export', config)
             this.stages['export'] = target
             table.insert(this.stages, 1, target)
         end
@@ -464,7 +464,7 @@ function P:add_ordering_dependencies()
             curr.inputs = append(curr.inputs, unpack)
         elseif curr.stage == 'export' and curr.config then
             curr:append(assert(common))
-            curr:append(Target:from_args(common.name, 'export'))
+            curr:append(Target.from_args(common.name, 'export'))
         elseif curr.stage == 'export' then
             curr.inputs = append(curr.inputs, assert(common))
         else
@@ -868,13 +868,13 @@ function P.define_rule(rule, context)
 
     if this ~= pkg then
         for spec in each(this.use or {}) do
-            local use = Target:from_use(spec)
+            local use = Target.from_use(spec)
             P.define_rule { use.name, use.config or config }
         end
     end
 
     for spec in each(pkg.use or {}) do
-        local use = Target:from_use(spec)
+        local use = Target.from_use(spec)
         if use.config or not config then
             P.define_rule { use.name, use.config }
         else
