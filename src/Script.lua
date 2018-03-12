@@ -161,13 +161,13 @@ local function write_use(w, pkg, config)
         return write_pkg_var(w, prefix, name, value)
     end
 
-    local specs, names = sort(use), {}
-    for spec in each(specs) do
-        local use = Target.from_use(spec)
-        append(names, use.name)
-        if use.alias then
-            write_var('alias_'..string.to_identifier(use.alias),
-                                string.to_identifier(use.name))
+    local names, targets = {}, sort(map(Target.from_use, use),
+        function (a, b) return a.name < b.name end)
+    for target in each(targets) do
+        append(names, target.name)
+        if target.alias then
+            write_var('alias_'..string.to_identifier(target.alias),
+                                string.to_identifier(target.name))
         end
     end
     write_var('use', names)
