@@ -69,7 +69,7 @@ for name in $pkg_build_toolchain $pkg_use; do
     done; unset prefix key
 done; unset name
 
-function pkg__assign_alias() {
+pkg__assign_alias() {
     local IFS='='; set -- $1; unset IFS
     local key alias_to="$1" alias_from="$2"
     for key in $(set | sed -rn "s/^${alias_from}_([[:alnum:]_]+)=.*/\1/p"); do
