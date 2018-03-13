@@ -99,12 +99,12 @@ if [ "$pkg_build_toolchain" ]; then
     use_env cflags
 fi
 
-# useful pkg-specific variables for scripts
-pkg_install_dir="$pkg_install_root$pkg_install_prefix"
-
-if [ "$pkg_build_system" ]; then
+if [ "${pkg_build_system}" ]; then
     pkg_toolchain_prefix=${pkg_build_system}-
 fi
+
+# useful pkg-specific variables for scripts
+pkg_install_dir="$pkg_install_root$pkg_install_prefix"
 
 # defaults
 : ${pkg_build_generator=$jagen_cmake_generator}
