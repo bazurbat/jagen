@@ -228,35 +228,11 @@ function Jagen.src.each(args)
     end
 end
 
--- these should return status number or nothing (nil)
-
 Jagen.command = {}
-
-local function is_option(arg)
-    return string.sub(arg, 1, 1) == '-'
-end
 
 local function help_requested(args)
     return args and args[1] and
         (args[1] == '-h' or string.match(args[1], '^%--help$'))
-end
-
-local function complex_command(command, args)
-    if help_requested(args) then
-        return Jagen.command['help'] { command }
-    end
-
-    local subcommand = args[1]
-    table.remove(args, 1)
-
-    if not subcommand then
-        die("command required, try 'jagen %s help'", command)
-    elseif Jagen[command][subcommand] then
-        return Jagen[command][subcommand](args)
-    else
-        die("'%s' is not valid %s command, try 'jagen %s help'",
-            subcommand, command, command)
-    end
 end
 
 function Jagen.command.help(args)
@@ -515,7 +491,18 @@ function Jagen.command.build(args)
 end
 
 function Jagen.command.src(args)
-    return complex_command('src', args)
+    local first = args[1]
+    local command = Jagen.src[first]
+    if first then
+        if command then
+            table.remove(args, 1)
+            return command(args)
+        else
+            die('invalid src subcommand: %s', first)
+        end
+    else
+        return Jagen.command.help { 'src' }
+    end
 end
 
 function Jagen.command.show(args)
