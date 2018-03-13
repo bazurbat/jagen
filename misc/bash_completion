@@ -39,7 +39,7 @@ _jagen_complete() {
     local configs_file="$jagen_build_dir/.jagen-configs"
     local targets_file="$jagen_build_dir/.jagen-targets"
 
-    local top_cmds='help get clean refresh build src show list'
+    local top_cmds='help clean refresh build src show list'
     local src_cmds='dirty status clean update delete each'
     local src_each_opt='--type'
     local src_types='git hg repo'
@@ -64,13 +64,6 @@ _jagen_complete() {
     case $jagen_command in
         jagen)
             COMPREPLY=($(compgen -W "$help_opt $top_cmds" -- "$cur")) ;;
-        get)
-            if [[ "$prev" == "get" ]]; then
-                COMPREPLY=($(compgen -W "$help_opt $(cat "$configs_file")" -- "$cur"))
-            else
-                COMPREPLY=($(compgen -W "work_dir source_dir woo build_dir install_dir" -- "$cur"))
-            fi
-            ;;
         clean)
             if [[ "$prev" == "clean" ]]; then
                 COMPREPLY=($(compgen -W "$help_opt $(cat "$configs_file")" -- "$cur"))

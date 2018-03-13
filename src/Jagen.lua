@@ -37,6 +37,10 @@ function Jagen.flag(f)
     return false
 end
 
+function Jagen.query(pkg, value, config)
+    return Command:new('jagen-stage -q', value, pkg.name, config):read()
+end
+
 -- src
 
 local function scm_packages(names)
@@ -271,46 +275,6 @@ function Jagen.command.help(args)
         Log.error('no such help section: %s', section)
         return 2
     end
-end
-
-function Jagen.command.get(args)
-    local packages = Package.load_rules()
-    local pkg_arg = args[1]
-    local pkg_var = args[2]
-
-    if not pkg_arg then
-        die('the package to query is not specified')
-    end
-    if not pkg_var then
-        die('the variable to get is not specified')
-    end
-
-    local name, config = split_pkg_arg(pkg_arg)
-    local pkg = packages[name]
-
-    if not pkg then
-        die('no such package: %s', name)
-    end
-
-    local result = pkg:query(pkg_var, config)
-    local count = 0
-    for k, v in pairs(result) do
-        count = count + 1
-    end
-    if count == 1 then
-        local _, value = next(result)
-        print(value)
-    else
-        for k, v in pairs(result) do
-            print(string.format('%s: %s', k, v))
-        end
-    end
-
-    return 0
-end
-
-function Jagen.query(pkg, value, config)
-    return Command:new('jagen-stage -q', value, pkg.name, config):read()
 end
 
 function Jagen.clean_package(pkg, spec)
