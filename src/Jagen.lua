@@ -259,12 +259,6 @@ local function complex_command(command, args)
     end
 end
 
-local function split_pkg_arg(arg)
-    local match = string.gmatch(arg, '[^:]+')
-    local name, config = match(), match()
-    return name, config
-end
-
 function Jagen.command.help(args)
     section = args[1] or 'usage'
     local help = require 'help'
