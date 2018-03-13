@@ -505,25 +505,6 @@ function Jagen.command.src(args)
     end
 end
 
-function Jagen.command.show(args)
-    if #args == 0 or help_requested(args) then
-        return Jagen.command['help'] { 'show' }
-    end
-
-    if #args ~= 1 then
-        die('expected a single argument but given %d', #args)
-    end
-
-    local filename = tostring(Target:from_arg(args[1]))
-    if #filename == 0 then
-        die('the target name is empty')
-    end
-
-    local path = System.mkpath(assert(os.getenv('jagen_log_dir')),
-                               filename..'.log')
-    return os.execute(string.format('%s "%s"', Jagen.pager, path))
-end
-
 function Jagen.command.list(args)
     if #args == 0 or help_requested(args) then
         return Jagen.command['help'] { 'list' }
