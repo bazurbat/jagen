@@ -74,17 +74,16 @@ end
 
 Jagen.src = {}
 
--- Should return 0 if true, 1 if false, for shell scripting.
 function Jagen.src.dirty(args)
     local packages = scm_packages(args)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
         if System.exists(source.dir) and not System.is_empty(source.dir) and
                 source:dirty() then
-            return 0
+            return true
         end
     end
-    return 1
+    return false
 end
 
 function Jagen.src.status(args)
