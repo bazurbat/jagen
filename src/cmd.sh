@@ -77,7 +77,7 @@ cmd_build() {
     fi
     maybe_sync
 
-    [ "$!" ] && kill $!
+    [ "$show_all" -o "$show_progress" ] && [ "$!" ] && kill $!
 
     return $sts
 }
