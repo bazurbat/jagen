@@ -1,7 +1,5 @@
 #!/bin/sh
 
-: ${pkg_toolchain_prefix:?}
-
 export AR="${pkg_toolchain_prefix}ar"
 export AS="${pkg_toolchain_prefix}as"
 export CC="${pkg_toolchain_prefix}gcc"
