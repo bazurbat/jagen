@@ -729,16 +729,19 @@ function Jagen.nproc()
 end
 
 function Jagen:run(args)
-    local cmd = args[1]
+    local first = args[1]
 
-    if #args == 0 or help_requested(args) then
-        return Jagen.command['help']({ args[2] })
-    elseif Jagen.command[cmd] then
+    if Jagen.command[first] then
         table.remove(args, 1)
-        return Jagen.command[cmd](args)
+        local status =  Jagen.command[first](args)
+        if status == nil or status == true or status == 0 then
+            return 0
+        else
+            return 1
+        end
     else
-        die("invalid command or argument '%s', try 'jagen help'", cmd)
+        die("invalid command or argument '%s', try 'jagen help'", first)
     end
 end
 
-os.exit(Jagen:run(arg) and 0 or 1)
+os.exit(Jagen:run(arg))
