@@ -16,6 +16,12 @@ function Source:parse(rule)
 
     if type(rule) == 'table' then
         source = rule
+        if type(source[1]) == 'string' then
+            if source.location == nil then
+                source.location = source[1]
+            end
+            table.remove(source, 1)
+        end
     elseif type(rule) == 'string' then
         source = { location = rule }
     end

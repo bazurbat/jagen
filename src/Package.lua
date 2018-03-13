@@ -147,23 +147,26 @@ function P:parse(rule)
 
     rule.source = Source:parse(rule.source)
 
-    if rule.build ~= nil then
-        if type(rule.build) ~= 'table' then
-            rule.build = { type = rule.build }
-        end
-        if type(rule.build.type) == 'string' then
-            rule.build.type = rule.build.type:tocanon()
+    local function parse_section(name)
+        if rule[name] ~= nil then
+            if type(rule[name]) ~= 'table' then
+                rule[name] = { type = rule[name] }
+            end
+            local field = rule[name]
+            if type(field[1]) == 'string' then
+                if field.type == nil then
+                    field.type = field[1]
+                end
+                table.remove(field, 1)
+            end
+            if type(field.type) == 'string' then
+                field.type = field.type:tocanon()
+            end
         end
     end
 
-    if rule.install ~= nil then
-        if type(rule.install) ~= 'table' then
-            rule.install = { type = rule.install }
-        end
-        if type(rule.install.type) == 'string' then
-            rule.install.type = rule.install.type:tocanon()
-        end
-    end
+    parse_section('build')
+    parse_section('install')
 
     if type(rule.use) == 'string' then
         rule.use = { rule.use }
