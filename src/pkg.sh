@@ -445,6 +445,10 @@ pkg_compile() {
         linux-module)
             pkg_run make $pkg_build_options "$@"
             ;;
+        android-ndk-toolchain)
+            require toolchain
+            toolchain_install_android_ndk
+            ;;
     esac
 }
 
@@ -500,7 +504,10 @@ pkg_install() {
             ;;
         android-ndk-toolchain)
             require toolchain
-            toolchain_install_android_ndk
+            toolchain_generate_wrappers    \
+                "${jagen_bin_dir:?}"       \
+                "${pkg_build_dir:?}/bin"   \
+                "${pkg_toolchain_prefix}"
             ;;
     esac
 

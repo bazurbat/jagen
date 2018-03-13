@@ -1,11 +1,9 @@
 return {
     build = {
-        arch   = 'arm',
-        system = 'arm-linux-androideabi',
+        type      = 'android-ndk-toolchain',
+        arch      = 'arm',
+        system    = 'arm-linux-androideabi',
         toolchain = 'android-ndk'
-    },
-    install = {
-        type = 'android-ndk-toolchain'
     },
     export = {
         cmake_options = {
