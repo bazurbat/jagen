@@ -21,7 +21,7 @@ on_interrupt() { :; }
 
 cmd_build() {
     local IFS="$(printf '\n\t')"
-    local build_all no_rebuild show_progress show_all with_output
+    local build_all no_rebuild show_progress is_quiet with_output
     local targets log logs sts build_log="${jagen_log_dir:?}/build.log"
 
     assert_ninja_found
@@ -30,8 +30,8 @@ cmd_build() {
         case $1 in
             --all) build_all=1 ;;
             --no-rebuild) no_rebuild=1 ;;
-            --progress) show_progress=1; with_output=1 ;;
-            --all-progress) show_all=1; with_output=1 ;;
+            --progress) show_progress=1 ;;
+            --quiet) is_quiet=1 ;;
             -*) ;; # ignore unknown options
              *) targets="${targets}${S}${1}"
                 logs="${logs}${S}${jagen_log_dir}/${1}.log" ;;
@@ -50,10 +50,14 @@ cmd_build() {
         rm -f $targets || return
     fi
 
-    if [ "$show_all" ]; then
-        tail -qFc0 "$jagen_log_dir"/*.log 2>/dev/null &
-    elif [ "$show_progress" ]; then
-        tail -qFn+1 "$build_log" $logs 2>/dev/null &
+    if ! [ "$is_quiet" ]; then
+        if [ "$show_progress" ]; then
+            tail -qFc0 "$jagen_log_dir"/*.log 2>/dev/null &
+            with_output=1
+        elif [ "$logs" ]; then
+            tail -qFn+1 "$build_log" $logs 2>/dev/null &
+            with_output=1
+        fi
     fi
 
     # catch SIGINT to let ninja see it and exit cleanly

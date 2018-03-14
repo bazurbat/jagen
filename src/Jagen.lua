@@ -430,7 +430,7 @@ function Jagen.command.build(args)
         { 'all,a' },
         { 'no-rebuild,n' },
         { 'progress,p' },
-        { 'all-progress,P' },
+        { 'quiet,q' },
     }
     args = options:parse(args)
     if not args then
