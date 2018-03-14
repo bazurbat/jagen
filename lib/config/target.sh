@@ -9,6 +9,9 @@ fi
 
 pkg_build_cmake_toolchain_file=$jagen_cmake_toolchain_file
 
+pkg_build_cc=$jagen_target_cc
+pkg_build_cxx=$jagen_target_cxx
+
 export CFLAGS="-O2"
 export CXXFLAGS="$CFLAGS"
 export LDFLAGS=""

@@ -310,6 +310,7 @@ pkg_configure() {
     [ "$pkg_source_dir" ] || return 0
 
     local IFS="$jagen_IFS" S="$jagen_FS" A=
+    local toolchain_file="$pkg_build_dir/toolchain.cmake"
 
     case $pkg_build_type in
         gnu)
@@ -362,14 +363,16 @@ pkg_configure() {
                 A="$A$S-DCMAKE_MODULE_PATH=$pkg_build_cmake_module_path"
             fi
 
+            A="$A$S-DCMAKE_TOOLCHAIN_FILE=$toolchain_file"
+            cat >"$toolchain_file" <<EOF
+set(CMAKE_C_COMPILER "${pkg_toolchain_prefix}${pkg_build_cc:-gcc}")
+set(CMAKE_CXX_COMPILER "${pkg_toolchain_prefix}${pkg_build_cxx:-g++}")
+EOF
             if [ "$pkg_config" = "target" ]; then
-                cat >"$pkg_work_dir/toolchain.cmake" <<EOF
+                cat >>"$toolchain_file" <<EOF
 set(CMAKE_SYSTEM_NAME "Linux")
 set(CMAKE_FIND_ROOT_PATH "$pkg_install_dir")
-set(CMAKE_C_COMPILER "${pkg_toolchain_prefix}gcc")
-set(CMAKE_CXX_COMPILER "${pkg_toolchain_prefix}g++")
 EOF
-                A="$A$S-DCMAKE_TOOLCHAIN_FILE=$pkg_work_dir/toolchain.cmake"
             fi
 
             if [ "$pkg_build_cmake_toolchain_file" ]; then

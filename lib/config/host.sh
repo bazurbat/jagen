@@ -6,6 +6,9 @@ if [ "${jagen_host_cmake_module_path+!}" ]; then
     jagen_cmake_module_path=$jagen_host_cmake_module_path
 fi
 
+pkg_build_cc=$jagen_host_cc
+pkg_build_cxx=$jagen_host_cxx
+
 export CFLAGS="-O2"
 export CXXFLAGS="$CFLAGS"
 export LDFLAGS=""
