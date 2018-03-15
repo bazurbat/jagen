@@ -147,13 +147,15 @@ fi; unset pkg__file
 if [ "$pkg_query" ]; then
     case $pkg_query in
         work_dir)
-            printf '%s\n' "$pkg_work_dir" ;;
+            printf '%s' "$pkg_work_dir" ;;
         source_dir)
-            printf '%s\n' "$pkg_source_dir" ;;
+            printf '%s' "$pkg_source_dir" ;;
         build_dir)
-            printf '%s\n' "$pkg_build_dir" ;;
+            printf '%s' "$pkg_build_dir" ;;
         install_dir)
-            printf '%s\n' "$pkg_install_dir" ;;
+            printf '%s' "$pkg_install_dir" ;;
+        build_clean)
+            printf '%s' "$pkg_build_clean" ;;
     esac
     exit 0
 fi
