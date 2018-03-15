@@ -108,6 +108,16 @@ function Source:create(source, name)
     return source
 end
 
+function Source:clean_disabled()
+    if self.exclude then
+        return 'excluded'
+    elseif self:dirty() then
+        return 'dirty'
+    else
+        return false
+    end
+end
+
 function Source:getbranches()
     return prepend(self.branches or {}, self.branch)
 end
