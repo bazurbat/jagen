@@ -422,9 +422,12 @@ EOF
 }
 
 pkg_compile() {
+    local IFS="$jagen_IFS" S="$jagen_FS" A=
+
     [ "$pkg_source_dir" ] || return 0
 
     local is_offline= verbose_opt= jobs=
+    local makefile=
 
     if in_flags offline; then
         is_offline=1
@@ -438,7 +441,22 @@ pkg_compile() {
             pkg_run cmake --build . -- $(pkg__get_cmake_args) "$@"
             ;;
         make|kbuild)
-            pkg_run make $pkg_build_options "$@"
+            if [ -f "$pkg_source_dir/GNUmakefile" ]; then
+                makefile="$pkg_source_dir/GNUmakefile"
+            elif [ -f "$pkg_source_dir/makefile" ]; then
+                makefile="$pkg_source_dir/makefile"
+            elif [ -f "$pkg_source_dir/Makefile" ]; then
+                makefile="$pkg_source_dir/Makefile"
+            fi
+            if [ "$makefile" ]; then
+                A="$A${S}-f$makefile"
+            fi
+            if [ "$pkg_build_dir" != "$pkg_source_dir" ]; then
+                A="$A${S}-I$pkg_source_dir"
+                A="$A${S}VPATH=$pkg_source_dir"
+            fi
+
+            pkg_run make $A $pkg_build_options "$@"
             ;;
         linux-kernel)
             use_env kbuild
