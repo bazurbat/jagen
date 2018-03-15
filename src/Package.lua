@@ -168,6 +168,13 @@ function P:parse(rule)
     parse_section('build')
     parse_section('install')
 
+    if rule.build and rule.build.clean ~= nil then
+        local clean = rule.build.clean
+        if type(clean) ~= 'table' then
+            rule.build.clean = { clean }
+        end
+    end
+
     if type(rule.use) == 'string' then
         rule.use = { rule.use }
     end
@@ -789,6 +796,9 @@ function P.define_rule(rule, context)
             else
                 build.dir = System.mkpath('${pkg_work_dir:?}', config)
             end
+        end
+        if build.clean == nil then
+            build.clean = { build.dir }
         end
 
         if build.in_source then
