@@ -38,7 +38,7 @@ function Jagen.flag(f)
 end
 
 function Jagen.query(pkg, value, config)
-    return Command:new('jagen-stage -q', value, pkg.name, config):read()
+    return Command:new('jagen-stage -q', value, pkg.name, config)
 end
 
 -- src
@@ -249,19 +249,22 @@ end
 function Jagen.clean_package(pkg, spec)
     local use = Target.from_use(spec)
     local config = use.config
+    local source = pkg.source
+    local reason = source:clean_disabled()
+    if reason then
+        Log.message('not cleaning automatically sources of %s: %s', use.name, reason)
+    else
+        Jagen.src.clean { assert(use.name) }
+    end
     local build = pkg:get('build', config)
-    if build then
-        if build.in_source and pkg.source:is_scm() then
-            Jagen.src.clean({ name })
-        else
-            local build_dir = Jagen.query(pkg, 'build_dir', config)
-            if build_dir then
-                System.rmrf(build_dir)
-            end
-        end
-        if config then
-            Target.from_args(use.name, 'configure', config):remove()
-        end
+    if build and build.clean then
+        local pipe, dirs = Jagen.query(pkg, 'build_clean', config):popen(), {}
+        for dir in pipe:lines() do append(dirs, dir) end
+        pipe:close()
+        System.rmrf(unpack(dirs))
+    end
+    if config then
+        Target.from_args(use.name, 'configure', config):remove()
     end
     return true
 end
