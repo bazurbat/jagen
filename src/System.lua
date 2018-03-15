@@ -66,7 +66,9 @@ function P.getenv(vars)
 end
 
 function P.rmrf(...)
-    return P.exec('rm -rf %s', P.quote(...))
+    if select('#', ...) > 0 then
+        return P.exec('rm -rf %s', P.quote(...))
+    end
 end
 
 function P.mkdir(...)
