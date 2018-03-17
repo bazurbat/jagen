@@ -221,20 +221,20 @@ function P:set(key, value, config)
     end
 end
 
-function P:add_require(spec, config, template)
-    local req = Target.from_use(spec)
+function P:define_use(spec, config, template)
+    local target = Target.from_use(spec)
     local config = config or template and template.config
-    if req.config == 'system' then -- skip those for now
+    if target.config == 'system' then -- skip those for now
         return
     end
-    if req.config and req.config ~= config then
+    if target.config and target.config ~= config then
         return P.define_rule {
-            name = req.name,
-            config = req.config
-        }, req.config
+            name = target.name,
+            config = target.config
+        }, target.config
     else
         return P.define_rule {
-            name = req.name,
+            name = target.name,
             config = config,
             template = template
         }, config
@@ -265,17 +265,17 @@ function P:gettoolchain(config)
     return toolchain
 end
 
-function P:add_toolchain(toolchain, config)
+function P:add_require(name, config)
     local build = self:get('build', config)
     local stage = build and build.type and 'configure' or 'install'
     self:add_stage({ stage,
-            { toolchain, 'install', config }
+            { name, 'install', config }
         }, config)
     push_context(table.merge(copy(current_context), {
-                name = self.name,
+                name   = self.name,
                 config = config
         }))
-    local pkg = self:add_require(toolchain, config)
+    local pkg = self:define_use(name, config)
     pop_context()
     return pkg
 end
@@ -617,13 +617,13 @@ function P.load_rules()
                     local use = pkg:get('use', config) or {}
                     append_uniq('rustup', use)
                     pkg:set('use', use, config)
-                    append(added, pkg:add_toolchain('rustup', config))
+                    append(added, pkg:add_require('rustup', config))
                 elseif toolchain then
                     pkg:get('build', config).toolchain = toolchain
                     local use = pkg:get('use', config) or {}
                     append_uniq(toolchain, use)
                     pkg:set('use', use, config)
-                    append(added, pkg:add_toolchain(toolchain, config))
+                    append(added, pkg:add_require(toolchain, config))
                 end
             end
         end
@@ -874,7 +874,7 @@ function P.define_rule(rule, context)
 
     for stage in each(stages) do
         for spec in each(stage.requires) do
-            local req, config = pkg:add_require(spec, config, template)
+            local req, config = pkg:define_use(spec, config, template)
             if req then
                 append(stage, { req.name, 'install', config })
             end
