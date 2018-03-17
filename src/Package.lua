@@ -222,23 +222,23 @@ function P:set(key, value, config)
 end
 
 function P:add_require(spec, config, template)
-	local req = Target.from_use(spec)
-	local config = config or template and template.config
-	if req.config == 'system' then -- skip those for now
-		return
-	end
-	if req.config and req.config ~= config then
-		return P.define_rule {
-			name = req.name,
-			config = req.config
-		}, req.config
-	else
-		return P.define_rule {
-			name = req.name,
-			config = config,
-			template = template
-		}, config
-	end
+    local req = Target.from_use(spec)
+    local config = config or template and template.config
+    if req.config == 'system' then -- skip those for now
+        return
+    end
+    if req.config and req.config ~= config then
+        return P.define_rule {
+            name = req.name,
+            config = req.config
+        }, req.config
+    else
+        return P.define_rule {
+            name = req.name,
+            config = config,
+            template = template
+        }, config
+    end
 end
 
 function P:gettoolchain(config)
