@@ -239,18 +239,19 @@ jagen__expand() {
 # the result and '$jagen_project_lib_dir' as the last entry.
 # Dies if it is unable to find a matching directory for any argument.
 jagen__expand_layers() {
-    local FS="$jagen_FS" layer path result="$jagen_dir/lib"
+    local FS="$jagen_FS" layer dir path result="$jagen_dir/lib"
     for layer; do
         case $layer in
             /*) path="$layer" ;;
       ./*|../*) for path in "$jagen_project_dir/$layer"; do
                     [ -d "$path" ] && break
                 done ;;
-             *) for path in "$jagen_project_dir/usr/$layer" "$jagen_dir/usr/$layer"; do
+             *) for dir in ${jagen_include_path-}; do
+                    path=$dir/$layer
                     [ -d "$path" ] && break
                 done ;;
         esac
-        if [ -d "$path" ]; then
+        if [ -d "${path-}" ]; then
             path=$(real_path "$path")
             result="${result}${FS}${path}"
         else
