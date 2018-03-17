@@ -139,10 +139,10 @@ write_config() {
 jagen_layers="${jagen_layers-}"
 
 # A directory for package sources.
-jagen_src_dir="$jagen_project_dir/src"
+jagen_src_dir="\$jagen_project_dir/src"
 
 # A directory for downloaded distribution files.
-jagen_dist_dir="$jagen_project_dir/dist"
+jagen_dist_dir="\$jagen_project_dir/dist"
 
 # Space separated list of optional features.
 #   ccache  - wrap compilation commands with ccache
