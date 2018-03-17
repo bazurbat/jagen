@@ -247,6 +247,8 @@ pkg__unpack_dist() {
     pkg_run cd "$work_dir"
 
     case $dist_type in
+        application/x-sharedlib)
+            pkg_run chmod +x "$dist_path" ;;
         */x-gzip|*/x-bzip2|*/x-xz)
             case $pkg_source_filename in
                 *.tar|*.tar.*|*.tgz|*.tbz2|*.txz)
@@ -467,6 +469,23 @@ pkg_compile() {
             ;;
         linux-module)
             pkg_run make $pkg_build_options "$@"
+            ;;
+        executable)
+            local exe="$jagen_dist_dir/$pkg_source_filename"
+            if ! [ -x "$exe" ]; then
+                die "require to run $exe for build but the file was not found or not an executable"
+            fi
+            pkg_run "$exe" $pkg_build_options "$@"
+            ;;
+        rust)
+            export CARGO_TARGET_DIR="$pkg_build_dir"
+            cd "$pkg_source_dir"
+            if [ "$pkg_config" = "host" ]; then
+                if ! pkg_run rustup toolchain list | grep -q '^stable-x86_64-unknown-linux-gnu$'; then
+                    pkg_run rustup install stable-x86_64-unknown-linux-gnu
+                fi
+                pkg_run rustup run stable-x86_64-unknown-linux-gnu cargo build --release
+            fi
             ;;
         android-ndk-toolchain)
             require toolchain

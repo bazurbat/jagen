@@ -50,6 +50,8 @@ add_PATH "$jagen_host_dir/bin"
 add_LD_LIBRARY_PATH "$jagen_host_dir/lib"
 export PATH LD_LIBRARY_PATH
 
+export RUSTUP_HOME="$jagen_dist_dir/rustup"
+
 jagen__set_path
 
 import env || true # it is OK if no env was found
