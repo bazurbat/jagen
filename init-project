@@ -24,7 +24,6 @@ Usage: init-project [OPTIONS...] [PRODUCT] [LAYERS...]
   -f                   use force
   -h                   show usage
   --help               show this help
-  -l                   list built-in products
   -s, --share-sources  share sources between projects
   --share-dist         share dist files between projects
   --share-toolchains   share toolchains between projects
@@ -76,7 +75,6 @@ OPTIONS:
   -f                   use force
   -h                   show usage
   --help               show this help
-  -l                   list built-in products
   -s, --share-sources  share sources between projects
   --share-dist         share dist files between projects
   --share-toolchains   share toolchains between projects
@@ -118,13 +116,6 @@ EXAMPLES:
     jagen build -f target1 target2
 
 EOF
-}
-
-list_products() {
-    cd "$jagen_dir/usr/product"
-    for cfg_dir in *; do
-        echo $cfg_dir
-    done
 }
 
 write_env() {
@@ -230,8 +221,6 @@ parse_command_line() {
                             show_usage; exit 0 ;;
                         --help)
                             show_help; exit 0 ;;
-                        -l|--list-products)
-                            list_products; exit 0 ;;
                         -s|--share|--share-sources)
                             share_sources=1 ;;
                         --share-dist)
