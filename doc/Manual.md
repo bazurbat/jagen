@@ -420,8 +420,6 @@ install = value
 - **jagen_path** — Import path. Derived from layer locations.
 - **jagen_private_dir** — The location of the private directory (can be set
   from project-specific config).
-- **jagen_product** — _init-project_.
-- **jagen_product_dir** — _init-project_.
 - **jagen_project_dir** — The location of the current project directory.
 - **jagen_project_lib_dir** — The location of the current project `lib`
   directory (`$jagen_project_dir/lib`).

@@ -1,14 +1,5 @@
 ### Jagen Bash completion definitions ###
 
-_jagen_complete__list_products() {
-    local dir="${1:?}"
-
-    ( cd "$dir/usr/product" &&
-      for d in *; do
-          echo $d
-      done )
-}
-
 _jagen_complete_init_project() {
     local cur prev
     local this_cmd jagen_dir
@@ -25,7 +16,7 @@ _jagen_complete_init_project() {
     case $prev in
         -a|--flag)
             COMPREPLY=($(compgen -W "$flags" -- "$cur")) ;;
-         *) COMPREPLY=($(compgen -W "$opts $(_jagen_complete__list_products "$jagen_dir")" -- "$cur")) ;;
+         *) COMPREPLY=($(compgen -W "$opts $("$jagen_dir")" -- "$cur")) ;;
     esac
 }
 

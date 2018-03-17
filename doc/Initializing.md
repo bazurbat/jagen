@@ -15,8 +15,7 @@ SYNOPSIS:
   configuration file contains project-specific settings and is sourced by a
   generator and a build system.
 
-  The list of project layers is constructed from non-option arguments or
-  appended to the initial value set in the specified product template. Each
+  The list of project layers is constructed from non-option arguments. Each
   layer can contribute rule definitions and environment overrides to the
   project.
 
@@ -43,7 +42,6 @@ OPTIONS:
   -f                   use force
   -h                   show usage
   --help               show this help
-  -l                   list built-in products
   -s, --share-sources  share sources between projects
   --share-dist         share dist files between projects
   --share-toolchains   share toolchains between projects
@@ -55,8 +53,8 @@ OPTIONS:
   project. Note that 'jagen clean' command does remove those directories even
   if they are inside the project root.
 
-  The command refuses to initialize non-empty directories by default. Use '-f'
-  option to override the check.
+  The 'init-project' command refuses to initialize non-empty directories by
+  default. Use '-f' option to override the check.
 
   The generated environment binds the project to the corresponding jagen source
   directory. If one or the other is moved or sourced from different root from
