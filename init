@@ -2,19 +2,9 @@
 
 set -eu
 
+jagen_uri="https://github.com/bazurbat/jagen.git"
 env_file="env.sh"
 config_file="config.sh"
-
-jagen_dir=$(dirname "$0")
-
-message() {
-    echo init-project: $*
-}
-
-die() {
-    message $*
-    exit 1
-}
 
 show_usage() {
     cat <<EOF
@@ -31,12 +21,66 @@ SYNOPSIS:
 
 OPTIONS:
 
-  -a          add the flag to jagen_flags
-  -i          add the directory to jagen_include_path
-  -f          force to initialize non-empty directory
-  -h, --help  show this usage information
+  -h, --help       show this usage information
+  -a, --flag       add the flag to jagen_flags
+  -i, --include    add the directory to jagen_include_path
+  -f, --force      force to initialize non-empty directory
 
 EOF
+}
+
+say() {
+    echo "jagen-init: $*"
+}
+
+die() {
+    say "$*" >&2
+    exit 1
+}
+
+need_cmd() {
+    if ! $(command -v "$1" >/dev/null); then
+        die "could not find the '$1' command"
+    fi
+}
+
+ensure_cloned() {
+    if ! [ -d "$jagen_dir" ]; then
+        need_cmd git
+        git clone "$jagen_uri" "$jagen_dir"
+    fi
+}
+
+parse_command_line() {
+    local eoa=
+
+    while [ $# -gt 0 ]; do
+        case $1 in
+            --) eoa=1 ;;
+            -*) if [ "${eoa:-}" ]; then
+                    jagen_layers="${jagen_layers-} $1"
+                else
+                    case $1 in
+                        -a|--flag)
+                            jagen_flags="${jagen_flags-} $2"; shift ;;
+                        -i|--include)
+                            jagen_include_path="${jagen_include_path-} $2"; shift ;;
+                        -f|--force)
+                            use_force=1 ;;
+                        -h|--help)
+                            show_usage; exit 0 ;;
+                        *)
+                            die "invalid option: $1"
+                    esac
+                fi ;;
+             *) jagen_layers="${jagen_layers-} $1" ;;
+        esac
+        shift
+    done
+
+    jagen_flags=${jagen_flags+${jagen_flags# }}
+    jagen_include_path=${jagen_include_path+${jagen_include_path# }}
+    jagen_layers=${jagen_layers+${jagen_layers# }}
 }
 
 write_env() {
@@ -68,7 +112,7 @@ write_config() {
 # A list of directories containing layers used by this project.
 # The list items should be newline (\\n) or tab (\\t) separated because normal
 # spaces (including the indentation) are assumed to be the part of the pathname.
-jagen_layers="${jagen_layers-}"
+jagen_layers="${config_jagen_layers-}"
 
 # A list of directories which will be used to resolve unqualified layer names.
 jagen_include_path="${jagen_include_path-}"
@@ -94,56 +138,28 @@ jagen_build_profile="release"
 EOF
 }
 
-parse_command_line() {
-    local eoa=
-
-    while [ $# -gt 0 ]; do
-        case $1 in
-            --) eoa=1 ;;
-            -*) if [ "${eoa:-}" ]; then
-                    init_jagen_layers="${init_jagen_layers-} $1"
-                else
-                    case $1 in
-                        -a|--flag)
-                            jagen_flags="${jagen_flags-} $2"; shift ;;
-                        -i|--include)
-                            jagen_include_path="${jagen_include_path-} $2"; shift ;;
-                        -f|--force)
-                            use_force=1 ;;
-                        -h|--help)
-                            show_usage; exit 0 ;;
-                        *)
-                            die "invalid option: $1"
-                    esac
-                fi ;;
-             *) init_jagen_layers="${init_jagen_layers-} $1" ;;
-        esac
-        shift
-    done
-
-    jagen_flags=${jagen_flags+${jagen_flags# }}
-    jagen_include_path=${jagen_include_path+${jagen_include_path# }}
-    init_jagen_layers=${init_jagen_layers+${init_jagen_layers# }}
-}
-
-do_init() {
+main() {
     parse_command_line "$@"
-
     if [ -z "${use_force-}" -a "$(ls -A)" ]; then
         die "not initializing non-empty directory without force"
+    fi
+    jagen_dir=$(dirname $0)
+    if [ "$jagen_dir" = . ]; then
+        jagen_dir=".jagen"
+        ensure_cloned
     fi
 
     # construct newline-separated list of layers -- it looks prettier in
     # the config and allows having spaces in the paths
-    jagen_layers="
+    config_jagen_layers="
 "
-    for layer in ${init_jagen_layers-}; do
-        jagen_layers="${jagen_layers-}$layer
+    for layer in ${jagen_layers-}; do
+        config_jagen_layers="${config_jagen_layers-}$layer
 "
     done
 
-    write_env || exit
-    write_config "$config_file" || exit
+    write_env
+    write_config "$config_file"
 
     if ! [ -f "lib/rules.lua" ]; then
         mkdir -p lib
@@ -156,4 +172,4 @@ fi
     jagen refresh
 }
 
-do_init "$@"
+main "$@"
