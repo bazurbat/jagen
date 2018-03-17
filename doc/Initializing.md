@@ -42,16 +42,9 @@ OPTIONS:
   -f                   use force
   -h                   show usage
   --help               show this help
-  -s, --share-sources  share sources between projects
-  --share-dist         share dist files between projects
-  --share-toolchains   share toolchains between projects
 
   Source packages, software distributions, patches and toolchains are located
-  inside the project by default. To share them between different projects use
-  '--share-...' options. If the share argument is given the corresponding
-  component will be searched one directory level higher relative to the current
-  project. Note that 'jagen clean' command does remove those directories even
-  if they are inside the project root.
+  inside the project by default.
 
   The 'init-project' command refuses to initialize non-empty directories by
   default. Use '-f' option to override the check.

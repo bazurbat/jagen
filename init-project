@@ -24,8 +24,6 @@ Usage: init-project [OPTIONS...] [PRODUCT] [LAYERS...]
   -f                   use force
   -h                   show usage
   --help               show this help
-  -s, --share-sources  share sources between projects
-  --share-dist         share dist files between projects
 
 EOF
 }
@@ -73,15 +71,9 @@ OPTIONS:
   -f                   use force
   -h                   show usage
   --help               show this help
-  -s, --share-sources  share sources between projects
-  --share-dist         share dist files between projects
 
   Source packages, software distributions, patches and toolchains are located
-  inside the project by default. To share them between different projects use
-  '--share-...' options. If the share argument is given the corresponding
-  component will be searched one directory level higher relative to the current
-  project. Note that 'jagen clean' command does remove those directories even
-  if they are inside the project root.
+  inside the project by default.
 
   The 'init-project' command refuses to initialize non-empty directories by
   default. Use '-f' option to override the check.
@@ -147,10 +139,10 @@ write_config() {
 jagen_layers="${jagen_layers-}"
 
 # A directory for package sources.
-jagen_src_dir="$jagen_src_dir"
+jagen_src_dir="$jagen_project_dir/src"
 
 # A directory for downloaded distribution files.
-jagen_dist_dir="$jagen_dist_dir"
+jagen_dist_dir="$jagen_project_dir/dist"
 
 # Space separated list of optional features.
 #   ccache  - wrap compilation commands with ccache
@@ -203,10 +195,6 @@ parse_command_line() {
                             show_usage; exit 0 ;;
                         --help)
                             show_help; exit 0 ;;
-                        -s|--share|--share-sources)
-                            share_sources=1 ;;
-                        --share-dist)
-                            share_dist=1 ;;
                         -f|--force)
                             use_force=1 ;;
                         -a|--flag)
@@ -239,18 +227,6 @@ do_init() {
 
     if [ -z "${use_force-}" -a "$(printf *)" != '*' ]; then
         die "not initializing non-empty directory without force"
-    fi
-
-    if [ "${share_sources-}" ]; then
-        jagen_src_dir='$jagen_project_dir/../src'
-    else
-        jagen_src_dir='$jagen_project_dir/src'
-    fi
-
-    if [ "${share_dist-}" ]; then
-        jagen_dist_dir='$jagen_project_dir/../dist'
-    else
-        jagen_dist_dir='$jagen_project_dir/dist'
     fi
 
     trap on_layer_init_error EXIT
