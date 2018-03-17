@@ -200,8 +200,7 @@ pkg__uri_is_local() {
 }
 
 pkg__unpack_dist() {
-    local src_path="${1:?}"
-    local work_dir="${2:?}"
+    local src_path="${1:?}" work_dir="${2:?}" dist_type=
     local dist_path="${jagen_dist_dir:?}/${pkg_source_filename:?}"
 
     if ! [ -f "$dist_path" ]; then
@@ -215,6 +214,8 @@ pkg__unpack_dist() {
             die "unable to unpack $dist_path: the file is not found and download location is not specified"
         fi
     fi
+
+    dist_type=$(file -b --mime-type "$dist_path")
 
     if [ "$pkg_source_sha256sum" ]; then
         if [ "$(command -v sha256sum)" ]; then
@@ -245,13 +246,14 @@ pkg__unpack_dist() {
     pkg_run mkdir -p "$work_dir"
     pkg_run cd "$work_dir"
 
-    case $pkg_source_filename in
-        *.tar|*.tar.*|*.tgz|*.tbz2|*.txz)
-            pkg_run tar -xf "$dist_path" ;;
-        *.zip)
+    case $dist_type in
+        */x-gzip|*/x-bzip2|*/x-xz)
+            case $pkg_source_filename in
+                *.tar|*.tar.*|*.tgz|*.tbz2|*.txz)
+                    pkg_run tar -xf "$dist_path" ;;
+            esac ;;
+        */zip)
             pkg_run unzip "$dist_path" ;;
-        *)
-            die "unable to unpack '$pkg_source_filename': unknown archive format" ;;
     esac
 }
 
