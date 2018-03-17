@@ -249,19 +249,30 @@ end
 function Jagen.clean_package(pkg, spec)
     local use = Target.from_use(spec)
     local config = use.config
-    local source = pkg.source
-    local reason = source:clean_disabled()
-    if reason then
-        Log.message('not cleaning automatically sources of %s: %s', use.name, reason)
-    else
-        Jagen.src.clean { assert(use.name) }
-    end
     local build = pkg:get('build', config)
-    if build and build.clean then
-        local pipe, dirs = Jagen.query(pkg, 'build_clean', config):popen(), {}
-        for dir in pipe:lines() do append(dirs, dir) end
-        pipe:close()
-        System.rmrf(unpack(dirs))
+    if build then
+        local source_dir = Jagen.query(pkg, 'source_dir', config):read()
+        local build_dir = Jagen.query(pkg, 'build_dir', config):read()
+        local clean_dirs = { build_dir }
+        local pipe = Jagen.query(pkg, 'build_clean', config):popen()
+        for dir in pipe:lines() do append(clean_dirs, dir) end pipe:close()
+        for dir in each(clean_dirs) do
+            if source_dir and System.same_dir(dir, source_dir) then
+                if pkg.source and pkg.source:is_scm() then
+                    local why = pkg.source:clean_disabled()
+                    if why then
+                        Log.message('not cleaning sources of %s: %s', pkg.name, why)
+                    else
+                        Jagen.src.clean { assert(use.name) }
+                    end
+                else
+                    Log.message('not removing %s because it is the source dir or %s', dir, pkg.name)
+                end
+            elseif System.can_delete_safely(dir, source_dir) then
+                Log.debug('removing %s', dir)
+                System.rmrf(dir)
+            end
+        end
     end
     if config then
         Target.from_args(use.name, 'configure', config):remove()

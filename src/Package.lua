@@ -797,9 +797,6 @@ function P.define_rule(rule, context)
                 build.dir = System.mkpath('${pkg_work_dir:?}', config)
             end
         end
-        if build.clean == nil then
-            build.clean = { build.dir }
-        end
 
         if build.in_source then
             if pkg.source:is_scm() then

@@ -9,6 +9,10 @@ function Command:new(...)
     return o
 end
 
+function Command:newf(f, ...)
+    return Command:new(string.format(f, ...))
+end
+
 function Command:append(...)
     append(self.command, ...)
     return self

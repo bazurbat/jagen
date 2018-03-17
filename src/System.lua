@@ -87,6 +87,28 @@ function P.dir_exists(path)
     return P.exec('test -d "%s"', path)
 end
 
+-- Returns true if both arguments are existing directories which have the same
+-- physical path.
+function P.same_dir(dir1, dir2)
+    -- `cd ""` (with empty dir) does nothing which may lead to surprising
+    -- result if empty string is supplied as an argument
+    return Command:newf([[dir1="%s"; dir2="%s"
+dir1="$([ "$dir1" ] && cd "$dir1" 2>&- && pwd -P)"
+dir2="$([ "$dir2" ] && cd "$dir2" 2>&- && pwd -P)"
+test "$dir1" -a "$dir2" && test "$dir1" = "$dir2"]],
+        assert(dir1), assert(dir2)):exec()
+end
+
+-- Returns true if 'dir' is an existing directory and does not have the same
+-- physical path as other directory or the other directory does not exist.
+function P.can_delete_safely(dir, other_dir)
+    return Command:newf([[dir1="%s"; dir2="%s"
+dir1="$([ "$dir1" ] && cd "$dir1" 2>&- && pwd -P)"
+dir2="$([ "$dir2" ] && cd "$dir2" 2>&- && pwd -P)"
+test "$dir1" && test "$dir1" != "$dir2"]],
+        assert(dir), other_dir or ''):exec()
+end
+
 function P.is_empty(path)
     return Command:new('cd', quote(assert(path)), '2>/dev/null', '&&', 'ls -A'):read() == nil
 end
