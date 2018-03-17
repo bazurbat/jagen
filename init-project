@@ -26,7 +26,6 @@ Usage: init-project [OPTIONS...] [PRODUCT] [LAYERS...]
   --help               show this help
   -s, --share-sources  share sources between projects
   --share-dist         share dist files between projects
-  --share-toolchains   share toolchains between projects
 
 EOF
 }
@@ -76,7 +75,6 @@ OPTIONS:
   --help               show this help
   -s, --share-sources  share sources between projects
   --share-dist         share dist files between projects
-  --share-toolchains   share toolchains between projects
 
   Source packages, software distributions, patches and toolchains are located
   inside the project by default. To share them between different projects use
@@ -154,9 +152,6 @@ jagen_src_dir="$jagen_src_dir"
 # A directory for downloaded distribution files.
 jagen_dist_dir="$jagen_dist_dir"
 
-# A directory for shared toolchains.
-jagen_toolchains_dir="$jagen_toolchains_dir"
-
 # Space separated list of optional features.
 #   ccache  - wrap compilation commands with ccache
 #   debug   - build debugging tools
@@ -212,8 +207,6 @@ parse_command_line() {
                             share_sources=1 ;;
                         --share-dist)
                             share_dist=1 ;;
-                        --share-toolchains)
-                            share_toolchains=1 ;;
                         -f|--force)
                             use_force=1 ;;
                         -a|--flag)
@@ -258,12 +251,6 @@ do_init() {
         jagen_dist_dir='$jagen_project_dir/../dist'
     else
         jagen_dist_dir='$jagen_project_dir/dist'
-    fi
-
-    if [ "${share_toolchains-}" ]; then
-        jagen_toolchains_dir='$jagen_project_dir/../toolchains'
-    else
-        jagen_toolchains_dir='$jagen_project_dir/toolchains'
     fi
 
     trap on_layer_init_error EXIT
