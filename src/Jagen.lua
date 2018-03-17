@@ -492,13 +492,13 @@ function Jagen.command.build(args)
         return false
     end
 
+    Jagen.command.refresh(nil, packages)
+
     for spec, pkg in pairs(to_clean) do
         if not Jagen.clean_package(pkg, spec) then
             return false
         end
     end
-
-    Jagen.command.refresh(nil, packages)
 
     return Command:new(quote(Jagen.cmd), 'build', tostring(args), unpack(targets)):exec()
 end
