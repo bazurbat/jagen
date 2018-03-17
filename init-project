@@ -18,91 +18,23 @@ die() {
 
 show_usage() {
     cat <<EOF
-Usage: init-project [OPTIONS...] [PRODUCT] [LAYERS...]
+Usage: init-project [OPTIONS...] [--] [LAYERS...]
 
-  -a                   add flag
-  -f                   use force
-  -h                   show usage
-  --help               show this help
-
-EOF
-}
-
-show_help() {
-    cat <<EOF
-Usage: init-project [OPTIONS...] [PRODUCT] [LAYERS...]
-       init-project [-h]
-       init-project [-l]
-
-  Initializes current directory as Jagen project.
+  Initializes current directory as a Jagen project.
 
 SYNOPSIS:
 
   The script will put an environment file 'env.sh' and a configuration file
   'config.sh' in the current directory. The environment file should be sourced
-  into the working shell before issuing any other Jagen commands. The
-  configuration file contains project-specific settings and is sourced by a
-  generator and a build system.
-
-  The list of project layers is constructed from non-option arguments. Each
-  layer can contribute rule definitions and environment overrides to the
-  project.
-
-  The project directory can also be called "build root" for a family of
-  packages. A layout for a typical build root is described below:
-
-    /bin     -- generated helper scripts
-    /build   -- build system logs and working directories
-    /host    -- install root for 'host' configuration
-    /include -- package-specific include scripts generated from rules
-    /src     -- checked out sources for SCM packages
-    /target  -- install root for 'target' configuration
-
-  The layout can differ depending on the configuration. These directories can
-  be removed and re-created during the normal operation according the commands
-  given. It is not safe to store important data inside the build root.
-
-  Mixing environments from different projects (sourcing env.sh into the same
-  shell) is not supported.
+  into the working shell before issuing any other Jagen commands. The config
+  file contains project-specific settings and is sourced by the build system.
 
 OPTIONS:
 
-  -a                   add flag
-  -f                   use force
-  -h                   show usage
-  --help               show this help
-
-  Source packages, software distributions, patches and toolchains are located
-  inside the project by default.
-
-  The 'init-project' command refuses to initialize non-empty directories by
-  default. Use '-f' option to override the check.
-
-  The generated environment binds the project to the corresponding jagen source
-  directory. If one or the other is moved or sourced from different root from
-  which it was originally initialized (like chroot or Docker container) any
-  build-related command will likely produce wrong results.
-
-  The generated configuration can be adjusted manually but will be overwritten
-  by the next 'init-project' invocation. Use '-a' option to set 'jagen_flags'
-  at the initialization time; it can be specified multiple times.
-
-EXAMPLES:
-
-    # assuming jagen is checked out into ~/work
-    cd ~/work
-    mkdir ast100
-    cd ast100
-    ../jagen/init-project ast100 -a flag1 -a flag2
-    . ./env.sh
-    jagen build
-    exit
-
-  For subsequent invocations:
-
-    cd ~/work/ast100
-    . ./env.sh
-    jagen build -f target1 target2
+  -a          add the flag to jagen_flags
+  -i          add the directory to jagen_include_path
+  -f          force to initialize non-empty directory
+  -h, --help  show this usage information
 
 EOF
 }
@@ -135,8 +67,11 @@ write_config() {
 
 # A list of directories containing layers used by this project.
 # The list items should be newline (\\n) or tab (\\t) separated because normal
-# spaces (including the indentation) are assumed to be a part of the pathname.
+# spaces (including the indentation) are assumed to be the part of the pathname.
 jagen_layers="${jagen_layers-}"
+
+# A list of directories which will be used to resolve unqualified layer names.
+jagen_include_path="${jagen_include_path-}"
 
 # A directory for package sources.
 jagen_src_dir="\$jagen_project_dir/src"
@@ -152,33 +87,11 @@ jagen_dist_dir="\$jagen_project_dir/dist"
 jagen_flags="${jagen_flags-}"
 
 # Space separated list of package names excluded from cleaning and updating.
-# Example: jagen_source_exclude="chicken karaoke-player"
 jagen_source_exclude=""
 
-# Global build profile.
-# Available values: release|debug|release_with_debug
+# The default build profile: release|debug|release_with_debug
 jagen_build_profile="release"
 EOF
-}
-
-check_path() {
-    local path="$1"
-
-    [ "$path" = .  ] && return # ignore to allow initializing empty projects
-
-    if [ "$path" = .. ]; then
-        die "invalid layer path '$path'"
-    fi
-
-    if ! [ -d "$path" ]; then
-        die "the specified layer path is not exists or not a directory: $path"
-    fi
-
-    if [ "${init_jagen_layers-}" ]; then
-        init_jagen_layers="$init_jagen_layers $path"
-    else
-        init_jagen_layers="$path"
-    fi
 }
 
 parse_command_line() {
@@ -188,59 +101,37 @@ parse_command_line() {
         case $1 in
             --) eoa=1 ;;
             -*) if [ "${eoa:-}" ]; then
-                    check_path "$1"
+                    init_jagen_layers="${init_jagen_layers-} $1"
                 else
                     case $1 in
-                        -h)
-                            show_usage; exit 0 ;;
-                        --help)
-                            show_help; exit 0 ;;
+                        -a|--flag)
+                            jagen_flags="${jagen_flags-} $2"; shift ;;
+                        -i|--include)
+                            jagen_include_path="${jagen_include_path-} $2"; shift ;;
                         -f|--force)
                             use_force=1 ;;
-                        -a|--flag)
-                            if [ "${jagen_flags-}" ]; then
-                                jagen_flags="$jagen_flags $2"
-                            else
-                                jagen_flags="$2"
-                            fi
-                            shift ;;
+                        -h|--help)
+                            show_usage; exit 0 ;;
                         *)
-                            die "invalid option: '$1'"
+                            die "invalid option: $1"
                     esac
                 fi ;;
-             *) check_path "$1" ;;
+             *) init_jagen_layers="${init_jagen_layers-} $1" ;;
         esac
         shift
     done
-}
 
-on_layer_init_error() {
-    message "layer '$layer' init failed with status: $?"
+    jagen_flags=${jagen_flags+${jagen_flags# }}
+    jagen_include_path=${jagen_include_path+${jagen_include_path# }}
+    init_jagen_layers=${init_jagen_layers+${init_jagen_layers# }}
 }
 
 do_init() {
-    if [ $# = 0 ]; then
-        show_usage; exit 0
-    fi
-
     parse_command_line "$@"
 
-    if [ -z "${use_force-}" -a "$(printf *)" != '*' ]; then
+    if [ -z "${use_force-}" -a "$(ls -A)" ]; then
         die "not initializing non-empty directory without force"
     fi
-
-    trap on_layer_init_error EXIT
-
-    for layer in ${init_jagen_layers-}; do
-        if [ -f "$layer/init.sh" ]; then
-            . "$layer/init.sh"
-        fi
-    done
-
-    trap - EXIT
-
-    # prepend jagen_layers in case it was set by layer init
-    init_jagen_layers="${jagen_layers-} ${init_jagen_layers-}"
 
     # construct newline-separated list of layers -- it looks prettier in
     # the config and allows having spaces in the paths
