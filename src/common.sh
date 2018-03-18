@@ -227,7 +227,11 @@ jagen__find_layer() {
         /*) path="$layer" ;;
   ./*|../*) path="${jagen_project_dir:?}/$layer" ;;
          *) for dir in ${jagen_include_path-}; do
-                path="$dir/$layer"; [ -d "$path" ] && break
+                case $dir in
+                    ./*|../*) path="${jagen_project_dir:?}/$dir/$layer" ;;
+                           *) path="$dir/$layer" ;;
+                esac
+                [ -d "$path" ] && break
             done ;;
     esac
     printf "%s" "$(cd "$path" && pwd -P)"
