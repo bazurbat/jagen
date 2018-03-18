@@ -608,7 +608,7 @@ jagen_pkg_unpack() {
 
     pkg_run rm -rf "${pkg_work_dir:?}"
 
-    # check for source is required for system toolchains such as gcc-native
+    # check for source is required for system toolchains such as system-native
     # which are not unpacked but linked from ther location directly
     if [ "$pkg_source" ] && [ "$pkg_source_dir" ] &&
        [ "$pkg_install_type" = 'toolchain' ] &&

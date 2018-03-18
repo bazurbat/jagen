@@ -243,7 +243,7 @@ function P:define_use(spec, config, template)
 end
 
 function P:gettoolchain(config)
-    local host_toolchain = 'gcc-native'
+    local host_toolchain = 'system-native'
     local target_toolchain = os.getenv('jagen_target_toolchain')
     local build, toolchain = self:get('build', config)
     if build then

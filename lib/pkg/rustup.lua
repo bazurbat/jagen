@@ -11,9 +11,7 @@ return {
             'none'
         }
     },
-    install = {
-        type = true,
-    },
+    install = true,
     env = {
         CARGO_HOME = "$pkg_build_dir"
     },

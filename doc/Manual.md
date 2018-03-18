@@ -329,8 +329,8 @@ rules and also to find pkg files. The `config` is optional.
   the host package will be derived automatically.
 
 - **build.toolchain** — Specifies the package toolchain which also will be
-  added to the package requires. If not set, the default is `gcc-native` if the
-  package config name is `host` and `$jagen_target_toolchain` if the config
+  added to the package requires. If not set, the default is `system-native` if
+  the package config name is `host` and `$jagen_target_toolchain` if the config
   name is `target`. The `false` value indicates that the package does not
   require a toolchain. Should be set to `false` for toolchain packages
   themselves to break dependency cycles.

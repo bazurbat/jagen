@@ -3,7 +3,7 @@ return {
         type      = 'android-ndk-toolchain',
         arch      = 'arm',
         system    = 'arm-linux-androideabi',
-        toolchain = 'android-ndk'
+        toolchain = 'android-ndk-r16b'
     },
     export = {
         cmake_options = {
