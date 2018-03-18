@@ -267,18 +267,25 @@ function P:gettoolchain(config)
 end
 
 function P:add_require(name, config)
-    local build = self:get('build', config)
-    local stage = build and build.type and 'configure' or 'install'
-    self:add_stage({ stage,
-            { name, 'install', config }
-        }, config)
     push_context(table.merge(copy(current_context), {
                 name   = self.name,
                 config = config
         }))
-    local pkg = self:define_use(name, config)
+    local use = self:define_use(name, config)
     pop_context()
-    return pkg
+    local function last_stage(use)
+        local stages = use:get('stages', config) or use:get('stages')
+        local target = stages[#stages]
+        if target then
+            return target.stage
+        end
+    end
+    local build = self:get('build', config)
+    local stage = build and build.type and 'configure' or 'install'
+    self:add_stage({ stage,
+            { name, last_stage(use), config }
+        }, config)
+    return use
 end
 
 function P:add_stage(rule, config)
