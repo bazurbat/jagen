@@ -204,13 +204,6 @@ main() {
     fi
     write_config "$config_file"
 
-    if ! [ -f "lib/rules.lua" ]; then
-        mkdir -p lib
-        cat >"lib/rules.lua" <<EOF
--- local rules for $(basename "$PWD")
-EOF
-fi
-
     . ./env.sh || exit
     jagen refresh
 }
