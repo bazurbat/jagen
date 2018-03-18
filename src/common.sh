@@ -67,7 +67,7 @@ find_in_path() {
 
 include_from() {
     local name layer path
-    name=${2-$(basename "${pkg__file:?}")}
+    name=${2-pkg/$(basename "${pkg__file:?}")}
     layer=$(jagen__find_layer "${1:?}")
     [ -d "$layer" ] || die "include_from $1: layer not found"
     path="$layer/$name"
