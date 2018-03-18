@@ -6,6 +6,8 @@ ar
 as
 c++
 c++filt
+clang
+clang++
 cpp
 g++
 gcc
@@ -48,10 +50,10 @@ toolchain_get_lib_dir() {
 }
 
 toolchain_generate_wrappers() {
-    local dest_dir="${1:?}"
-    local src_dir="${2:?}"
-    local prefix="$3"
-    local name src_path dest_path programs
+    local src_dir="${1:?}" prefix="$2" dest_dir="${jagen_bin_dir:?}"
+    local IFS="$jagen_IFS" S="$jagen_S"
+    local PATH="$(list_remove : "$dest_dir" $PATH)"
+    local item paths dest
 
     [ -d "$dest_dir" ] || \
         die "toolchain_generate_wrappers: the dest dir '$dest_dir' does not exist"
@@ -59,21 +61,22 @@ toolchain_generate_wrappers() {
         die "toolchain_generate_wrappers: the src dir '$src_dir' does not exist"
 
     if [ "$prefix" ]; then
-        programs=$(cd "$src_dir" && find . -type f -maxdepth 1 -name "${prefix}*" | \
-            sed -r "s|./${prefix}(.+)|\1|")
+        paths=$(find "$src_dir" -type f -maxdepth 1 -name "${prefix}*")
     else
-        programs="$toolchain_programs"
+        for item in $toolchain_programs; do
+            item=$(command -v "$item")
+            if [ "$item" ]; then
+                paths="${paths}${S}${item}"
+            fi
+        done
     fi
 
-    for name in $programs; do
-        src_path="${src_dir}/${prefix}${name}"
-        dest_path="${dest_dir}/${prefix}${name}"
-        if [ -x "$src_path" ]; then
-            cat >"$dest_path" <<EOF || return
-exec \$jagen_ccache "$src_path" "\$@"
+    for item in $paths; do
+        dest="${dest_dir}/${item##*/}"
+        cat >"$dest" <<EOF || return
+exec \$jagen_ccache "$item" "\$@"
 EOF
-            chmod +x "$dest_path" || return
-        fi
+        chmod +x "$dest" || return
     done
 }
 

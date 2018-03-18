@@ -542,14 +542,12 @@ pkg_install() {
         toolchain)
             require toolchain
             toolchain_generate_wrappers    \
-                "${jagen_bin_dir:?}"       \
                 "${pkg_source_dir:?}/bin"  \
                 "${pkg_toolchain_prefix}"
             ;;
         android-standalone-toolchain)
             require toolchain
             toolchain_generate_wrappers    \
-                "${jagen_bin_dir:?}"       \
                 "${pkg_build_dir:?}/bin"   \
                 "${pkg_toolchain_prefix}"
             ;;
