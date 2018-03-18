@@ -54,6 +54,14 @@ function iiter(t, itt)
     end
 end
 
+function aslist(it)
+    local list = {}
+    for k, v in it, list do
+        insert(list, k)
+    end
+    return list
+end
+
 function tolist(t, itt)
     local o = {}
     for i, v in itt(inext), t, 0 do
