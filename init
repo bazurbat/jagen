@@ -58,7 +58,7 @@ parse_command_line() {
         case $1 in
             --) eoa=1 ;;
             -*) if [ "${eoa:-}" ]; then
-                    jagen_layers="${jagen_layers-} $1"
+                    init_jagen_layers="${init_jagen_layers-} $1"
                 else
                     case $1 in
                         -a|--flag)
@@ -73,14 +73,14 @@ parse_command_line() {
                             die "invalid option: $1"
                     esac
                 fi ;;
-             *) jagen_layers="${jagen_layers-} $1" ;;
+             *) init_jagen_layers="${init_jagen_layers-} $1" ;;
         esac
         shift
     done
 
     jagen_flags=${jagen_flags+${jagen_flags# }}
     jagen_include_path=${jagen_include_path+${jagen_include_path# }}
-    jagen_layers=${jagen_layers+${jagen_layers# }}
+    init_jagen_layers=${init_jagen_layers+${init_jagen_layers# }}
 }
 
 write_env() {
@@ -112,16 +112,16 @@ write_config() {
 # A list of directories containing layers used by this project.
 # The list items should be newline (\\n) or tab (\\t) separated because normal
 # spaces (including the indentation) are assumed to be the part of the pathname.
-jagen_layers="${config_jagen_layers-}"
+jagen_layers="${jagen_layers-}"
 
 # A list of directories which will be used to resolve unqualified layer names.
 jagen_include_path="${jagen_include_path-}"
 
 # A directory for package sources.
-jagen_src_dir="\$jagen_project_dir/src"
+jagen_src_dir="${jagen_src_dir-\$jagen_project_dir/src}"
 
 # A directory for downloaded distribution files.
-jagen_dist_dir="\$jagen_project_dir/dist"
+jagen_dist_dir="${jagen_dist_dir-\$jagen_project_dir/dist}"
 
 # Space separated list of optional features.
 #   ccache  - wrap compilation commands with ccache
@@ -131,10 +131,10 @@ jagen_dist_dir="\$jagen_project_dir/dist"
 jagen_flags="${jagen_flags-}"
 
 # Space separated list of package names excluded from cleaning and updating.
-jagen_source_exclude=""
+jagen_source_exclude="${jagen_source_exclude-}"
 
 # The default build profile: release|debug|release_with_debug
-jagen_build_profile="release"
+jagen_build_profile="${jagen_build_profile-release}"
 EOF
 }
 
@@ -151,10 +151,12 @@ main() {
 
     # construct newline-separated list of layers -- it looks prettier in
     # the config and allows having spaces in the paths
-    config_jagen_layers="
+    if [ -z "${jagen_layers-}" ]; then
+        jagen_layers="
 "
-    for layer in ${jagen_layers-}; do
-        config_jagen_layers="${config_jagen_layers-}$layer
+    fi
+    for layer in ${init_jagen_layers-}; do
+        jagen_layers="${jagen_layers-}$layer
 "
     done
 
