@@ -1,25 +1,5 @@
 ### Jagen Bash completion definitions ###
 
-_jagen_complete_init_project() {
-    local cur prev
-    local this_cmd jagen_dir
-
-    local opts='-a -f -h --help -l -s --share-sources --share-dist --share-toolchains'
-    local flags='ccache debug devenv offline'
-
-    _get_comp_words_by_ref cur prev
-
-    this_cmd="${COMP_WORDS[0]}"
-    # chop off command name, if any
-    jagen_dir="${this_cmd%/*}"
-
-    case $prev in
-        -a|--flag)
-            COMPREPLY=($(compgen -W "$flags" -- "$cur")) ;;
-         *) COMPREPLY=($(compgen -W "$opts $("$jagen_dir")" -- "$cur")) ;;
-    esac
-}
-
 _jagen_complete() {
     local word="$2" prev_word="$3"
     local cur prev
@@ -92,7 +72,6 @@ _jagen_complete() {
     __ltrim_colon_completions "$cur"
 }
 
-complete -o dirnames -F _jagen_complete_init_project init-project
 complete -F _jagen_complete jagen
 
 ### End of Jagen Bash completion definitions ###
