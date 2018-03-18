@@ -5,6 +5,7 @@ set -eu
 jagen_uri="https://github.com/bazurbat/jagen.git"
 env_file="env.sh"
 config_file="config.sh"
+runner_script="jagen"
 
 show_usage() {
     cat <<EOF
@@ -104,6 +105,17 @@ add_PATH "\$jagen_project_dir/bin"
 EOF
 }
 
+write_runner() {
+    cat >"$runner_script" <<'EOF'
+#!/bin/sh
+jagen_project_dir=$(cd "$(dirname "$0")" && pwd -P)
+. "$jagen_project_dir/env.sh"; sts=$?
+[ $sts = 0 ] || exit $sts
+_jagen "$@"
+EOF
+    chmod +x "$runner_script"
+}
+
 write_config() {
     cat >"$config_file" <<EOF
 # jagen_dir         - refers to the jagen source directory
@@ -161,6 +173,7 @@ main() {
     done
 
     write_env
+    write_runner
     write_config "$config_file"
 
     if ! [ -f "lib/rules.lua" ]; then

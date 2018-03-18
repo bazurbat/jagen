@@ -1,15 +1,9 @@
 #!/bin/sh
 
-cd "${jagen_project_dir:?}"
-
-if ! [ "$jagen_dir" ]; then
-    echo "Error: jagen_dir is not set, please source env.sh inside jagen build root"
-    exit 1
+if ! [ "$jagen_project_dir" ]; then
+    echo "This script just forwards its arguments to the currently sourced \
+Jagen project's runner and by itself does nothing."
+    exit 22
 fi
 
-if ! . "$jagen_dir/env.sh"; then
-    echo "Error: failed to load jagen environment"
-    exit 1
-fi
-
-_jagen "$@"
+exec "$jagen_project_dir/jagen" "$@"
