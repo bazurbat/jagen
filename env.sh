@@ -17,8 +17,8 @@ jagen_project_dir="$jagen_project_dir"
 
 jagen_shell=""
 jagen_lua="${jagen_lua-}"
-: ${jagen_lua:=$(test "$(command -v luajit)" && echo luajit)}
-: ${jagen_lua:=$(test "$(command -v lua)" && echo lua)}
+: ${jagen_lua:=$(command -v luajit)}
+: ${jagen_lua:=$(command -v lua)}
 
 jagen_debug="${jagen_debug-}"
 jagen_flags=""
