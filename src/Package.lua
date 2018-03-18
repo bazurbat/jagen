@@ -461,20 +461,6 @@ function P:export_dirs()
     end
 end
 
-function P:add_export_stages()
-    if self.export and not self.stages['export'] then
-        self:add_stage { 'export' }
-    end
-    for config, this in self:each_config() do
-        if not this.stages then this.stages = {} end
-        if this.export and not this.stages['export'] then
-            local target = Target.from_args(self.name, 'export', config)
-            this.stages['export'] = target
-            table.insert(this.stages, 1, target)
-        end
-    end
-end
-
 function P:add_ordering_dependencies()
     local prev, common 
 
@@ -652,7 +638,6 @@ function P.load_rules()
     for _, pkg in pairs(packages) do
         pkg:export_dirs()
         pkg:export_build_env()
-        pkg:add_export_stages()
     end
 
     local source_exclude = os.getenv('jagen_source_exclude')
@@ -707,6 +692,7 @@ function P.define_rule(rule, context)
         if pkg.name ~= 'patches' then
             pkg:add_stage { 'patch' }
         end
+        pkg:add_stage { 'export' }
         local module, filename = find_module('pkg/'..rule.name)
         if module then
             table.merge(pkg, P:new(assert(module())))
@@ -801,6 +787,8 @@ function P.define_rule(rule, context)
 
     if config then
         local build, install = this.build, this.install
+
+        pkg:add_stage({ 'export' }, config)
 
         if build.toolchain and not template.build or
             template.build and template.build.toolchain == nil
