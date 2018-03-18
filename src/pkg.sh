@@ -248,14 +248,16 @@ pkg__unpack_dist() {
 
     case $dist_type in
         application/x-sharedlib)
-            pkg_run chmod +x "$dist_path" ;;
-        */x-gzip|*/x-bzip2|*/x-xz)
-            case $pkg_source_filename in
-                *.tar|*.tar.*|*.tgz|*.tbz2|*.txz)
-                    pkg_run tar -xf "$dist_path" ;;
-            esac ;;
+            pkg_run chmod +x "$dist_path"
+            return ;;
         */zip)
-            pkg_run unzip "$dist_path" ;;
+            pkg_run unzip "$dist_path"
+            return ;;
+    esac
+
+    case $pkg_source_filename in
+        *.tar|*.tar.*|*.tgz|*.tbz2|*.txz)
+            pkg_run tar -xf "$dist_path" ;;
     esac
 }
 
