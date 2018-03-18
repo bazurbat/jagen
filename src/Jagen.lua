@@ -669,7 +669,9 @@ end
 
 function Jagen:run(args)
     local first = args[1]
-
+    if not first then
+        return Jagen.command.help('usage')
+    end
     if Jagen.command[first] then
         table.remove(args, 1)
         local status =  Jagen.command[first](args)
@@ -679,7 +681,7 @@ function Jagen:run(args)
             return 1
         end
     else
-        die("invalid command or argument '%s', try 'jagen help'", first)
+        die("invalid command or argument '%s', try 'jagen help'", tostring(first))
     end
 end
 
