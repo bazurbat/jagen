@@ -66,29 +66,14 @@ find_in_path() {
 }
 
 include_from() {
-    local layer name path root found
-    layer=${1:?}
-    name=$(basename "${pkg__file:?}")
-
-    case $layer in
-        /*) root=       ;;
-         *) root='/usr/' ;;
-    esac
-
-    for path in \
-        "${jagen_project_dir}${root}${layer}/pkg/$name" \
-        "${jagen_dir}${root}${layer}/pkg/$name"
-    do
-        if [ -f "$path" ]; then
-            found=1
-            debug2 "include from $layer: $path"
-            . "$path"
-            return
-        fi
-    done
-
-    [ "$found" ] || \
-        die "include_from $layer: failed to find $name"
+    local name layer path
+    name=${2-$(basename "${pkg__file:?}")}
+    layer=$(jagen__find_layer "${1:?}")
+    [ -d "$layer" ] || die "include_from $1: layer not found"
+    path="$layer/$name"
+    [ -f "$path" ] || die "include_from $1: $name not found in layer"
+    debug1 "include_from $1: $name ($path)"
+    . "$path"
 }
 
 try_require() {
@@ -233,6 +218,21 @@ jagen__expand() {
 "while expanding${name:+ \$$name}: $value"
 }
 
+# Returns full pathname for the supplied layer specifier. Absolute paths are
+# left intact, relative paths are resolved against the project directory and
+# unqualified paths are tried against entries in jagen_include_path.
+jagen__find_layer() {
+    local layer="${1:?}" path dir
+    case $layer in
+        /*) path="$layer" ;;
+  ./*|../*) path="${jagen_project_dir:?}/$layer" ;;
+         *) for dir in ${jagen_include_path-}; do
+                path="$dir/$layer"; [ -d "$path" ] && break
+            done ;;
+    esac
+    printf "%s" "$(cd "$path" && pwd -P)"
+}
+
 # Tries to expand the supplied arguments as layer paths relative to the current
 # project directory and prints the jagen_FS-separated list of absolute
 # directory paths. The '$jagen_dir/lib' is always added as the first entry of
@@ -241,21 +241,9 @@ jagen__expand() {
 jagen__expand_layers() {
     local FS="$jagen_FS" layer dir path result="$jagen_dir/lib"
     for layer; do
-        case $layer in
-            /*) path="$layer" ;;
-      ./*|../*) for path in "$jagen_project_dir/$layer"; do
-                    [ -d "$path" ] && break
-                done ;;
-             *) for dir in ${jagen_include_path-}; do
-                    path=$dir/$layer
-                    [ -d "$path" ] && break
-                done ;;
-        esac
-        if [ -d "${path-}" ]; then
-            path=$(real_path "$path")
-            result="${result}${FS}${path}"
-        else
-            die "failed to resolve layer dir: $layer"
+        path=$(jagen__find_layer "$layer")
+        if [ -z "$path" ]; then
+            error "failed to find layer: $layer"
         fi
     done
     result="${result}${FS}${jagen_project_lib_dir}"
