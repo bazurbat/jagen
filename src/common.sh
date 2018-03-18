@@ -244,6 +244,8 @@ jagen__expand_layers() {
         path=$(jagen__find_layer "$layer")
         if [ -z "$path" ]; then
             error "failed to find layer: $layer"
+        else
+            result="${result}${FS}${path}"
         fi
     done
     result="${result}${FS}${jagen_project_lib_dir}"
