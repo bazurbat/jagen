@@ -7,7 +7,6 @@ return {
     },
     build = {
         toolchain = false
-    },
-    install = true
+    }
 }
 
