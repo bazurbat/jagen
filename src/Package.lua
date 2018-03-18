@@ -2,6 +2,7 @@ local System = require 'System'
 local Target = require 'Target'
 local Source = require 'Source'
 local Log    = require 'Log'
+local Command = require 'Command'
 
 local P = {}
 P.__index = P
@@ -586,16 +587,19 @@ function P.load_rules()
 
     packages = {}
 
-    local dirs = string.split2(System.pread('*a', '"%s" get_path', Jagen.cmd), '\t')
-
-    for i = 1, #dirs do
-        local filename = System.mkpath(dirs[i], 'rules.lua')
+    local function try_load_rules(dir)
+        local filename = System.mkpath(dir, 'rules.lua')
         local file = io.open(filename, 'rb')
         if file then
             assert(loadstring(file:read('*a'), filename))()
             file:close()
         end
     end
+
+    for dir in Command:new(quote(Jagen.cmd), 'get_path'):read('*a'):gmatch('[^\t\n]+') do
+        try_load_rules(dir)
+    end
+    try_load_rules(System.mkpath(Jagen.project_dir))
 
     push_context({ implicit = true })
 
