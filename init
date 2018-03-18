@@ -9,16 +9,31 @@ runner_script="jagen"
 
 show_usage() {
     cat <<EOF
-Usage: init-project [OPTIONS...] [--] [LAYERS...]
+Usage: init [OPTIONS...] [--] [LAYERS...]
 
   Initializes current directory as a Jagen project.
 
 SYNOPSIS:
 
-  The script will put an environment file 'env.sh' and a configuration file
-  'config.sh' in the current directory. The environment file should be sourced
-  into the working shell before issuing any other Jagen commands. The config
-  file contains project-specific settings and is sourced by the build system.
+  The script should be run from the directory which you want to initialize as
+  the project reaching out by a relative path to the checked out Jagen sources
+  or piped to shell. It creates 'config.sh', 'env.sh' and 'jagen' files in the
+  current directory.
+
+  The generated 'config.sh' contains parameters from the 'init' command line
+  (layers, flags) and other global settings. Edit it manually to adjust the
+  parameters or global environment. It is sourced every time the build system
+  runs. 
+  
+  For interactive work source the generated 'env.sh' to initialize current
+  Shell environment for this project from now on. This will put 'jagen' command
+  in PATH and allow Bash to autocomplete its commands and the project's
+  targets. Note that mixing the environments from different projects will
+  likely produce unexpected results.
+
+  Use the 'jagen' script inside the project directory to run Jagen commands for
+  this project from outside without modifying the environment. This could be
+  useful to activate the build from IDEs and such.
 
 OPTIONS:
 
@@ -26,6 +41,15 @@ OPTIONS:
   -a, --flag       add the flag to jagen_flags
   -i, --include    add the directory to jagen_include_path
   -f, --force      force to initialize non-empty directory
+
+  The following flags are reserved by the core:
+  
+    ccache  -- activate the usage of 'ccache' for all toolchain commands
+    offline -- causes all operations requiring the network to fail
+
+  Reinitializing an existing project is possible with '--force' but note that
+  it will regenerate the 'config.sh'. The previous is saved as 'config.sh.bak'.
+  Copy your old settings from it manually if necessary.
 
 EOF
 }
@@ -174,6 +198,10 @@ main() {
 
     write_env
     write_runner
+    if [ -f "$config_file" ]; then
+        say "backing up the existing config as ${config_file}.bak"
+        cp -f "$config_file" "${config_file}.bak"
+    fi
     write_config "$config_file"
 
     if ! [ -f "lib/rules.lua" ]; then
