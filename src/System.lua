@@ -67,7 +67,7 @@ end
 
 function P.rmrf(...)
     if select('#', ...) > 0 then
-        return P.exec('rm -rf %s', P.quote(...))
+        return Command:new('rm -rf', quote(...)):exec()
     end
 end
 
