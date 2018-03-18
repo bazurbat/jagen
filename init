@@ -161,8 +161,6 @@ jagen_dist_dir="${jagen_dist_dir-\$jagen_project_dir/dist}"
 
 # Space separated list of optional features.
 #   ccache  - wrap compilation commands with ccache
-#   debug   - build debugging tools
-#   devenv  - enable features pertinent to development environment
 #   offline - skip network operations
 jagen_flags="${jagen_flags-}"
 
