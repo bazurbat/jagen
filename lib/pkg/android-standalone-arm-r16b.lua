@@ -1,9 +1,9 @@
 return {
     build = {
-        type      = 'android-ndk-toolchain',
+        type      = 'android-standalone-toolchain',
+        toolchain = 'android-ndk-r16b',
         arch      = 'arm',
-        system    = 'arm-linux-androideabi',
-        toolchain = 'android-ndk-r16b'
+        system    = 'arm-linux-androideabi'
     },
     export = {
         cmake_options = {

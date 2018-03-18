@@ -489,9 +489,9 @@ pkg_compile() {
                 pkg_run rustup run stable-x86_64-unknown-linux-gnu cargo build --release
             fi
             ;;
-        android-ndk-toolchain)
+        android-standalone-toolchain)
             require toolchain
-            toolchain_install_android_ndk
+            toolchain_install_android_standalone
             ;;
     esac
 }
@@ -546,7 +546,7 @@ pkg_install() {
                 "${pkg_source_dir:?}/bin"  \
                 "${pkg_toolchain_prefix}"
             ;;
-        android-ndk-toolchain)
+        android-standalone-toolchain)
             require toolchain
             toolchain_generate_wrappers    \
                 "${jagen_bin_dir:?}"       \
