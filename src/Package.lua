@@ -220,6 +220,7 @@ function P:set(key, value, config)
     else
         self[key] = value
     end
+    return value
 end
 
 function P:define_use(spec, config, template)
@@ -268,24 +269,30 @@ end
 
 function P:add_require(spec, config, template)
     push_context(table.merge(copy(current_context), {
-                name   = self.name,
-                config = config
+                name     = self.name,
+                config   = config,
+                implicit = current_context and current_context.implicit
         }))
     local use = self:define_use(spec, config, template)
     pop_context()
-    local function last_stage(use)
-        local stages = use:get('stages', config) or use:get('stages')
-        local target = stages[#stages]
-        if target then
-            return target.stage
-        end
-    end
     local build = self:get('build', config)
     local stage = build and build.type and 'configure' or 'install'
-    self:add_stage({ stage,
-            { use.name, last_stage(use), config }
-        }, config)
+    self:add_to(stage, use:last(config) or use:last(), config)
     return use
+end
+
+function P:add_to(stage, input, config)
+    local stages = self:get('stages', config)
+    if not stages then
+        stages = self:set('stages', {}, config)
+    end
+    local target = stages[stage]
+    if not target then
+        target = Target.from_args(self.name, stage, config)
+        stages[stage] = target
+        table.insert(stages, target)
+    end
+    target:append(input)
 end
 
 function P:add_stage(rule, config)
@@ -488,6 +495,11 @@ function P:add_ordering_dependencies()
             end
         end
     end
+end
+
+function P:last(config)
+    local stages = config and self:get('stages', config) or self:get('stages')
+    return stages[#stages]
 end
 
 function P:each()
@@ -853,6 +865,14 @@ function P.define_rule(rule, context)
 
     pop_context()
 
+    for spec in each(pkg.requires) do
+        pkg:add_require(spec, config, template)
+    end
+
+    for spec in each(rule.requires) do
+        pkg:add_require(spec, config, template)
+    end
+
     if not context then
         context = push_context({
                 name = pkg.name,
@@ -861,21 +881,13 @@ function P.define_rule(rule, context)
             })
     end
 
-    local stages = extend({}, pkg)
-
-    local requires = extend(extend({}, pkg.requires), rule.requires)
-    if config and #requires > 0 then
-        local name = this.build and this.build.type and 'configure' or 'install'
-        append(stages, { name, requires = requires })
-    end
-
-    extend(stages, rule)
-
+    local stages = extend(extend({}, pkg), rule)
     for stage in each(stages) do
         for spec in each(stage.requires) do
             local req, config = pkg:define_use(spec, config, template)
             if req then
-                append(stage, { req.name, 'install', config })
+                local last = req:last(config) or req:last()
+                append(stage, { req.name, last.stage, config })
             end
         end
         pkg:add_stage(stage, config)
