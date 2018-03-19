@@ -102,8 +102,7 @@ function Target:add_inputs(target)
 end
 
 function Target:append(input)
-    self.inputs = self.inputs or {}
-    append(self.inputs, input)
+    self.inputs = append_uniq(input, self.inputs)
     return self
 end
 
