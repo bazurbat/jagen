@@ -266,12 +266,12 @@ function P:gettoolchain(config)
     return toolchain
 end
 
-function P:add_require(name, config)
+function P:add_require(spec, config, template)
     push_context(table.merge(copy(current_context), {
                 name   = self.name,
                 config = config
         }))
-    local use = self:define_use(name, config)
+    local use = self:define_use(spec, config, template)
     pop_context()
     local function last_stage(use)
         local stages = use:get('stages', config) or use:get('stages')
@@ -283,7 +283,7 @@ function P:add_require(name, config)
     local build = self:get('build', config)
     local stage = build and build.type and 'configure' or 'install'
     self:add_stage({ stage,
-            { name, last_stage(use), config }
+            { use.name, last_stage(use), config }
         }, config)
     return use
 end
