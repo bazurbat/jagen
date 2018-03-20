@@ -457,11 +457,6 @@ pkg_compile() {
             if [ "$makefile" ]; then
                 A="$A${S}-f$makefile"
             fi
-            if [ "$pkg_build_dir" != "$pkg_source_dir" ]; then
-                A="$A${S}-I$pkg_source_dir"
-                A="$A${S}VPATH=$pkg_source_dir"
-            fi
-
             pkg_run make $A $pkg_build_options "$@"
             ;;
         linux-kernel)
