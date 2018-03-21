@@ -42,12 +42,12 @@ useful to activate the build from IDEs and such.
 
 #### Options
 
-Option        | Description
---------------|------------
--h, --help    | show usage information
--a, --flag    | add the flag to jagen_flags
--i, --include | add the directory to jagen_include_path
--f, --force   | force to initialize non-empty directory
+Option      | Description
+------------|------------
+-h, --help  | show usage information
+-a, --flag  | add the flag to jagen_flags
+-f, --force | force to initialize non-empty directory
+-L          | add the directory to jagen_layer_path
 
 The following flags are reserved by the core:
   

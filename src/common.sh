@@ -220,13 +220,13 @@ jagen__expand() {
 
 # Returns full pathname for the supplied layer specifier. Absolute paths are
 # left intact, relative paths are resolved against the project directory and
-# unqualified paths are tried against entries in jagen_include_path.
+# unqualified paths are tried against entries in jagen_layer_path.
 jagen__find_layer() {
     local layer="${1:?}" path dir
     case $layer in
         /*) path="$layer" ;;
   ./*|../*) path="${jagen_project_dir:?}/$layer" ;;
-         *) for dir in ${jagen_include_path-}; do
+         *) for dir in ${jagen_layer_path-}; do
                 case $dir in
                     ./*|../*) path="${jagen_project_dir:?}/$dir/$layer" ;;
                            *) path="$dir/$layer" ;;

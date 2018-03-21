@@ -37,10 +37,10 @@ SYNOPSIS:
 
 OPTIONS:
 
-  -h, --help       show this usage information
-  -a, --flag       add the flag to jagen_flags
-  -i, --include    add the directory to jagen_include_path
-  -f, --force      force to initialize non-empty directory
+  -h, --help   show this usage information
+  -a, --flag   add the flag to jagen_flags
+  -f, --force  force to initialize non-empty directory
+  -L           add the directory to jagen_layer_path
 
   The following flags are reserved by the core:
   
@@ -86,14 +86,14 @@ parse_command_line() {
                     init_jagen_layers="${init_jagen_layers-} $1"
                 else
                     case $1 in
-                        -a|--flag)
-                            jagen_flags="${jagen_flags-} $2"; shift ;;
-                        -i|--include)
-                            jagen_include_path="${jagen_include_path-} $2"; shift ;;
-                        -f|--force)
-                            use_force=1 ;;
                         -h|--help)
                             show_usage; exit 0 ;;
+                        -a|--flag)
+                            jagen_flags="${jagen_flags-} $2"; shift ;;
+                        -f|--force)
+                            use_force=1 ;;
+                        -L)
+                            jagen_layer_path="${jagen_layer_path-} $2"; shift ;;
                         *)
                             die "invalid option: $1"
                     esac
@@ -104,7 +104,7 @@ parse_command_line() {
     done
 
     jagen_flags=${jagen_flags+${jagen_flags# }}
-    jagen_include_path=${jagen_include_path+${jagen_include_path# }}
+    jagen_layer_path=${jagen_layer_path+${jagen_layer_path# }}
     init_jagen_layers=${init_jagen_layers+${init_jagen_layers# }}
 }
 
@@ -151,7 +151,7 @@ write_config() {
 jagen_layers="${jagen_layers-}"
 
 # A list of directories which will be used to resolve unqualified layer names.
-jagen_include_path="${jagen_include_path-}"
+jagen_layer_path="${jagen_layer_path-}"
 
 # A directory for package sources.
 jagen_src_dir="${jagen_src_dir-\$jagen_project_dir/src}"
