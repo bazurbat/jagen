@@ -226,15 +226,12 @@ jagen__find_layer() {
     case $layer in
         /*) path="$layer" ;;
   ./*|../*) path="${jagen_project_dir:?}/$layer" ;;
-         *) for dir in ${jagen_layer_path-}; do
-                case $dir in
-                    ./*|../*) path="${jagen_project_dir:?}/$dir/$layer" ;;
-                           *) path="$dir/$layer" ;;
-                esac
+         *) for dir in ${jagen_layer_path-} ${jagen_project_dir:?}; do
+                path="$dir/$layer"
                 [ -d "$path" ] && break
             done ;;
     esac
-    printf "%s" "$(cd "$path" && pwd -P)"
+    printf "%s" "$(cd "$path" 2>&- && pwd -P)"
 }
 
 # Tries to expand the supplied arguments as layer paths relative to the current
