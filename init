@@ -145,24 +145,30 @@ write_config() {
 # jagen_dir         - refers to the jagen source directory
 # jagen_project_dir - refers to the current project directory
 
+EOF
+    if [ "${jagen_layer_path-}" ]; then
+        cat >>"$config_file" <<EOF
+# A list of directories to search for unqualified layers.
+jagen_layer_path="${jagen_layer_path-}"
+
+EOF
+    fi
+    cat >>"$config_file" <<EOF
 # A list of directories containing layers used by this project.
 # The list items should be newline (\\n) or tab (\\t) separated because normal
 # spaces (including the indentation) are assumed to be the part of the pathname.
 jagen_layers="${jagen_layers-}"
 
-# A list of directories which will be used to resolve unqualified layer names.
-jagen_layer_path="${jagen_layer_path-}"
-
-# A directory for package sources.
-jagen_src_dir="${jagen_src_dir-\$jagen_project_dir/src}"
-
-# A directory for downloaded distribution files.
-jagen_dist_dir="${jagen_dist_dir-\$jagen_project_dir/dist}"
-
 # Space separated list of optional features.
 #   ccache  - wrap compilation commands with ccache
 #   offline - skip network operations
 jagen_flags="${jagen_flags-}"
+
+# A directory for downloaded distribution files.
+jagen_dist_dir="${jagen_dist_dir-\$jagen_project_dir/dist}"
+
+# A directory for package sources.
+jagen_src_dir="${jagen_src_dir-\$jagen_project_dir/src}"
 
 # Space separated list of package names excluded from cleaning and updating.
 jagen_source_exclude="${jagen_source_exclude-}"
@@ -183,16 +189,14 @@ main() {
         ensure_cloned
     fi
 
-    # construct newline-separated list of layers -- it looks prettier in
-    # the config and allows having spaces in the paths
-    if [ -z "${jagen_layers-}" ]; then
-        jagen_layers="
-"
-    fi
     for layer in ${init_jagen_layers-}; do
         jagen_layers="${jagen_layers-}$layer
 "
     done
+    if [ "${jagen_layers-}" ]; then
+        jagen_layers="
+$jagen_layers"
+    fi
 
     write_env
     write_runner
