@@ -500,6 +500,12 @@ function Jagen.command.build(args)
         end
     end
 
+    if args._args then
+        local file = assert(io.open(System.mkpath(Jagen.build_dir, '.build-args'), 'w'))
+        file:write(table.concat(args._args, '\n'))
+        file:close()
+    end
+
     return Command:new(quote(Jagen.cmd), 'build', tostring(args), unpack(targets)):exec()
 end
 

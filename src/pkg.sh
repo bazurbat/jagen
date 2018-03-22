@@ -11,6 +11,8 @@ export LINGUAS=""
 : ${pkg_run_on_error:=exit}
 : ${jagen_cmake_generator:=Ninja}
 
+jagen_build_args_file="${jagen_build_dir:?}/.build-args"
+
 pkg_run() {
     local IFS; unset IFS
     local cmd="$1" jobs="${pkg_build_jobs:-$(jagen_nproc)}"
@@ -315,7 +317,7 @@ pkg_autoreconf() {
 pkg_configure() {
     [ "$pkg_source_dir" ] || return 0
 
-    local IFS="$jagen_IFS" S="$jagen_FS" A=
+    local IFS="$jagen_IFS" S="$jagen_FS" A= MA="$(cat "${jagen_build_args_file:?}")"
     local toolchain_file="$pkg_build_dir/toolchain.cmake"
 
     case $pkg_build_type in
@@ -342,7 +344,7 @@ pkg_configure() {
                 --prefix="$pkg_install_prefix" \
                 --disable-dependency-tracking \
                 ${pkg_install_root:+--with-sysroot="$pkg_install_root"} \
-                $pkg_build_options "$@"
+                $pkg_build_options "$@" $MA
 
             # Never add RPATH to generated binaries because libtool uses
             # various heuristics to determine when to add it, some Linux
@@ -414,7 +416,7 @@ EOF
             pkg_run cmake -G"$pkg_build_generator" \
                 -DCMAKE_BUILD_TYPE="$(pkg_cmake_build_type)" \
                 -DCMAKE_INSTALL_PREFIX="$pkg_install_prefix" \
-                $A $jagen_cmake_options $pkg_build_options "$@" "$pkg_source_dir"
+                $A $jagen_cmake_options $pkg_build_options "$@" $MA "$pkg_source_dir"
             ;;
         linux-kernel)
             use_env kbuild
@@ -428,7 +430,7 @@ EOF
 }
 
 pkg_compile() {
-    local IFS="$jagen_IFS" S="$jagen_FS" A=
+    local IFS="$jagen_IFS" S="$jagen_FS" A= MA="$(cat "${jagen_build_args_file:?}")"
 
     [ "$pkg_source_dir" ] || return 0
 
@@ -441,10 +443,10 @@ pkg_compile() {
 
     case $pkg_build_type in
         gnu)
-            pkg_run make "$@"
+            pkg_run make "$@" $MA
             ;;
         cmake)
-            pkg_run cmake --build . -- $(pkg__get_cmake_args) "$@"
+            pkg_run cmake --build . -- $(pkg__get_cmake_args) "$@" $MA
             ;;
         make|kbuild)
             if [ -f "$pkg_source_dir/GNUmakefile" ]; then
@@ -457,22 +459,22 @@ pkg_compile() {
             if [ "$makefile" ]; then
                 A="$A${S}-f$makefile"
             fi
-            pkg_run make $A $pkg_build_options "$@"
+            pkg_run make $A $pkg_build_options "$@" $MA
             ;;
         linux-kernel)
             use_env kbuild
             pkg_run cd "$pkg_source_dir"
-            pkg_run make "${pkg_build_image:?}" modules
+            pkg_run make "${pkg_build_image:?}" modules $MA
             ;;
         linux-module)
-            pkg_run make $pkg_build_options "$@"
+            pkg_run make $pkg_build_options "$@" $MA
             ;;
         executable)
             local exe="$jagen_dist_dir/$pkg_source_filename"
             if ! [ -x "$exe" ]; then
                 die "require to run $exe for build but the file was not found or not an executable"
             fi
-            pkg_run "$exe" $pkg_build_options "$@"
+            pkg_run "$exe" $pkg_build_options "$@" $MA
             ;;
         rust)
             export CARGO_TARGET_DIR="$pkg_build_dir"
@@ -481,7 +483,7 @@ pkg_compile() {
                 if ! pkg_run rustup toolchain list | grep -q '^stable-x86_64-unknown-linux-gnu$'; then
                     pkg_run rustup install stable-x86_64-unknown-linux-gnu
                 fi
-                pkg_run rustup run stable-x86_64-unknown-linux-gnu cargo build --release
+                pkg_run rustup run stable-x86_64-unknown-linux-gnu cargo build --release $MA
             fi
             ;;
         android-standalone-toolchain)
@@ -494,14 +496,14 @@ pkg_compile() {
 pkg_install() {
     [ "$pkg_source_dir" ] || return 0
 
-    local IFS="$jagen_IFS"
+    local IFS="$jagen_IFS" MA="$(cat "${jagen_build_args_file:?}")"
     local pkg_install_type="${pkg_install_type:-$pkg_build_type}"
 
     case $pkg_install_type in
         gnu|make|kbuild)
             pkg_run make \
                 ${pkg_install_root:+DESTDIR="$pkg_install_root"} \
-                $pkg_install_args "$@" install
+                $pkg_install_args "$@" $MA install
 
             for name in $pkg_install_libs; do
                 pkg_fix_pc "$name"
@@ -518,7 +520,7 @@ pkg_install() {
                 export DESTDIR="$pkg_install_root"
             fi
             pkg_run cmake --build . --target install -- \
-                $(pkg__get_cmake_args) $pkg_install_args "$@"
+                $(pkg__get_cmake_args) $pkg_install_args "$@" $MA
             unset DESTDIR
             ;;
         linux-kernel)
@@ -529,7 +531,7 @@ pkg_install() {
                 "$jagen_build_dir"
             pkg_run make \
                 INSTALL_MOD_PATH="${INSTALL_MOD_PATH:-${pkg_install_dir:?}}" \
-                $pkg_install_args "$@" modules_install
+                $pkg_install_args "$@" $MA modules_install
             ;;
         linux-module)
             pkg_install_modules
