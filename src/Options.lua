@@ -54,6 +54,10 @@ function P:is_long(arg)
     return arg and string.sub(arg, 1, 1) == '-' and string.sub(arg, 2, 2) == '-'
 end
 
+function P:is_eoa(arg)
+    return P:is_long(arg) and #arg == 2
+end
+
 local function result_tostring(self)
     local lines = {}
     local function append(value)
@@ -71,7 +75,7 @@ end
 function P:parse(args)
     local result = copy(self.init)
     setmetatable(result, { __tostring = result_tostring })
-    local read_nth
+    local read_nth, eoa
 
     local function set_value(n, opt, val)
         if opt.needs_value == 'n' then
@@ -162,12 +166,18 @@ function P:parse(args)
     read_nth = function (n)
         local arg = args[n]
         if not arg then return result end
-        if self:is_long(arg) then
-            return read_long(n)
-        elseif self:is_short(arg) then
-            return read_short(n)
+        if eoa then
+            result._args = append(result._args, args[n])
         else
-            table.insert(result, args[n])
+            if self:is_eoa(arg) then
+                eoa = true
+            elseif self:is_long(arg) then
+                return read_long(n)
+            elseif self:is_short(arg) then
+                return read_short(n)
+            else
+                table.insert(result, args[n])
+            end
         end
         return read_nth(n+1, args)
     end
