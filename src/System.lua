@@ -69,6 +69,7 @@ function P.rmrf(...)
     if select('#', ...) > 0 then
         return Command:new('rm -rf', quote(...)):exec()
     end
+    return true
 end
 
 function P.mkdir(...)
