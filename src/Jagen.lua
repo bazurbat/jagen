@@ -280,65 +280,67 @@ function Jagen.clean_package(pkg, spec)
     return true
 end
 
-local function clean_packages(args)
-    local packages = Package.load_rules()
-
-    function force_reconfigure(name, config)
-        assert(Target.from_args(name, 'configure', config):remove())
-    end
-
-    for _, arg in ipairs(args) do
-        local match = string.gmatch(arg, '[^:]+')
-        local name, config = match(), match()
-        local pkg = packages[name]
-
-        if not pkg then
-            die('no such package: %s', name)
-        end
-
-        if pkg.build and pkg.build.in_source and pkg.source:is_scm() then
-            Jagen.src.clean({ name })
-        else
-            for _, dir in pairs(pkg:query('build_dir', config)) do
-                assert(System.rmrf(dir))
-            end
-        end
-
-        if config then
-            force_reconfigure(name, config)
-        else
-            if next(pkg.configs) then
-                for config in pairs(pkg.configs) do
-                    force_reconfigure(name, config)
-                end
-            else
-                force_reconfigure(name)
-            end
-        end
-    end
-end
-
-local function clean_project()
-    local clean_dirs = {
-        'jagen_bin_dir',
-        'jagen_build_dir',
-        'jagen_include_dir',
-        'jagen_log_dir',
-        'jagen_host_dir',
-        'jagen_target_dir',
-    }
-    assert(System.rmrf(table.unpack(System.getenv(clean_dirs))))
-end
-
 function Jagen.command.clean(args)
-    if help_requested(args) then
+    local options = Options:new {
+        { 'help,h' },
+        { 'match,m' }
+    }
+    args = options:parse(args)
+    if not args then return false end
+
+    if args['help'] then
         return Jagen.command['help'] { 'clean' }
     end
 
-    if #args > 0 then
-        clean_packages(args)
-    else
-        clean_project()
+    -- no targets specified, clean the whole project
+    if #args == 0 then
+        local clean_dirs = {
+            'jagen_bin_dir',
+            'jagen_build_dir',
+            'jagen_include_dir',
+            'jagen_log_dir',
+            'jagen_host_dir',
+            'jagen_target_dir',
+        }
+        return System.rmrf(unpack(System.getenv(clean_dirs))) and
+               Jagen.command.refresh()
+    end
+
+    local packages, ok = Package.load_rules()
+    if not ok then
+        Log.error('aborting clean due to rule errors')
+        return false
+    end
+
+    local targets, found = {}
+    for i, pattern in iter(extend({}, args), map(string.to_target_pattern)) do
+        for name, pkg in iter(packages) do
+            for config, this in pkg:each_config() do
+                local spec = string.format('%s:%s', name, config)
+                if spec:match(pattern) then
+                    targets[spec] = pkg
+                    found = true
+                end
+            end
+        end
+        if not found then
+            Log.warning('could not find targets matching: %s', args[i])
+        end
+    end
+
+    if args['match'] then
+        for spec, _ in pairs(targets) do
+            print(spec)
+        end
+        return true
+    end
+
+    if not found then return false end
+
+    for spec, pkg in pairs(targets) do
+        if not Jagen.clean_package(pkg, spec) then
+            return false
+        end
     end
 
     return Jagen.command.refresh()
