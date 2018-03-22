@@ -113,7 +113,7 @@ write_env() {
 #!/bin/sh
 
 jagen_dir=$jagen_dir
-jagen_project_dir=\$(pwd -P)
+jagen_project_dir=$(pwd -P)
 export jagen_dir jagen_project_dir
 
 . "\$jagen_dir/env.sh"; sts=\$?
