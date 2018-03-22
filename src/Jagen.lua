@@ -440,10 +440,6 @@ function Jagen.command.refresh(args, packages)
 end
 
 function Jagen.command.build(args)
-    if help_requested(args) then
-        return Jagen.command['help'] { 'build' }
-    end
-
     local options = Options:new {
         { 'help,h' },
         { 'match,m' },
@@ -454,12 +450,9 @@ function Jagen.command.build(args)
         { 'quiet,q' },
     }
     args = options:parse(args)
-    if not args then
-        return false
-    end
-
+    if not args then return false end
     if args['help'] then
-        return Jagen.command['help'] { 'list' }
+        return Jagen.command['help'] { 'build' }
     end
 
     local packages, ok = Package.load_rules()
