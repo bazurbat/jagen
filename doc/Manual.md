@@ -425,7 +425,6 @@ install = value
 - **jagen_project_dir** — The location of the current project directory.
 - **jagen_project_lib_dir** — The location of the current project `lib`
   directory (`$jagen_project_dir/lib`).
-- **jagen_relative_dir** — _env.sh_ internal.
 - **jagen_shell** — Override shell used to run internal scripts.
 - **jagen_source_exclude** — A space-separated list of package name patterns
   which should not be updated or patched during the build. Applies only to
