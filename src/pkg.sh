@@ -317,7 +317,7 @@ pkg_autoreconf() {
 pkg_configure() {
     [ "$pkg_source_dir" ] || return 0
 
-    local IFS="$jagen_IFS" S="$jagen_FS" A= MA="$(cat "${jagen_build_args_file:?}")"
+    local IFS="$jagen_IFS" S="$jagen_FS" A= MA="$(cat "${jagen_build_args_file:?}" 2>&-)"
     local toolchain_file="$pkg_build_dir/toolchain.cmake"
 
     case $pkg_build_type in
@@ -430,7 +430,7 @@ EOF
 }
 
 pkg_compile() {
-    local IFS="$jagen_IFS" S="$jagen_FS" A= MA="$(cat "${jagen_build_args_file:?}")"
+    local IFS="$jagen_IFS" S="$jagen_FS" A= MA="$(cat "${jagen_build_args_file:?}" 2>&-)"
 
     [ "$pkg_source_dir" ] || return 0
 
@@ -496,7 +496,7 @@ pkg_compile() {
 pkg_install() {
     [ "$pkg_source_dir" ] || return 0
 
-    local IFS="$jagen_IFS" MA="$(cat "${jagen_build_args_file:?}")"
+    local IFS="$jagen_IFS" MA="$(cat "${jagen_build_args_file:?}" 2>&-)"
     local pkg_install_type="${pkg_install_type:-$pkg_build_type}"
 
     case $pkg_install_type in
