@@ -500,14 +500,14 @@ function Jagen.command.build(args)
         end
     end
 
-    local args_path, args_file = System.mkpath(Jagen.build_dir, '.build-args')
+    local args_path = System.mkpath(Jagen.build_dir, '.build-args')
+    local args_file = assert(io.open(args_path, 'w'))
     if args._args then
-        args_file = assert(io.open(args_path, 'w'))
         args_file:write(table.concat(args._args, '\n'))
-        args_file:close()
     end
+    args_file:close()
     local ok = Command:new(quote(Jagen.cmd), 'build', tostring(args), unpack(targets)):exec()
-    if args_file then System.rmrf(args_path) end
+    io.open(args_path, 'w'):close()
     return ok
 end
 
