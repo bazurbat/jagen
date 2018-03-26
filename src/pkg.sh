@@ -479,12 +479,10 @@ pkg_compile() {
         rust)
             export CARGO_TARGET_DIR="$pkg_build_dir"
             cd "$pkg_source_dir"
-            if [ "$pkg_config" = "host" ]; then
-                if ! pkg_run rustup toolchain list | grep -q '^stable-x86_64-unknown-linux-gnu$'; then
-                    pkg_run rustup install stable-x86_64-unknown-linux-gnu
-                fi
-                pkg_run rustup run stable-x86_64-unknown-linux-gnu cargo build --release $MA
+            if ! rustup toolchain list | grep -q "^${pkg_build_toolchain:?}"; then
+                pkg_run rustup install "$pkg_build_toolchain"
             fi
+            pkg_run rustup run "$pkg_build_toolchain" cargo build --release $MA
             ;;
         android-standalone-toolchain)
             require toolchain
