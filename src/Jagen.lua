@@ -91,18 +91,15 @@ function Jagen.src.status(args)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
         if System.exists(source.dir) and not System.is_empty(source.dir) then
-            local head = source:head()
-            if not head then
-                die('failed to get source head for %s in %s',
-                    pkg.name, source.dir)
-            end
+            local head = source:head_name()
             local dirty = source:dirty() and ' dirty' or ''
             if #dirty > 0 and source.ignore_dirty then
                 dirty = dirty..'(ignored)'
             end
             local exclude = source.exclude and ' excluded' or ''
-            print(string.format("%s (%s): %s%s%s", pkg.name, source.location, head,
-                dirty, exclude))
+            print(string.format("%s%s%s%s%s", pkg.name,
+                    source.location and ' ('..source.location..')',
+                    head and ' ['..head..']', dirty, exclude))
         else
             print(string.format("%s (%s): not exists", pkg.name, source.location))
         end
@@ -117,7 +114,7 @@ function Jagen.src.clean(args)
         Log.message('clean %s in %s', pkg.name, source.dir)
         if not pkg.source:clean() then
             die('failed to clean %s (%s) in %s',
-                pkg.name, source:getrev(), source.dir)
+                pkg.name, source:head_name(), source.dir)
         end
     end
 end
@@ -140,7 +137,7 @@ function Jagen.src.update(args)
         local old_head
 
         if System.exists(dir) and not System.is_empty(dir) then
-            local rev = source:getrev() or ''
+            local rev = source:head_name()
             if not source.ignore_dirty and source:dirty() then
                 die("could not update %s: source dir '%s' is dirty",
                     pkg.name, dir)

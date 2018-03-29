@@ -152,6 +152,10 @@ function Source:head()
     return ''
 end
 
+function Source:head_name()
+    return self:head()
+end
+
 function Source:dirty()
     return false
 end
@@ -202,6 +206,21 @@ end
 
 function GitSource:head()
     return self:command('rev-parse HEAD'):read()
+end
+
+function GitSource:head_name()
+    local head = self:command('log -1 --format=\"%h%d\"'):read()
+    if head then
+        local rev, ref = head:match('(%S+)%s%(HEAD, (.+)%)')
+        if ref then
+            ref = ref:gsub(self.origin..'/%S+ ?', '')
+            ref = ref:gsub(', $', '')
+            if #ref > 0 then
+                return string.format('%s, %s', rev, ref)
+            end
+        end
+        return rev
+    end
 end
 
 function GitSource:dirty()
@@ -292,6 +311,14 @@ end
 
 function HgSource:head()
     return self:command('id -i'):read()
+end
+
+function HgSource:head_name()
+    local id = self:command('id -i'):read()
+    local refs = self:command('id -nbB'):read()
+    if id and refs then
+        return string.format('%s, %s', id, refs)
+    end
 end
 
 function HgSource:dirty()
