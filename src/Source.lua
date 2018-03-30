@@ -209,18 +209,18 @@ function GitSource:head()
 end
 
 function GitSource:head_name()
-    local head = self:command('log -1 --format=\"%h%d\"'):read()
-    if head then
-        local rev, ref = head:match('(%S+)%s%(HEAD, (.+)%)')
-        if ref then
-            ref = ref:gsub(self.origin..'/%S+ ?', '')
-            ref = ref:gsub(', $', '')
-            if #ref > 0 then
-                return string.format('%s, %s', rev, ref)
-            end
+    local head = assert(self:command('log -1 --format=\"%h%d\"'):read())
+    local rev, ref = head:match('(%S+)%s%((.+)%)')
+    rev = rev or head
+    if ref then
+        ref = ref:gsub('^HEAD,? ?', '')
+        ref = ref:gsub(self.origin..'/%S+ ?', '')
+        ref = ref:gsub(', $', '')
+        if #ref > 0 then
+            return string.format('%s, %s', rev, ref)
         end
-        return rev
     end
+    return rev
 end
 
 function GitSource:dirty()
