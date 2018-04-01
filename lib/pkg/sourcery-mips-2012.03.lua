@@ -9,7 +9,7 @@ return {
     },
     build = {
         arch   = 'mips',
-        system = 'mipsel-linux-gnu',
+        system = 'mips-linux-gnu',
         toolchain = false
     },
     install = 'toolchain'
