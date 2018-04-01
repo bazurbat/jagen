@@ -15,7 +15,7 @@ else
     pkg_args="$@"
 fi
 
-. "${jagen_dir:?}/src/pkg.sh" || exit
+. "${jagen_dir:?}/src/stages.sh" || exit
 
 pkg__stamp_name="${pkg_name}:${pkg_stage}${pkg_config:+:${pkg_config}}"
 pkg__stamp_file="${jagen_build_dir:?}/${pkg__stamp_name}"
@@ -107,7 +107,7 @@ fi
 pkg_install_dir="$pkg_install_root$pkg_install_prefix"
 
 # defaults
-: ${pkg_build_generator=$jagen_cmake_generator}
+: ${pkg_build_generator=${jagen_cmake_generator:-Ninja}}
 : ${pkg_build_cmake_module_path=$jagen_cmake_module_path}
 
 # set pkg_env_* in the environment, collecting names for later expand

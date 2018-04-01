@@ -24,6 +24,7 @@ jagen_debug="${jagen_debug-}"
 jagen_flags=""
 
 jagen_lib_dir="$jagen_dir/lib"
+jagen__src_dir="$jagen_dir/src"
 jagen_project_lib_dir="$jagen_project_dir/lib"
 
 jagen_bin_dir="$jagen_project_dir/bin"
