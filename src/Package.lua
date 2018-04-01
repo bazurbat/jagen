@@ -250,10 +250,6 @@ function P:gettoolchain(config)
     if build then
         if build.toolchain ~= nil then
             toolchain = build.toolchain
-        elseif build.type == 'rust' then
-            if config == 'host' then
-                toolchain = 'stable-x86_64-unknown-linux-gnu'
-            end
         elseif build.type then
             if config == 'host' and host_toolchain and
                 self.name ~= host_toolchain
@@ -627,9 +623,10 @@ function P.load_rules()
                 local toolchain = pkg:gettoolchain(config)
                 build.toolchain = toolchain
                 if build.type == 'rust' then
-                    append_uniq('rustup', use)
-                    append(added, pkg:add_require('rustup', config))
-                elseif toolchain then
+                    append_uniq('rustup:host', use)
+                    append(added, pkg:add_require('rustup', 'host'))
+                end
+                if toolchain then
                     append_uniq(toolchain, use)
                     append(added, pkg:add_require(toolchain, config))
                 end
