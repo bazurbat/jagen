@@ -130,6 +130,10 @@ function P:format_last_context()
     return tostring(self.contexts[#self.contexts]) or '<unknown>'
 end
 
+function P:format_at()
+    return string.format('\n----\n  at %s:\n%s\n', self:format_last_context(), self:format_contexts(5))
+end
+
 function P:parse(rule)
     if type(rule) == 'string' then
         rule = { name = rule }

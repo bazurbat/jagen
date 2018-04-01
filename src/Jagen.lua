@@ -359,15 +359,15 @@ local function generate_cargo_config(packages)
     for name, pkg in pairs(packages) do
         for config, this in pkg:each_config() do
             local build = pkg:get('build', config)
-            if build and build.type == 'rust' and build.system and build.toolchain then
+            if build and build.type == 'rust' and config ~= 'host' and build.system and build.toolchain then
                 local toolchain = assert(packages[build.toolchain])
                 if toolchain.build and toolchain.build.system then
                     target_map[build.system] = toolchain
                 else
                     Log.warning("Rust package '%s' specifies build system '%s' and toolchain '%s' which does "..
                         "not have a build system set, please verify that the toolchain name is correct or "..
-                        "set its build system explicitly to remove this warning",
-                        name, build.system, build.toolchain)
+                        "set its build system explicitly to remove this warning%s",
+                        name, build.system, build.toolchain, pkg:format_at())
                 end
             end
         end
