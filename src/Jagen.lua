@@ -298,6 +298,7 @@ function Jagen.command.clean(args)
             'jagen_log_dir',
             'jagen_host_dir',
             'jagen_target_dir',
+            'jagen_cargo_config_dir',
         }
         return System.rmrf(unpack(System.getenv(clean_dirs))) and
                Jagen.command.refresh()
@@ -353,6 +354,39 @@ local function prepare_root()
     assert(System.mkdir(table.unpack(System.getenv(create_dirs))))
 end
 
+local function generate_cargo_config(packages)
+    local target_map = {}
+    for name, pkg in pairs(packages) do
+        for config, this in pkg:each_config() do
+            local build = pkg:get('build', config)
+            if build and build.type == 'rust' and build.system and build.toolchain then
+                local toolchain = assert(packages[build.toolchain])
+                if toolchain.build and toolchain.build.system then
+                    target_map[build.system] = toolchain
+                else
+                    Log.warning("Rust package '%s' specifies build system '%s' and toolchain '%s' which does "..
+                        "not have a build system set, please verify that the toolchain name is correct or "..
+                        "set its build system explicitly to remove this warning",
+                        name, build.system, build.toolchain)
+                end
+            end
+        end
+    end
+    local lines = {}
+    for target, toolchain in pairs(target_map) do
+        local system = assert(toolchain.build.system)
+        table.insert(lines, string.format('[target.%s]\nlinker = "%s-gcc"', target, system))
+    end
+    if #lines > 0 then
+        local config_dir = assert(os.getenv('jagen_cargo_config_dir'))
+        System.mkdir(config_dir)
+        local config_path = System.mkpath(config_dir, 'config')
+        local file = assert(io.open(config_path, 'w'))
+        file:write(table.concat(lines, '\n'), '\n')
+        file:close()
+    end
+end
+
 function Jagen.command.refresh(args, packages)
     if help_requested(args) then
         return Jagen.command['help'] { 'refresh' }
@@ -382,6 +416,7 @@ function Jagen.command.refresh(args, packages)
 
     local build_file = System.mkpath(Jagen.build_dir, 'build.ninja')
     Ninja.generate(build_file, packages)
+    generate_cargo_config(packages)
 
     local names = {}
     for name, _ in pairs(packages) do

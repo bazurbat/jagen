@@ -45,6 +45,7 @@ fi
 
 jagen_host_dir="$jagen_project_dir/host"
 jagen_target_dir="$jagen_project_dir/target"
+jagen_cargo_config_dir="$jagen_project_dir/.cargo"
 
 add_PATH "$jagen_host_dir/bin"
 add_LD_LIBRARY_PATH "$jagen_host_dir/lib"
