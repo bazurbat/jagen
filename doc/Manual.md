@@ -440,8 +440,6 @@ install = value
 - **jagen_target_dir** — The location of the `target` directory
   (`$jagen_project_dir/target`).
 - **jagen_target_toolchain** — The name of the current target toolchain.
-- **jagen_toolchains_dir** — The location of shared toolchains
-  (`$jagen_project_dir/toolchains`).
 
 #### Stage-specific variables
 
