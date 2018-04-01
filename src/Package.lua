@@ -271,11 +271,11 @@ function P:add_require(spec, config, template)
                 config   = config,
                 implicit = current_context and current_context.implicit
         }))
-    local use = self:define_use(spec, config, template)
+    local use, use_config = self:define_use(spec, config, template)
     pop_context()
     local build = self:get('build', config)
     local stage = build and build.type and 'configure' or 'install'
-    self:add_to(stage, use:last(config) or use:last(), config)
+    self:add_to(stage, use:last(use_config) or use:last(), config)
     return use
 end
 
@@ -624,7 +624,7 @@ function P.load_rules()
                 build.toolchain = toolchain
                 if build.type == 'rust' then
                     append_uniq('rustup:host', use)
-                    append(added, pkg:add_require('rustup', 'host'))
+                    append(added, pkg:add_require('rustup:host', config))
                 end
                 if toolchain then
                     append_uniq(toolchain, use)
