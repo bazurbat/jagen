@@ -141,11 +141,11 @@ local function format_stage(target, pkg)
 
     if target.stage == 'unpack' then
         for use in each(pkg.use or {}) do
-            append(uses, Target.from_args(Target.from_use(use).name, 'export'))
+            append_uniq(Target.from_args(Target.from_use(use).name, 'export'), uses)
         end
         for _, this in pkg:each_config() do
             for use in each(this.use or {}) do
-                append(uses, Target.from_args(Target.from_use(use).name, 'export'))
+                append_uniq(Target.from_args(Target.from_use(use).name, 'export'), uses)
             end
         end
     elseif config and (not pkg._added_exports or
