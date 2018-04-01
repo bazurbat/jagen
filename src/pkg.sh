@@ -479,10 +479,14 @@ pkg_compile() {
         rust)
             export CARGO_TARGET_DIR="$pkg_build_dir"
             cd "$pkg_source_dir"
-            if ! rustup toolchain list | grep -q "^${pkg_build_toolchain:?}"; then
-                pkg_run rustup install "$pkg_build_toolchain"
+            pkg_is_release && A="--release"
+            if [ "$pkg_build_system" ]; then
+                if ! rustup target list | grep -q "^${pkg_build_system}.*(installed)"; then
+                    pkg_run rustup target add "$pkg_build_system"
+                fi
             fi
-            pkg_run rustup run "$pkg_build_toolchain" cargo build --release $MA
+            pkg_run cargo build ${pkg_build_system:+--target=$pkg_build_system} \
+                $A "$@" $MA
             ;;
         android-standalone-toolchain)
             require toolchain

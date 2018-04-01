@@ -3,12 +3,13 @@ return {
     -- complaining that the default toolchain is not set
     source = 'https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init',
     build = {
-        type = 'executable',
+        type    = 'executable',
+        system  = 'x86_64-unknown-linux-gnu',
         options = {
             '-y',
             '--no-modify-path',
-            '--default-toolchain',
-            'none'
+            '--default-host', '$pkg_build_system',
+            '--default-toolchain', 'stable'
         }
     },
     install = true,
@@ -18,7 +19,8 @@ return {
     },
     export = {
         env = {
-            CARGO_HOME = '$pkg_env_CARGO_HOME'
+            RUSTUP_HOME = '$pkg_env_RUSTUP_HOME',
+            CARGO_HOME = '$pkg_env_CARGO_HOME',
         }
     }
 }
