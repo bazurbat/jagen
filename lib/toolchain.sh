@@ -62,6 +62,9 @@ toolchain_generate_wrappers() {
 
     if [ "$prefix" ]; then
         paths=$(find "$src_dir" -type f -maxdepth 1 -name "${prefix}*")
+        [ "$paths" ] || die "Failed to find any files matching ${prefix}* in $src_dir, \
+no toolchain wrappers will be generated. Please verify that the specified toolchain build \
+system and source directory are correct."
     else
         for item in $toolchain_programs; do
             item=$(command -v "$item")
