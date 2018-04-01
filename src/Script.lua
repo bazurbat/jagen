@@ -164,7 +164,7 @@ local function write_use(w, pkg, config)
     local names, aliases, targets = {}, {}, sort(map(Target.from_use, use),
         function (a, b) return a.name < b.name end)
     for target in each(targets) do
-        append(names, target.name)
+        append(names, tostring(target))
         if target.alias then
             append(aliases, string.format('%s=%s',
                     string.to_identifier(target.alias),

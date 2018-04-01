@@ -647,7 +647,14 @@ jagen_pkg_provide_patches() {
 }
 
 pkg__fname() {
-    local name="${1:?}" config="$2"
+    : ${1:?}
+    local name= config=
+    name=${1%:*}
+    if [ "$2" ] && [ "$name" != "$1" ]; then
+        config=${1#*:}
+    else
+        config=$2
+    fi
     printf '%s' "${name}${config:+:$config}"
 }
 
