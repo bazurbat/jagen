@@ -3,7 +3,9 @@ return {
         type      = 'android-standalone-toolchain',
         toolchain = 'android-ndk-r16b',
         arch      = 'arm',
-        system    = 'arm-linux-androideabi'
+        system    = 'arm-linux-androideabi',
+        cc        = 'clang',
+        cxx       = 'clang++',
     },
     export = {
         cmake_options = {
