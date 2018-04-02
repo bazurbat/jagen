@@ -183,12 +183,11 @@ rules and also to find pkg files. The `config` is optional.
 
 ### Source
 
-- **source.base_dir** — The base directory for the source directly. Defaults to
-  `$jagen_src_dir` for SCM sources and `$jagen_build_dir/basename` for dist
-  sources.
-
 - **source.basename** (`pkg_source_basename`) — The source filename without an
-  extension, `.git` is also considered an extension in this case.
+  extension, `.git` or `.hg` are also considered extensions in this case.
+  Adjust this property to change the base directory inside the `tar` archive if
+  it is different from the filename or to change the name of the directory
+  where the source package should be checked out.
 
 - **source.bookmark** — The bookmark to pull on update (Hg sources only).
 
@@ -199,8 +198,7 @@ rules and also to find pkg files. The `config` is optional.
 
 - **source.branches** — Additional branches to fetch on update (SCM source only).
 
-- **source.dir** (`pkg_source_dir`) — A directory name or path of the source
-  relative to the `base_dir`.
+- **source.dir** (`pkg_source_dir`) — An absolute path to the package sources.
 
 - **source.exclude** (`pkg_source_exclude`) — If set to `true`, indicates to
   the `unpack` stage to skip the source directly of this package.
@@ -209,8 +207,8 @@ rules and also to find pkg files. The `config` is optional.
   found in the Git repository, i.e. do not initialize nor update them
   automatically when switching branches.
 
-- **source.filename** (`pkg_source_filename`) — The last part of the source
-  location.
+- **source.filename** (`pkg_source_filename`) — The pathname of the source
+  location after the last `/` or the whole location if it does not contain `/`.
 
 - **source.ignore\_dirty** — Ignore "dirty" status of the source directory.
 

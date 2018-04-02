@@ -63,12 +63,12 @@ function Source:is_scm()
 end
 
 function Source:_basename(filename)
-    local name, match = string.match(filename, '^.*/(.+)') or filename
-    for _, ext in ipairs({ '%.tar%.%w+', '%.[^.]+' }) do
-        match = string.match(name, string.format('^(.+)%s$', ext))
+    local match
+    for _, ext in ipairs { '%.tar%.%w+', '%.[^.]+' } do
+        match = filename:match(string.format('^(.+)%s$', ext))
         if match then return match end
     end
-    return name
+    return filename
 end
 
 function Source:create(source, name)
@@ -88,26 +88,21 @@ function Source:create(source, name)
 
     if source.location then
         if not source.filename then
-            source.filename = string.match(source.location, '^.*/(.+)') or source.location
+            source.filename = source.location:match('^.*/(.+)$') or source.location
         end
-
         if not source.basename then
             source.basename = source:_basename(source.filename)
         end
-
-        local base_dir = source.base_dir
-        if not base_dir then
+        if not source.dir then
             if source:is_scm() then
-                base_dir = '$jagen_src_dir'
+                source.dir = System.mkpath('$jagen_src_dir', source.basename)
             else
-                base_dir = System.mkpath('$jagen_build_dir', name or source.basename)
+                source.dir = System.mkpath('$jagen_build_dir', name, source.basename)
             end
         end
-
-        source.dir = System.mkpath(base_dir, source.dir or source.basename)
     end
 
-    if not source.dir then
+    if name and not source.dir then
         source.dir = System.mkpath('$jagen_src_dir', name)
     end
 
