@@ -70,7 +70,7 @@ Usage: jagen refresh
 ]]
 
 local build = [[
-Usage: jagen build [OPTION...] [PATTERN...]
+Usage: jagen build [OPTION...] [PATTERN...] [--] [TOOL OPTIONS...]
 
   Builds or rebuilds the specified targets.
 
@@ -105,6 +105,11 @@ SYNOPSIS
   The '--progress' option enables the printing of the build progress for the
   specified targets, the '--all-progress' option prints all build output
   instead.
+
+  Arguments after '--' will be passed literally to the underlying build tool.
+  The handling depends on the build tool in question but be aware of the case
+  when mutiple targets matched as the same arguments will be passed to all of
+  their build commands which might have surprising results.
 
 ]]
 
