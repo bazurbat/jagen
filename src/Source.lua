@@ -35,7 +35,9 @@ function Source:parse(rule)
         elseif url:match('%.git$') or url:match('^git@') or
                url:match('^[%w._-]+@[%w._-]+:') then
             source.type = 'git'
-        else
+        elseif url:match('%.tar$') or url:match('%.zip$') or
+               url:match('%.gz$') or url:match('%.bz2$') or
+               url:match('%.xz$') then
             source.type = 'dist'
         end
     end
