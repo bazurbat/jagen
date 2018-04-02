@@ -375,7 +375,8 @@ local function generate_cargo_config(packages)
     local lines = {}
     for target, toolchain in pairs(target_map) do
         local system = assert(toolchain.build.system)
-        table.insert(lines, string.format('[target.%s]\nlinker = "%s-gcc"', target, system))
+        local cc = toolchain.build.cc or 'gcc'
+        table.insert(lines, string.format('[target.%s]\nlinker = "%s-%s"', target, system, cc))
     end
     if #lines > 0 then
         local config_dir = assert(os.getenv('jagen_cargo_config_dir'))
