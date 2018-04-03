@@ -1,7 +1,7 @@
 return {
     -- the executable should be named 'rustup-init' or it will not run
     -- complaining that the default toolchain is not set
-    source = 'https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init',
+    source = { 'dist', 'https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init' },
     build = {
         type    = 'executable',
         system  = 'x86_64-unknown-linux-gnu',
