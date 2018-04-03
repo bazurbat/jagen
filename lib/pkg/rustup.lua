@@ -9,7 +9,7 @@ return {
             '-y',
             '--no-modify-path',
             '--default-host', '$pkg_build_system',
-            '--default-toolchain', 'stable'
+            '--default-toolchain', 'stable-x86_64-unknown-linux-gnu'
         }
     },
     install = true,
