@@ -33,7 +33,7 @@ function inext(t, i)
     if not i then i = 0 end
     i = i+1
     local v = t[i]
-    if v then
+    if v ~= nil then
         return i, v
     end
 end
