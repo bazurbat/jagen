@@ -234,12 +234,12 @@ function P:define_use(spec, config, template)
         return
     end
     if target.config and target.config ~= config then
-        return P.define_rule {
+        return P.define_package {
             name = target.name,
             config = target.config
         }, target.config
     else
-        return P.define_rule {
+        return P.define_package {
             name = target.name,
             config = config,
             template = template
@@ -346,7 +346,7 @@ function P:add_patch_dependencies()
 
     local function get_provider(name)
         if name and name ~= 'none' then
-            return packages[name] or P.define_rule { name }
+            return packages[name] or P.define_package { name }
         end
     end
 
@@ -630,7 +630,7 @@ function P.load_rules()
                 if build.type == 'rust' then
                     local rust_toolchain = build.rust_toolchain
                     if rust_toolchain then
-                        P.define_rule {
+                        P.define_package {
                             name   = rust_toolchain,
                             config = config,
                             build = {
@@ -703,7 +703,7 @@ function P.load_rules()
     return packages, not had_errors
 end
 
-function P.define_rule(rule, context)
+function P.define_package(rule, context)
     rule = P:new(rule)
 
     local pkg = packages[rule.name]
@@ -809,7 +809,7 @@ function P.define_rule(rule, context)
         pkg:add_stage { 'unpack',
             { 'repo', 'install', 'host' }
         }
-        P.define_rule { 'repo', 'host' }
+        P.define_package { 'repo', 'host' }
     end
 
     if config then
@@ -843,14 +843,14 @@ function P.define_rule(rule, context)
                 pkg:add_stage { 'autoreconf',
                     { 'libtool', 'install', 'host' }
                 }
-                P.define_rule { 'libtool', 'host' }
+                P.define_package { 'libtool', 'host' }
             end
         end
 
         if build.type == 'linux-module' or build.kernel_modules == true or
             install and install.modules then
 
-            P.define_rule { 'kernel', config }
+            P.define_package { 'kernel', config }
 
             pkg:add_stage({ 'configure',
                     { 'kernel', 'configure', config }
@@ -913,14 +913,14 @@ function P.define_rule(rule, context)
     if this ~= pkg then
         for spec in each(this.use or {}) do
             local use = Target.from_use(spec)
-            P.define_rule { use.name, use.config or config }
+            P.define_package { use.name, use.config or config }
         end
     end
 
     for spec in each(pkg.use or {}) do
         local use = Target.from_use(spec)
         if use.config or not config then
-            P.define_rule { use.name, use.config }
+            P.define_package { use.name, use.config }
         else
             local used = packages[use.name]
             if used then
@@ -930,7 +930,7 @@ function P.define_rule(rule, context)
 "    at %s:\n%s\n", tostring(this), spec, spec, table.concat(table.keys(used.configs), ', '),
                 pkg:format_last_context(), pkg:format_contexts(6))
                 else
-                    P.define_rule { use.name, (next(used.configs)) }
+                    P.define_package { use.name, (next(used.configs)) }
                 end
             else
                 print_error(
@@ -954,7 +954,7 @@ function package(rule)
         context.filename = info.source
         context.line = info.currentline
     end
-    return P.define_rule(rule, context)
+    return P.define_package(rule, context)
 end
 
 return P
