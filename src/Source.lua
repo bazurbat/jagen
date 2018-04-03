@@ -16,12 +16,13 @@ function Source:parse(rule)
 
     if type(rule) == 'table' then
         source = rule
-        if type(source[1]) == 'string' then
-            if source.location == nil then
-                source.location = source[1]
-            elseif source.type == nil then
-                source.type = source[1]
-            end
+        if #source == 1 then
+            source.location = source[1]
+            table.remove(source, 1)
+        elseif #source == 2 then
+            source.type = source[1]
+            source.location = source[2]
+            table.remove(source, 1)
             table.remove(source, 1)
         end
     elseif type(rule) == 'string' then
