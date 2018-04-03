@@ -212,8 +212,10 @@ function GitSource:head_name()
     local rev, ref = head:match('(%S+)%s%((.+)%)')
     rev = rev or head
     if ref then
-        ref = ref:gsub('^HEAD,? ?', '')
-        ref = ref:gsub(self.origin..'/%S+ ?', '')
+        ref = ref:gsub('^HEAD%s+->%s+', '')
+        ref = ref:gsub('^HEAD,%s+', '')
+        ref = ref:gsub('^HEAD', '')
+        ref = ref:gsub(self.origin..'/HEAD', '')
         ref = ref:gsub(', $', '')
         if #ref > 0 then
             return string.format('%s, %s', rev, ref)
