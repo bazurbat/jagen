@@ -94,7 +94,7 @@ if [ "$pkg_build_toolchain" ]; then
         eval "toolchain_${key}=\$${name}_${key}" || exit
     done; unset name key
     # assign some "toolchain_*" to "pkg_build_*" if unset
-    for key in $(set | sed -rn '/^toolchain_(env|cflags|cxxflags|ldflags)/! s/^toolchain_([[:alnum:]_]+)=.*/\1/p'); do
+    for key in $(set | sed -rn '/^toolchain_(env|cc|cxx|arch|system|cpu|cflags|cxxflags|ldflags)/! s/^toolchain_([[:alnum:]_]+)=.*/\1/p'); do
         eval ": \${pkg_build_${key}=\$toolchain_${key}}" || exit
     done; unset key
     # concatenate cflags

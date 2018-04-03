@@ -422,7 +422,8 @@ function P:export_build_env()
             end
             local export = self:get('export', config)
             if export then
-                for key in each { 'arch', 'system', 'cpu',
+                for key in each { 'cc', 'cxx',
+                                  'arch', 'system', 'cpu',
                                   'cflags', 'cxxflags', 'ldflags'
                                 } do
                     if export[key] == nil then
@@ -630,18 +631,18 @@ function P.load_rules()
                 if build.type == 'rust' then
                     local rust_toolchain = build.rust_toolchain
                     if rust_toolchain then
+                        local name = 'rust-'..rust_toolchain
                         P.define_package {
-                            name   = rust_toolchain,
+                            name   = name,
                             config = config,
                             build = {
                                 type      = 'rust-toolchain',
                                 toolchain = 'rustup:host',
                                 system    = build.system,
-                                name      = rust_toolchain:match('rust%-(.+)'),
                             }
                         }
-                        append_uniq(rust_toolchain, use)
-                        append(added, pkg:add_require(rust_toolchain, config))
+                        append_uniq(name, use)
+                        append(added, pkg:add_require(name, config))
                     end
                 end
                 if toolchain then
