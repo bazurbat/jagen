@@ -62,7 +62,7 @@ function aslist(it)
     return list
 end
 
-function tolist(t, itt)
+function collect(t, itt)
     local o = {}
     for i, v in itt(inext), t, 0 do
         insert(o, v)
@@ -72,7 +72,7 @@ end
 
 function map(f, t)
     if t then
-        return tolist(t, map(f))
+        return collect(t, map(f))
     else
         return function(iter)
             return function(t, last)
@@ -85,7 +85,7 @@ end
 
 function filter(pred, t)
     if t then
-        return tolist(t, filter(pred))
+        return collect(t, filter(pred))
     else
         return function(iter)
             local function step(t, last)
