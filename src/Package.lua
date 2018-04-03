@@ -581,7 +581,7 @@ function P:check_build_toolchain()
     local build
     for config, this in self:each_config() do
         build = this.build
-        if build and build.type and not build.toolchain then
+        if build and build.type and build.toolchain == nil then
             print_error("the package '%s' requires '%s' build for "..
                 "config '%s' but does not have a toolchain set", self.name,
                 build.type, config)
@@ -628,8 +628,21 @@ function P.load_rules()
                 local toolchain = pkg:gettoolchain(config)
                 build.toolchain = toolchain
                 if build.type == 'rust' then
-                    append_uniq('rustup:host', use)
-                    append(added, pkg:add_require('rustup:host', config))
+                    local rust_toolchain = build.rust_toolchain
+                    if rust_toolchain then
+                        P.define_rule {
+                            name   = rust_toolchain,
+                            config = config,
+                            build = {
+                                type      = 'rust-toolchain',
+                                toolchain = 'rustup:host',
+                                system    = build.system,
+                                name      = rust_toolchain:match('rust%-(.+)'),
+                            }
+                        }
+                        append_uniq(rust_toolchain, use)
+                        append(added, pkg:add_require(rust_toolchain, config))
+                    end
                 end
                 if toolchain then
                     append_uniq(toolchain, use)

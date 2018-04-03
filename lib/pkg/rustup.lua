@@ -8,9 +8,10 @@ return {
         options = {
             '-y',
             '--no-modify-path',
-            '--default-host', '$pkg_build_system',
-            '--default-toolchain', 'stable-x86_64-unknown-linux-gnu'
-        }
+            '--default-host', 'none',
+            '--default-toolchain', 'none'
+        },
+        toolchain = false
     },
     install = true,
     env = {
