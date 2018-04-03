@@ -568,8 +568,9 @@ function P:check_build_insource()
     for config, this in self:each_config() do
         build = this.build
         if build and build.in_source and count > 1 then
-            print_error("the package '%s' requires an in source build but "..
-                "has multiple configs defined -- this is not supported",
+            print_warning("the package '%s' builds in source but has multiple "..
+                "configs defined, please make sure that its build system supports "..
+                "this and the package rules are correct",
                 self.name)
             break
         end
@@ -686,7 +687,7 @@ function P.load_rules()
 
     lua_package.loaders[2] = def_loader
 
-    return packages, not (had_errors or had_warnings)
+    return packages, not had_errors
 end
 
 function P.define_rule(rule, context)
