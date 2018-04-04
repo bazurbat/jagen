@@ -707,6 +707,20 @@ end
 function P.define_package(rule, context)
     rule = P:new(rule)
 
+    if context then
+        context.name = rule.name
+        context.config = rule.config
+        context.template = rule.template
+    else
+        context = {
+            name = rule.name,
+            config = rule.config,
+            template = rule.template,
+            implicit = true
+        }
+    end
+    push_context(context)
+
     local pkg = packages[rule.name]
 
     if not pkg then
@@ -731,12 +745,6 @@ function P.define_package(rule, context)
 
     if rule.template then
         rule = table.merge(copy(rule.template), rule)
-    end
-
-    if context then
-        context.name = rule.name
-        context.config = rule.config
-        push_context(context)
     end
 
     if current_context then
@@ -799,12 +807,6 @@ function P.define_package(rule, context)
             pkg.source.ignore_dirty = true
         end
     end
-
-    push_context({
-            name = pkg.name,
-            config = config,
-            implicit = true
-        })
 
     if pkg.source and pkg.source.type == 'repo' then
         pkg:add_stage { 'unpack',
@@ -879,22 +881,12 @@ function P.define_package(rule, context)
         end
     end
 
-    pop_context()
-
     for spec in each(pkg.requires) do
         pkg:add_require(spec, config, template)
     end
 
     for spec in each(rule.requires) do
         pkg:add_require(spec, config, template)
-    end
-
-    if not context then
-        context = push_context({
-                name = pkg.name,
-                config = config,
-                implicit = current_context and current_context.implicit 
-            })
     end
 
     local stages = extend(extend({}, pkg), rule)
@@ -908,8 +900,6 @@ function P.define_package(rule, context)
         end
         pkg:add_stage(stage, config)
     end
-
-    if context then pop_context() end
 
     if this ~= pkg then
         for spec in each(this.use or {}) do
@@ -941,6 +931,8 @@ function P.define_package(rule, context)
             end
         end
     end
+
+    pop_context()
 
     return pkg
 end
