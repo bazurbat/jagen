@@ -17,7 +17,7 @@ pkg_compile() {
             pkg_run make "$@" $MA
             ;;
         cmake)
-            pkg_run cmake --build . -- $(pkg__get_cmake_args) "$@" $MA
+            pkg_run "${pkg_build_cmake_executable:?}" --build . -- $(pkg__get_cmake_args) "$@" $MA
             ;;
         make|kbuild)
             if [ -f "$pkg_source_dir/GNUmakefile" ]; then

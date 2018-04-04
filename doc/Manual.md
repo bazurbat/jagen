@@ -254,6 +254,9 @@ rules and also to find pkg files. The `config` is optional.
 - **build.cflags** — Specifies additional C compiler flags. Exported
   automatically.
 
+- **build.cmake_executable** (`pkg_build_cmake_executable`) — The path to cmake
+  executable. Defaults to `$jagen_cmake_executable` or `cmake` if not set.
+
 - **build.cmake_module_path** (`pkg_build_cmake_module_path`) — Defines
   `CMAKE_MODULE_PATH` for the package. Defaults to `$jagen_cmake_module_path`
   if unset, empty string value disables.

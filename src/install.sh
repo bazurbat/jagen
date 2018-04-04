@@ -26,7 +26,7 @@ pkg_install() {
             if [ "$pkg_install_root" ]; then
                 export DESTDIR="$pkg_install_root"
             fi
-            pkg_run cmake --build . --target install -- \
+            pkg_run "${pkg_build_cmake_executable:?}" --build . --target install -- \
                 $(pkg__get_cmake_args) $pkg_install_args "$@" $MA
             unset DESTDIR
             ;;

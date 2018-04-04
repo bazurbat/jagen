@@ -112,7 +112,7 @@ EOF
                 A="$A$S-DCMAKE_FIND_PACKAGE_NO_SYSTEM_PACKAGE_REGISTRY=YES"
             fi
 
-            pkg_run cmake -G"$pkg_build_generator" \
+            pkg_run "${pkg_build_cmake_executable:?}" -G"$pkg_build_generator" \
                 -DCMAKE_BUILD_TYPE="$(pkg_cmake_build_type)" \
                 -DCMAKE_INSTALL_PREFIX="$pkg_install_prefix" \
                 $A $jagen_cmake_options $pkg_build_options "$@" $MA "$pkg_source_dir"
