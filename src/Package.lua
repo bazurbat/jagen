@@ -709,8 +709,11 @@ function P.define_package(rule, context)
 
     if context then
         context.name = rule.name
-        context.config = rule.config
-        context.template = rule.template
+        context.config = rule.config or context.config
+        context.template = rule.template or context.template
+        if not context.config and context.template then
+            context.config = context.template.config
+        end
     else
         context = {
             name = rule.name,
@@ -719,6 +722,7 @@ function P.define_package(rule, context)
             implicit = true
         }
     end
+    rule.template = nil
     push_context(context)
 
     local pkg = packages[rule.name]
@@ -743,12 +747,10 @@ function P.define_package(rule, context)
         packages[rule.name] = pkg
     end
 
-    if rule.template then
-        rule = table.merge(copy(rule.template), rule)
-    end
+    append(pkg.contexts, context)
 
-    if current_context then
-        append(pkg.contexts, current_context)
+    if context.template then
+        rule = table.merge(copy(context.template), rule)
     end
 
     local config = rule.config
@@ -772,11 +774,8 @@ function P.define_package(rule, context)
     end
 
     local template = {}
-    if rule.template ~= false then
-        template = rule.template or rule.pass_template or this.template or {}
-    end
+    template = context.template or this.template or {}
 
-    rule.template, rule.pass_template = nil, nil
     table.merge(this, rule)
     this.template = template
 
@@ -886,12 +885,14 @@ function P.define_package(rule, context)
     end
 
     for spec in each(rule.requires) do
+        local template = rule.requires.template or template
         pkg:add_require(spec, config, template)
     end
 
     local stages = extend(extend({}, pkg), rule)
     for stage in each(stages) do
         for spec in each(stage.requires) do
+            local template = stage.requires.template or template
             local req, config = pkg:define_use(spec, config, template)
             if req then
                 local last = req:last(config) or req:last()
@@ -937,8 +938,8 @@ function P.define_package(rule, context)
     return pkg
 end
 
-function package(rule)
-    local context, level, info = {}, 2
+function package(rule, template)
+    local context, level, info = { template = template }, 2
     repeat
         info = debug.getinfo(level, 'Sl')
         level = level+1
