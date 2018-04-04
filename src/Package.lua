@@ -204,6 +204,7 @@ function P:add_config(name)
     if not self.configs[name] then
         self.configs[name] = {}
     end
+    return self.configs[name]
 end
 
 function P:get(key, config)
@@ -711,9 +712,6 @@ function P.define_package(rule, context)
         context.name = rule.name
         context.config = rule.config or context.config
         context.template = rule.template or context.template
-        if not context.config and context.template then
-            context.config = context.template.config
-        end
     else
         context = {
             name = rule.name,
@@ -722,11 +720,13 @@ function P.define_package(rule, context)
             implicit = true
         }
     end
-    rule.template = nil
+    if not context.config and context.template then
+        context.config = context.template.config
+    end
     push_context(context)
+    rule.config, rule.template = nil, nil
 
     local pkg = packages[rule.name]
-
     if not pkg then
         pkg = P:new { rule.name }
         pkg.contexts = {}
@@ -746,40 +746,21 @@ function P.define_package(rule, context)
         end
         packages[rule.name] = pkg
     end
-
     append(pkg.contexts, context)
 
-    if context.template then
-        rule = table.merge(copy(context.template), rule)
-    end
-
-    local config = rule.config
-    local this
-
-    if config then
-        this = pkg.configs[config]
-        if not this then
-            this = {}
-            pkg.configs[config] = this
-        end
-    else
-        this = pkg
-    end
-
-    for _, key in ipairs({ 'source', 'patches' }) do
-        if rule[key] then
-            pkg[key] = table.merge(pkg[key] or {}, rule[key])
+    for key in each { 'source', 'patches' } do
+        if pkg[key] and rule[key] then
+            pkg[key] = table.merge(pkg[key], rule[key])
             rule[key] = nil
         end
     end
 
-    local template = {}
-    template = context.template or this.template or {}
+    local config, template = context.config, context.template or {}
+    local this = pkg
+    if config then this = pkg:add_config(config) end
 
+    rule = table.merge(copy(template), rule)
     table.merge(this, rule)
-    this.template = template
-
-    -- do not collect stage rules in the config
     table.iclean(this)
 
     if this ~= pkg then
