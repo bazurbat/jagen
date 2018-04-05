@@ -43,7 +43,7 @@ local function write_common(w, pkg)
         'source',
         'stages',
         'template',
-        'use',
+        'uses',
     }
     local function custom_keys(_, key)
         return type(key) ~= 'number' and
@@ -150,9 +150,9 @@ local function write_export(w, pkg, config)
     end
 end
 
-local function write_use(w, pkg, config)
-    local use = pkg.use
-    if not use then return end
+local function write_uses(w, pkg, config)
+    local uses = pkg.uses
+    if not uses then return end
     prefix = ''
     if config then
         prefix = string.format('_%s__', config)
@@ -161,7 +161,7 @@ local function write_use(w, pkg, config)
         return write_pkg_var(w, prefix, name, value)
     end
 
-    local names, aliases, targets = {}, {}, sort(map(Target.from_use, use),
+    local names, aliases, targets = {}, {}, sort(map(Target.from_use, uses),
         function (a, b) return a.name < b.name end)
     for target in each(targets) do
         append(names, tostring(target))
@@ -171,7 +171,7 @@ local function write_use(w, pkg, config)
                     string.to_identifier(target.name)))
         end
     end
-    write_var('use', names)
+    write_var('uses', names)
     write_var('use_alias', aliases)
 end
 
@@ -189,7 +189,7 @@ local function generate_script(filename, pkg, config)
     write_build(w, pkg)
     -- should be the last to allow referencing other variables
     write_export(w, pkg, config)
-    write_use(w, pkg, config)
+    write_uses(w, pkg, config)
 
     if #lines > 0 then
         local file = assert(io.open(filename, 'w+'))

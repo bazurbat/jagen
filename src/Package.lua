@@ -180,8 +180,8 @@ function P:parse(rule)
         end
     end
 
-    if type(rule.use) == 'string' then
-        rule.use = { rule.use }
+    if type(rule.uses) == 'string' then
+        rule.uses = { rule.uses }
     end
 
     return rule
@@ -620,7 +620,7 @@ function P.load_rules()
         for _, pkg in pairs(pkglist) do
             for config, _ in pkg:each_config() do
                 local build = assert(pkg:get('build', config))
-                local use = pkg:get('use', config) or {}
+                local use = pkg:get('uses', config) or {}
                 local toolchain = pkg:gettoolchain(config)
                 build.toolchain = toolchain
                 if build.type == 'rust' then
@@ -644,7 +644,7 @@ function P.load_rules()
                     append_uniq(toolchain, use)
                     append(added, pkg:add_require(toolchain, config))
                 end
-                pkg:set('use', use, config)
+                pkg:set('uses', use, config)
             end
         end
         return added
@@ -864,7 +864,7 @@ function P.define_package(rule, context)
         end
 
         if this ~= pkg then
-            for spec in each(this.use or {}) do
+            for spec in each(this.uses or {}) do
                 local use = Target.from_use(spec)
                 P.define_package { use.name, use.config or config }
             end
@@ -884,7 +884,7 @@ function P.define_package(rule, context)
         pkg:add_stage(stage, config)
     end
 
-    for spec in each(pkg.use or {}) do
+    for spec in each(pkg.uses or {}) do
         local use = Target.from_use(spec)
         if use.config or not config then
             P.define_package { use.name, use.config }

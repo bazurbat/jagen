@@ -60,7 +60,7 @@ if [ "$pkg_config" ]; then
 fi
 
 # include uses
-for spec in $pkg_build_toolchain $pkg_use; do
+for spec in $pkg_build_toolchain $pkg_uses; do
     name=${spec%:*}
     include "$(pkg__export_fname "$spec")" || exit
     if [ "$pkg_config" ]; then
