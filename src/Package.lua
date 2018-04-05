@@ -730,30 +730,6 @@ function P.define_package(rule, context)
         end
     end
 
-    for spec in each(pkg.uses) do
-        local use = Target.from_use(spec)
-        if use.config or not config then
-            P.define_package { use.name, use.config }
-        else
-            local used = packages[use.name]
-            if used then
-                if table.count(used.configs) > 1 then
-                    print_error(
-"the %s uses %s without specifying a config but %s has multiple configs defined (%s), unable to determine which config to use\n"..
-"    at %s:\n%s\n", tostring(this), spec, spec, table.concat(table.keys(used.configs), ', '),
-                pkg:format_last_context(), pkg:format_contexts(6))
-                else
-                    P.define_package { use.name, (next(used.configs)) }
-                end
-            else
-                print_error(
-"the %s uses %s without specifying a config but %s is not defined yet, unable to determine the config to use\n"..
-"    at %s:\n%s\n", tostring(this), spec, spec,
-                pkg:format_last_context(), pkg:format_contexts(6))
-            end
-        end
-    end
-
     pop_context()
 
     return pkg
