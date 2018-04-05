@@ -20,6 +20,10 @@ end
 
 function Target:parse(rule, name, config)
     local stage = rule[1]; assert(type(stage) == 'string')
+    if type(rule[2]) == 'string' then
+        config = rule[2]
+        table.remove(rule, 2)
+    end
     local target = Target.from_args(name, stage, config)
 
     for k, v in pairs(rule) do
@@ -88,14 +92,8 @@ end
 
 function Target:add_inputs(target)
     if target.inputs then
-        self.inputs = self.inputs or {}
-        for _, input in ipairs(target.inputs) do
-            local function eq(this)
-                return this == input
-            end
-            if not find(eq, self.inputs) then
-                append(self.inputs, input)
-            end
+        for item in each(target.inputs) do
+            self:append(item)
         end
     end
     return self

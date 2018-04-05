@@ -228,23 +228,37 @@ function P:set(key, value, config)
     return value
 end
 
-function P:define_use(spec, config, template)
-    local target = Target.from_use(spec)
-    local config = config or template and template.config
-    if target.config == 'system' then -- skip those for now
-        return
-    end
-    if target.config and target.config ~= config then
-        return P.define_package {
-            name = target.name,
-            config = target.config
-        }, target.config
-    else
-        return P.define_package {
-            name = target.name,
-            config = config,
-            template = template
-        }, config
+function P:last(config)
+    local stages = self:get('stages', config)
+    if stages then return stages[#stages] end
+end
+
+function P:each()
+    return coroutine.wrap(function ()
+            if self.stages then
+                for target in each(self.stages) do
+                    coroutine.yield(target, self)
+                end
+            end
+            if self.configs then
+                for config, this in pairs(self.configs) do
+                    if this.stages then
+                        for target in each(this.stages) do
+                            coroutine.yield(target, this)
+                        end
+                    end
+                end
+            end
+        end)
+end
+
+function P:each_config()
+    return function (t, i)
+        if self.configs then
+            return next(self.configs, i)
+        else
+            return nil
+        end
     end
 end
 
@@ -270,64 +284,42 @@ function P:gettoolchain(config)
     return toolchain
 end
 
-function P:add_require(spec, config, template)
-    local use, use_config = self:define_use(spec, config, template)
-    local build = self:get('build', config)
-    local stage = build and build.type and 'configure' or 'install'
-    self:add_to(stage, use:last(use_config) or use:last(), config)
-    return use
-end
-
-function P:add_to(stage, input, config)
+function P:add_stage(name, config)
     local stages = self:get('stages', config)
     if not stages then
         stages = self:set('stages', {}, config)
     end
-    local target = stages[stage]
+    local target = stages[name]
     if not target then
-        target = Target.from_args(self.name, stage, config)
-        stages[stage] = target
+        target = Target.from_args(self.name, name, config)
+        stages[name] = target
         table.insert(stages, target)
     end
-    target:append(input)
+    return target
 end
 
-function P:add_stage(rule, config)
+function P:add_rule(rule, config)
+    local shared = { unpack = true, patch  = true, autoreconf = true }
     local target = Target:parse(rule, self.name, config)
     local name   = target.stage
-    local config = target.config
-    local shared = {
-        unpack = true,
-        patch  = true,
-    }
+    local config = not shared[name] and target.config
+    return self:add_stage(name, config):add_inputs(target)
+end
 
-    local function add_to(pkg)
-        if not pkg.stages then
-            pkg.stages = {}
-        end
-        local stages = pkg.stages
-        if stages[name] then
-            stages[name]:add_inputs(target)
-        else
-            table.insert(stages, target)
-            stages[name] = target
-        end
+function P:add_require(spec, config, template)
+    local build, install, stage = self:get('build', config), self:get('install', config)
+    if build and build.type then
+        stage = 'configure'
+    elseif install and install.type then
+        stage = 'install'
     end
+    return self:add_last_stage(stage, spec, config, template)
+end
 
-    if not config or shared[name] then
-        add_to(self)
-    else
-        if not self.configs then
-            self.configs = {}
-        end
-        if not self.configs[config] then
-            self.configs[config] = {}
-        end
-
-        add_to(self.configs[config])
-    end
-
-    return self
+function P:add_last_stage(stage, spec, config, template)
+    local use, use_config = self:define_use(spec, config, template)
+    self:add_stage(stage, config):append(use:last(use_config))
+    return use
 end
 
 function P:add_patch_dependencies()
@@ -371,7 +363,7 @@ function P:add_patch_dependencies()
         local name = 'provide_patches'
         local stage = pkg.stages[name]
         if not stage then
-            pkg:add_stage { name }
+            pkg:add_stage(name)
             stage = assert(pkg.stages[name])
         end
         stage.outputs = stage.outputs or {}
@@ -495,63 +487,6 @@ function P:add_ordering_dependencies()
     end
 end
 
-function P:last(config)
-    local stages = config and self:get('stages', config) or self:get('stages')
-    return stages[#stages]
-end
-
-function P:each()
-    return coroutine.wrap(function ()
-            if self.stages then
-                for target in each(self.stages) do
-                    coroutine.yield(target, self)
-                end
-            end
-            if self.configs then
-                for config, this in pairs(self.configs) do
-                    if this.stages then
-                        for target in each(this.stages) do
-                            coroutine.yield(target, this)
-                        end
-                    end
-                end
-            end
-        end)
-end
-
-function P:each_config()
-    return function (t, i)
-        if self.configs then
-            return next(self.configs, i)
-        else
-            return nil
-        end
-    end
-end
-
-function P:query(value, config)
-    local result = {}
-
-    local function run_query(config)
-        return assert(System.pread('*l', 'jagen-stage -q %q %q %q',
-            assert(value), assert(self.name), config or ''))
-    end
-
-    if config then
-        assert(self:has_config(config),
-            "the package '"..self.name.."' does not have the config '"..config.."'")
-        result[config] = run_query(config)
-    elseif next(self.configs) then
-        for config, _ in pairs(self.configs) do
-            result[config] = run_query(config)
-        end
-    else
-        result['__'] = run_query()
-    end
-
-    return result
-end
-
 function P:check_build_configs()
     if self.build and self.build.type and table.count(self.configs) == 0 then
         print_error("the package '%s' requires a build but has no configs defined",
@@ -583,6 +518,272 @@ function P:check_build_toolchain()
                 build.type, config)
         end
     end
+end
+
+function P:define_use(spec, config, template)
+    local target = Target.from_use(spec)
+    local config = config or template and template.config
+    if target.config == 'system' then -- skip those for now
+        return
+    end
+    if target.config and target.config ~= config then
+        return P.define_package {
+            name = target.name,
+            config = target.config
+        }, target.config
+    else
+        return P.define_package {
+            name = target.name,
+            config = config,
+            template = template
+        }, config
+    end
+end
+
+function P.define_package(rule, context)
+    rule = P:new(rule)
+
+    if context then
+        context.name = rule.name
+        context.config = rule.config or context.config
+        context.template = rule.template or context.template
+    else
+        context = {
+            name = rule.name,
+            config = rule.config,
+            template = rule.template,
+            implicit = true
+        }
+    end
+    if not context.config and context.template then
+        context.config = context.template.config
+    end
+    push_context(context)
+    rule.config, rule.template = nil, nil
+
+    local pkg = packages[rule.name]
+    if not pkg then
+        pkg = P:new { rule.name }
+        pkg.contexts = {}
+        pkg.configs = {}
+        pkg.build = {}
+        pkg.install = {}
+        pkg.export = {}
+        pkg:add_stage('unpack')
+        if pkg.name ~= 'patches' then
+            pkg:add_stage('patch')
+        end
+        pkg:add_stage('export')
+        local module, filename = find_module('pkg/'..rule.name)
+        if module then
+            table.merge(pkg, P:new(assert(module())))
+            append(pkg.contexts, Context:new { filename = filename })
+        end
+        packages[rule.name] = pkg
+    end
+    append(pkg.contexts, context)
+
+    for key in each { 'source', 'patches' } do
+        if pkg[key] and rule[key] then
+            pkg[key] = table.merge(pkg[key], rule[key])
+            rule[key] = nil
+        end
+    end
+
+    local config, template = context.config, context.template or {}
+    local this = pkg
+    if config then this = pkg:add_config(config) end
+
+    rule = table.merge(copy(template), rule)
+    table.merge(this, rule)
+    table.iclean(this)
+
+    if this ~= pkg then
+        if not getmetatable(this) then
+            setmetatable(this, P)
+        end
+        if not this.build then this.build = {} end
+        if not getmetatable(this.build) then
+            setmetatable(this.build, { __index = pkg.build })
+        end
+        if not this.install then this.install = {} end
+        if not getmetatable(this.install) then
+            setmetatable(this.install, { __index = pkg.install })
+        end
+        if not this.export then this.export = {} end
+        if not getmetatable(this.export) then
+            setmetatable(this.export, { __index = pkg.export })
+        end
+    end
+
+    if not pkg.source or not getmetatable(pkg.source) then
+        pkg.source = Source:create(pkg.source, pkg.name)
+        if pkg.patches and pkg.source:is_scm() then
+            pkg.source.ignore_dirty = true
+        end
+    end
+
+    if pkg.source and pkg.source.type == 'repo' then
+        pkg:add_rule { 'unpack',
+            { 'repo', 'install', 'host' }
+        }
+        P.define_package { 'repo', 'host' }
+    end
+
+    if config then
+        local build, install = this.build, this.install
+
+        pkg:add_stage('export', config)
+
+        if build.toolchain and not template.build or
+            template.build and template.build.toolchain == nil
+        then
+            template.build = template.build or {}
+            template.build.toolchain = build.toolchain
+        end
+
+        if not build.dir then
+            if build.in_source then
+                build.dir = '$pkg_source_dir'
+            else
+                build.dir = System.mkpath('${pkg_work_dir:?}', config)
+            end
+        end
+
+        if build.in_source then
+            if pkg.source:is_scm() then
+                pkg.source.ignore_dirty = true
+            end
+        end
+
+        if build.type == 'gnu' then
+            if build.generate or build.autoreconf then
+                pkg:add_rule { 'autoreconf',
+                    { 'libtool', 'install', 'host' }
+                }
+                P.define_package { 'libtool', 'host' }
+            end
+        end
+
+        if build.type == 'linux-module' or build.kernel_modules == true or
+            install and install.modules then
+
+            P.define_package { 'kernel', config }
+
+            pkg:add_rule { 'configure', config,
+                { 'kernel', 'configure', config }
+            }
+            pkg:add_rule { 'compile', config,
+                { 'kernel', 'compile', config }
+            }
+            pkg:add_rule { 'install', config,
+                { 'kernel', 'install', config }
+            }
+        elseif build.type then
+            pkg:add_stage('configure', config)
+            pkg:add_stage('compile', config)
+        end
+
+        if config == 'target' and build.target_requires_host then
+            rule.requires = append(rule.requires or {}, { pkg.name, 'host' })
+        end
+
+        if install.type == nil and build and build.type then
+            install.type = build.type
+        end
+        if install.type and install.type ~= false then
+            pkg:add_stage('install', config)
+        end
+
+        for spec in each(pkg.requires) do
+            pkg:add_require(spec, config, template)
+        end
+
+        for spec in each(rule.requires) do
+            local template = rule.requires.template or template
+            pkg:add_require(spec, config, template)
+        end
+
+        if this ~= pkg then
+            for spec in each(this.uses or {}) do
+                local use = Target.from_use(spec)
+                P.define_package { use.name, use.config or config }
+            end
+        end
+    end
+
+    local stages = extend(extend({}, pkg), rule)
+    for stage in each(stages) do
+        local target = pkg:add_rule(stage, config)
+        for spec in each(stage.requires) do
+            local template = stage.requires.template or template
+            pkg:add_last_stage(target.stage, spec, config, template)
+        end
+    end
+
+    for spec in each(pkg.uses) do
+        local use = Target.from_use(spec)
+        if use.config or not config then
+            P.define_package { use.name, use.config }
+        else
+            local used = packages[use.name]
+            if used then
+                if table.count(used.configs) > 1 then
+                    print_error(
+"the %s uses %s without specifying a config but %s has multiple configs defined (%s), unable to determine which config to use\n"..
+"    at %s:\n%s\n", tostring(this), spec, spec, table.concat(table.keys(used.configs), ', '),
+                pkg:format_last_context(), pkg:format_contexts(6))
+                else
+                    P.define_package { use.name, (next(used.configs)) }
+                end
+            else
+                print_error(
+"the %s uses %s without specifying a config but %s is not defined yet, unable to determine the config to use\n"..
+"    at %s:\n%s\n", tostring(this), spec, spec,
+                pkg:format_last_context(), pkg:format_contexts(6))
+            end
+        end
+    end
+
+    pop_context()
+
+    return pkg
+end
+
+function package(rule, template)
+    local context, level, info = { template = template }, 2
+    repeat
+        info = debug.getinfo(level, 'Sl')
+        level = level+1
+    until not info or info.what == 'main'
+    if info then
+        context.filename = info.source
+        context.line = info.currentline
+    end
+    return P.define_package(rule, context)
+end
+
+function P:query(value, config)
+    local result = {}
+
+    local function run_query(config)
+        return assert(System.pread('*l', 'jagen-stage -q %q %q %q',
+            assert(value), assert(self.name), config or ''))
+    end
+
+    if config then
+        assert(self:has_config(config),
+            "the package '"..self.name.."' does not have the config '"..config.."'")
+        result[config] = run_query(config)
+    elseif next(self.configs) then
+        for config, _ in pairs(self.configs) do
+            result[config] = run_query(config)
+        end
+    else
+        result['__'] = run_query()
+    end
+
+    return result
 end
 
 function P.load_rules()
@@ -697,233 +898,6 @@ function P.load_rules()
     lua_package.loaders[2] = def_loader
 
     return packages, not had_errors
-end
-
-function P.define_package(rule, context)
-    rule = P:new(rule)
-
-    if context then
-        context.name = rule.name
-        context.config = rule.config or context.config
-        context.template = rule.template or context.template
-    else
-        context = {
-            name = rule.name,
-            config = rule.config,
-            template = rule.template,
-            implicit = true
-        }
-    end
-    if not context.config and context.template then
-        context.config = context.template.config
-    end
-    push_context(context)
-    rule.config, rule.template = nil, nil
-
-    local pkg = packages[rule.name]
-    if not pkg then
-        pkg = P:new { rule.name }
-        pkg.contexts = {}
-        pkg.configs = {}
-        pkg.build = {}
-        pkg.install = {}
-        pkg.export = {}
-        pkg:add_stage { 'unpack' }
-        if pkg.name ~= 'patches' then
-            pkg:add_stage { 'patch' }
-        end
-        pkg:add_stage { 'export' }
-        local module, filename = find_module('pkg/'..rule.name)
-        if module then
-            table.merge(pkg, P:new(assert(module())))
-            append(pkg.contexts, Context:new { filename = filename })
-        end
-        packages[rule.name] = pkg
-    end
-    append(pkg.contexts, context)
-
-    for key in each { 'source', 'patches' } do
-        if pkg[key] and rule[key] then
-            pkg[key] = table.merge(pkg[key], rule[key])
-            rule[key] = nil
-        end
-    end
-
-    local config, template = context.config, context.template or {}
-    local this = pkg
-    if config then this = pkg:add_config(config) end
-
-    rule = table.merge(copy(template), rule)
-    table.merge(this, rule)
-    table.iclean(this)
-
-    if this ~= pkg then
-        if not getmetatable(this) then
-            setmetatable(this, P)
-        end
-        if not this.build then this.build = {} end
-        if not getmetatable(this.build) then
-            setmetatable(this.build, { __index = pkg.build })
-        end
-        if not this.install then this.install = {} end
-        if not getmetatable(this.install) then
-            setmetatable(this.install, { __index = pkg.install })
-        end
-        if not this.export then this.export = {} end
-        if not getmetatable(this.export) then
-            setmetatable(this.export, { __index = pkg.export })
-        end
-    end
-
-    if not pkg.source or not getmetatable(pkg.source) then
-        pkg.source = Source:create(pkg.source, pkg.name)
-        if pkg.patches and pkg.source:is_scm() then
-            pkg.source.ignore_dirty = true
-        end
-    end
-
-    if pkg.source and pkg.source.type == 'repo' then
-        pkg:add_stage { 'unpack',
-            { 'repo', 'install', 'host' }
-        }
-        P.define_package { 'repo', 'host' }
-    end
-
-    if config then
-        local build, install = this.build, this.install
-
-        pkg:add_stage({ 'export' }, config)
-
-        if build.toolchain and not template.build or
-            template.build and template.build.toolchain == nil
-        then
-            template.build = template.build or {}
-            template.build.toolchain = build.toolchain
-        end
-
-        if not build.dir then
-            if build.in_source then
-                build.dir = '$pkg_source_dir'
-            else
-                build.dir = System.mkpath('${pkg_work_dir:?}', config)
-            end
-        end
-
-        if build.in_source then
-            if pkg.source:is_scm() then
-                pkg.source.ignore_dirty = true
-            end
-        end
-
-        if build.type == 'gnu' then
-            if build.generate or build.autoreconf then
-                pkg:add_stage { 'autoreconf',
-                    { 'libtool', 'install', 'host' }
-                }
-                P.define_package { 'libtool', 'host' }
-            end
-        end
-
-        if build.type == 'linux-module' or build.kernel_modules == true or
-            install and install.modules then
-
-            P.define_package { 'kernel', config }
-
-            pkg:add_stage({ 'configure',
-                    { 'kernel', 'configure', config }
-                }, config)
-            pkg:add_stage({ 'compile',
-                    { 'kernel', 'compile', config }
-                }, config)
-            pkg:add_stage({ 'install',
-                    { 'kernel', 'install', config }
-                }, config)
-        elseif build.type then
-            pkg:add_stage({ 'configure' }, config)
-            pkg:add_stage({ 'compile' }, config)
-        end
-
-        if config == 'target' and build.target_requires_host then
-            rule.requires = append(rule.requires or {}, { pkg.name, 'host' })
-        end
-
-        if install.type == nil and build and build.type then
-            install.type = build.type
-        end
-        if install.type and install.type ~= false then
-            pkg:add_stage({ 'install' }, config)
-        end
-
-        for spec in each(pkg.requires) do
-            pkg:add_require(spec, config, template)
-        end
-
-        for spec in each(rule.requires) do
-            local template = rule.requires.template or template
-            pkg:add_require(spec, config, template)
-        end
-
-        if this ~= pkg then
-            for spec in each(this.uses or {}) do
-                local use = Target.from_use(spec)
-                P.define_package { use.name, use.config or config }
-            end
-        end
-    end
-
-    local stages = extend(extend({}, pkg), rule)
-    for stage in each(stages) do
-        for spec in each(stage.requires) do
-            local template = stage.requires.template or template
-            local req, config = pkg:define_use(spec, config, template)
-            if req then
-                local last = req:last(config) or req:last()
-                append(stage, { req.name, last.stage, config })
-            end
-        end
-        pkg:add_stage(stage, config)
-    end
-
-    for spec in each(pkg.uses or {}) do
-        local use = Target.from_use(spec)
-        if use.config or not config then
-            P.define_package { use.name, use.config }
-        else
-            local used = packages[use.name]
-            if used then
-                if table.count(used.configs) > 1 then
-                    print_error(
-"the %s uses %s without specifying a config but %s has multiple configs defined (%s), unable to determine which config to use\n"..
-"    at %s:\n%s\n", tostring(this), spec, spec, table.concat(table.keys(used.configs), ', '),
-                pkg:format_last_context(), pkg:format_contexts(6))
-                else
-                    P.define_package { use.name, (next(used.configs)) }
-                end
-            else
-                print_error(
-"the %s uses %s without specifying a config but %s is not defined yet, unable to determine the config to use\n"..
-"    at %s:\n%s\n", tostring(this), spec, spec,
-                pkg:format_last_context(), pkg:format_contexts(6))
-            end
-        end
-    end
-
-    pop_context()
-
-    return pkg
-end
-
-function package(rule, template)
-    local context, level, info = { template = template }, 2
-    repeat
-        info = debug.getinfo(level, 'Sl')
-        level = level+1
-    until not info or info.what == 'main'
-    if info then
-        context.filename = info.source
-        context.line = info.currentline
-    end
-    return P.define_package(rule, context)
 end
 
 return P
