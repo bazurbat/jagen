@@ -20,6 +20,7 @@ end
 
 local lua_package = package
 local packages = {}
+local used_packages = {}
 
 local current_context
 local context_stack = {}
@@ -521,23 +522,31 @@ function P:check_build_toolchain()
 end
 
 function P:define_use(spec, config, template)
+    local key = string.format('%s:%s:%s', spec, tostring(config), tostring(template))
+    local cached, results = used_packages[key]
+    if cached then return unpack(cached) end
     local target = Target.from_use(spec)
     local config = config or template and template.config
     if target.config == 'system' then -- skip those for now
         return
     end
     if target.config and target.config ~= config then
-        return P.define_package {
-            name = target.name,
-            config = target.config
-        }, target.config
+        results = {
+            P.define_package {
+                name = target.name,
+                config = target.config
+            }, target.config
+        }
     else
-        return P.define_package {
-            name = target.name,
-            config = config,
-            template = template
-        }, config
+        results = { P.define_package {
+                name = target.name,
+                config = config,
+                template = template
+            }, config
+        }
     end
+    used_packages[key] = results
+    return unpack(results)
 end
 
 function P.define_package(rule, context)
