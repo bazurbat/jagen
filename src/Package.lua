@@ -563,10 +563,10 @@ function P:check_build_insource()
     local count, build = table.count(self.configs)
     for config, this in self:each_config() do
         build = this.build
-        if build and build.in_source and count > 1 then
-            print_warning("the package '%s' builds in source but has multiple "..
-                "configs defined, please make sure that its build system supports "..
-                "this and the package rules are correct",
+        if build and build.in_source and build.in_source ~= 'multi' and count > 1 then
+            print_warning("the package '%s' builds in source but has multiple configs defined, "..
+                "please make sure that its build system supports this and set in_source='multi' "..
+                "property to remove this warning",
                 self.name)
             break
         end

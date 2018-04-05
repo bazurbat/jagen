@@ -292,8 +292,9 @@ rules and also to find pkg files. The `config` is optional.
 - **build.generator** (`pkg_build_generator`) — If the package build type is
   'cmake' sets its CMake generator.
 
-- **build.in_source** (`pkg_build_in_source`) — If set to `true`, indicates
-  that the package can not be built outside of it's source directory.
+- **build.in_source** (`pkg_build_in_source`) — If set to `true`, indicates that the package can not be
+  built outside of its source directory. Can be set to `multi` to indicate that the package supports
+  multi-configuration builds inside of its source directory.
 
 - **build.jobs** (`pkg_build_jobs`) — Specifies the number of jobs passed as a
   `-j` argument to the `make` and `ninja` commands. If unset, defaults to the
