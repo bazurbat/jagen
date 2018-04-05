@@ -271,13 +271,7 @@ function P:gettoolchain(config)
 end
 
 function P:add_require(spec, config, template)
-    push_context(table.merge(copy(current_context), {
-                name     = self.name,
-                config   = config,
-                implicit = current_context and current_context.implicit
-        }))
     local use, use_config = self:define_use(spec, config, template)
-    pop_context()
     local build = self:get('build', config)
     local stage = build and build.type and 'configure' or 'install'
     self:add_to(stage, use:last(use_config) or use:last(), config)
