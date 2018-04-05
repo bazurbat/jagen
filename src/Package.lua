@@ -853,15 +853,22 @@ function P.define_package(rule, context)
         if install.type and install.type ~= false then
             pkg:add_stage({ 'install' }, config)
         end
-    end
 
-    for spec in each(pkg.requires) do
-        pkg:add_require(spec, config, template)
-    end
+        for spec in each(pkg.requires) do
+            pkg:add_require(spec, config, template)
+        end
 
-    for spec in each(rule.requires) do
-        local template = rule.requires.template or template
-        pkg:add_require(spec, config, template)
+        for spec in each(rule.requires) do
+            local template = rule.requires.template or template
+            pkg:add_require(spec, config, template)
+        end
+
+        if this ~= pkg then
+            for spec in each(this.use or {}) do
+                local use = Target.from_use(spec)
+                P.define_package { use.name, use.config or config }
+            end
+        end
     end
 
     local stages = extend(extend({}, pkg), rule)
@@ -875,13 +882,6 @@ function P.define_package(rule, context)
             end
         end
         pkg:add_stage(stage, config)
-    end
-
-    if this ~= pkg then
-        for spec in each(this.use or {}) do
-            local use = Target.from_use(spec)
-            P.define_package { use.name, use.config or config }
-        end
     end
 
     for spec in each(pkg.use or {}) do
