@@ -89,15 +89,11 @@ done; unset use_alias
 
 if [ "$pkg_build_toolchain" ]; then
     name="$(jagen_name_to_id "$pkg_build_toolchain")"
-    # assign "<toolchain name>_*" to "toolchain_*"
+    # assign "<toolchain name>_*" to "toolchain_*" and to "pkg_build_*" if unset
     for key in $(set | sed -rn "s/^${name}_([[:alnum:]_]+)=.*/\1/p"); do
         eval "toolchain_${key}=\$${name}_${key}" || exit
-    done; unset name key
-    # assign some "toolchain_*" to "pkg_build_*" if unset
-    for key in $(set | sed -rn '/^toolchain_(env|cc|cxx|arch|system|cpu|cflags|cxxflags|ldflags)/! s/^toolchain_([[:alnum:]_]+)=.*/\1/p'); do
         eval ": \${pkg_build_${key}=\$toolchain_${key}}" || exit
-    done; unset key
-    # concatenate cflags
+    done; unset name key
     use_env cflags
 fi
 
