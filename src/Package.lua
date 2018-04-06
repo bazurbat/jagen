@@ -608,6 +608,7 @@ function P.define_package(rule, context)
     table.iclean(this)
 
     if this ~= pkg then
+        this.name, this.config = pkg.name, config
         if not getmetatable(this) then
             setmetatable(this, P)
         end
