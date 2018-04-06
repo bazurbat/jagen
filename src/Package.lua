@@ -776,7 +776,7 @@ function P.load_rules()
     local def_loader = lua_package.loaders[2]
     lua_package.loaders[2] = find_module
 
-    packages = {}
+    packages, used_packages = {}, {}
 
     local function try_load_rules(dir)
         local filename = System.mkpath(dir, 'rules.lua')
