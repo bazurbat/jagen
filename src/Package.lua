@@ -403,22 +403,13 @@ end
 
 function P:export_build_env()
     local function export_build_env(this, config)
-        local build = self:get('build', config)
-        if build then
-            if build.cflags and build.cxxflags == nil then
-                build.cxxflags = build.cflags
-            end
-            local export = self:get('export', config)
-            if export then
-                for key in each { 'cc', 'cxx',
-                                  'arch', 'system', 'cpu',
-                                  'cflags', 'cxxflags', 'ldflags'
-                                } do
-                    if export[key] == nil then
-                        export[key] = build[key]
-                    end
-                end
-            end
+        local build, export = this.build, this.export
+        if build.cflags and build.cxxflags == nil then
+            build.cxxflags = build.cflags
+        end
+        for key in each { 'cc', 'cxx', 'arch', 'system', 'cpu',
+                          'cflags', 'cxxflags', 'ldflags' } do
+            if export[key] == nil then export[key] = build[key] end
         end
     end
     export_build_env(self, config)
@@ -437,24 +428,17 @@ function P:export_dirs()
             if export.build.dir == nil then
                 export.build.dir = dir
             end
-            if export.dir == nil then
-                export.dir = dir
-            end
         end
     end
     export_build_dir(self)
     for config, this in self:each_config() do
         export_build_dir(this, config)
     end
-    local export = self.export
-    local source = self.source
+    local export, source = self.export, self.source
     if source then
         export.source = export.source or {}
         if export.source.dir == nil then
             export.source.dir = source.dir
-        end
-        if export.dir == nil then
-            export.dir = source.dir
         end
     end
 end
