@@ -226,7 +226,11 @@ jagen__find_layer() {
     case $layer in
         /*) path="$layer" ;;
   ./*|../*) path="${jagen_project_dir:?}/$layer" ;;
-         *) for dir in ${jagen_layer_path-} ${jagen_project_dir:?}; do
+         *) for dir in ${jagen_layer_path-} .; do
+                case $dir in
+                    /*) ;;
+                     *) dir="$jagen_project_dir/$dir" ;;
+                esac
                 path="$dir/$layer"
                 [ -d "$path" ] && break
             done ;;
