@@ -440,6 +440,9 @@ function P:export_dirs()
         if export.source.dir == nil then
             export.source.dir = source.dir
         end
+        if export.dir == nil then
+            export.dir = source.dir
+        end
     end
 end
 
