@@ -541,7 +541,8 @@ function Jagen.command.build(args)
     args_file:close()
     local ok
     if #targets == 1 then
-        ok = Command:new('jagen-stage', '-i', unpack(tostring(targets[1]):split2(':'))):exec()
+        local t = Target:from_arg(targets[1])
+        ok = Command:new('jagen-stage', '-i', t.name, t.stage, t.config or "''"):exec()
     else
         ok = Command:new(quote(Jagen.cmd), 'build', tostring(args), unpack(targets)):exec()
     end
