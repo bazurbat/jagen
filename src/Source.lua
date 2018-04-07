@@ -217,6 +217,7 @@ function GitSource:head_name()
         ref = ref:gsub('^HEAD,%s+', '')
         ref = ref:gsub('^HEAD', '')
         ref = ref:gsub(self.origin..'/HEAD', '')
+        ref = ref:gsub(', , ', ', ')
         ref = ref:gsub(', $', '')
         if #ref > 0 then
             return string.format('%s, %s', rev, ref)
