@@ -313,6 +313,8 @@ function P:add_require(spec, config, template)
         stage = 'configure'
     elseif install and install.type then
         stage = 'install'
+    else
+        stage = self:last(config).stage
     end
     return self:add_last_stage(stage, spec, config, template)
 end
