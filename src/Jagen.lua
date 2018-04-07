@@ -539,7 +539,12 @@ function Jagen.command.build(args)
         args_file:write(table.concat(args._args, '\n'))
     end
     args_file:close()
-    local ok = Command:new(quote(Jagen.cmd), 'build', tostring(args), unpack(targets)):exec()
+    local ok
+    if #targets == 1 then
+        ok = Command:new('jagen-stage', '-i', unpack(tostring(targets[1]):split2(':'))):exec()
+    else
+        ok = Command:new(quote(Jagen.cmd), 'build', tostring(args), unpack(targets)):exec()
+    end
     io.open(args_path, 'w'):close()
     return ok
 end

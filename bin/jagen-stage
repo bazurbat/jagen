@@ -1,5 +1,9 @@
 #!/bin/sh
 
+if [ "$1" = '-i' ]; then
+    pkg__interactive=1; shift
+fi
+
 if [ "$1" = '-q' ]; then
     shift
     pkg_query="${1:?}"
@@ -23,7 +27,9 @@ pkg__log_file="${jagen_log_dir:?}/${pkg__stamp_name}.log"
 
 if [ -z "$pkg_query" ]; then
     : >"$pkg__log_file"
-    exec 3>&1 >>"$pkg__log_file" 2>&1
+    if [ -z "${pkg__interactive-}" ]; then
+        exec >>"$pkg__log_file" 2>&1
+    fi
 fi
 
 cd "$jagen_build_dir" || exit
