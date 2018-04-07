@@ -648,13 +648,15 @@ function P.define_package(rule, context)
         if build.type == 'rust' then
             local rust_toolchain = build.rust_toolchain
             if rust_toolchain then
-                local name = 'rust-'..rust_toolchain
+                local name = string.format('rust-%s%s', rust_toolchain,
+                    build.system and '-'..build.system or '')
                 P.define_package {
                     name   = name,
                     config = config,
                     build = {
                         type      = 'rust-toolchain',
                         toolchain = 'rustup:host',
+                        name      = rust_toolchain,
                         system    = build.system,
                     }
                 }
