@@ -307,6 +307,10 @@ function string.to_identifier(s)
     return string.gsub(s, '[^%w_]', '_')
 end
 
+function string.escape_format(fmt)
+    return string.gsub(fmt, '%%', '%%%%')
+end
+
 function string.escape_pattern(p)
     return string.gsub(p, '%p', '%%%0')
 end

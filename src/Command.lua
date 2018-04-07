@@ -27,7 +27,7 @@ function Command:exists()
 end
 
 function Command:exec()
-    local cmdstr = tostring(self) Log.debug2(cmdstr)
+    local cmdstr = tostring(self) Log.debug2(cmdstr:escape_format())
     local ok = os.execute(cmdstr)
     if type(ok) == 'number' then
         return ok == 0 -- Lua 5.1
@@ -37,7 +37,7 @@ function Command:exec()
 end
 
 function Command:popen(mode)
-    local command = tostring(self) Log.debug2(command)
+    local command = tostring(self) Log.debug2(command:escape_format())
     return assert(io.popen(command, mode))
 end
 
