@@ -636,6 +636,33 @@ function P.define_package(rule, context)
             template.build.toolchain = build.toolchain
         end
 
+        if build.type then
+            local toolchain = pkg:gettoolchain(config)
+            if toolchain then
+                pkg:add_require(toolchain, config)
+                this.uses = append_uniq(toolchain, this.uses)
+            end
+            build.toolchain = toolchain
+        end
+
+        if build.type == 'rust' then
+            local rust_toolchain = build.rust_toolchain
+            if rust_toolchain then
+                local name = 'rust-'..rust_toolchain
+                P.define_package {
+                    name   = name,
+                    config = config,
+                    build = {
+                        type      = 'rust-toolchain',
+                        toolchain = 'rustup:host',
+                        system    = build.system,
+                    }
+                }
+                pkg:add_require(name, config)
+                this.uses = append_uniq(name, this.uses)
+            end
+        end
+
         if not build.dir then
             if build.in_source then
                 build.dir = '$pkg_source_dir'
@@ -785,48 +812,6 @@ function P.load_rules()
     table.for_each(table.filter(packages,
             function (pkg) return pkg.patches end),
         P.add_patch_dependencies)
-
-    function add_toolchains(pkglist)
-        local added = {}
-        for _, pkg in pairs(pkglist) do
-            for config, _ in pkg:each_config() do
-                local build = assert(pkg:get('build', config))
-                local use = pkg:get('uses', config) or {}
-                local toolchain = pkg:gettoolchain(config)
-                build.toolchain = toolchain
-                if build.type == 'rust' then
-                    local rust_toolchain = build.rust_toolchain
-                    if rust_toolchain then
-                        local name = 'rust-'..rust_toolchain
-                        P.define_package {
-                            name   = name,
-                            config = config,
-                            build = {
-                                type      = 'rust-toolchain',
-                                toolchain = 'rustup:host',
-                                system    = build.system,
-                            }
-                        }
-                        append_uniq(name, use)
-                        append(added, pkg:add_require(name, config))
-                    end
-                end
-                if toolchain then
-                    append_uniq(toolchain, use)
-                    append(added, pkg:add_require(toolchain, config))
-                end
-                pkg:set('uses', use, config)
-            end
-        end
-        return added
-    end
-
-    do
-        local packages = table.copy(packages)
-        repeat
-            packages = add_toolchains(packages)
-        until #packages == 0
-    end
 
     -- another pass, with the toolchains this time
     for _, pkg in pairs(packages) do
