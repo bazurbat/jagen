@@ -649,24 +649,22 @@ function P.define_package(rule, context)
         end
 
         if build.type == 'rust' then
-            local rust_toolchain = build.rust_toolchain
-            if not rust_toolchain then rust_toolchain = 'stable' end
-            if rust_toolchain then
-                local name = string.format('rust-%s%s', rust_toolchain,
-                    build.system and '-'..build.system or '')
-                P.define_package {
-                    name   = name,
-                    config = config,
-                    build = {
-                        type      = 'rust-toolchain',
-                        toolchain = 'rustup:host',
-                        name      = rust_toolchain,
-                        system    = build.system,
-                    }
+            local rust_toolchain = build.rust_toolchain or 'stable'
+            local name = string.format('rust-%s%s', rust_toolchain,
+                build.system and '-'..build.system or '')
+            P.define_package {
+                name   = name,
+                config = config,
+                build = {
+                    type      = 'rust-toolchain',
+                    toolchain = 'rustup:host',
+                    name      = rust_toolchain,
+                    system    = build.system,
                 }
-                pkg:add_require(name, config)
-                this.uses = append_uniq(name, this.uses)
-            end
+            }
+            pkg:add_require(name, config)
+            this.uses = append_uniq(name, this.uses)
+            build.rust_toolchain = rust_toolchain
         end
 
         if not build.dir then
