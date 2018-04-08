@@ -55,6 +55,23 @@ pkg_compile() {
                 cargo build ${pkg_build_system:+--target=$pkg_build_system} \
                 $A "$@" $MA
             ;;
+        gradle-android)
+            if ! [ -f "$pkg_source_dir/gradlew" ]; then
+                die "failed to find Gradle wrapper (gradlew) script in the project's source directory: $pkg_source_dir"
+            fi
+            if ! [ -f "$pkg_source_dir/local.properties" ]; then
+                cat >"$pkg_source_dir/local.properties" <<EOF
+sdk.dir=$android_sdk_tools_dir/..
+ndk.dir=$android_ndk_dir
+EOF
+            fi
+            if pkg_is_release; then
+                A="assembleRelease"
+            else
+                A="assembleDebug"
+            fi
+            pkg_run bash "$pkg_source_dir/gradlew" $A "$@" $MA
+            ;;
         android-standalone-toolchain)
             require toolchain
             toolchain_install_android_standalone

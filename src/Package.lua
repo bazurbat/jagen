@@ -667,6 +667,12 @@ function P.define_package(rule, context)
             pkg:add_require(name, config)
             this.uses = append_uniq(name, this.uses)
             build.rust_toolchain = rust_toolchain
+        elseif build.type == 'gradle-android' then
+            build.in_source = true
+            rule.requires = append_uniq('android-sdk-tools', rule.requires)
+            rule.requires = append_uniq('android-ndk', rule.requires)
+            this.uses = append_uniq('android-sdk-tools', this.uses)
+            this.uses = append_uniq('android-ndk', this.uses)
         end
 
         if not build.dir then
