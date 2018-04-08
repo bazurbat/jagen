@@ -1,7 +1,7 @@
 return {
     build = {
         type      = 'android-standalone-toolchain',
-        toolchain = 'android-ndk-r16b',
+        toolchain = 'android-ndk',
         arch      = 'arm',
         system    = 'arm-linux-androideabi',
         cc        = 'clang',
