@@ -150,7 +150,7 @@ function Jagen.src.update(args)
                 end
             end
             if not source:switch() then
-                die('failed to switch %s to %s in %s', pkg.name, rev, dir)
+                die('failed to switch %s to %s in %s', pkg.name, source:getrev(), dir)
             end
         else
             if offline then

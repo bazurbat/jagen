@@ -41,6 +41,13 @@ function Command:popen(mode)
     return assert(io.popen(command, mode))
 end
 
+function Command:aslist()
+    local pipe = self:popen()
+    local list = aslist(pipe:lines())
+    pipe:close()
+    return list
+end
+
 function Command:read(...)
     local file = self:popen()
     local results = { file:read(...) }

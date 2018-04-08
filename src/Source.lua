@@ -237,10 +237,15 @@ end
 
 function GitSource:update()
     assert(self.origin)
-    local refspecs = {}
+    local remotes = map(function(line) return line:match('%w+%s+(.+)') end,
+                        self:command('ls-remote -q --heads --tags'):aslist())
+
+    local refspecs, ok = {}, true
     for branch in each(self:getbranches()) do
-        append(refspecs, string.format('"+refs/heads/%s:refs/remotes/%s/%s"',
-            branch, self.origin, branch))
+        if filter(function(line) return line:match('^refs/heads/'..branch..'$') end, remotes)[1] then
+            append(refspecs, string.format('"+refs/heads/%s:refs/remotes/%s/%s"',
+                branch, self.origin, branch))
+        end
     end
     for tag in each(self:gettags()) do
         append(refspecs, string.format('"+refs/tags/%s:refs/tags/%s"',
@@ -249,9 +254,11 @@ function GitSource:update()
     if self.rev then
         append(refspecs, string.format("%s", self.rev))
     end
-    return self:command('fetch', quote(self.origin),
-               table.concat(refspecs, ' ')):exec() and
-           self:_update_submodules()
+    if #refspecs > 0 then
+        return self:command('fetch', quote(self.origin), table.concat(refspecs, ' ')):exec() and
+               self:_update_submodules()
+    end
+    return true
 end
 
 function GitSource:switch()
@@ -261,7 +268,13 @@ function GitSource:switch()
     elseif tag then
         ref = string.format('tags/%s', tag)
     elseif branch then
-        ref = string.format('%s/%s', assert(self.origin), branch)
+        local has_local = filter(function(line) return line:match('^%*?%s+('..branch..')$') end,
+                                 self:command('branch --list'):aslist())[1]
+        if has_local then
+            ref = branch
+        else
+            ref = string.format('%s/%s', assert(self.origin), branch)
+        end
     end
     if ref then
         return self:command('checkout -q', quote(ref), '--'):exec() and
