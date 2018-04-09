@@ -237,19 +237,25 @@ end
 
 function GitSource:update()
     assert(self.origin)
-    local remotes = map(function(line) return line:match('%w+%s+(.+)') end,
-                        self:command('ls-remote -q --heads --tags'):aslist())
-
+    local function extract_ref(line) return line:match('%w+%s+(.+)') end
+    local function head_matching(name)
+        return function (line) return line:match('^refs/heads/'..name..'$') end
+    end
+    local function tag_matching(name)
+        return function (line) return line:match('^refs/tags/'..name..'$') end
+    end
+    local remotes = aslist(vmap(extract_ref)(self:command('ls-remote -q --heads --tags'):lines()))
     local refspecs, ok = {}, true
     for branch in each(self:getbranches()) do
-        if filter(function(line) return line:match('^refs/heads/'..branch..'$') end, remotes)[1] then
+        for ref in vfilter(head_matching(branch))(each(remotes)) do
             append(refspecs, string.format('"+refs/heads/%s:refs/remotes/%s/%s"',
                 branch, self.origin, branch))
         end
     end
     for tag in each(self:gettags()) do
-        append(refspecs, string.format('"+refs/tags/%s:refs/tags/%s"',
-            tag, tag))
+        for ref in vfilter(tag_matching(tag))(each(remotes)) do
+            append(refspecs, string.format('"+refs/tags/%s:refs/tags/%s"', tag, tag))
+        end
     end
     if self.rev then
         append(refspecs, string.format("%s", self.rev))
@@ -262,24 +268,35 @@ function GitSource:update()
 end
 
 function GitSource:switch()
-    local tag, branch, ref = self:gettag(), self:getbranch() or 'master'
+    assert(self.origin)
+    local tag, branch, ref, local_branch, ok = self:gettag(), self:getbranch() or 'master'
     if self.rev then
         ref = self.rev
     elseif tag then
         ref = string.format('tags/%s', tag)
     elseif branch then
-        local has_local = filter(function(line) return line:match('^%*?%s+('..branch..')$') end,
-                                 self:command('branch --list'):aslist())[1]
-        if has_local then
+        local function branches_matching(name)
+            return function(line) return line:match('^%*?%s+('..branch..')$') end
+        end
+        local_branch = aslist(vfilter(branches_matching(branch))(
+                                      self:command('branch --list'):lines()))[1]
+        if local_branch then
             ref = branch
         else
-            ref = string.format('%s/%s', assert(self.origin), branch)
+            ref = string.format('%s/%s', self.origin, branch)
         end
     end
     if ref then
-        return self:command('checkout -q', quote(ref), '--'):exec() and
-               self:_update_submodules('--no-fetch')
+        ok = self:command('checkout -q', quote(ref)):exec()
+        if not ok then return ok end
+        if local_branch then
+            ok = self:command('merge --ff-only', 'remotes/'..self.origin..'/'..ref):exec()
+            if not ok then return ok end
+        end
+        ok = self:_update_submodules('--no-fetch')
+        if not ok then return ok end
     end
+    return true
 end
 
 function GitSource:clone()
