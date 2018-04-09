@@ -41,6 +41,19 @@ function Command:popen(mode)
     return assert(io.popen(command, mode))
 end
 
+function Command:lines()
+    local pipe = self:popen()
+    local lines = pipe:lines()
+    return function ()
+        local line = lines()
+        if line ~= nil then
+            return line
+        else
+            pipe:close()
+        end
+    end
+end
+
 function Command:aslist()
     local pipe = self:popen()
     local list = aslist(pipe:lines())
