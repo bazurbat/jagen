@@ -74,11 +74,20 @@ function map(f, t)
     if t then
         return collect(t, map(f))
     else
-        return function(iter)
+        return function(iter, ti, init)
             return function(t, last)
-                local k, v = iter(t, last)
-                if k then return k, f(v, k) end
+                local k, v = iter(t or ti, last or init)
+                if k ~= nil then return k, f(v, k) end
             end
+        end
+    end
+end
+
+function vmap(f)
+    return function(iter)
+        return function(s, last)
+            local v = iter(s, last)
+            if v ~= nil then return f(v) end
         end
     end
 end
@@ -87,10 +96,10 @@ function filter(pred, t)
     if t then
         return collect(t, filter(pred))
     else
-        return function(iter)
+        return function(iter, ti, init)
             local function step(t, last)
-                local k, v = iter(t, last)
-                if k then
+                local k, v = iter(t or ti, last or init)
+                if k ~= nil then
                     if pred(v, k) then
                         return k, v
                     else
@@ -100,6 +109,22 @@ function filter(pred, t)
             end
             return step
         end
+    end
+end
+
+function vfilter(pred)
+    return function(iter, is, init)
+        local function step(s, last)
+            local v = iter(s or is, last or init)
+            if v ~= nil then
+                if pred(v) then
+                    return v
+                else
+                    return step(s, v)
+                end
+            end
+        end
+        return step
     end
 end
 
