@@ -2,6 +2,8 @@
 
 . "$jagen_dir/env.sh" || { echo "Failed to load environment"; exit 1; }
 
+# Disable passphrase querying
+export GIT_SSH_COMMAND="ssh -o BatchMode=yes"
 # Do not prompt on the terminal (e.g. when asking for HTTP credentials).
 export GIT_TERMINAL_PROMPT=0
 # Never install the translations.
