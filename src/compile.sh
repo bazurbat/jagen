@@ -34,8 +34,11 @@ pkg_compile() {
             ;;
         linux-kernel)
             use_env kbuild
-            pkg_run cd "$pkg_source_dir"
-            pkg_run make "${pkg_build_image:?}" modules $MA
+            pkg_run cd "${pkg_source_dir:?}"
+            if [ "$pkg_build_image" ]; then
+                pkg_run make $pkg_build_image $MA
+            fi
+            pkg_run make modules $MA
             ;;
         linux-module)
             pkg_run make $pkg_build_options "$@" $MA

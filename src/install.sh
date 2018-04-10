@@ -31,11 +31,15 @@ pkg_install() {
             unset DESTDIR
             ;;
         linux-kernel)
+            [ "$pkg_build_arch" ] ||
+                die "unable to install: build arch is not set"
+            [ "$pkg_build_image" ] ||
+                die "unable to install: build image is not set"
             use_env kbuild
-            pkg_run cd "$pkg_source_dir"
+            pkg_run cd "${pkg_source_dir:?}"
             pkg_run install -vm644 \
-                "$pkg_build_dir/arch/$pkg_build_arch/boot/${pkg_build_image:?}" \
-                "$jagen_build_dir"
+                "${pkg_build_dir:?}/arch/${pkg_build_arch:?}/boot/${pkg_build_image:?}" \
+                "${jagen_build_dir:?}"
             pkg_run make \
                 INSTALL_MOD_PATH="${INSTALL_MOD_PATH:-${pkg_install_dir:?}}" \
                 $pkg_install_args "$@" $MA modules_install
