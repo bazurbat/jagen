@@ -263,7 +263,7 @@ function Jagen.clean_package(pkg, spec)
                         Jagen.src.clean { assert(use.name) }
                     end
                 else
-                    Log.message('not removing %s because it is the source dir or %s', dir, pkg.name)
+                    Log.message('not removing %s because it is the source dir of %s', dir, pkg.name)
                 end
             elseif System.can_delete_safely(dir, source_dir) then
                 Log.debug('removing %s', dir)
