@@ -582,8 +582,9 @@ function P.define_package(rule, context)
     append(pkg.contexts, context)
 
     for key in each { 'source', 'patches' } do
-        if pkg[key] and rule[key] then
-            pkg[key] = table.merge(pkg[key], rule[key])
+        if rule[key] then
+            if pkg[key] == nil then pkg[key] = {} end
+            table.merge(pkg[key], rule[key])
             rule[key] = nil
         end
     end
