@@ -59,12 +59,6 @@ pkg_compile() {
             if ! [ -f "$pkg_source_dir/gradlew" ]; then
                 die "failed to find Gradle wrapper (gradlew) script in the project's source directory: $pkg_source_dir"
             fi
-            if ! [ -f "$pkg_source_dir/local.properties" ]; then
-                cat >"$pkg_source_dir/local.properties" <<EOF
-sdk.dir=$android_sdk_tools_dir/..
-ndk.dir=$android_ndk_dir
-EOF
-            fi
             if pkg_is_release; then
                 A="assembleRelease"
             else
