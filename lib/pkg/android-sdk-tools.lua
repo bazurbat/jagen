@@ -1,7 +1,8 @@
 return { 'android-sdk-tools',
     source = {
         location = 'https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip',
-        basename = 'tools'
+        basename = 'tools',
+        sha1sum  = '7eab0ada7ff28487e1b340cc3d866e70bcb4286e',
     },
     install = true,
     export = {
