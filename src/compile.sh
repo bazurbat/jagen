@@ -45,9 +45,10 @@ pkg_compile() {
             ;;
         executable)
             local exe="$jagen_dist_dir/$pkg_source_filename"
-            if ! [ -x "$exe" ]; then
-                die "require to run $exe for build but the file was not found or not an executable"
+            if ! [ -f "$exe" ]; then
+                die "require to run $exe for build but the file was not found"
             fi
+            pkg_run chmod +x "$exe"
             pkg_run "$exe" $pkg_build_options "$@" $MA
             ;;
         rust)
