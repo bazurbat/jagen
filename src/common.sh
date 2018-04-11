@@ -290,3 +290,12 @@ jagen__get_cmake_version() {
 jagen__is_empty() {
     test -z "$(cd "${1:?}" 2>/dev/null && ls -A)"
 }
+
+case $(uname) in
+    Darwin)
+        jagen_esed() { sed -E "$@"; }
+        ;;
+    *)
+        jagen_esed() { sed -r "$@"; }
+        ;;
+esac

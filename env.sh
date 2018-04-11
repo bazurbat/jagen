@@ -61,6 +61,6 @@ if [ "${jagen_private_dir-}" ]; then
 fi
 
 # export all jagen_* variables
-for var in $(set | sed -rn 's/^(jagen_[[:alnum:]][[:alnum:]_]*)=.*/\1/p'); do
+for var in $(set | jagen_esed -n 's/^(jagen_[[:alnum:]][[:alnum:]_]*)=.*/\1/p'); do
     export $var
 done; unset var
