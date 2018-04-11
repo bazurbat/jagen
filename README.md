@@ -32,17 +32,13 @@ are cached and can be shared between different projects.
 
 Jagen is a mature project which is used in production since 2014.
 
-## Requirements
-
-POSIX compatible shell, Lua 5.1 or 5.2 (or LuaJIT 2.0), [Ninja](https://ninja-build.org/).
-
 ## Getting Started
 
 For a quick start using Jagen do the following steps:
 
 1. Create a directory for the project and enter it:
 ```
-mkdir -p ~/root-jagen && cd ~/root-jagen
+mkdir root-jagen && cd root-jagen
 ```
 2. Clone Jagen repository and initialize the project:
 ```
@@ -70,5 +66,4 @@ toolchain and installed to the `host` subdirectory. You are now all set.
 Do not forget to add `jagen/misc/bash_completion` to your Bash completion
 configuration to make overall experience much more pleasant.
 
-For more information about initializing projects see
-[Initializing](doc/Initializing.md) section of the [Manual](doc/Manual.md).
+See [User Guide](doc/UserGuide.md) for more information.
