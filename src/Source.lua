@@ -244,9 +244,11 @@ function GitSource:update()
     local function tag_matching(name)
         return function (line) return line:match('^refs/tags/'..name..'$') end
     end
-    local remotes = aslist(vmap(extract_ref)(self:command('ls-remote -q --heads --tags'):lines()))
     local refspecs, ok = {}, true
-    for branch in each(self:getbranches()) do
+    local remotes = aslist(vmap(extract_ref)(self:command('ls-remote -q --heads --tags'):lines()))
+    local rev, branches = self:getrev(), self:getbranches()
+    if not rev then branches = { 'master' } end
+    for branch in each(branches) do
         for ref in vfilter(head_matching(branch))(each(remotes)) do
             append(refspecs, string.format('"+refs/heads/%s:refs/remotes/%s/%s"',
                 branch, self.origin, branch))
@@ -269,7 +271,8 @@ end
 
 function GitSource:switch()
     assert(self.origin)
-    local tag, branch, ref, local_branch, ok = self:gettag(), self:getbranch() or 'master'
+    local tag, branch, ref, local_branch, ok = self:gettag(), self:getbranch()
+    if not self:getrev() then branch = 'master' end
     if self.rev then
         ref = self.rev
     elseif tag then
