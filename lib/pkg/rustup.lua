@@ -1,10 +1,10 @@
 return {
     -- the executable should be named 'rustup-init' or it will not run
     -- complaining that the default toolchain is not set
-    source = { 'dist', 'https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init' },
+    source = { 'dist', 'https://static.rust-lang.org/rustup/dist/$jagen_host_arch/rustup-init' },
     build = {
         type    = 'executable',
-        system  = 'x86_64-unknown-linux-gnu',
+        system  = '$jagen_host_arch',
         options = {
             '-y',
             '--no-modify-path',
