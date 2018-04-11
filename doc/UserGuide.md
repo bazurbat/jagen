@@ -11,19 +11,18 @@ project and managing of the source directories.
 
 Typically, you have project's environment (`env.sh`) sourced in a terminal and
 do all actions related to the project from this terminal window. This way you
-will have Shell command auto-completion working properly and tools compiled for
-the host in you PATH so you can run them directly or perform some other actions
-manually. For non-interactive work (such as launching the build from an IDE)
-there is a `jagen` script in each project's directory which initializes the
-environment implicitly for this project before redirecting the command to the
-Jagen's instance. Running this script does not change the current shell
-environment.
+will have Shell command auto-completion working properly, toolchains and tools
+compiled for the host in you PATH so you can run them directly or perform some
+other actions manually. For non-interactive work (such as launching the build
+from an IDE) there is a `jagen` script in each project's directory which
+initializes the environment before redirecting the command to the Jagen's
+instance. Running this script does not change the current Shell environment.
 
 ## Requirements
 
-- [Lua](https://www.lua.org) 5.1 or 5.2 (LuaJIT 2.0 works too)
-- [Ninja](https://ninja-build.org) build system
-- ccache is recommended if you plan to compile a lot of C/C++ code 
+- [Lua](https://www.lua.org) 5.1 or 5.2 ([LuaJIT](http://luajit.org) 2.0 works too)
+- [Ninja build](https://ninja-build.org)
+- [ccache](https://ccache.samba.org) is recommended if you plan to compile a lot of C/C++ code 
 
 On Ubuntu Linux you can install those using the command:
 
@@ -39,7 +38,7 @@ relative path to the checked out Jagen sources like so:
     mkdir jagen-project && cd jagen-project
     ../jagen/init
 
-Or it can be piped to the shell directly from the network:
+Or it can be piped to Shell directly from the network:
 
     mkdir jagen-project && cd jagen-project
     curl -fsSL https://raw.githubusercontent.com/bazurbat/jagen/master/init | sh
@@ -140,9 +139,9 @@ The details of using the `-L` option are out of scope of this guide for now.
 - [List Information](List.md)
 - [Building](Building.md)
 - [Cleaning](Cleaning.md)
-- [Targets](#targets)
+- [Targets](Manual.md#targets)
 - [Managing package sources](ManagingSources.md)
 - [Manage filesystem images](Images.md)
 - [Install Bash completions](Installation.md)
-- [Writing build scripts](#writing-build-scripts)
-- [Build system internals](#build-system-internals)
+- [Writing build scripts](Manual.md#writing-build-scripts)
+- [Build system internals](Manual.md#build-system-internals)
