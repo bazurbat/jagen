@@ -291,6 +291,198 @@ jagen__is_empty() {
     test -z "$(cd "${1:?}" 2>/dev/null && ls -A)"
 }
 
+jagen__need_cmd() {
+    if ! command -v "$1" > /dev/null 2>&1; then
+        die "need '$1' (command not found)"
+    fi
+}
+
+jagen__get_bitness() {
+    jagen__need_cmd head
+    # Architecture detection without dependencies beyond coreutils.
+    # ELF files start out "\x7fELF", and the following byte is
+    #   0x01 for 32-bit and
+    #   0x02 for 64-bit.
+    # The printf builtin on some shells like dash only supports octal
+    # escape sequences, so we use those.
+    local _current_exe_head=$(head -c 5 /proc/self/exe )
+    if [ "$_current_exe_head" = "$(printf '\177ELF\001')" ]; then
+        printf "%s" 32
+    elif [ "$_current_exe_head" = "$(printf '\177ELF\002')" ]; then
+        printf "%s" 64
+    else
+        die "unknown platform bitness"
+    fi
+}
+
+jagen__get_endianness() {
+    local cputype=$1
+    local suffix_eb=$2
+    local suffix_el=$3
+
+    # detect endianness without od/hexdump, like jagen__get_bitness() does.
+    jagen__need_cmd head
+    jagen__need_cmd tail
+
+    local _current_exe_endianness="$(head -c 6 /proc/self/exe | tail -c 1)"
+    if [ "$_current_exe_endianness" = "$(printf '\001')" ]; then
+        printf "%s" "${cputype}${suffix_el}"
+    elif [ "$_current_exe_endianness" = "$(printf '\002')" ]; then
+        printf "%s" "${cputype}${suffix_eb}"
+    else
+        die "unknown platform endianness"
+    fi
+}
+
+jagen__get_architecture() {
+    local _ostype="$(uname -s)"
+    local _cputype="$(uname -m)"
+
+    if [ "$_ostype" = Linux ]; then
+        if [ "$(uname -o)" = Android ]; then
+            local _ostype=Android
+        fi
+    fi
+
+    if [ "$_ostype" = Darwin -a "$_cputype" = i386 ]; then
+        # Darwin `uname -s` lies
+        if sysctl hw.optional.x86_64 | grep -q ': 1'; then
+            local _cputype=x86_64
+        fi
+    fi
+
+    case "$_ostype" in
+
+        Android)
+            local _ostype=linux-android
+            ;;
+
+        Linux)
+            local _ostype=unknown-linux-gnu
+            ;;
+
+        FreeBSD)
+            local _ostype=unknown-freebsd
+            ;;
+
+        NetBSD)
+            local _ostype=unknown-netbsd
+            ;;
+
+        DragonFly)
+            local _ostype=unknown-dragonfly
+            ;;
+
+        Darwin)
+            local _ostype=apple-darwin
+            ;;
+
+        MINGW* | MSYS* | CYGWIN*)
+            local _ostype=pc-windows-gnu
+            ;;
+
+        *)
+            die "unrecognized OS type: $_ostype"
+            ;;
+
+    esac
+
+    case "$_cputype" in
+
+        i386 | i486 | i686 | i786 | x86)
+            local _cputype=i686
+            ;;
+
+        xscale | arm)
+            local _cputype=arm
+            if [ "$_ostype" = "linux-android" ]; then
+                local _ostype=linux-androideabi
+            fi
+            ;;
+
+        armv6l)
+            local _cputype=arm
+            if [ "$_ostype" = "linux-android" ]; then
+                local _ostype=linux-androideabi
+            else
+                local _ostype="${_ostype}eabihf"
+            fi
+            ;;
+
+        armv7l | armv8l)
+            local _cputype=armv7
+            if [ "$_ostype" = "linux-android" ]; then
+                local _ostype=linux-androideabi
+            else
+                local _ostype="${_ostype}eabihf"
+            fi
+            ;;
+
+        aarch64)
+            local _cputype=aarch64
+            ;;
+
+        x86_64 | x86-64 | x64 | amd64)
+            local _cputype=x86_64
+            ;;
+
+        mips)
+            local _cputype="$(jagen__get_endianness $_cputype "" 'el')"
+            ;;
+
+        mips64)
+            local _bitness="$(jagen__get_bitness)"
+            if [ $_bitness = "32" ]; then
+                if [ $_ostype = "unknown-linux-gnu" ]; then
+                    # 64-bit kernel with 32-bit userland
+                    # endianness suffix is appended later
+                    local _cputype=mips
+                fi
+            else
+                # only n64 ABI is supported for now
+                local _ostype="${_ostype}abi64"
+            fi
+
+            local _cputype="$(jagen__get_endianness $_cputype "" 'el')"
+            ;;
+
+        ppc)
+            local _cputype=powerpc
+            ;;
+
+        ppc64)
+            local _cputype=powerpc64
+            ;;
+
+        ppc64le)
+            local _cputype=powerpc64le
+            ;;
+
+        *)
+            die "unknown CPU type: $_cputype"
+
+    esac
+
+    # Detect 64-bit linux with 32-bit userland
+    if [ $_ostype = unknown-linux-gnu -a $_cputype = x86_64 ]; then
+        if [ "$(jagen__get_bitness)" = "32" ]; then
+            local _cputype=i686
+        fi
+    fi
+
+    # Detect armv7 but without the CPU features Rust needs in that build,
+    # and fall back to arm.
+    # See https://github.com/rust-lang-nursery/rustup.rs/issues/587.
+    if [ $_ostype = "unknown-linux-gnueabihf" -a $_cputype = armv7 ]; then
+        if ensure grep '^Features' /proc/cpuinfo | grep -q -v neon; then
+            # At least one processor does not have NEON.
+            local _cputype=arm
+        fi
+    fi
+
+    printf "%s" "$_cputype-$_ostype"
+}
+
 case $(uname) in
     Darwin)
         jagen_esed() { sed -E "$@"; }
