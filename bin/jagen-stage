@@ -85,7 +85,7 @@ for spec in $pkg_uses; do
     fi
     # assign "<name>_env_*" to "pkg_env_*" if unset
     prefix=$(jagen_name_to_id "$name")
-    for key in $(set | jagen_esed -rn "s/^${prefix}_env_([[:alnum:]_]+)=.*/\1/p"); do
+    for key in $(set | jagen_esed -n "s/^${prefix}_env_([[:alnum:]_]+)=.*/\1/p"); do
         eval ": \${pkg_env_${key}=\$${prefix}_env_${key}}" || exit
     done; unset prefix key
     unset name
