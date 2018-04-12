@@ -56,13 +56,13 @@ pkg_install() {
         rust-toolchain)
             if [ "$pkg_build_name" ]; then
                 if ! rustup toolchain list | grep -q "^$pkg_build_name"; then
-                    rustup install "$pkg_build_name" ||
+                    pkg_run rustup install "$pkg_build_name" ||
                         die "failed to install Rust toolchain: $pkg_build_name"
                 fi
             fi
             if [ "$pkg_build_system" ]; then
                 if ! rustup target list | grep -q "^${pkg_build_system}.*(installed)"; then
-                    rustup target add "$pkg_build_system" ||
+                    pkg_run rustup target add "$pkg_build_system" ||
                         die "failed to add Rust target: $pkg_build_system"
                 fi
             fi
