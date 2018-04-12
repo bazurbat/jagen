@@ -3,6 +3,7 @@
 S=$(printf '\t')
 
 mode=''
+tail_pid=
 
 die() {
     unset IFS
@@ -17,7 +18,12 @@ Ninja (https://ninja-build.org) to run the build system."
     fi
 }
 
-on_interrupt() { :; }
+cleanup() {
+    if [ "$tail_pid" ]; then
+        kill "$tail_pid"
+        tail_pid=
+    fi
+}
 
 cmd_build() {
     local IFS="$(printf '\n\t')"
@@ -54,14 +60,15 @@ cmd_build() {
         if [ "$show_progress" ]; then
             tail -qFc0 "$jagen_log_dir"/*.log 2>/dev/null &
             with_output=1
+            tail_pid=$!
         elif [ "$logs" ]; then
             tail -qFn+1 "$build_log" $logs 2>/dev/null &
             with_output=1
+            tail_pid=$!
         fi
     fi
 
-    # catch SIGINT to let ninja see it and exit cleanly
-    trap on_interrupt INT
+    trap cleanup INT
 
     # It is hard to reliably reproduce but testing shows that both syncs are
     # necessary to avoid losing log messages from console. When neither of
@@ -77,7 +84,7 @@ cmd_build() {
         ninja $targets; sts=$?
     fi
 
-    [ "$with_output" -a "$!" ] && kill $!
+    cleanup
 
     return $sts
 }
