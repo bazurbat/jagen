@@ -321,7 +321,9 @@ end
 
 function P:add_last_stage(stage, spec, config, template)
     local use, use_config = self:define_use(spec, config, template)
-    self:add_stage(stage, config):append(use:last(use_config))
+    if use then
+        self:add_stage(stage, config):append(use:last(use_config))
+    end
     return use
 end
 
