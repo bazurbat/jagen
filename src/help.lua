@@ -83,6 +83,7 @@ OPTIONS
   -n, --no-rebuild    do not rebuild targets which are already up to date
   -p, --progress      show build progress
   -P, --all-progress  show all build output
+  -q, --quiet         inhibit build output
 
   Use the command 'jagen help targets' for information about targets.
 
