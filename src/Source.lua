@@ -294,7 +294,7 @@ function GitSource:switch()
         end
     end
     if ref then
-        ok = self:command('checkout -q', quote(ref)):exec()
+        ok = self:command('checkout -q', quote(ref), '--'):exec()
         if not ok then return ok end
         if local_branch then
             ok = self:command('merge --ff-only', 'remotes/'..self.origin..'/'..ref):exec()
