@@ -260,6 +260,10 @@ function GitSource:update()
         end
     end
     if self.rev then
+        if #self.rev ~= 40 then
+            Log.error('Git rev should be fully spelled (40 char) object name')
+            return false
+        end
         append(refspecs, string.format("%s", self.rev))
     end
     if #refspecs > 0 then
