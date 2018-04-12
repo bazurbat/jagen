@@ -30,7 +30,7 @@ function P.mkpath(...)
 end
 
 function P.exec(cmdline, ...)
-    Log.debug(cmdline, ...)
+    Log.debug1(cmdline, ...)
     local command = string.format(cmdline, ...)
     local status = os.execute(command)
     -- handling API change in Lua 5.2
@@ -42,7 +42,7 @@ function P.exec(cmdline, ...)
 end
 
 function P.popen(cmdline, ...)
-    Log.debug(cmdline, ...)
+    Log.debug1(cmdline, ...)
     local prog = string.format(cmdline, ...)
     return assert(io.popen(prog))
 end

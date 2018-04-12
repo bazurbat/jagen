@@ -18,7 +18,7 @@ pkg_run() {
             ;;
     esac
 
-    debug $cmd "$*"
+    debug1 $cmd "$*"
     $cmd "$@" || $pkg_run_on_error
 }
 
