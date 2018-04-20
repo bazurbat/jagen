@@ -181,6 +181,10 @@ function P:parse(rule)
         end
     end
 
+    if type(rule.requires) == 'string' then
+        rule.requires = { rule.requires }
+    end
+
     if type(rule.uses) == 'string' then
         rule.uses = { rule.uses }
     end
