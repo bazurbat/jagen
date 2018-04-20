@@ -250,9 +250,13 @@ function Jagen.clean_package(pkg, spec)
     if build then
         local source_dir = Jagen.query(pkg, 'source_dir', config):read()
         local build_dir = Jagen.query(pkg, 'build_dir', config):read()
-        local clean_dirs = { build_dir }
-        local pipe = Jagen.query(pkg, 'build_clean', config):popen()
-        for dir in pipe:lines() do append(clean_dirs, dir) end pipe:close()
+        local clean_dirs = {}
+        for dir in Jagen.query(pkg, 'build_clean', config):lines() do
+            append(clean_dirs, dir)
+        end
+        if #clean_dirs == 0 and build_dir then
+            clean_dirs = { build_dir }
+        end
         for dir in each(clean_dirs) do
             if source_dir and System.same_dir(dir, source_dir) then
                 if pkg.source and pkg.source:is_scm() then
@@ -333,7 +337,10 @@ function Jagen.command.clean(args)
         return true
     end
 
-    if not found then return false end
+    if not found then return false end 
+
+    -- clean_package uses query, need to regenerate includes beforehand
+    if not Jagen.command.refresh() then return false end
 
     for spec, pkg in pairs(targets) do
         if not Jagen.clean_package(pkg, spec) then
@@ -341,7 +348,7 @@ function Jagen.command.clean(args)
         end
     end
 
-    return Jagen.command.refresh()
+    return true
 end
 
 local function prepare_root()
