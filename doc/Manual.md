@@ -245,14 +245,12 @@ rules and also to find pkg files. The `config` is optional.
   necessary for the package. Also causes `libtool` to be installed for the
   host.
 
-- **build.unset_cflags** (`pkg_build_clean_cflags`) — If set to `true`, causes
-  the CFLAGS, CXXFLAGS and LDFLAGS variables to be unset overriding
-  config-specific and user environment. Some "SDK-type" packages are very
-  sensitive to compiler settings and using this option might be necessary for
-  them to build correctly or as a safety measure.
-
 - **build.cflags** — Specifies additional C compiler flags. Exported
   automatically.
+
+- **build.clean** — The directory or a list of directories to clean by the
+  "clean" command or "build" command with "--clean" option when this package is
+  specified as the target. Defaults to **build.dir** when not specified.
 
 - **build.cmake_executable** (`pkg_build_cmake_executable`) — The path to cmake
   executable. Defaults to `$jagen_cmake_executable` or `cmake` if not set.
@@ -339,6 +337,12 @@ rules and also to find pkg files. The `config` is optional.
 
 - **build.type** (`pkg_build_type`) — The type of the package build system.
   Supported values are: gnu, cmake, kbuild, make, linux-kernel, linux-module.
+
+- **build.unset_cflags** (`pkg_build_clean_cflags`) — If set to `true`, causes
+  the CFLAGS, CXXFLAGS and LDFLAGS variables to be unset overriding
+  config-specific and user environment. Some "SDK-type" packages are very
+  sensitive to compiler settings and using this option might be necessary for
+  them to build correctly or as a safety measure.
 
 The rules of the form:
 ```
