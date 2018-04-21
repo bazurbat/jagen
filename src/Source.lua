@@ -236,13 +236,15 @@ function GitSource:clean()
 end
 
 function GitSource:update()
-    assert(self.origin)
     local function extract_ref(line) return line:match('%w+%s+(.+)') end
     local function head_matching(name)
-        return function (line) return line:match('^refs/heads/'..name..'$') end
+        return function (line) return line:match('^refs/heads/'..name:escape_pattern()..'$') end
     end
     local function tag_matching(name)
-        return function (line) return line:match('^refs/tags/'..name..'$') end
+        return function (line) return line:match('^refs/tags/'..name:escape_pattern()..'$') end
+    end
+    if not self:command('remote set-url', assert(self.origin), quote(self.location)):exec() then
+        return false
     end
     local refspecs, ok = {}, true
     local remotes = aslist(vmap(extract_ref)(self:command('ls-remote -q --heads --tags'):lines()))
@@ -274,36 +276,55 @@ function GitSource:update()
 end
 
 function GitSource:switch()
-    assert(self.origin)
-    local tag, branch, ref, local_branch, ok = self:gettag(), self:getbranch()
-    if not self:getrev() then branch = 'master' end
+    local function checkout(ref)
+        return self:command('checkout -q', quote(assert(ref)), '--'):exec()
+    end
+    local function update_submodules()
+        return self:_update_submodules('--no-fetch')
+    end
+    local function verify(ref)
+        return ref and self:command('show-ref -q --verify', ref):exec()
+    end
+
     if self.rev then
-        ref = self.rev
-    elseif tag then
-        ref = string.format('tags/%s', tag)
-    elseif branch then
-        local function branches_matching(name)
-            return function(line) return line:match('^%*?%s+('..branch..')$') end
-        end
-        local_branch = aslist(vfilter(branches_matching(branch))(
-                                      self:command('branch --list'):lines()))[1]
-        if local_branch then
-            ref = branch
+        return checkout(self.rev) and update_submodules()
+    end
+
+    local tag = self:gettag()
+    if tag then
+        local ref = string.format('refs/tags/%s', tag)
+        if verify(ref) then
+            return checkout(ref) and update_submodules()
         else
-            ref = string.format('%s/%s', self.origin, branch)
+            Log.error("the tag '%s' does not exist", tag)
+            return false
         end
     end
-    if ref then
-        ok = self:command('checkout -q', quote(ref), '--'):exec()
-        if not ok then return ok end
-        if local_branch then
-            ok = self:command('merge --ff-only', 'remotes/'..self.origin..'/'..ref):exec()
-            if not ok then return ok end
+
+    local branch = self:getbranch() or 'master'
+    local ref = string.format('refs/heads/%s', branch)
+    local remote_ref = string.format('refs/remotes/%s/%s', assert(self.origin), branch)
+    local local_valid, remote_valid = verify(ref), verify(remote_ref)
+
+    if local_valid then
+        if not checkout(ref) then
+            return false
         end
-        ok = self:_update_submodules('--no-fetch')
-        if not ok then return ok end
+        if remote_valid then
+            if not self:command('merge --ff-only', remote_ref):exec() then
+                return false
+            end
+        end
+    elseif remote_valid then
+        if not checkout(remote_ref) then
+            return false
+        end
+    else
+        Log.error("the branch '%s' does not exist", branch)
+        return false
     end
-    return true
+
+    return update_submodules()
 end
 
 function GitSource:clone()
