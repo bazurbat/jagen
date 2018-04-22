@@ -625,7 +625,7 @@ function P.define_package(rule, context)
     if not pkg.source or not getmetatable(pkg.source) then
         pkg.source = Source:create(pkg.source, pkg.name)
         if pkg.patches and pkg.source:is_scm() then
-            pkg.source.ignore_dirty = true
+            pkg.source.ignore_dirty = 'patches'
         end
     end
 
@@ -692,7 +692,7 @@ function P.define_package(rule, context)
 
         if build.in_source then
             if pkg.source:is_scm() then
-                pkg.source.ignore_dirty = true
+                pkg.source.ignore_dirty = 'in_source'
             end
         end
 

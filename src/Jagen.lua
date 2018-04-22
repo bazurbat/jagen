@@ -94,7 +94,7 @@ function Jagen.src.status(args)
             local head = source:head_name()
             local dirty = source:dirty() and ' dirty' or ''
             if #dirty > 0 and source.ignore_dirty then
-                dirty = dirty..'(ignored)'
+                dirty = string.format(' dirty(ignored:%s)', source.ignore_dirty)
             end
             local exclude = source.exclude and ' excluded' or ''
             print(string.format("%s%s%s%s%s", pkg.name,
