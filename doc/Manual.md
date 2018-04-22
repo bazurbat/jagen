@@ -295,10 +295,10 @@ rules and also to find pkg files. The `config` is optional.
   multi-configuration builds inside of its source directory.
 
 - **build.jobs** (`pkg_build_jobs`) — Specifies the number of jobs passed as a
-  `-j` argument to the `make` and `ninja` commands. If unset, defaults to the
-  number of processors in the system (`nproc`). The most useful value is
-  probably "1" which forces a single `make` instance for packages with badly
-  written Makefiles.
+  `-j` argument to the `make` and `ninja` commands. Defaults to `jagen_jobs` or
+  the number of processors in the system (`nproc`) if unset.  The most useful
+  value is probably "1" which forces a single `make` instance for packages with
+  badly written Makefiles.
 
 - **build.kernel_modules** — If set to `true`, indicates that the package
   installs Linux kernel modules.
@@ -418,6 +418,9 @@ install = value
   (`$jagen_project_dir/host`).
 - **jagen_include_dir** — The location of the `include` directory
   (`$jagen_project_dir/include`).
+- **jagen_jobs** — The default number of jobs to run for build commands.
+  Default: the number of processors on the system. Overriden by the
+  package-specific `build.jobs` property.
 - **jagen_layer_path** — The list of directories which are searched for
   unqualified layers.
 - **jagen_layers** — The IFS-separated list of paths for used layers.

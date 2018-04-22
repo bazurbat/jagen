@@ -2,9 +2,13 @@
 
 : ${pkg_run_on_error:=exit}
 
+pkg__get_jobs() {
+    printf "%s" "${pkg_build_jobs:-${jagen_jobs:-$(jagen_nproc)}}"
+}
+
 pkg_run() {
     local IFS; unset IFS
-    local cmd="$1" jobs="${pkg_build_jobs:-$(jagen_nproc)}"
+    local cmd="$1" jobs="$(pkg__get_jobs)"
     shift
 
     case $cmd in
@@ -140,7 +144,7 @@ pkg__get_cmake_args() {
         esac
     fi
     case $pkg_build_generator in
-        *Makefiles) j_arg="-j${pkg_build_jobs:-$(jagen_nproc)}" ;;
+        *Makefiles) j_arg="-j$(pkg__get_jobs)" ;;
     esac
     args="$v_arg $j_arg"; args=${args# }; args=${args% }
     printf '%s' "$args"
