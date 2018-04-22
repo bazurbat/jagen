@@ -137,20 +137,19 @@ function Jagen.src.update(args)
         local old_head
 
         if System.exists(dir) and not System.is_empty(dir) then
-            local rev = source:head_name()
             if not source.ignore_dirty and source:dirty() then
-                die("could not update %s: source dir '%s' is dirty",
-                    pkg.name, dir)
+                die("could not update %s: source dir '%s' is dirty", pkg.name, dir)
             end
-            Log.message('updating %s (%s)', pkg.name, rev)
+            local head_name = source:head_name()
+            Log.message('updating %s (%s)', pkg.name, head_name)
             old_head = source:head()
             if not offline then
                 if not source:update() then
-                    die('failed to update %s (%s) in %s', pkg.name, rev, dir)
+                    die('failed to update %s (%s) in %s', pkg.name, head_name, dir)
                 end
             end
             if not source:switch() then
-                die('failed to switch %s to %s in %s', pkg.name, source:getrev(), dir)
+                die('failed to switch %s (%s) to %s in %s', pkg.name, head_name, source:getrev(), dir)
             end
         else
             if offline then
@@ -158,8 +157,7 @@ function Jagen.src.update(args)
             end
             Log.message('cloning %s from %s', pkg.name, source.location)
             if not source:clone() then
-                die('failed to clone %s from %s to %s',
-                    pkg.name, source.location, dir)
+                die('failed to clone %s from %s to %s', pkg.name, source.location, dir)
             end
         end
 
