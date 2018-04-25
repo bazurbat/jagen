@@ -54,19 +54,6 @@ if [ "$pkg_config" ]; then
     pkg_uses="$pkg_uses $(eval echo \${pkg__${pkg_config}__uses})"
 fi
 
-pkg__assign_alias() {
-    local IFS='='; set -- $1; unset IFS
-    local key alias_to="$1" alias_from="$2"
-    for key in $(set | jagen_esed -n "s/^${alias_from}_([[:alnum:]_]+)=.*/\1/p"); do
-        eval "${alias_to}_${key}=\$${alias_from}_${key}" || return
-    done
-}
-
-pkg_use_alias="$pkg_use_alias $(eval echo "\$pkg__${pkg_config}__use_alias")"
-for use_alias in $pkg_use_alias; do
-    pkg__assign_alias "$use_alias" || exit
-done; unset use_alias
-
 # filter out the toolchain from pkg_uses
 new_uses=
 for spec in $pkg_uses; do
@@ -90,6 +77,19 @@ for spec in $pkg_uses; do
     done; unset prefix key
     unset name
 done; unset spec
+
+pkg__assign_alias() {
+    local IFS='='; set -- $1; unset IFS
+    local key alias_to="$1" alias_from="$2"
+    for key in $(set | jagen_esed -n "s/^${alias_from}_([[:alnum:]_]+)=.*/\1/p"); do
+        eval "${alias_to}_${key}=\$${alias_from}_${key}" || return
+    done
+}
+
+pkg_use_alias="$pkg_use_alias $(eval echo "\$pkg__${pkg_config}__use_alias")"
+for use_alias in $pkg_use_alias; do
+    pkg__assign_alias "$use_alias" || exit
+done; unset use_alias
 
 if [ "$pkg_build_toolchain" ]; then
     include "$(pkg__export_fname "$pkg_build_toolchain")" || exit
