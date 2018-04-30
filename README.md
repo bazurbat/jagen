@@ -1,5 +1,7 @@
 # Jagen
 
+[![Join the chat at https://gitter.im/bazurbat/jagen](https://badges.gitter.im/bazurbat/jagen.svg)](https://gitter.im/bazurbat/jagen?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Jagen eases the development of multiple interdependent software packages by
 generating a meta project which abstracts the peculiarities of their respective
 build and source control systems and provides instruments to uniformly manage
