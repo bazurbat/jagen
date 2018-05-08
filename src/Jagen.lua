@@ -90,7 +90,7 @@ function Jagen.src.status(args)
     local packages = scm_packages(args)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
-        if System.exists(source.dir) and not System.is_empty(source.dir) then
+        if System.exists(source.dir) and System.exists(source:getscmdir()) then
             local head = source:head_name()
             local dirty = source:dirty() and ' dirty' or ''
             if #dirty > 0 and source.ignore_dirty then
@@ -101,7 +101,7 @@ function Jagen.src.status(args)
                     source.location and ' ('..source.location..')',
                     head and ' ['..head..']', dirty, exclude))
         else
-            print(string.format("%s (%s): not exists", pkg.name, source.location))
+            print(string.format("%s (%s): not cloned", pkg.name, source.location))
         end
     end
     return true

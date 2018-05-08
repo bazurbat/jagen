@@ -148,6 +148,9 @@ function Source:getrev()
     return self.rev or self:gettag() or self:getbookmark() or self:getbranch()
 end
 
+function Source:getscmdir()
+end
+
 function Source:head()
     return ''
 end
@@ -202,6 +205,10 @@ end
 
 function GitSource:command(...)
     return Command:new('git --no-pager --git-dir=.git -C', quote(assert(self.dir)), ...)
+end
+
+function GitSource:getscmdir()
+    return System.mkpath(self.dir, '.git')
 end
 
 function GitSource:head()
@@ -371,6 +378,10 @@ function HgSource:command(...)
     return Command:new('hg -y --pager never -R', quote(assert(self.dir)), ...)
 end
 
+function HgSource:getscmdir()
+    return System.mkpath(self.dir, '.hg')
+end
+
 function HgSource:head()
     return self:command('id -i'):read()
 end
@@ -434,6 +445,10 @@ end
 function RepoSource:command(...)
     return Command:new('cd', quote(assert(self.dir)), '&&',
                        'repo', '--no-pager', ...)
+end
+
+function HgSource:getscmdir()
+    return System.mkpath(self.dir, '.repo')
 end
 
 function RepoSource:manifest_rev()
