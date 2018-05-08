@@ -516,9 +516,17 @@ function P:check_build_toolchain()
     end
 end
 
+function P:check_usages()
+    if self._defined_by_use then
+        print_warning("the name '%s' is mentioned as a dependency but no such package definition was found, "..
+            "please check if the spelling is correct or create an explicit rule for the '%s' "..
+            "package to remove this warning%s", self.name, self.name, self:format_at())
+    end
+end
+
 function P:define_use(spec, config, template)
     local key = string.format('%s:%s:%s', spec, tostring(config), tostring(template))
-    local cached, results = used_packages[key]
+    local cached, results, pkg = used_packages[key]
     if cached then return unpack(cached) end
     local target = Target.from_use(spec)
     local config = config or template and template.config
@@ -526,19 +534,21 @@ function P:define_use(spec, config, template)
         return
     end
     if target.config and target.config ~= config then
-        results = {
-            P.define_package {
-                name = target.name,
-                config = target.config
-            }, target.config
+        pkg = P.define_package {
+            name = target.name,
+            config = target.config
         }
+        results = { pkg, target.config }
     else
-        results = { P.define_package {
-                name = target.name,
-                config = config,
-                template = template
-            }, config
+        pkg = P.define_package {
+            name = target.name,
+            config = config,
+            template = template
         }
+        results = { pkg, config }
+    end
+    if pkg._defined_by_use == nil then
+        pkg._defined_by_use = true
     end
     used_packages[key] = results
     return unpack(results)
@@ -582,10 +592,15 @@ function P.define_package(rule, context)
         if module then
             table.merge(pkg, P:new(assert(module())))
             append(pkg.contexts, Context:new { filename = filename })
+            pkg._defined_by_use = false
         end
         packages[rule.name] = pkg
     end
     append(pkg.contexts, context)
+
+    if pkg._defined_by_use then
+        pkg._defined_by_use = false
+    end
 
     for key in each { 'source', 'patches' } do
         if rule[key] then
@@ -747,7 +762,10 @@ function P.define_package(rule, context)
         if this ~= pkg then
             for spec in each(this.uses or {}) do
                 local use = Target.from_use(spec)
-                P.define_package { use.name, use.config or config }
+                local pkg = P.define_package { use.name, use.config or config }
+                if pkg._defined_by_use == nil then
+                    pkg._defined_by_use = true
+                end
             end
         end
     end
@@ -867,6 +885,7 @@ function P.load_rules()
         pkg:check_build_configs()
         pkg:check_build_insource()
         pkg:check_build_toolchain()
+        pkg:check_usages()
     end
 
     lua_package.loaders[2] = def_loader
