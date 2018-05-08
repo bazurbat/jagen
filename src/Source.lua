@@ -209,7 +209,8 @@ function GitSource:head()
 end
 
 function GitSource:head_name()
-    local head = assert(self:command('log -1 --format=\"%h%d\"'):read())
+    local head = self:command('log -1 --format=\"%h%d\"'):read()
+    if not head then return 'NONE' end
     local rev, ref = head:match('(%S+)%s%((.+)%)')
     rev = rev or head
     if ref then
