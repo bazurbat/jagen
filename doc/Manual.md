@@ -412,6 +412,8 @@ install = value
 - **jagen_dist_dir** — The location of the `dist` directory
   (`$jagen_project_dir/dist`).
 - **jagen_flags** — Space-separated list of flags.
+- **jagen_host_arch** — The host identifier of the system Jagen runs on. Probably, most of the time
+  it will be: `x86_64-unknown-linux-gnu` in the case of Linux on Intel platform.
 - **jagen_host_cmake_module_path** — The `CMAKE_MODULE_PATH` for "host" config.
   Overrides `$jagen_cmake_module_path` if set, empty value disables.
 - **jagen_host_dir** — The location of the `host` directory
