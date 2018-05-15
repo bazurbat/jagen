@@ -60,6 +60,10 @@ local function binding(k, v)
     return format('%s = %s', assert(k), tostring(assert(v)))
 end
 
+local function format_pool(name, depth)
+    return format('pool %s\n%sdepth = %s', name, indent(4), depth)
+end
+
 local function format_rule(name, command)
     return format('rule %s\n%scommand = %s', name, indent(4), command)
 end
@@ -173,6 +177,13 @@ local function format_stage(target, pkg)
         vars.restat = 'true'
     end
 
+    if target.stage == 'compile' then
+        local build = pkg:get('build', target.config)
+        if build and build.type == 'gradle-android' then
+            vars.pool = 'gradle_android'
+        end
+    end
+
     return format_build {
         rule    = 'stage',
         uses    = uses,
@@ -199,7 +210,9 @@ function P.generate(out_file, rules)
         end)
 
     local lines = {
+        binding('ninja_required_version', '1.1'),
         binding('builddir', assert(Jagen.build_dir)),
+        format_pool('gradle_android', 1),
         format_rule('stage', join {
                 separated(Jagen.shell), 'jagen-stage $args'
             })
