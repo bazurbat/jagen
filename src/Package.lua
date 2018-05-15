@@ -518,9 +518,23 @@ function P:check_build_toolchain()
 end
 
 function P:check_usages()
-    if self._defined_by_use then
-        print_warning("a package '%s' is required or used but the package definition was not found, "..
-            "please check if spelling is correct or create an explicit rule for the '%s' "..
+    local implicit = true
+    for context in each(self.contexts) do
+        if not context.implicit then
+            implicit = false
+            break
+        end
+    end
+    if not implicit then return end
+    local build, install
+    for config, this in self:each_config() do
+        build = build or self:get('build', config)
+        install = install or self:get('install', config)
+    end
+    if (not build or build and not build.type) and
+       (not install or install and not install.type) then
+        print_warning("a package '%s' is defined implicitly but has no build or install rules, "..
+            "please check if the name is correct or create a rule for the '%s' "..
             "package to remove this warning%s", self.name, self.name, self:format_at())
     end
 end
@@ -549,16 +563,12 @@ function P:define_use(spec, context)
         }
         results = { pkg, config }
     end
-    if pkg._defined_by_use == nil then
-        pkg._defined_by_use = true
-    end
     used_packages[key] = results
     return unpack(results)
 end
 
 function P.define_package(rule, context)
     rule = P:new(rule)
-    local has_context = context and true
 
     if context then
         context.name = rule.name
@@ -595,15 +605,10 @@ function P.define_package(rule, context)
         if module then
             table.merge(pkg, P:new(assert(module())))
             append(pkg.contexts, Context:new { filename = filename })
-            pkg._defined_by_use = false
         end
         packages[rule.name] = pkg
     end
     append(pkg.contexts, context)
-
-    if has_context then
-        pkg._defined_by_use = false
-    end
 
     for key in each { 'source', 'patches' } do
         if rule[key] then
@@ -765,9 +770,6 @@ function P.define_package(rule, context)
             for spec in each(this.uses or {}) do
                 local use = Target.from_use(spec)
                 local pkg = P.define_package { use.name, use.config or config }
-                if pkg._defined_by_use == nil then
-                    pkg._defined_by_use = true
-                end
             end
         end
     end
