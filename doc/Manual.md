@@ -7,6 +7,7 @@
 - [Building](Building.md)
 - [Cleaning](Cleaning.md)
 - [Targets](#targets)
+- [Rust Support](Rust.md)
 - [Managing package sources](ManagingSources.md)
 - [Manage filesystem images](Images.md)
 - [Install Bash completions](Installation.md)

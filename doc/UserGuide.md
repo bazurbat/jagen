@@ -140,6 +140,7 @@ The details of using the `-L` option are out of scope of this guide for now.
 - [Building](Building.md)
 - [Cleaning](Cleaning.md)
 - [Targets](Manual.md#targets)
+- [Rust Support](Rust.md)
 - [Managing package sources](ManagingSources.md)
 - [Manage filesystem images](Images.md)
 - [Install Bash completions](Installation.md)
