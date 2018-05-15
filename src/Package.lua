@@ -310,7 +310,8 @@ function P:add_rule(rule, config)
     return self:add_stage(name, config):add_inputs(target)
 end
 
-function P:add_require(spec, config, template)
+function P:add_require(spec, context)
+    local config, template = context.config, context.template
     local build, install, stage = self:get('build', config), self:get('install', config)
     if build and build.type then
         stage = 'configure'
@@ -319,11 +320,12 @@ function P:add_require(spec, config, template)
     else
         stage = self:last(config).stage
     end
-    return self:add_last_stage(stage, spec, config, template)
+    return self:add_last_stage(stage, spec, context)
 end
 
-function P:add_last_stage(stage, spec, config, template)
-    local use, use_config = self:define_use(spec, config, template)
+function P:add_last_stage(stage, spec, context)
+    local config, template = context.config, context.template
+    local use, use_config = self:define_use(spec, context)
     if use then
         self:add_stage(stage, config):append(use:last(use_config))
     end
@@ -523,7 +525,8 @@ function P:check_usages()
     end
 end
 
-function P:define_use(spec, config, template)
+function P:define_use(spec, context)
+    local config, template = context.config, context.template
     local key = string.format('%s:%s:%s', spec, tostring(config), tostring(template))
     local cached, results, pkg = used_packages[key]
     if cached then return unpack(cached) end
@@ -666,7 +669,7 @@ function P.define_package(rule, context)
         if build.type then
             local toolchain = pkg:gettoolchain(config)
             if toolchain then
-                pkg:add_require(toolchain, config)
+                pkg:add_require(toolchain, { config = config })
                 this.uses = append_uniq(toolchain, this.uses)
             end
             build.toolchain = toolchain
@@ -686,7 +689,7 @@ function P.define_package(rule, context)
                     system    = build.system,
                 }
             }
-            pkg:add_require(name, config)
+            pkg:add_require(name, { config = config })
             this.uses = append_uniq(name, this.uses)
             build.rust_toolchain = rust_toolchain
         elseif build.type == 'gradle-android' then
@@ -751,12 +754,12 @@ function P.define_package(rule, context)
         end
 
         for spec in each(pkg.requires) do
-            pkg:add_require(spec, config, template)
+            pkg:add_require(spec, { config = config, template = template })
         end
 
         for spec in each(rule.requires) do
             local template = rule.requires.template or template
-            pkg:add_require(spec, config, template)
+            pkg:add_require(spec, { config = config, template = template })
         end
 
         if this ~= pkg then
@@ -775,7 +778,7 @@ function P.define_package(rule, context)
         local target = pkg:add_rule(stage, config)
         for spec in each(stage.requires) do
             local template = stage.requires.template or template
-            pkg:add_last_stage(target.stage, spec, config, template)
+            pkg:add_last_stage(target.stage, spec, { config = config, template = template })
         end
     end
 
