@@ -91,13 +91,9 @@ cmd_build() {
 
 cmd_image() {
     . "$jagen_dir/env.sh" || return
-
     local image_script="$(find_in_path "image.sh")"
-
     [ "$image_script" ] ||
-        die "could not find 'image.sh' in import path - \
-current configuration does not support image creation"
-
+        die "the current project does not support image creation"
     "${jagen_shell:-/bin/sh}" "$image_script" "$@"
 }
 

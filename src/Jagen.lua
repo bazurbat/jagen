@@ -656,12 +656,11 @@ function Jagen.command.list(args)
 end
 
 function Jagen.command.image(args)
-    if help_requested(args) then
+    if #args == 0 or help_requested(args) then
         return Jagen.command['help'] { 'image' }
     end
-
     return Command:new(quote(System.mkpath(Jagen.dir, 'src', 'cmd.sh')),
-        'image', quote(unpack(args)))
+        'image', quote(unpack(args))):exec()
 end
 
 function Jagen.command._compare_versions(args)
