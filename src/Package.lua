@@ -563,12 +563,12 @@ function P.define_package(rule, context)
     if context then
         context.name = rule.name
         context.config = rule.config or context.config
-        context.template = rule.template or context.template
+        context.template = rule.template or context.template or {}
     else
         context = {
             name = rule.name,
             config = rule.config,
-            template = rule.template,
+            template = rule.template or {},
             implicit = true
         }
     end
@@ -613,8 +613,7 @@ function P.define_package(rule, context)
         end
     end
 
-    local config, template = context.config, context.template or {}
-    local this = pkg
+    local config, template, this = context.config, context.template, pkg
     if config then this = pkg:add_config(config) end
 
     rule = table.merge(copy(template), rule)
