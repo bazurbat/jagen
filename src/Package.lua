@@ -34,8 +34,7 @@ function Context:new(o)
     return o
 end
 
-function Context:__tostring(level)
-    level = level or 0
+function Context:__tostring()
     local insert, concat = table.insert, table.concat
     local lines = {}
     local function append(...)
@@ -56,7 +55,6 @@ function Context:__tostring(level)
     end
     if self.implicit and #lines > 0 then
         append(' *')
-        insert(lines, 1, string.rep('  ', level))
     end
     return table.concat(lines)
 end
@@ -112,19 +110,20 @@ function P:format_contexts(start_col, start_1col)
     for i = 1, #self.contexts do
         local context, level = self.contexts[i], 0
         while context do
-            local str = context:__tostring(level)
-            if #str > 0 then
-                if i == 1 then
-                    table.insert(lines, string.rep(' ', start_1col)..str)
-                else
-                    table.insert(lines, string.rep('  ', level)..str)
-                end
+            local contextstr = tostring(context)
+            if #contextstr > 0 then
+                table.insert(lines, string.rep('  ', level)..contextstr)
             end
             context = context.parent
             level = level + 1
         end
     end
-    return table.concat(lines, '\n'..string.rep(' ', start_col))
+    local res = table.concat(lines, '\n'..string.rep(' ', start_col))
+    if start_1col then
+        return string.rep(' ', start_1col)..res
+    else
+        return res
+    end
 end
 
 function P:format_last_context()
@@ -132,7 +131,7 @@ function P:format_last_context()
 end
 
 function P:format_at()
-    return string.format('\n----\n  at %s:\n%s\n', self:format_last_context(), self:format_contexts(5))
+    return string.format('\n----\n at: %s\n', self:format_contexts(5, 0))
 end
 
 function P:parse(rule)
