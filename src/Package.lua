@@ -517,8 +517,8 @@ end
 
 function P:check_usages()
     if self._defined_by_use then
-        print_warning("the name '%s' is mentioned as a dependency but no such package definition was found, "..
-            "please check if the spelling is correct or create an explicit rule for the '%s' "..
+        print_warning("a package '%s' is required or used but the package definition was not found, "..
+            "please check if spelling is correct or create an explicit rule for the '%s' "..
             "package to remove this warning%s", self.name, self.name, self:format_at())
     end
 end
@@ -555,6 +555,7 @@ end
 
 function P.define_package(rule, context)
     rule = P:new(rule)
+    local has_context = context and true
 
     if context then
         context.name = rule.name
@@ -597,7 +598,7 @@ function P.define_package(rule, context)
     end
     append(pkg.contexts, context)
 
-    if pkg._defined_by_use then
+    if has_context then
         pkg._defined_by_use = false
     end
 
