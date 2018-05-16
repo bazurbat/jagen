@@ -184,6 +184,13 @@ local function format_stage(target, pkg)
         end
     end
 
+    if target.stage == 'install' then
+        local build = pkg:get('build', target.config)
+        if build and build.type == 'rust-toolchain' then
+            vars.pool = 'rust_toolchain'
+        end
+    end
+
     return format_build {
         rule    = 'stage',
         uses    = uses,
@@ -213,6 +220,7 @@ function P.generate(out_file, rules)
         binding('ninja_required_version', '1.1'),
         binding('builddir', assert(Jagen.build_dir)),
         format_pool('gradle_android', 1),
+        format_pool('rust_toolchain', 1),
         format_rule('stage', join {
                 separated(Jagen.shell), 'jagen-stage $args'
             })

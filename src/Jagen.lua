@@ -360,38 +360,42 @@ local function prepare_root()
 end
 
 local function generate_cargo_config(packages)
-    local target_map = {}
-    for name, pkg in pairs(packages) do
+    local targets, lines = {}, {}
+    local function do_generate(pkg)
         for config, this in pkg:each_config() do
             local build = pkg:get('build', config)
-            if build and build.type == 'rust' and config ~= 'host' and build.system and build.toolchain then
-                local toolchain = assert(packages[build.toolchain])
-                if toolchain.build and toolchain.build.system then
-                    target_map[build.system] = toolchain
+            if build and build.type == 'rust' and config ~= 'host' then
+                local build_system = Jagen.query(pkg, 'build_system', config):read()
+                if build_system then
+                    local toolchain = assert(packages[build.toolchain])
+                    local toolchain_build = toolchain:get('build', config)
+                    local system = toolchain_build.system
+                    local cc = toolchain_build.cc or build.cc or 'gcc'
+                    if system and cc then
+                        targets[build_system] = string.format('%s-%s', system, cc)
+                    end
                 else
-                    Log.warning("Rust package '%s' specifies build system '%s' and toolchain '%s' which does "..
-                        "not have a build system set, please verify that the toolchain name is correct or "..
-                        "set its build system explicitly to remove this warning%s",
-                        name, build.system, build.toolchain, pkg:format_at())
+                    Log.warning("could not determine a target system to build the package '%s' in '%s' config: "..
+                        "verify that the selected toolchain specifies a system or set 'build.system' explicitly "..
+                        "for this package%s", name, config, pkg:format_at())
                 end
             end
         end
     end
-    local lines = {}
-    for target, toolchain in pairs(target_map) do
-        local system = assert(toolchain.build.system)
-        local cc = toolchain.build.cc or 'gcc'
-        table.insert(lines, string.format('[target.%s]\nlinker = "%s-%s"', target, system, cc))
+    for name, pkg in pairs(packages) do
+        do_generate(pkg)
     end
-    if #lines > 0 then
-        local config_dir = assert(os.getenv('jagen_cargo_config_dir'))
-        System.mkdir(config_dir)
-        local config_path = System.mkpath(config_dir, 'config')
-        local file = assert(io.open(config_path, 'w'))
-        file:write(table.concat(lines, '\n'), '\n')
-        file:close()
+    for target, bin in pairs(targets) do
+        table.insert(lines, string.format('[target.%s]\nlinker = "%s"', target, bin))
     end
+    local config_dir = assert(os.getenv('jagen_cargo_config_dir'))
+    local config_path = System.mkpath(config_dir, 'config')
+    System.mkdir(config_dir)
+    local file = assert(io.open(config_path, 'w'))
+    file:write(table.concat(lines, '\n'), '\n')
+    file:close()
 end
+
 
 function Jagen.command.refresh(args, packages)
     if help_requested(args) then

@@ -59,6 +59,7 @@ pkg_install() {
                     pkg_run rustup install "$pkg_build_name" ||
                         die "failed to install Rust toolchain: $pkg_build_name"
                 fi
+                pkg_run rustup default "$pkg_build_name"
             fi
             if [ "$pkg_build_system" ]; then
                 if ! rustup target list | grep -q "^${pkg_build_system}.*(installed)"; then
