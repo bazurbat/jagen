@@ -315,12 +315,18 @@ function GitSource:switch()
     local local_valid, remote_valid = verify(ref), verify(remote_ref)
 
     if local_valid then
-        if not checkout(ref) then
+        if not checkout(branch) then
             return false
         end
         if remote_valid then
-            if not self:command('merge --ff-only', remote_ref):exec() then
-                return false
+            if self.force_update then
+                if not self:command('reset --hard', remote_ref):exec() then
+                    return false
+                end
+            else
+                if not self:command('merge --ff-only', remote_ref):exec() then
+                    return false
+                end
             end
         end
     elseif remote_valid then

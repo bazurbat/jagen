@@ -211,6 +211,10 @@ rules and also to find pkg files. The `config` is optional.
 - **source.filename** (`pkg_source_filename`) — The pathname of the source
   location after the last `/` or the whole location if it does not contain `/`.
 
+- **source.force_update** (`pkg_source_force_update`) — If set to `true` indicates that the source
+  is force pushed on the upstream, so Jagen will update by `reset` instead of `merge`. Relevant
+  only for Git sources. If this is not set the failure to merge will be considered an error.
+
 - **source.ignore\_dirty** — Ignore "dirty" status of the source directory.
 
 - **source.location** — The location of the source file or the repository URL.
