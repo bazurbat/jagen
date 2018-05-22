@@ -100,7 +100,10 @@ local function find_module(modname)
 end
 
 function P:__tostring(sep)
-    return string.format('%s%s%s', self.name or '', sep or ':', self.config or '')
+    local c = {}
+    if self.name then table.insert(c, self.name) end
+    if self.config then table.insert(c, self.config) end
+    return table.concat(c, sep or ':')
 end
 
 function P:format_contexts(start_col, start_1col)
