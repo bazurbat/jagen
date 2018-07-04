@@ -12,40 +12,38 @@ function Source:new(o)
 end
 
 function Source:parse(rule)
-    local source
-
-    if type(rule) == 'table' then
-        source = rule
-        if #source == 1 then
-            source.location = source[1]
-            table.remove(source, 1)
-        elseif #source == 2 then
-            source.type = source[1]
-            source.location = source[2]
-            table.remove(source, 1)
-            table.remove(source, 1)
+    if type(rule) == 'string' then
+        rule = { location = rule }
+    elseif type(rule) == 'table' then
+        if type(rule[1]) == 'string' then
+            if type(rule[2]) == 'string' then
+                rule.type = rule[1]
+                rule.location = rule[2]
+                table.remove(rule, 2)
+            else
+                rule.location = rule[1]
+            end
+            table.remove(rule, 1)
         end
-    elseif type(rule) == 'string' then
-        source = { location = rule }
     end
 
-    if source and not source.type and source.location then
-        local url = source.location
+    if rule and not rule.type and rule.location then
+        local url = rule.location
         if url:match('%.hg$') then
-            source.type = 'hg'
+            rule.type = 'hg'
         elseif url:match('%.git$') or url:match('^git@') or
                url:match('^[%w._-]+@[%w._-]+:') then
-            source.type = 'git'
+            rule.type = 'git'
         elseif url:match('%.tar$') or url:match('%.zip$') or
                url:match('%.tgz$') or url:match('%.gz$') or
                url:match('%.txz$') or url:match('%.xz$') or
                url:match('%.tbz2$') or url:match('%.bz2$')
         then
-            source.type = 'dist'
+            rule.type = 'dist'
         end
     end
 
-    return source
+    return rule
 end
 
 function Source:is_known(tp)
