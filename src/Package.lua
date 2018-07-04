@@ -346,12 +346,17 @@ function P:add_patch_dependencies()
 
     local function get_provider(name)
         if name and name ~= 'none' then
-            return packages[name] or P.define_package { name }
+            local pkg = packages[name]
+            if not pkg then
+                pkg = P.define_package { name }
+                pkg.source:derive_properties(name)
+            end
+            return pkg
         end
     end
 
     local function get_provided_filename(provider, name)
-        return System.expand(System.mkpath(provider.source.dir,
+        return System.expand(System.mkpath(assert(provider.source.dir),
             self.patches.dir or '', name..'.patch'))
     end
 
@@ -849,6 +854,10 @@ function P.load_rules()
 
     push_context({ implicit = true })
 
+    for _, pkg in pairs(packages) do
+        pkg.source:derive_properties(pkg.name)
+    end
+
     -- As the add_patch_dependencies can insert new packages to the list
     -- the usage of the table.filter here is essential to avoid undefined
     -- behaviour during the traversal because we are relying on the fact
@@ -857,7 +866,6 @@ function P.load_rules()
             function (pkg) return pkg.patches end),
         P.add_patch_dependencies)
 
-    -- another pass, with the toolchains this time
     for _, pkg in pairs(packages) do
         pkg:export_dirs()
         pkg:export_build_env()

@@ -85,27 +85,29 @@ function Source:create(source, name)
         source = Source:new(source)
     end
 
-    if source.location then
-        if not source.filename then
-            source.filename = source.location:match('^.*/(.+)$') or source.location
+    return source
+end
+
+function Source:derive_properties(name)
+    if self.location then
+        if not self.filename then
+            self.filename = self.location:match('^.*/(.+)$') or self.location
         end
-        if not source.basename then
-            source.basename = source:_basename(source.filename)
+        if not self.basename then
+            self.basename = self:_basename(self.filename)
         end
-        if not source.dir then
-            if source:is_scm() then
-                source.dir = System.mkpath('$jagen_src_dir', source.basename)
+        if not self.dir then
+            if self:is_scm() then
+                self.dir = System.mkpath('$jagen_src_dir', self.basename)
             else
-                source.dir = System.mkpath('$jagen_build_dir', name, source.basename)
+                self.dir = System.mkpath('$jagen_build_dir', name, self.basename)
             end
         end
     end
 
-    if name and not source.dir then
-        source.dir = System.mkpath('$jagen_src_dir', name)
+    if name and not self.dir then
+        self.dir = System.mkpath('$jagen_src_dir', name)
     end
-
-    return source
 end
 
 function Source:clean_disabled()
