@@ -575,6 +575,115 @@ function P:define_use(spec, context)
     return unpack(results)
 end
 
+function P:process_config(config, this, template, rule)
+    local build, install = this.build, this.install
+
+    self:add_stage('export', config)
+
+    if build.type then
+        local toolchain = self:gettoolchain(config)
+        if toolchain then
+            self:add_require(toolchain, { config = config })
+            this.uses = append_uniq(toolchain, this.uses)
+        end
+        build.toolchain = toolchain
+    end
+
+    if build.type == 'rust' then
+        local rust_toolchain = build.rust_toolchain or 'stable'
+        local name = string.format('rust-%s%s', rust_toolchain,
+            build.system and '-'..build.system or '')
+        P.define_package {
+            name   = name,
+            config = config,
+            build = {
+                type      = 'rust-toolchain',
+                toolchain = 'rustup:host',
+                name      = rust_toolchain,
+                system    = build.system,
+            }
+        }
+        self:add_require(name, { config = config })
+        this.uses = append_uniq(name, this.uses)
+        build.rust_toolchain = rust_toolchain
+    elseif build.type == 'gradle-android' then
+        build.in_source = true
+        rule.requires = append_uniq('android-sdk-tools', rule.requires)
+        rule.requires = append_uniq('android-ndk', rule.requires)
+        this.uses = append_uniq('android-sdk-tools', this.uses)
+        this.uses = append_uniq('android-ndk', this.uses)
+    end
+
+    if not build.dir then
+        if build.in_source then
+            build.dir = '$pkg_source_dir'
+        else
+            build.dir = System.mkpath('${pkg_work_dir:?}', config)
+        end
+    end
+
+    if build.in_source then
+        if self.source:is_scm() then
+            self.source.ignore_dirty = 'in_source'
+        end
+    end
+
+    if build.type == 'gnu' then
+        if build.generate or build.autoreconf then
+            self:add_rule { 'autoreconf',
+                { 'libtool', 'install', 'host' }
+            }
+            P.define_package { 'libtool', 'host' }
+        end
+    end
+
+    if build.type == 'linux-module' or build.kernel_modules == true or
+        install and install.modules then
+
+        P.define_package { 'kernel', config }
+
+        self:add_rule { 'configure', config,
+            { 'kernel', 'configure', config }
+        }
+        self:add_rule { 'compile', config,
+            { 'kernel', 'compile', config }
+        }
+        self:add_rule { 'install', config,
+            { 'kernel', 'install', config }
+        }
+    elseif build.type then
+        self:add_stage('configure', config)
+        self:add_stage('compile', config)
+    end
+
+    if config == 'target' and build.target_requires_host then
+        rule.requires = append(rule.requires or {}, { self.name, 'host' })
+    end
+
+    if install.type == nil and build and build.type then
+        install.type = build.type
+    end
+    if install.type and install.type ~= false then
+        self:add_stage('install', config)
+    end
+
+    for spec in each(self.requires) do
+        self:add_require(spec, { config = config, template = template })
+    end
+
+    for spec in each(rule.requires) do
+        local template = rule.requires.template or template
+        self:add_require(spec, { config = config, template = template })
+    end
+
+    if this ~= self then
+        for spec in each(this.uses or {}) do
+            local use = Target.from_use(spec)
+            P.define_package { use.name, use.config or config }
+        end
+    end
+end
+
 function P.define_package(rule, context)
     rule = P:new(rule)
 
@@ -667,118 +776,10 @@ function P.define_package(rule, context)
     end
 
     if config then
-        local build, install = this.build, this.install
-
-        pkg:add_stage('export', config)
-
-        if build.toolchain and not template.build or
-            template.build and template.build.toolchain == nil
-        then
-            template.build = template.build or {}
-            template.build.toolchain = build.toolchain
-        end
-
-        if build.type then
-            local toolchain = pkg:gettoolchain(config)
-            if toolchain then
-                pkg:add_require(toolchain, { config = config })
-                this.uses = append_uniq(toolchain, this.uses)
-            end
-            build.toolchain = toolchain
-        end
-
-        if build.type == 'rust' then
-            local rust_toolchain = build.rust_toolchain or 'stable'
-            local name = string.format('rust-%s%s', rust_toolchain,
-                build.system and '-'..build.system or '')
-            P.define_package {
-                name   = name,
-                config = config,
-                build = {
-                    type      = 'rust-toolchain',
-                    toolchain = 'rustup:host',
-                    name      = rust_toolchain,
-                    system    = build.system,
-                }
-            }
-            pkg:add_require(name, { config = config })
-            this.uses = append_uniq(name, this.uses)
-            build.rust_toolchain = rust_toolchain
-        elseif build.type == 'gradle-android' then
-            build.in_source = true
-            rule.requires = append_uniq('android-sdk-tools', rule.requires)
-            rule.requires = append_uniq('android-ndk', rule.requires)
-            this.uses = append_uniq('android-sdk-tools', this.uses)
-            this.uses = append_uniq('android-ndk', this.uses)
-        end
-
-        if not build.dir then
-            if build.in_source then
-                build.dir = '$pkg_source_dir'
-            else
-                build.dir = System.mkpath('${pkg_work_dir:?}', config)
-            end
-        end
-
-        if build.in_source then
-            if pkg.source:is_scm() then
-                pkg.source.ignore_dirty = 'in_source'
-            end
-        end
-
-        if build.type == 'gnu' then
-            if build.generate or build.autoreconf then
-                pkg:add_rule { 'autoreconf',
-                    { 'libtool', 'install', 'host' }
-                }
-                P.define_package { 'libtool', 'host' }
-            end
-        end
-
-        if build.type == 'linux-module' or build.kernel_modules == true or
-            install and install.modules then
-
-            P.define_package { 'kernel', config }
-
-            pkg:add_rule { 'configure', config,
-                { 'kernel', 'configure', config }
-            }
-            pkg:add_rule { 'compile', config,
-                { 'kernel', 'compile', config }
-            }
-            pkg:add_rule { 'install', config,
-                { 'kernel', 'install', config }
-            }
-        elseif build.type then
-            pkg:add_stage('configure', config)
-            pkg:add_stage('compile', config)
-        end
-
-        if config == 'target' and build.target_requires_host then
-            rule.requires = append(rule.requires or {}, { pkg.name, 'host' })
-        end
-
-        if install.type == nil and build and build.type then
-            install.type = build.type
-        end
-        if install.type and install.type ~= false then
-            pkg:add_stage('install', config)
-        end
-
-        for spec in each(pkg.requires) do
-            pkg:add_require(spec, { config = config, template = template })
-        end
-
-        for spec in each(rule.requires) do
-            local template = rule.requires.template or template
-            pkg:add_require(spec, { config = config, template = template })
-        end
-
-        if this ~= pkg then
-            for spec in each(this.uses or {}) do
-                local use = Target.from_use(spec)
-                local pkg = P.define_package { use.name, use.config or config }
-            end
+        pkg:process_config(config, this, template, rule)
+    else
+        for config, this in pkg:each_config() do
+            pkg:process_config(config, this, template, rule)
         end
     end
 
