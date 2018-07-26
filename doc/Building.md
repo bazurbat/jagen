@@ -14,7 +14,6 @@ Option             | Description
 -a, --all          | continue until everything is up to date
 -n, --no-rebuild   | do not rebuild targets which are already up to date
 -p, --progress     | show build progress
--P, --all-progress | show all build output
 
 ### Synopsis
 
@@ -31,12 +30,16 @@ in addition to the specified targets.
 The '--no-rebuild' option causes the command to behave similarly to 'make': it
 ensures that targets are up to date instead of rebuilding them unconditionally.
 
-The '--progress' option enables the printing of the build progress for the
-specified targets, the '--all-progress' option prints all build output instead.
+The '--progress' option enables printing of the build progress from all logs in
+parallel. If this option is not given the output is shown only for targets
+directly specified on the command line.
+
+The '--quiet' option disables build progress output from Jagen and leaves the
+build tool (Ninja) connected directly to the terminal.
 
 Arguments after '--' will be passed literally to the underlying build tool.
 The handling depends on the build tool in question but be aware of the case
-when mutiple targets matched as the same arguments will be passed to all of
+when multiple targets matched as the same arguments will be passed to all of
 their build commands which might have surprising results.
 
 It is best to use this functionality to quickly adjust the behaviour of a
