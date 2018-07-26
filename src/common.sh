@@ -49,6 +49,9 @@ include() {
     elif [ -f "$pathname" ]; then
         debug2 "include $pathname"
         . "$pathname"
+    else
+        error "include $pathname not found"
+        return 1
     fi
 }
 
