@@ -143,20 +143,7 @@ local function format_stage(target, pkg)
 
     local uses = {}
 
-    if target.stage == 'unpack' then
-        for use in each(pkg.uses or {}) do
-            append_uniq(Target.from_args(Target.from_use(use).name, 'export'), uses)
-        end
-        for _, this in pkg:each_config() do
-            for use in each(this.uses or {}) do
-                append_uniq(Target.from_args(Target.from_use(use).name, 'export'), uses)
-            end
-        end
-    elseif config and (not pkg._added_exports or
-            (pkg._added_exports and not pkg._added_exports[config]))
-                  and target.stage ~= 'export' then
-        pkg._added_exports = pkg._added_exports or {}
-        pkg._added_exports[config] = true
+    if config then
         local this = assert(pkg.configs[config])
         for spec in each(pkg.uses or {}, this.uses) do
             local use = Target.from_use(spec)
@@ -166,6 +153,16 @@ local function format_stage(target, pkg)
                 append_uniq(Target.from_args(use.name, 'export', config), uses)
             end
         end
+    else
+        for use in each(pkg.uses or {}) do
+            append_uniq(Target.from_args(Target.from_use(use).name, 'export'), uses)
+        end
+        for _, this in pkg:each_config() do
+            for use in each(this.uses or {}) do
+                append_uniq(Target.from_args(Target.from_use(use).name, 'export'), uses)
+            end
+        end
+
     end
 
     if target.stage == 'provide_patches' then
