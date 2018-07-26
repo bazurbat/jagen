@@ -162,7 +162,6 @@ local function format_stage(target, pkg)
                 append_uniq(Target.from_args(Target.from_use(use).name, 'export'), uses)
             end
         end
-
     end
 
     if target.stage == 'provide_patches' then
