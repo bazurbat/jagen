@@ -21,6 +21,13 @@ pkg_configure() {
 
     case $pkg_build_type in
         gnu)
+            if [ "$pkg_build_cc" ]; then
+                export CC="${pkg_toolchain_prefix}${pkg_build_cc}"
+            fi
+            if [ "$pkg_build_cxx" ]; then
+                export CXX="${pkg_toolchain_prefix}${pkg_build_cxx}"
+            fi
+
             if [ "$pkg_install_root" ]; then
                 LDFLAGS="$LDFLAGS -Wl,-rpath-link=$pkg_install_dir/lib"
             fi
