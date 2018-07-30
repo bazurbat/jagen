@@ -129,8 +129,10 @@ toolchain_install_ldconfig() {
 }
 
 toolchain_install_android_standalone() {
+    unset IFS
     local make_script="${toolchain_source_dir:?}/build/tools/make_standalone_toolchain.py"
-    "$make_script" --force \
-                   --arch "${pkg_build_arch:?}" \
-                   --install-dir "${pkg_build_dir:?}"
+    pkg_run "$make_script" --force \
+        --arch "${pkg_build_arch:?}" \
+        ${pkg_build_android_api:+--api "$pkg_build_android_api"} \
+        --install-dir "${pkg_build_dir:?}"
 }
