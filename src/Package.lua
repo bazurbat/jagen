@@ -435,6 +435,19 @@ function P:export_build_env()
     end
 end
 
+function P:add_toolchain_uses()
+    local function add_uses(this, config)
+        local build = this.build
+        if build and build.toolchain then
+            this.uses = append_uniq(build.toolchain, this.uses)
+        end
+    end
+    add_uses(self)
+    for config, this in self:each_config() do
+        add_uses(this, config)
+    end
+end
+
 function P:export_dirs()
     local function export_build_dir(this, config)
         local export = this.export
@@ -584,7 +597,6 @@ function P:process_config(config, this, template, rule)
         local toolchain = self:gettoolchain(config)
         if toolchain then
             self:add_require(toolchain, { config = config })
-            this.uses = append_uniq(toolchain, this.uses)
         end
         build.toolchain = toolchain
     end
@@ -868,6 +880,7 @@ function P.load_rules()
         P.add_patch_dependencies)
 
     for _, pkg in pairs(packages) do
+        pkg:add_toolchain_uses()
         pkg:export_dirs()
         pkg:export_build_env()
     end
