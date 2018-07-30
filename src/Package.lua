@@ -273,6 +273,9 @@ end
 function P:gettoolchain(config)
     local host_toolchain = 'system-native'
     local target_toolchain = os.getenv('jagen_target_toolchain')
+    if target_toolchain and #target_toolchain == 0 then
+        target_toolchain = nil
+    end
     local build, toolchain = self:get('build', config)
     if build then
         if build.toolchain ~= nil then
