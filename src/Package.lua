@@ -21,6 +21,7 @@ end
 local lua_package = package
 local packages = {}
 local used_packages = {}
+local used_requires = {}
 
 local current_context
 local context_stack = {}
@@ -314,6 +315,10 @@ function P:add_rule(rule, config)
 end
 
 function P:add_require(spec, context)
+    table.insert(used_requires, { self, spec, context })
+end
+
+function P:define_require(spec, context)
     local config, template = context.config, context.template
     local build, install, stage = self:get('build', config), self:get('install', config)
     if build and build.type then
@@ -849,7 +854,7 @@ function P.load_rules()
     local def_loader = lua_package.loaders[2]
     lua_package.loaders[2] = find_module
 
-    packages, used_packages = {}, {}
+    packages, used_packages, used_requires = {}, {}, {}
 
     local function try_load_rules(dir)
         local filename = System.mkpath(dir, 'rules.lua')
@@ -866,6 +871,18 @@ function P.load_rules()
     try_load_rules(System.mkpath(Jagen.project_dir))
 
     push_context({ implicit = true })
+
+    do
+        local last_requires = used_requires
+        repeat
+            used_requires = {}
+            for item in each(last_requires) do
+                local pkg, spec, context = item[1], item[2], item[3]
+                pkg:define_require(spec, context)
+            end
+            last_requires = used_requires
+        until #last_requires == 0
+    end
 
     for _, pkg in pairs(packages) do
         pkg.source:derive_properties(pkg.name)
