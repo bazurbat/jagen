@@ -93,8 +93,8 @@ EOF
                 A="$A$S-DCMAKE_TOOLCHAIN_FILE=$pkg_build_cmake_toolchain_file"
             fi
 
-            # This can be important from a toolchain, the placement here is
-            # important to still be able to override the CFLAGS.
+            # This can be imported from a toolchain, the placement here is
+            # important to be able to override CFLAGS.
             if [ "$pkg_build_cmake_options" ]; then
                 for option in $pkg_build_cmake_options; do
                     A="$A$S$option"
