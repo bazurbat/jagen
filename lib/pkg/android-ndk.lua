@@ -8,6 +8,9 @@ return {
     export = {
         env = {
             ANDROID_NDK_HOME = "$pkg_source_dir"
+        },
+        cmake_options = {
+            '-DCMAKE_TOOLCHAIN_FILE=${pkg_source_dir}/build/cmake/android.toolchain.cmake',
         }
     },
     { 'install' }
