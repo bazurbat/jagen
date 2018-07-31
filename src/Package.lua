@@ -317,6 +317,16 @@ function P:add_rule(rule, config)
     return self:add_stage(name, config):add_inputs(target)
 end
 
+function P:add_stages(stages, config, template)
+    for stage in each(stages) do
+        local target = self:add_rule(stage, config)
+        for spec in each(stage.requires) do
+            local template = stage.requires.template or template
+            self:add_last_stage(target.stage, spec, { config = config, template = template })
+        end
+    end
+end
+
 function P:add_require(spec, context)
     table.insert(used_requires, { self, spec, context })
 end
@@ -711,6 +721,10 @@ function P:process_config(config, this, template, rule)
             P.define_package { use.name, use.config or config }
         end
     end
+
+    -- Add configless stages to every config, then add rule-specific stages.
+    local stages = extend(extend({}, self), rule)
+    self:add_stages(stages, config, template)
 end
 
 function P.define_package(rule, context)
@@ -769,7 +783,6 @@ function P.define_package(rule, context)
 
     rule = table.merge(copy(template), rule)
     table.merge(this, rule)
-    table.iclean(this)
 
     if this ~= pkg then
         this.name, this.config = pkg.name, config
@@ -812,13 +825,10 @@ function P.define_package(rule, context)
         end
     end
 
-    local stages = extend(extend({}, pkg), rule)
-    for stage in each(stages) do
-        local target = pkg:add_rule(stage, config)
-        for spec in each(stage.requires) do
-            local template = stage.requires.template or template
-            pkg:add_last_stage(target.stage, spec, { config = config, template = template })
-        end
+    -- When custom stages are specified in configless rule add them to generic
+    -- stages.
+    if not config then
+        pkg:add_stages(rule, config, template)
     end
 
     pop_context()
