@@ -629,6 +629,13 @@ function P:process_config(config, this, template, rule)
 
     self:add_stage('export', config)
 
+    if build.type == 'gradle-android' then
+        build.in_source = true
+        self.source = self.source or {}
+        self.source.ignore_dirty = false
+        build.toolchain = 'android-sdk-tools:host'
+    end
+
     if build.type then
         local toolchain = self:gettoolchain(config)
         if toolchain then
@@ -654,10 +661,6 @@ function P:process_config(config, this, template, rule)
         self:add_require(name, { config = config })
         this.uses = append_uniq(name, this.uses)
         build.rust_toolchain = rust_toolchain
-    elseif build.type == 'gradle-android' then
-        build.in_source = true
-        rule.requires = append_uniq('android-sdk-tools:host', rule.requires)
-        this.uses = append_uniq('android-sdk-tools:host', this.uses)
     end
 
     if not build.dir then
@@ -668,7 +671,7 @@ function P:process_config(config, this, template, rule)
         end
     end
 
-    if build.in_source then
+    if build.in_source and self.source.ignore_dirty ~= false then
         if self.source:is_scm() then
             self.source.ignore_dirty = 'in_source'
         end
