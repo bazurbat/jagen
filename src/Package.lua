@@ -656,10 +656,8 @@ function P:process_config(config, this, template, rule)
         build.rust_toolchain = rust_toolchain
     elseif build.type == 'gradle-android' then
         build.in_source = true
-        rule.requires = append_uniq('android-sdk-tools', rule.requires)
-        rule.requires = append_uniq('android-ndk', rule.requires)
-        this.uses = append_uniq('android-sdk-tools', this.uses)
-        this.uses = append_uniq('android-ndk', this.uses)
+        rule.requires = append_uniq('android-sdk-tools:host', rule.requires)
+        this.uses = append_uniq('android-sdk-tools:host', this.uses)
     end
 
     if not build.dir then
