@@ -494,6 +494,24 @@ function P:export_dirs()
     end
 end
 
+-- Defines an empty rule with 'host' config if the package definition was found
+-- with some build.type which is not required by any other package (orphan).
+function P.add_default_host_build_config(used_requires)
+    local required_names = {}
+    for item in each(used_requires) do
+        local target = Target.from_use(item[2])
+        required_names[target.name] = true
+    end
+    -- define_package modifies the package list, need to copy it to avoid
+    -- undefined behaviour on traversal
+    for _, pkg in pairs(table.copy(packages)) do
+        if pkg.build and pkg.build.type and not next(pkg.configs) and
+                not required_names[pkg.name] then
+            P.define_package { pkg.name, 'host' }
+        end
+    end
+end
+
 function P:add_ordering_dependencies()
     local prev, common 
 
@@ -884,6 +902,8 @@ function P.load_rules()
     try_load_rules(System.mkpath(Jagen.project_dir))
 
     push_context({ implicit = true })
+
+    P.add_default_host_build_config(used_requires)
 
     do
         local last_requires = used_requires
