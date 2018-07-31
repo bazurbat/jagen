@@ -612,20 +612,11 @@ function P:process_config(config, this, template, rule)
     self:add_stage('export', config)
 
     if build.type then
-        if build.toolchain and not template.build or
-            template.build and template.build.toolchain == nil
-        then
-            template.build = template.build or {}
-            template.build.toolchain = build.toolchain
-        end
-
         local toolchain = self:gettoolchain(config)
         if toolchain then
             self:add_require(toolchain, { config = config })
         end
         build.toolchain = toolchain
-    else
-        build.toolchain = nil
     end
 
     if build.type == 'rust' then
