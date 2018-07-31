@@ -8,7 +8,11 @@ return {
         cxx       = 'clang++',
     },
     export = {
+        -- -- Android 5.0 (API >= 21) only supports PIE
+        ldflags = '-pie -fPIE',
         cmake_options = {
+            '-DCMAKE_POSITION_INDEPENDENT_CODE=YES',
+            -- CMake scripts use this to switch behaviour
             '-DANDROID=YES',
         }
     }
