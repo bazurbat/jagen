@@ -260,14 +260,17 @@ function P:each()
         end)
 end
 
-function P:each_config()
-    return function (t, i)
-        if self.configs then
-            return next(self.configs, i)
-        else
-            return nil
-        end
-    end
+function P:each_config(with_shared)
+    return coroutine.wrap(function ()
+            if with_shared then
+                coroutine.yield('-', self)
+            end
+            if self.configs then
+                for k, v in pairs(self.configs) do
+                    coroutine.yield(k, v)
+                end
+            end
+        end)
 end
 
 function P:gettoolchain(config)
@@ -598,6 +601,17 @@ function P:check_usages()
         print_warning("a package '%s' is defined implicitly but has no build or install rules, "..
             "please check if the name is correct or create a rule for the '%s' "..
             "package to remove this warning%s", self.name, self.name, self:format_at())
+    end
+end
+
+function P:check_undefined_uses()
+    for config, this in self:each_config(true) do
+        for spec in each(this.uses or {}) do
+            local use = Target.from_use(spec)
+            if not packages[use.name] then
+                print_error("a package '%s' uses undefined package '%s'%s", self.name, use.name, self:format_at())
+            end
+        end
     end
 end
 
@@ -971,6 +985,7 @@ function P.load_rules()
         pkg:check_build_insource()
         pkg:check_build_toolchain()
         pkg:check_usages()
+        pkg:check_undefined_uses()
     end
 
     lua_package.loaders[2] = def_loader
