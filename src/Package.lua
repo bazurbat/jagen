@@ -505,9 +505,14 @@ function P.add_default_host_build_config(used_requires)
     -- define_package modifies the package list, need to copy it to avoid
     -- undefined behaviour on traversal
     for _, pkg in pairs(table.copy(packages)) do
-        if pkg.build and pkg.build.type and not next(pkg.configs) and
+        local build = pkg.build
+        if build and build.type and not next(pkg.configs) and
                 not required_names[pkg.name] then
-            P.define_package { pkg.name, 'host' }
+            if build.type == 'gradle-android' then
+                P.define_package { pkg.name, 'target' }
+            else
+                P.define_package { pkg.name, 'host' }
+            end
         end
     end
 end
