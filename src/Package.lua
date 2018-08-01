@@ -273,6 +273,19 @@ function P:each_config(with_shared)
         end)
 end
 
+function P:each_config2(with_shared)
+    return coroutine.wrap(function ()
+            if with_shared then
+                coroutine.yield(self)
+            end
+            if self.configs then
+                for config, this in pairs(self.configs) do
+                    coroutine.yield(this, config)
+                end
+            end
+        end)
+end
+
 function P:gettoolchain(config)
     local host_toolchain = 'system-native'
     local target_toolchain = os.getenv('jagen_target_toolchain')
@@ -457,15 +470,15 @@ function P:export_build_env()
 end
 
 function P:add_toolchain_uses()
-    local function add_uses(this, config)
+    for this, config in self:each_config2(true) do
         local build = this.build
-        if build and build.toolchain then
-            this.uses = append_uniq(build.toolchain, this.uses)
+        if build then
+            local toolchain = rawget(build, 'toolchain')
+            if toolchain then
+                -- self:add_require(toolchain, { config = config })
+                this.uses = append_uniq(toolchain, this.uses)
+            end
         end
-    end
-    add_uses(self)
-    for config, this in self:each_config() do
-        add_uses(this, config)
     end
 end
 
