@@ -152,6 +152,9 @@ fi
 jagen__trim CFLAGS CXXFLAGS LDFLAGS
 
 pkg__file=$(find_in_path "pkg/${pkg_name}.sh")
+if [ -z "$pkg__file" ]; then
+    pkg__file=$(find_in_path "pkg/${pkg_name%~*}.sh")
+fi
 if [ "$pkg__file" ]; then
     include "$pkg__file" || exit
 fi; unset pkg__file
