@@ -918,6 +918,16 @@ function P:query(value, config)
     return result
 end
 
+function P.process_requires(last_requires)
+    if #last_requires == 0 then return end
+    used_requires = {}
+    for item in each(last_requires) do
+        local pkg, spec, context = item[1], item[2], item[3]
+        pkg:define_require(spec, context)
+    end
+    return P.process_requires(used_requires)
+end
+
 function P.load_rules()
     local def_loader = lua_package.loaders[2]
     lua_package.loaders[2] = find_module
@@ -942,17 +952,7 @@ function P.load_rules()
 
     P.add_default_host_build_config(used_requires)
 
-    do
-        local last_requires = used_requires
-        repeat
-            used_requires = {}
-            for item in each(last_requires) do
-                local pkg, spec, context = item[1], item[2], item[3]
-                pkg:define_require(spec, context)
-            end
-            last_requires = used_requires
-        until #last_requires == 0
-    end
+    P.process_requires(used_requires);
 
     for _, pkg in pairs(packages) do
         pkg.source:derive_properties(pkg.name)
