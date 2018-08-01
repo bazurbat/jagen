@@ -147,10 +147,12 @@ local function format_stage(target, pkg)
         local this = assert(pkg.configs[config])
         for spec in each(pkg.uses or {}, this.uses) do
             local use = Target.from_use(spec)
-            local used = assert(packages[use.name])
-            local config = use.config or used:has_config(config) and config
-            if config then
-                append_uniq(Target.from_args(use.name, 'export', config), uses)
+            local used = packages[use.name]
+            if used then
+                local config = use.config or used:has_config(config) and config
+                if config then
+                    append_uniq(Target.from_args(use.name, 'export', config), uses)
+                end
             end
         end
     else

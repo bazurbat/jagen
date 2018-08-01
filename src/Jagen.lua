@@ -406,10 +406,9 @@ function Jagen.command.refresh(args, packages)
 
     prepare_root()
 
-    local packages, ok = packages
+    local packages, ok = packages, true
     if not packages then
         packages, ok = Package.load_rules()
-        if not ok then return false end
     end
     local Script = require 'Script'
     local include_dir = assert(os.getenv('jagen_include_dir'))
@@ -484,7 +483,7 @@ function Jagen.command.refresh(args, packages)
     configs_file:close()
     targets_file:close()
 
-    return true
+    return ok
 end
 
 function Jagen.command.build(args)
