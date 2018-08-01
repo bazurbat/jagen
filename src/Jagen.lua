@@ -406,7 +406,11 @@ function Jagen.command.refresh(args, packages)
 
     prepare_root()
 
-    local packages = packages or Package.load_rules()
+    local packages, ok = packages
+    if not packages then
+        packages, ok = Package.load_rules()
+        if not ok then return false end
+    end
     local Script = require 'Script'
     local include_dir = assert(os.getenv('jagen_include_dir'))
     local log_dir = assert(os.getenv('jagen_log_dir'))
