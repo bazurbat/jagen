@@ -89,6 +89,7 @@ function Source:create(source, name)
 end
 
 function Source:derive_properties(name)
+    assert(name)
     if self.location then
         if not self.filename then
             self.filename = self.location:match('^.*/(.+)$') or self.location
@@ -98,7 +99,7 @@ function Source:derive_properties(name)
         end
         if not self.dir then
             if self:is_scm() then
-                self.dir = System.mkpath('$jagen_src_dir', self.basename)
+                self.dir = System.mkpath('$jagen_src_dir', self.name or name)
             else
                 self.dir = System.mkpath('$jagen_build_dir', name, self.basename)
             end

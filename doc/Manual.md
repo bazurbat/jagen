@@ -222,6 +222,9 @@ rules and also to find pkg files. The `config` is optional.
 - **source.md5sum** (`pkg_source_md5sum`) — MD5 hash of the source file (for
   dist sources only)
 
+- **source.name** (`pkg_source_name`) — The name of the working directory where the source is
+  checked out under the `$jagen_src_dir`. If unset the name of the package will be used.
+
 - **source.sha1sum** (`pkg_source_sha1sum`) — SHA1 hash of the source file (for
   dist sources only)
 
