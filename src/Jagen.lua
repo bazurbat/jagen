@@ -43,19 +43,21 @@ end
 
 -- src
 
-local function scm_packages(names)
+local function scm_packages(patterns)
     local packages = Package.load_rules()
     local o = {}
 
-    if names and #names > 0 then
-        for _, name in ipairs(names) do
-            if not packages[name] then
-                die('no such package: %s', name)
+    if patterns and #patterns > 0 then
+        for pattern in each(patterns) do
+            local cpattern, found = string.convert_pattern(pattern), false
+            for name, pkg in pairs(packages) do
+                if name:match(cpattern) and pkg.source:is_scm() then
+                    table.insert(o, pkg) found = true
+                end
             end
-            if not packages[name].source:is_scm() then
-                die('not scm package: %s', name)
+            if not found then
+                die('could not find source packages matching: %s', pattern)
             end
-            table.insert(o, packages[name])
         end
     else
         for _, pkg in pairs(packages) do
