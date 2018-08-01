@@ -664,8 +664,12 @@ function P:process_config(config, this, template, rule)
     if build.type == 'gradle-android' then
         build.in_source = true
         self.source = self.source or {}
-        self.source.ignore_dirty = false
-        build.toolchain = 'android-sdk-tools:host'
+        if self.source.ignore_dirty == nil then
+            self.source.ignore_dirty = false
+        end
+        if build.toolchain == nil then
+            build.toolchain = 'android-sdk-tools:host'
+        end
     end
 
     if build.type then
