@@ -249,7 +249,14 @@ function P:each()
                 end
             end
             if self.configs then
+                local configs = {}
                 for config, this in pairs(self.configs) do
+                    table.insert(configs, this)
+                end
+                table.sort(configs, function (a, b)
+                        return a.config < b.config
+                    end)
+                for this in each(configs) do
                     if this.stages then
                         for target in each(this.stages) do
                             coroutine.yield(target, this)
