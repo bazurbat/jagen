@@ -21,7 +21,9 @@ end
 local lua_package = package
 local packages = {}
 local used_packages = {}
-local used_requires = {}
+local F = {
+    used_requires = {}
+}
 
 local current_context
 local context_stack = {}
@@ -351,7 +353,9 @@ function P:add_stages(stages, config, template)
 end
 
 function P:add_require(spec, context)
-    table.insert(used_requires, { self, spec, context })
+    local key = string.format('%s^%s^%s^%s', self.name, spec,
+        tostring(context.config), tostring(context.template))
+    F.used_requires[key] = { self, spec, context }
 end
 
 function P:define_require(spec, context)
@@ -377,6 +381,8 @@ function P:add_last_stage(stage, spec, context)
 end
 
 function P:add_patch_dependencies()
+    local new_packages = {}
+
     local function patch_names(pkg)
         local i, n = 0, #pkg.patches
         return function()
@@ -390,6 +396,7 @@ function P:add_patch_dependencies()
             local pkg = packages[name]
             if not pkg then
                 pkg = P.define_package { name }
+                new_packages[pkg.name] = pkg
                 pkg.source:derive_properties(name)
             end
             return pkg
@@ -407,15 +414,19 @@ function P:add_patch_dependencies()
 
     local function add_inputs(pkg, inputs)
         local stage = pkg.stages['unpack']
-        stage.inputs = stage.inputs or {}
-        table.iextend(stage.inputs, inputs)
+        pkg.patches = pkg.patches or {}
+
         -- Adding patch files to arguments modifies the command line which is
         -- needed for Ninja to notice the changes in the list itself and rerun
         -- the command.
-        stage.arg = inputs
+        for input in each(inputs) do
+            stage.inputs = append_uniq(input, stage.inputs)
+            stage.arg = append_uniq(input, stage.arg)
+            pkg.patches.required = append_uniq(input, pkg.patches.required)
+        end
 
-        pkg.patches = pkg.patches or {}
-        pkg.patches.required = extend(pkg.patches.required, inputs)
+        table.sort(stage.arg or {})
+        table.sort(pkg.patches.required or {})
     end
 
     local function add_outputs(pkg, outputs)
@@ -425,15 +436,20 @@ function P:add_patch_dependencies()
             pkg:add_stage(name)
             stage = assert(pkg.stages[name])
         end
-        stage.outputs = stage.outputs or {}
-        table.iextend(stage.outputs, outputs)
+
+        pkg.patches = pkg.patches or {}
+
         -- Adding patch files to arguments modifies the command line which is
         -- needed for Ninja to notice the changes in the list itself and rerun
         -- the command which then checks if the patches were indeed provided.
-        stage.arg = sort(stage.outputs)
+        for output in each(outputs) do
+            stage.outputs = append_uniq(output, stage.outputs)
+            stage.arg = append_uniq(output, stage.arg)
+            pkg.patches.provided = append_uniq(output, pkg.patches.provided)
+        end
 
-        pkg.patches = pkg.patches or {}
-        pkg.patches.provided = sort(extend(pkg.patches.provided, outputs))
+        table.sort(stage.arg or {})
+        table.sort(pkg.patches.provided or {})
     end
 
     local provider = get_provider(self.patches.provider)
@@ -450,13 +466,15 @@ function P:add_patch_dependencies()
             provider = get_provider('patches')
             filename = get_provided_filename(provider, name)
         end
-        table.insert(filenames, filename)
+        append_uniq(filename, filenames)
     end
 
     add_inputs(self, filenames)
     if provider then
         add_outputs(provider, filenames)
     end
+
+    return new_packages
 end
 
 function P:export_build_env()
@@ -473,6 +491,18 @@ function P:export_build_env()
     export_build_env(self, config)
     for config, this in self:each_config() do
         export_build_env(this, config)
+    end
+end
+
+function P:add_toolchain_requires()
+    for this, config in self:each_config2() do
+        local build = this.build
+        if build then
+            local toolchain = build.toolchain
+            if toolchain then
+                self:add_require(toolchain, { config = config })
+            end
+        end
     end
 end
 
@@ -520,8 +550,8 @@ end
 -- Defines an empty rule with 'host' config if the package definition was found
 -- with some build.type which is not required by any other package (orphan).
 function P.add_default_host_build_config(used_requires)
-    local required_names = {}
-    for item in each(used_requires) do
+    local new_packages, required_names = {}, {}
+    for _, item in pairs(used_requires) do
         local target = Target.from_use(item[2])
         required_names[target.name] = true
     end
@@ -531,13 +561,16 @@ function P.add_default_host_build_config(used_requires)
         local build = pkg.build
         if build and build.type and not next(pkg.configs) and
                 not required_names[pkg.name] then
+            local new_pkg
             if build.type == 'gradle-android' then
-                P.define_package { pkg.name, 'target' }
+                new_pkg = P.define_package { pkg.name, 'target' }
             else
-                P.define_package { pkg.name, 'host' }
+                new_pkg = P.define_package { pkg.name, 'host' }
             end
+            new_packages[new_pkg.name] = new_pkg
         end
     end
+    return new_packages
 end
 
 function P:add_ordering_dependencies()
@@ -680,11 +713,7 @@ function P:process_config(config, this, template, rule)
     end
 
     if build.type then
-        local toolchain = self:gettoolchain(config)
-        if toolchain then
-            self:add_require(toolchain, { config = config })
-        end
-        build.toolchain = toolchain
+        build.toolchain = self:gettoolchain(config)
     end
 
     if build.type == 'rust' then
@@ -925,21 +954,40 @@ function P:query(value, config)
     return result
 end
 
-function P.process_requires(last_requires)
-    if #last_requires == 0 then return end
-    used_requires = {}
-    for item in each(last_requires) do
+function P.define_used_requires(requires)
+    F.used_requires = {}
+    local new_packages = {}
+    for key, item in pairs(requires or {}) do
         local pkg, spec, context = item[1], item[2], item[3]
-        pkg:define_require(spec, context)
+        local new_pkg = pkg:define_require(spec, context)
+        new_packages[new_pkg.name] = new_pkg
     end
-    return P.process_requires(used_requires)
+    return new_packages, F.used_requires
+end
+
+function P.process_rules(packages)
+    local requires = {}
+    while next(packages) do
+        local patch_providers = {}
+        for _, pkg in pairs(packages) do
+            pkg.source:derive_properties(pkg.name)
+            pkg:add_toolchain_requires()
+            if pkg.patches then
+                table.assign(patch_providers, pkg:add_patch_dependencies())
+            end
+        end
+        packages, new_requires = P.define_used_requires(F.used_requires);
+        table.assign(packages, patch_providers)
+        table.assign(requires, new_requires)
+    end
+    return requires
 end
 
 function P.load_rules()
     local def_loader = lua_package.loaders[2]
     lua_package.loaders[2] = find_module
 
-    packages, used_packages, used_requires = {}, {}, {}
+    packages, used_packages, F.used_requires = {}, {}, {}
 
     local function try_load_rules(dir)
         local filename = System.mkpath(dir, 'rules.lua')
@@ -957,21 +1005,11 @@ function P.load_rules()
 
     push_context({ implicit = true })
 
-    P.add_default_host_build_config(used_requires)
-
-    P.process_requires(used_requires);
-
-    for _, pkg in pairs(packages) do
-        pkg.source:derive_properties(pkg.name)
-    end
-
-    -- As the add_patch_dependencies can insert new packages to the list
-    -- the usage of the table.filter here is essential to avoid undefined
-    -- behaviour during the traversal because we are relying on the fact
-    -- that it returns a new list with the matching elements.
-    table.for_each(table.filter(packages,
-            function (pkg) return pkg.patches end),
-        P.add_patch_dependencies)
+    local used_requires = F.used_requires
+    local new_requires = P.process_rules(packages, used_requires)
+    table.assign(used_requires, new_requires)
+    new_packages = P.add_default_host_build_config(used_requires)
+    P.process_rules(new_packages)
 
     for _, pkg in pairs(packages) do
         pkg:add_toolchain_uses()

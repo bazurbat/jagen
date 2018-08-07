@@ -384,6 +384,14 @@ function table.iclean(t)
     end
 end
 
+function table.assign(this, other)
+    assert_arg('assign', 1, 'table', this)
+    for k, v in pairs(other or {}) do
+        this[k] = v
+    end
+    return this
+end
+
 -- Returns a shallow copy of the supplied table.
 function table.copy(t)
     assert_arg('copy', 1, 'table', t)
