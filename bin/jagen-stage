@@ -103,8 +103,8 @@ if [ "$pkg_build_toolchain" ]; then
     for key in $(set | jagen_esed -n "s/^toolchain_env_([[:alnum:]_]+)=.*/\1/p"); do
         eval ": \${pkg_env_${key}=\$toolchain_env_${key}}" || exit
     done; unset prefix key
-    # assign "toolchain_*" except flags to "pkg_build_*" if unset
-    for key in $(set | jagen_esed -n '/^toolchain_(env|cflags|cxxflags|ldflags)/! s/^toolchain_([[:alnum:]_]+)=.*/\1/p'); do
+    # assign "toolchain_*" except dirs and flags to "pkg_build_*" if unset
+    for key in $(set | jagen_esed -n '/^toolchain_(dir|source_dir|env|cflags|cxxflags|ldflags)/! s/^toolchain_([[:alnum:]_]+)=.*/\1/p'); do
         eval ": \${pkg_build_${key}=\$toolchain_${key}}" || exit
     done; unset key
     use_env cflags
