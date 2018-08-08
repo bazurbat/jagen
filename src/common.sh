@@ -205,14 +205,20 @@ jagen__trim() {
     done
 }
 
-# Evaluates the supplied value until there are no more expansions possible (no
-# '$' symbols found in the value) and echoes the result of the expansion.
+# Evaluates the supplied value until there are no more expansions possible and
+# echoes the result of the expansion.
 # Dies if the recursion depth exceeds 10.
 jagen__expand() {
     local value="$1" name="$2" maxdepth=10 depth=0
     while [ $depth -le $maxdepth ]; do
+        # escape command substitution for the next eval
+        value=$(echo "$value" | sed -e 's/$(/\\$(/g' -e 's/`/\\`/g')
+        # double quoting here is necessary to preserve alternative IFS
+        # characters (such as newline) inside the value
         value=$(eval echo \""$value"\") || return
-        if [ "$value" = "${value#*$}" ]; then
+        if echo "$value" | grep -vq -e '${' -e '$[[:alpha:]]'; then
+            # final eval for the possible command substitution
+            value=$(eval echo \""$value"\")
             echo "$value"; return
         fi
         depth=$((depth+1))
