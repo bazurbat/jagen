@@ -478,19 +478,19 @@ function P:add_patch_dependencies()
 end
 
 function P:export_build_env()
-    local function export_build_env(this, config)
-        local build, export = this.build, this.export
-        if build.cflags and build.cxxflags == nil then
+    local keys = { 'cc', 'cxx', 'arch', 'system', 'cpu',
+                   'cflags', 'cxxflags', 'ldflags' }
+    for this, config in self:each_config2(true) do
+        local build = this.build
+        if build.cxxflags == nil and build.cflags ~= nil then
             build.cxxflags = build.cflags
         end
-        for key in each { 'cc', 'cxx', 'arch', 'system', 'cpu',
-                          'cflags', 'cxxflags', 'ldflags' } do
-            if export[key] == nil then export[key] = build[key] end
-        end
     end
-    export_build_env(self, config)
-    for config, this in self:each_config() do
-        export_build_env(this, config)
+    for this, config in self:each_config2() do
+        local build, export = this.build, this.export
+        for key in each(keys) do
+            if rawget(export, key) == nil then export[key] = build[key] end
+        end
     end
 end
 
