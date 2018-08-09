@@ -958,11 +958,11 @@ function P.define_used_requires(requires)
     return new_packages, F.used_requires
 end
 
-function P.process_rules(packages)
+function P.process_rules(_packages)
     local requires = {}
-    while next(packages) do
+    while next(_packages) do
         local patch_providers = {}
-        for _, pkg in pairs(packages) do
+        for _, pkg in pairs(_packages) do
             pkg.source:derive_properties(pkg.name)
             pkg:add_toolchain_requires()
             if pkg.patches then
@@ -971,13 +971,17 @@ function P.process_rules(packages)
             for this, config in pkg:each_config2() do
                 for spec in each(pkg.uses or {}, this.uses or {}) do
                     local use = Target.from_use(spec)
-                    local newpkg = P.define_package({ use.name, use.config or config })
-                    packages[newpkg.name] = newpkg
+                    local config = use.config or config
+                    local p = packages[use.name]
+                    if not p or not p:has_config(config) then
+                        local newpkg = P.define_package({ use.name, use.config or config })
+                        _packages[newpkg.name] = newpkg
+                    end
                 end
             end
         end
-        packages, new_requires = P.define_used_requires(F.used_requires);
-        table.assign(packages, patch_providers)
+        _packages, new_requires = P.define_used_requires(F.used_requires);
+        table.assign(_packages, patch_providers)
         table.assign(requires, new_requires)
     end
     return requires
