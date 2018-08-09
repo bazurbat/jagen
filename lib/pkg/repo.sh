@@ -1,6 +1,6 @@
 #!/bin/sh
 
-jagen_pkg_install() {
+jagen_stage_install() {
     local dest="${pkg_install_dir:?}/bin"
     set -- ${pkg_source:?}
 

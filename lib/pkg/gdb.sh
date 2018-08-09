@@ -1,6 +1,6 @@
 #!/bin/sh
 
-jagen_pkg_configure() {
+jagen_stage_configure() {
     # Workaround from: https://sourceware.org/bugzilla/show_bug.cgi?id=18113#c1
     cat > makeinfo <<'EOF' || return
 #!/bin/sh

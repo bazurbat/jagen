@@ -208,7 +208,9 @@ run_stage() {
     fi
 }
 
+run_stage "jagen_stage_${pkg_stage}_${pkg_config}" ||
 run_stage "jagen_pkg_${pkg_stage}_${pkg_config}" ||
-    run_stage "jagen_pkg_${pkg_stage}"
+run_stage "jagen_stage_${pkg_stage}" ||
+run_stage "jagen_pkg_${pkg_stage}"
 
 touch "$pkg__stamp_file"

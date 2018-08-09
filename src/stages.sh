@@ -19,16 +19,16 @@ include "$jagen__src_dir/compile"
 include "$jagen__src_dir/install"
 include "$jagen__src_dir/image"
 
-jagen_pkg_unpack() {
+jagen_stage_unpack() {
     pkg_run rm -rf "${pkg_work_dir:?}"
     pkg_unpack
 }
 
-jagen_pkg_patch() {
+jagen_stage_patch() {
     pkg_patch
 }
 
-jagen_pkg_provide_patches() {
+jagen_stage_provide_patches() {
     local IFS="$jagen_IFS"
     for filename in ${pkg_patches_provided-}; do
         if [ -f "$filename" ]; then
@@ -41,27 +41,27 @@ jagen_pkg_provide_patches() {
     done
 }
 
-jagen_pkg_autoreconf() {
+jagen_stage_autoreconf() {
     pkg_autoreconf
 }
 
-jagen_pkg_configure() {
+jagen_stage_configure() {
     pkg_configure
 }
 
-jagen_pkg_compile() {
+jagen_stage_compile() {
     pkg_compile
 }
 
-jagen_pkg_install() {
+jagen_stage_install() {
     pkg_install
 }
 
-jagen_pkg_image() {
+jagen_stage_image() {
     pkg__image
 }
 
-jagen_pkg_export() {
+jagen_stage_export() {
     local prefix= content= key=
     local name="$(jagen_name_to_id "$pkg_name")"
     local outfile="$(pkg__export_fname "$pkg_name" "$pkg_config")"

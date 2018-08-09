@@ -94,7 +94,7 @@ local function write_patches(w, pkg)
 
     if #patches > 0 then
         assert(patches.required and #patches == #patches.required)
-        w('jagen_pkg_apply_patches() {')
+        w('jagen_stage_apply_patches() {')
         for i, item in ipairs(patches) do
             local name = item[1]
             local strip = item[2]

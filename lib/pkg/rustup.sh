@@ -1,6 +1,6 @@
 #!/bin/sh
 
-jagen_pkg_install() {
+jagen_stage_install() {
     local name
     pkg_run cd "$pkg_build_dir/bin"
     pkg_run mkdir -p "$pkg_install_dir/bin"

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-jagen_pkg_patch() {
+jagen_stage_patch() {
     pkg_patch
 
     export LIBTOOLIZE=echo
@@ -9,7 +9,7 @@ jagen_pkg_patch() {
     pkg_run autoreconf -ifv
 }
 
-jagen_pkg_configure() {
+jagen_stage_configure() {
     export CONFIG_SHELL=/bin/bash
 
     pkg_configure
