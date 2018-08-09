@@ -22,6 +22,7 @@ local lua_package = package
 local packages = {}
 local used_packages = {}
 local F = {
+    all_requires = {},
     used_requires = {}
 }
 
@@ -35,6 +36,14 @@ function Context:new(o)
     setmetatable(o, self)
     self.__index = self
     return o
+end
+
+function Context:__rawtostring()
+    local saved = Context.__tostring
+    Context.__tostring = nil
+    local s = tostring(self)
+    Context.__tostring = saved
+    return s
 end
 
 function Context:__tostring()
@@ -355,7 +364,11 @@ end
 function P:add_require(spec, context)
     local key = string.format('%s^%s^%s^%s', self.name, spec,
         tostring(context.config), tostring(context.template))
-    F.used_requires[key] = { self, spec, context }
+    if not F.all_requires[key] then
+        F.used_requires[key] = { self, spec, context }
+    else
+        F.all_requires[key] = true
+    end
 end
 
 function P:define_require(spec, context)
@@ -696,7 +709,7 @@ function P:define_use(spec, context)
     return unpack(results)
 end
 
-function P:process_config(config, this, template, rule)
+function P:process_config(config, this, template, rule, context)
     if this ~= self then
         this.name, this.config = self.name, config
         if not getmetatable(this) then
@@ -808,12 +821,16 @@ function P:process_config(config, this, template, rule)
     end
 
     for spec in each(self.requires) do
-        self:add_require(spec, { config = config, template = template })
+        self:add_require(spec, context)
     end
 
     for spec in each(rule.requires) do
-        local template = rule.requires.template or template
-        self:add_require(spec, { config = config, template = template })
+        local this_template = rule.requires.template or template
+        if this_template ~= template then
+            context = copy(context)
+            context.template = this_template
+        end
+        self:add_require(spec, context)
     end
 
     -- Add configless stages to every config, then add rule-specific stages.
@@ -893,10 +910,10 @@ function P.define_package(rule, context)
     end
 
     if config then
-        pkg:process_config(config, this, template, rule)
+        pkg:process_config(config, this, template, rule, context)
     else
         for config, this in pkg:each_config() do
-            pkg:process_config(config, this, template, rule)
+            pkg:process_config(config, this, template, rule, context)
         end
     end
 
@@ -992,6 +1009,7 @@ function P.load_rules()
     lua_package.loaders[2] = find_module
 
     packages, used_packages, F.used_requires = {}, {}, {}
+    F.all_requires = {}
 
     local function try_load_rules(dir)
         local filename = System.mkpath(dir, 'rules.lua')
