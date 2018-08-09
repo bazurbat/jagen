@@ -249,6 +249,17 @@ COMMANDS
 
 ]]
 
+local update = [[
+Usage: jagen update self
+
+  Updates Jagen.
+
+COMMANDS
+
+  self  Update Jagen source repository.
+
+]]
+
 return {
     usage   = usage,
     help    = help,
@@ -259,5 +270,6 @@ return {
     src_each = src_each,
     image   = image,
     list    = list,
+    update  = update,
     targets = targets
 }

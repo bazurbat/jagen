@@ -658,6 +658,39 @@ function Jagen.command.list(args)
     return true
 end
 
+function Jagen.command.update(args)
+    if #args == 0 or help_requested(args) then
+        return Jagen.command['help'] { 'update' }
+    end
+
+    if args[1] ~= 'self' then
+        die("invalid update command '"..args[1].."', try 'jagen list help'")
+    end
+
+    local options = Options:new {
+        { 'help,h' },
+    }
+    args = options:parse(table.rest(args, 2))
+    if not args then
+        return 22
+    end
+
+    if args['help'] then
+        return Jagen.command['help'] { 'update' }
+    end
+
+    local source = Source:create({
+            type = 'git',
+            dir = '$jagen_dir'
+        }, 'jagen')
+
+    if source:dirty() then
+        die("Could not update jagen in '%s': the source is dirty", System.expand(source.dir))
+    end
+
+    return source:update()
+end
+
 function Jagen.command.image(args)
     if #args == 0 or help_requested(args) then
         return Jagen.command['help'] { 'image' }
