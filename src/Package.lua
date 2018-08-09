@@ -816,13 +816,6 @@ function P:process_config(config, this, template, rule)
         self:add_require(spec, { config = config, template = template })
     end
 
-    if this ~= self then
-        for spec in each(this.uses or {}) do
-            local use = Target.from_use(spec)
-            P.define_package { use.name, use.config or config }
-        end
-    end
-
     -- Add configless stages to every config, then add rule-specific stages.
     local stages = extend(extend({}, self), rule)
     self:add_stages(stages, config, template)
@@ -974,6 +967,13 @@ function P.process_rules(packages)
             pkg:add_toolchain_requires()
             if pkg.patches then
                 table.assign(patch_providers, pkg:add_patch_dependencies())
+            end
+            for this, config in pkg:each_config2() do
+                for spec in each(pkg.uses or {}, this.uses or {}) do
+                    local use = Target.from_use(spec)
+                    local newpkg = P.define_package({ use.name, use.config or config })
+                    packages[newpkg.name] = newpkg
+                end
             end
         end
         packages, new_requires = P.define_used_requires(F.used_requires);
