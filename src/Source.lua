@@ -252,8 +252,10 @@ function GitSource:update()
     local function tag_matching(name)
         return function (line) return line:match('^refs/tags/'..name:escape_pattern()..'$') end
     end
-    if not self:command('remote set-url', assert(self.origin), quote(self.location)):exec() then
-        return false
+    if self.location then
+        if not self:command('remote set-url', assert(self.origin), quote(self.location)):exec() then
+            return false
+        end
     end
     local refspecs, ok = {}, true
     local remotes = aslist(vmap(extract_ref)(self:command('ls-remote -q --heads --tags'):lines()))
