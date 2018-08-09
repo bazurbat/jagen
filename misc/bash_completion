@@ -10,12 +10,12 @@ _jagen_complete() {
     local configs_file="$jagen_build_dir/.jagen-configs"
     local targets_file="$jagen_build_dir/.jagen-targets"
 
-    local top_cmds='help clean refresh build src list'
+    local top_cmds='help clean refresh build src list update'
     local src_cmds='dirty status clean update delete each'
     local src_each_opt='--type'
     local src_types='git hg repo'
     local help_opt='-h --help'
-    local build_opt='-n --dry-run -p --progress -P --all-progress -f --force -a --all'
+    local build_opt='-m --match -c --clean -a --all -n --no-rebuild -p --progress -q --quiet'
     local list_packages_opt='--depth -d --all -a'
 
     # environment is not sourced
@@ -66,6 +66,10 @@ _jagen_complete() {
                 COMPREPLY=($(compgen -W "$help_opt packages" -- "$cur"))
             elif [[ "$jagen_subcommand" == "packages" ]]; then
                 COMPREPLY=($(compgen -W "$help_opt $list_packages_opt" -- "$cur"))
+            fi ;;
+        update)
+            if [[ "$prev" == "update" ]]; then
+                COMPREPLY=($(compgen -W "$help_opt self" -- "$cur"))
             fi ;;
     esac
 
