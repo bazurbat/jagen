@@ -697,6 +697,25 @@ function P:define_use(spec, context)
 end
 
 function P:process_config(config, this, template, rule)
+    if this ~= self then
+        this.name, this.config = self.name, config
+        if not getmetatable(this) then
+            setmetatable(this, P)
+        end
+        if not this.build then this.build = {} end
+        if not getmetatable(this.build) then
+            setmetatable(this.build, { __index = self.build })
+        end
+        if not this.install then this.install = {} end
+        if not getmetatable(this.install) then
+            setmetatable(this.install, { __index = self.install })
+        end
+        if not this.export then this.export = {} end
+        if not getmetatable(this.export) then
+            setmetatable(this.export, { __index = self.export })
+        end
+    end
+
     local build, install = this.build, this.install
 
     self:add_stage('export', config)
@@ -865,25 +884,6 @@ function P.define_package(rule, context)
 
     rule = table.merge(copy(template), rule)
     table.merge(this, rule)
-
-    if this ~= pkg then
-        this.name, this.config = pkg.name, config
-        if not getmetatable(this) then
-            setmetatable(this, P)
-        end
-        if not this.build then this.build = {} end
-        if not getmetatable(this.build) then
-            setmetatable(this.build, { __index = pkg.build })
-        end
-        if not this.install then this.install = {} end
-        if not getmetatable(this.install) then
-            setmetatable(this.install, { __index = pkg.install })
-        end
-        if not this.export then this.export = {} end
-        if not getmetatable(this.export) then
-            setmetatable(this.export, { __index = pkg.export })
-        end
-    end
 
     if not pkg.source or not getmetatable(pkg.source) then
         pkg.source = Source:create(pkg.source, pkg.name)
