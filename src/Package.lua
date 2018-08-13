@@ -85,6 +85,14 @@ function Context:__unm()
     return s
 end
 
+function Context:__eq(other)
+    return self.name == other.name and
+           self.config == other.config and
+           self.line == other.line and
+           self.filename == other.filename and
+           self.parent == other.parent
+end
+
 local function push_context(new)
     new = Context:new(new)
     new.parent = current_context
@@ -856,7 +864,8 @@ function P.define_package(rule, context)
     if not context.config and context.template then
         context.config = context.template.config
     end
-    push_context(context)
+    context = Context:new(context)
+    -- push_context(context)
     rule.config, rule.template = nil, nil
 
     local pkg = packages[rule.name]
@@ -879,7 +888,8 @@ function P.define_package(rule, context)
         end
         packages[rule.name] = pkg
     end
-    append(pkg.contexts, context)
+    append_uniq(context, pkg.contexts)
+    -- append(pkg.contexts, context)
 
     for key in each { 'source', 'patches' } do
         if rule[key] then
@@ -923,7 +933,7 @@ function P.define_package(rule, context)
         pkg:add_stages(rule, config, template)
     end
 
-    pop_context()
+    -- pop_context()
 
     return pkg
 end
