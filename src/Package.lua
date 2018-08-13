@@ -54,8 +54,11 @@ function Context:__tostring()
             insert(lines, (select(i, ...)))
         end
     end
-    if self.name or self.config then
-        append(concat({ self.name, self.config }, ':'))
+    if self.name then
+        append(self.name)
+    end
+    if self.config then
+        append(':', self.config)
     end
     if self.filename then
         if #lines > 0 then append(' ') end
@@ -373,9 +376,8 @@ function P:add_require(spec, context)
     local key = string.format('%s^%s^%s^%s', self.name, spec,
         tostring(context.config), tostring(context.template))
     if not F.all_requires[key] then
-        F.used_requires[key] = { self, spec, context }
-    else
         F.all_requires[key] = true
+        F.used_requires[key] = { self, spec, context }
     end
 end
 
@@ -521,7 +523,7 @@ function P:add_toolchain_requires()
         if build then
             local toolchain = build.toolchain
             if toolchain then
-                self:add_require(toolchain, { config = config })
+                self:add_require(toolchain, { name = self.name, config = config })
             end
         end
     end
@@ -700,17 +702,17 @@ function P:define_use(spec, context)
         return
     end
     if target.config and target.config ~= config then
-        pkg = P.define_package {
+        pkg = P.define_package({
             name = target.name,
             config = target.config
-        }
+        })
         results = { pkg, target.config }
     else
-        pkg = P.define_package {
+        pkg = P.define_package({
             name = target.name,
             config = config,
             template = template
-        }
+        }, context)
         results = { pkg, config }
     end
     used_packages[key] = results
@@ -849,11 +851,7 @@ end
 function P.define_package(rule, context)
     rule = P:new(rule)
 
-    if context then
-        context.name = rule.name
-        context.config = rule.config or context.config
-        context.template = rule.template or context.template or {}
-    else
+    if not context then
         context = {
             name = rule.name,
             config = rule.config,
@@ -902,7 +900,7 @@ function P.define_package(rule, context)
     local config, template, this = context.config, context.template, pkg
     if config then this = pkg:add_config(config) end
 
-    rule = table.merge(copy(template), rule)
+    rule = table.merge(copy(template or {}), rule)
     table.merge(this, rule)
 
     if not pkg.source or not getmetatable(pkg.source) then
@@ -939,7 +937,12 @@ function P.define_package(rule, context)
 end
 
 function package(rule, template)
-    local context, level, info = { template = template }, 2
+    rule = P:new(rule)
+    local context, level, info = {
+        name = rule.name,
+        config = rule.config,
+        template = rule.template or template
+    }, 2
     repeat
         info = debug.getinfo(level, 'Sl')
         level = level+1
