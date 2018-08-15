@@ -802,7 +802,8 @@ function P:create(name)
         install = {},
         export = {},
         rules = {},
-        _requires = {}
+        _requires = {},
+        contexts = {}
     }
     setmetatable(pkg, self)
     pkg:add_stage('unpack')
