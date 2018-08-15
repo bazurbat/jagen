@@ -743,6 +743,40 @@ function P:process_config(config, this, template, rule, context)
 
     self:add_stage('export', config)
 
+    if build.type then
+        self:add_stage('configure', config)
+        self:add_stage('compile', config)
+    end
+
+    if install.type == nil and build and build.type then
+        install.type = build.type
+    end
+    if install.type and install.type ~= false then
+        self:add_stage('install', config)
+    end
+
+    for spec in each(self.requires) do
+        self:add_require(spec, context)
+    end
+
+    for spec in each(rule.requires) do
+        local this_template = rule.requires.template or template
+        if this_template ~= template then
+            context = copy(context)
+            context.template = this_template
+        end
+        self:add_require(spec, context)
+    end
+
+    -- Add configless stages to every config, then add rule-specific stages.
+    local stages = extend(extend({}, self), rule)
+    self:add_stages(stages, config, template)
+end
+
+function P:process_config2(config, this)
+    local new_packages = {}
+    local build, install = this.build, this.install
+
     if build.type == 'gradle-android' then
         build.in_source = true
         self.source = self.source or {}
@@ -796,7 +830,8 @@ function P:process_config(config, this, template, rule, context)
             self:add_rule { 'autoreconf',
                 { 'libtool', 'install', 'host' }
             }
-            P.define_package { 'libtool', 'host' }
+            local p = P.define_package { 'libtool', 'host' }
+            new_packages[p.name] = p
         end
     end
 
@@ -814,38 +849,13 @@ function P:process_config(config, this, template, rule, context)
         self:add_rule { 'install', config,
             { 'kernel', 'install', config }
         }
-    elseif build.type then
-        self:add_stage('configure', config)
-        self:add_stage('compile', config)
     end
 
     if config == 'target' and build.target_requires_host then
         rule.requires = append(rule.requires or {}, { self.name, 'host' })
     end
 
-    if install.type == nil and build and build.type then
-        install.type = build.type
-    end
-    if install.type and install.type ~= false then
-        self:add_stage('install', config)
-    end
-
-    for spec in each(self.requires) do
-        self:add_require(spec, context)
-    end
-
-    for spec in each(rule.requires) do
-        local this_template = rule.requires.template or template
-        if this_template ~= template then
-            context = copy(context)
-            context.template = this_template
-        end
-        self:add_require(spec, context)
-    end
-
-    -- Add configless stages to every config, then add rule-specific stages.
-    local stages = extend(extend({}, self), rule)
-    self:add_stages(stages, config, template)
+    return new_packages
 end
 
 function P.define_package(rule, context)
@@ -993,6 +1003,9 @@ function P.process_rules(_packages)
     while next(_packages) do
         local patch_providers = {}
         for _, pkg in pairs(_packages) do
+            for this, config in pkg:each_config2() do
+                table.assign(_packages, pkg:process_config2(config, this))
+            end
             pkg.source:derive_properties(pkg.name)
             pkg:add_toolchain_requires()
             if pkg.patches then
