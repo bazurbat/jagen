@@ -841,14 +841,6 @@ function P.define_package(rule)
         packages[rule.name] = pkg
     end
 
-    for key in each { 'source', 'patches' } do
-        if rule[key] then
-            if pkg[key] == nil then pkg[key] = {} end
-            table.merge(pkg[key], rule[key])
-            rule[key] = nil
-        end
-    end
-
     local this = pkg
     if config then this = pkg:add_config(config) end
 
