@@ -719,60 +719,6 @@ function P:define_use(spec, context)
     return unpack(results)
 end
 
-function P:process_config(config, this, template, rule, context)
-    if this ~= self then
-        this.name, this.config = self.name, config
-        if not getmetatable(this) then
-            setmetatable(this, P)
-        end
-        if not this.build then this.build = {} end
-        if not getmetatable(this.build) then
-            setmetatable(this.build, { __index = self.build })
-        end
-        if not this.install then this.install = {} end
-        if not getmetatable(this.install) then
-            setmetatable(this.install, { __index = self.install })
-        end
-        if not this.export then this.export = {} end
-        if not getmetatable(this.export) then
-            setmetatable(this.export, { __index = self.export })
-        end
-    end
-
-    local build, install = this.build, this.install
-
-    self:add_stage('export', config)
-
-    if build.type then
-        self:add_stage('configure', config)
-        self:add_stage('compile', config)
-    end
-
-    if install.type == nil and build and build.type then
-        install.type = build.type
-    end
-    if install.type and install.type ~= false then
-        self:add_stage('install', config)
-    end
-
-    for spec in each(self.requires) do
-        self:add_require(spec, context)
-    end
-
-    for spec in each(rule.requires) do
-        local this_template = rule.requires.template or template
-        if this_template ~= template then
-            context = copy(context)
-            context.template = this_template
-        end
-        self:add_require(spec, context)
-    end
-
-    -- Add configless stages to every config, then add rule-specific stages.
-    local stages = extend(extend({}, self), rule)
-    self:add_stages(stages, config, template)
-end
-
 function P:process_config2(config, this)
     local new_packages = {}
     local build, install = this.build, this.install
@@ -873,7 +819,6 @@ function P.define_package(rule, context)
         context.config = context.template.config
     end
     context = Context:new(context)
-    -- push_context(context)
     rule.config, rule.template = nil, nil
 
     local pkg = packages[rule.name]
@@ -897,7 +842,6 @@ function P.define_package(rule, context)
         packages[rule.name] = pkg
     end
     append_uniq(context, pkg.contexts)
-    -- append(pkg.contexts, context)
 
     for key in each { 'source', 'patches' } do
         if rule[key] then
@@ -920,19 +864,51 @@ function P.define_package(rule, context)
         end
     end
 
-    if pkg.source and pkg.source.type == 'repo' then
-        pkg:add_rule { 'unpack',
-            { 'repo', 'install', 'host' }
-        }
-        P.define_package { 'repo', 'host' }
-    end
-
     if config then
-        pkg:process_config(config, this, template, rule, context)
-    else
-        for config, this in pkg:each_config() do
-            pkg:process_config(config, this, template, rule, context)
+        this.name, this.config = pkg.name, config
+        if not getmetatable(this) then
+            setmetatable(this, P)
         end
+        if not this.build then this.build = {} end
+        if not getmetatable(this.build) then
+            setmetatable(this.build, { __index = pkg.build })
+        end
+        if not this.install then this.install = {} end
+        if not getmetatable(this.install) then
+            setmetatable(this.install, { __index = pkg.install })
+        end
+        if not this.export then this.export = {} end
+        if not getmetatable(this.export) then
+            setmetatable(this.export, { __index = pkg.export })
+        end
+        local build, install = this.build, this.install
+
+        pkg:add_stage('export', config)
+
+        if build.type then
+            pkg:add_stage('configure', config)
+            pkg:add_stage('compile', config)
+        end
+
+        if install.type == nil and build and build.type then
+            install.type = build.type
+        end
+        if install.type and install.type ~= false then
+            pkg:add_stage('install', config)
+        end
+
+        for spec in each(pkg.requires) do
+            pkg:add_require(spec, { config = config, template = template })
+        end
+
+        for spec in each(rule.requires) do
+            local this_template = rule.requires.template or template
+            pkg:add_require(spec, { config = config, template = this_template })
+        end
+
+        -- Add configless stages to every config, then add rule-specific stages.
+        local stages = extend(extend({}, pkg), rule)
+        pkg:add_stages(stages, config, template)
     end
 
     -- When custom stages are specified in configless rule add them to generic
@@ -940,8 +916,6 @@ function P.define_package(rule, context)
     if not config then
         pkg:add_stages(rule, config, template)
     end
-
-    -- pop_context()
 
     return pkg
 end
@@ -996,6 +970,15 @@ function P.define_used_requires(requires)
         new_packages[new_pkg.name] = new_pkg
     end
     return new_packages, F.used_requires
+end
+
+function P:process_source()
+    if pkg.source and pkg.source.type == 'repo' then
+        pkg:add_rule { 'unpack',
+            { 'repo', 'install', 'host' }
+        }
+        P.define_package { 'repo', 'host' }
+    end
 end
 
 function P.process_rules(_packages)
