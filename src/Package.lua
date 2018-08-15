@@ -362,61 +362,31 @@ function P:add_rule(rule, config)
     return self:add_stage(name, config):add_inputs(target)
 end
 
-function P:add_stages(stages, config, template)
-    for stage in each(stages) do
-        local target = self:add_rule(stage, config)
-        for spec in each(stage.requires) do
-            local template = stage.requires.template or template
-            self:add_last_stage(target.stage, spec, { config = config, template = template })
-        end
-    end
-end
-
-function P:add_require(spec, context)
+function P:add_require(spec, context, stage)
     local key = string.format('%s^%s^%s^%s', self.name, spec,
         tostring(context.config), tostring(context.template))
     if not F.all_requires[key] then
-        F.all_requires[key] = { self, spec, context }
-        F.used_requires[key] = { self, spec, context }
+        -- print(self.name, spec, stage)
+        F.all_requires[key] = { self, spec, context, stage }
+        F.used_requires[key] = { self, spec, context, stage }
     end
 end
 
-function P:define_require(spec, context)
-    return self:define_use(spec, context)
-    -- local config, template = context.config, context.template
-    -- local build, install, stage = self:get('build', config), self:get('install', config)
-    -- if build and build.type then
-    --     stage = 'configure'
-    -- elseif install and install.type then
-    --     stage = 'install'
-    -- else
-    --     stage = self:last(config).stage
-    -- end
-    -- return self:add_last_stage(stage, spec, context)
-end
-
-function P:define_require2(spec, context)
+function P:define_require2(spec, context, stage)
     local config, template = context.config, context.template
-    local build, install, stage = self:get('build', config), self:get('install', config)
-    if build and build.type then
-        stage = 'configure'
-    elseif install and install.type then
-        stage = 'install'
-    else
-        stage = self:last(config).stage
+    if not stage then
+        local build, install = self:get('build', config), self:get('install', config)
+        if build and build.type then
+            stage = 'configure'
+        elseif install and install.type then
+            stage = 'install'
+        else
+            stage = self:last(config).stage
+        end
     end
     local use = Target.from_use(spec)
     local pkg = packages[use.name]
     self:add_stage(stage, config):append(pkg:last(use.config or config))
-end
-
-function P:add_last_stage(stage, spec, context)
-    local config, template = context.config, context.template
-    local use, use_config = self:define_use(spec, context)
-    if use then
-        self:add_stage(stage, config):append(use:last(use_config))
-    end
-    return use
 end
 
 function P:add_patch_dependencies()
@@ -920,13 +890,22 @@ function P.define_package(rule)
 
         -- Add configless stages to every config, then add rule-specific stages.
         local stages = extend(extend({}, pkg), rule)
-        pkg:add_stages(stages, config, template)
+        for stage in each(stages) do
+            local target = pkg:add_rule(stage, config)
+            for spec in each(stage.requires) do
+                local template = stage.requires.template or template
+                local c = { config = config, template = template }
+                pkg:add_require(spec, c, target.stage)
+            end
+        end
     end
 
     -- When custom stages are specified in configless rule add them to generic
     -- stages.
     if not config then
-        pkg:add_stages(rule, config, template)
+        for stage in each(rule) do
+            pkg:add_rule(stage, config)
+        end
     end
 
     return pkg
@@ -973,7 +952,7 @@ function P.define_used_requires(requires)
     local new_packages = {}
     for key, item in pairs(requires or {}) do
         local pkg, spec, context = item[1], item[2], item[3]
-        local new_pkg = pkg:define_require(spec, context)
+        local new_pkg = pkg:define_use(spec, context)
         new_packages[new_pkg.name] = new_pkg
     end
     return new_packages, F.used_requires
@@ -1050,8 +1029,9 @@ function P.load_rules()
     P.process_rules(new_packages)
 
     for key, item in pairs(F.all_requires) do
-        local pkg, spec, context = item[1], item[2], item[3]
-        pkg:define_require2(spec, context)
+        local pkg, spec, context, stage = item[1], item[2], item[3], item[4]
+        -- print(pkg.name, spec, stage)
+        pkg:define_require2(spec, context, stage)
     end
 
     for _, pkg in pairs(packages) do
