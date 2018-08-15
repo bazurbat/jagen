@@ -376,12 +376,26 @@ function P:add_require(spec, context)
     local key = string.format('%s^%s^%s^%s', self.name, spec,
         tostring(context.config), tostring(context.template))
     if not F.all_requires[key] then
-        F.all_requires[key] = true
+        F.all_requires[key] = { self, spec, context }
         F.used_requires[key] = { self, spec, context }
     end
 end
 
 function P:define_require(spec, context)
+    return self:define_use(spec, context)
+    -- local config, template = context.config, context.template
+    -- local build, install, stage = self:get('build', config), self:get('install', config)
+    -- if build and build.type then
+    --     stage = 'configure'
+    -- elseif install and install.type then
+    --     stage = 'install'
+    -- else
+    --     stage = self:last(config).stage
+    -- end
+    -- return self:add_last_stage(stage, spec, context)
+end
+
+function P:define_require2(spec, context)
     local config, template = context.config, context.template
     local build, install, stage = self:get('build', config), self:get('install', config)
     if build and build.type then
@@ -391,7 +405,9 @@ function P:define_require(spec, context)
     else
         stage = self:last(config).stage
     end
-    return self:add_last_stage(stage, spec, context)
+    local use = Target.from_use(spec)
+    local pkg = packages[use.name]
+    self:add_stage(stage, config):append(pkg:last(use.config or config))
 end
 
 function P:add_last_stage(stage, spec, context)
@@ -742,7 +758,7 @@ function P:process_config2(config, this)
         local rust_toolchain = build.rust_toolchain or 'stable'
         local name = string.format('rust-%s%s', rust_toolchain,
             build.system and '-'..build.system or '')
-        P.define_package {
+        local p = P.define_package {
             name   = name,
             config = config,
             build = {
@@ -752,6 +768,7 @@ function P:process_config2(config, this)
                 system    = build.system,
             }
         }
+        new_packages[p.name] = p
         self:add_require(name, { config = config })
         this.uses = append_uniq(name, this.uses)
         build.rust_toolchain = rust_toolchain
@@ -784,7 +801,8 @@ function P:process_config2(config, this)
     if build.type == 'linux-module' or build.kernel_modules == true or
         install and install.modules then
 
-        P.define_package { 'kernel', config }
+        local p = P.define_package { 'kernel', config }
+        new_packages[p.name] = p
 
         self:add_rule { 'configure', config,
             { 'kernel', 'configure', config }
@@ -795,6 +813,13 @@ function P:process_config2(config, this)
         self:add_rule { 'install', config,
             { 'kernel', 'install', config }
         }
+    end
+
+    if install.type == nil and build and build.type then
+        install.type = build.type
+    end
+    if install.type and install.type ~= false then
+        self:add_stage('install', config)
     end
 
     if config == 'target' and build.target_requires_host then
@@ -1023,6 +1048,11 @@ function P.load_rules()
     table.assign(used_requires, new_requires)
     new_packages = P.add_default_host_build_config(used_requires)
     P.process_rules(new_packages)
+
+    for key, item in pairs(F.all_requires) do
+        local pkg, spec, context = item[1], item[2], item[3]
+        pkg:define_require2(spec, context)
+    end
 
     for _, pkg in pairs(packages) do
         pkg:add_toolchain_uses()
