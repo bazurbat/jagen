@@ -21,10 +21,6 @@ end
 local lua_package = package
 local packages = {}
 local used_packages = {}
-local F = {
-    all_requires = {},
-    used_requires = {}
-}
 
 local current_context
 local context_stack = {}
@@ -266,7 +262,7 @@ function P:each()
                     table.insert(configs, this)
                 end
                 table.sort(configs, function (a, b)
-                        return a.config < b.config
+                        return (a.config or '') < (b.config or '')
                     end)
                 for this in each(configs) do
                     if this.stages then
@@ -364,10 +360,7 @@ end
 function P:add_require(spec, context, stage)
     local key = string.format('%s^%s^%s^%s', self.name, spec,
         tostring(context.config), tostring(context.template))
-    if not F.all_requires[key] then
-        F.all_requires[key] = { self, spec, context, stage }
-        F.used_requires[key] = { self, spec, context, stage }
-    end
+    self._requires[key] = { spec, context, stage }
 end
 
 function P:define_require2(spec, context, stage)
@@ -384,7 +377,11 @@ function P:define_require2(spec, context, stage)
     end
     local use = Target.from_use(spec)
     local pkg = packages[use.name]
-    self:add_stage(stage, config):append(pkg:last(use.config or config))
+    local l = pkg:last(use.config or config)
+    if not l then
+        l = Target.from_args(pkg.name, 'install', use.config or config)
+    end
+    self:add_stage(stage, config):append(l)
 end
 
 function P:add_patch_dependencies()
@@ -495,8 +492,10 @@ function P:export_build_env()
     end
     for this, config in self:each_config2() do
         local build, export = this.build, this.export
-        for key in each(keys) do
-            if rawget(export, key) == nil then export[key] = build[key] end
+        if build and export then
+            for key in each(keys) do
+                if rawget(export, key) == nil then export[key] = build[key] end
+            end
         end
     end
 end
@@ -519,7 +518,6 @@ function P:add_toolchain_uses()
         if build then
             local toolchain = rawget(build, 'toolchain')
             if toolchain then
-                -- self:add_require(toolchain, { config = config })
                 this.uses = append_uniq(toolchain, this.uses)
             end
         end
@@ -554,20 +552,11 @@ function P:export_dirs()
     end
 end
 
--- Defines an empty rule with 'host' config if the package definition was found
--- with some build.type which is not required by any other package (orphan).
-function P.add_default_host_build_config(used_requires)
-    local new_packages, required_names = {}, {}
-    for _, item in pairs(used_requires) do
-        local target = Target.from_use(item[2])
-        required_names[target.name] = true
-    end
-    -- define_package modifies the package list, need to copy it to avoid
-    -- undefined behaviour on traversal
+function P.define_default_config()
+    local new_packages = {}
     for _, pkg in pairs(table.copy(packages)) do
         local build = pkg.build
-        if build and build.type and not next(pkg.configs) and
-                not required_names[pkg.name] then
+        if build and build.type and not next(pkg.configs) then
             local new_pkg
             if build.type == 'gradle-android' then
                 new_pkg = P.define_package { pkg.name, 'target' }
@@ -790,10 +779,10 @@ function P:process_config(config, this)
         self:add_stage('compile', config)
     end
 
-    if install.type == nil and build and build.type then
+    if install and install.type == nil and build and build.type then
         install.type = build.type
     end
-    if install.type and install.type ~= false then
+    if install and install.type and install.type ~= false then
         self:add_stage('install', config)
     end
 
@@ -807,11 +796,13 @@ end
 function P:create(name)
     local pkg = {
         name = name,
+        stages = {},
         configs = {},
         build = {},
         install = {},
         export = {},
-        rules = {}
+        rules = {},
+        _requires = {}
     }
     setmetatable(pkg, self)
     pkg:add_stage('unpack')
@@ -851,6 +842,7 @@ function P.define_package(rule, context)
         if not getmetatable(this) then
             setmetatable(this, P)
         end
+        if not this.stages then this.stages = {} end
         if not this.build then this.build = {} end
         if not getmetatable(this.build) then
             setmetatable(this.build, { __index = pkg.build })
@@ -954,17 +946,6 @@ function P:query(value, config)
     return result
 end
 
-function P.define_used_requires(requires)
-    F.used_requires = {}
-    local new_packages = {}
-    for key, item in pairs(requires or {}) do
-        local pkg, spec, context = item[1], item[2], item[3]
-        local new_pkg = pkg:define_use(spec, context)
-        new_packages[new_pkg.name] = new_pkg
-    end
-    return new_packages, F.used_requires
-end
-
 function P:process_source()
     if pkg.source and pkg.source.type == 'repo' then
         pkg:add_rule { 'unpack',
@@ -977,7 +958,7 @@ end
 function P.process_rules(_packages)
     local requires = {}
     while next(_packages) do
-        local patch_providers = {}
+        local patch_providers, np = {}, {}
         for _, pkg in pairs(_packages) do
             for target in each(pkg.rules) do
                 local t = pkg:add_stage(target.stage, target.config)
@@ -1006,8 +987,15 @@ function P.process_rules(_packages)
                     end
                 end
             end
+            for key, item in pairs(pkg._requires) do
+                local spec, context, stage = item[1], item[2], item[3]
+                local new_pkg = pkg:define_use(spec, context)
+                pkg:define_require2(spec, context, stage)
+                np[new_pkg.name] = new_pkg
+            end
         end
-        _packages, new_requires = P.define_used_requires(F.used_requires);
+        _packages = {}
+        table.assign(_packages, np)
         table.assign(_packages, patch_providers)
         table.assign(requires, new_requires)
     end
@@ -1018,8 +1006,7 @@ function P.load_rules()
     local def_loader = lua_package.loaders[2]
     lua_package.loaders[2] = find_module
 
-    packages, used_packages, F.used_requires = {}, {}, {}
-    F.all_requires = {}
+    packages, used_packages = {}, {}
 
     local function try_load_rules(dir)
         local filename = System.mkpath(dir, 'rules.lua')
@@ -1037,16 +1024,9 @@ function P.load_rules()
 
     push_context({ implicit = true })
 
-    local used_requires = F.used_requires
-    local new_requires = P.process_rules(packages, used_requires)
-    table.assign(used_requires, new_requires)
-    new_packages = P.add_default_host_build_config(used_requires)
+    local new_requires = P.process_rules(table.copy(packages))
+    new_packages = P.define_default_config()
     P.process_rules(new_packages)
-
-    for key, item in pairs(F.all_requires) do
-        local pkg, spec, context, stage = item[1], item[2], item[3], item[4]
-        pkg:define_require2(spec, context, stage)
-    end
 
     for _, pkg in pairs(packages) do
         pkg:add_toolchain_uses()
