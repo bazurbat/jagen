@@ -363,7 +363,7 @@ function P:add_require(spec, context, stage)
     self._requires[key] = { spec, context, stage }
 end
 
-function P:define_require2(spec, context, stage)
+function P:define_require(spec, context, stage)
     local config, template = context.config, context.template
     if not stage then
         local build, install = self:get('build', config), self:get('install', config)
@@ -990,8 +990,9 @@ function P.process_rules(_packages)
             for key, item in pairs(pkg._requires) do
                 local spec, context, stage = item[1], item[2], item[3]
                 local new_pkg = pkg:define_use(spec, context)
-                pkg:define_require2(spec, context, stage)
+                pkg:define_require(spec, context, stage)
                 np[new_pkg.name] = new_pkg
+                pkg._requires = {}
             end
         end
         _packages = {}
