@@ -362,11 +362,19 @@ function P:add_rule(rule, config)
     return self:add_stage(name, config):add_inputs(target)
 end
 
+function P:add_rule2(rule, config)
+    local shared = { unpack = true, patch  = true, autoreconf = true }
+    local target = Target:parse(rule, self.name, config)
+    local name   = target.stage
+    if shared[name] then target.config = nil end
+    table.insert(self.rules, target)
+    return target
+end
+
 function P:add_require(spec, context, stage)
     local key = string.format('%s^%s^%s^%s', self.name, spec,
         tostring(context.config), tostring(context.template))
     if not F.all_requires[key] then
-        -- print(self.name, spec, stage)
         F.all_requires[key] = { self, spec, context, stage }
         F.used_requires[key] = { self, spec, context, stage }
     end
@@ -705,7 +713,7 @@ function P:define_use(spec, context)
     return unpack(results)
 end
 
-function P:process_config2(config, this)
+function P:process_config(config, this)
     local new_packages = {}
     local build, install = this.build, this.install
 
@@ -723,6 +731,8 @@ function P:process_config2(config, this)
     if build.type then
         build.toolchain = self:gettoolchain(config)
     end
+    
+    self:add_stage('export', config)
 
     if build.type == 'rust' then
         local rust_toolchain = build.rust_toolchain or 'stable'
@@ -785,6 +795,11 @@ function P:process_config2(config, this)
         }
     end
 
+    if build.type then
+        self:add_stage('configure', config)
+        self:add_stage('compile', config)
+    end
+
     if install.type == nil and build and build.type then
         install.type = build.type
     end
@@ -813,6 +828,7 @@ function P.define_package(rule)
         pkg.build = {}
         pkg.install = {}
         pkg.export = {}
+        pkg.rules = {}
         pkg:add_stage('unpack')
         if pkg.name ~= 'patches' then
             pkg:add_stage('patch')
@@ -863,21 +879,9 @@ function P.define_package(rule)
         if not getmetatable(this.export) then
             setmetatable(this.export, { __index = pkg.export })
         end
+        if not this.rules then this.rules = {} end
+
         local build, install = this.build, this.install
-
-        pkg:add_stage('export', config)
-
-        if build.type then
-            pkg:add_stage('configure', config)
-            pkg:add_stage('compile', config)
-        end
-
-        if install.type == nil and build and build.type then
-            install.type = build.type
-        end
-        if install.type and install.type ~= false then
-            pkg:add_stage('install', config)
-        end
 
         for spec in each(pkg.requires) do
             pkg:add_require(spec, { config = config, template = template })
@@ -891,7 +895,7 @@ function P.define_package(rule)
         -- Add configless stages to every config, then add rule-specific stages.
         local stages = extend(extend({}, pkg), rule)
         for stage in each(stages) do
-            local target = pkg:add_rule(stage, config)
+            local target = this:add_rule2(stage, config)
             for spec in each(stage.requires) do
                 local template = stage.requires.template or template
                 local c = { config = config, template = template }
@@ -904,7 +908,7 @@ function P.define_package(rule)
     -- stages.
     if not config then
         for stage in each(rule) do
-            pkg:add_rule(stage, config)
+            pkg:add_rule2(stage)
         end
     end
 
@@ -972,8 +976,16 @@ function P.process_rules(_packages)
     while next(_packages) do
         local patch_providers = {}
         for _, pkg in pairs(_packages) do
+            for target in each(pkg.rules) do
+                local t = pkg:add_stage(target.stage, target.config)
+                t:add_inputs(target)
+            end
             for this, config in pkg:each_config2() do
-                table.assign(_packages, pkg:process_config2(config, this))
+                table.assign(_packages, pkg:process_config(config, this))
+                for target in each(this.rules) do
+                    local t = pkg:add_stage(target.stage, target.config)
+                    t:add_inputs(target)
+                end
             end
             pkg.source:derive_properties(pkg.name)
             pkg:add_toolchain_requires()
@@ -1030,7 +1042,6 @@ function P.load_rules()
 
     for key, item in pairs(F.all_requires) do
         local pkg, spec, context, stage = item[1], item[2], item[3], item[4]
-        -- print(pkg.name, spec, stage)
         pkg:define_require2(spec, context, stage)
     end
 
