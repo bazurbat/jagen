@@ -839,6 +839,28 @@ function P.define_package(rule, context)
     if config then
         if not pkg.configs[config] then pkg.configs[config] = {} end
         this = pkg.configs[config]
+    end
+
+    -- merge source and patches to shared part regardless of rule context
+    for key in each { 'source', 'patches' } do
+        if rule[key] then
+            if pkg[key] == nil then pkg[key] = {} end
+            table.merge(pkg[key], rule[key])
+            rule[key] = nil
+        end
+    end
+
+    rule = table.merge(copy(context.template or {}), rule)
+    table.merge(this, rule)
+
+    if not pkg.source or not getmetatable(pkg.source) then
+        pkg.source = Source:create(pkg.source, pkg.name)
+        if pkg.patches and pkg.source:is_scm() then
+            pkg.source.ignore_dirty = 'patches'
+        end
+    end
+
+    if config then
         this.name, this.config = pkg.name, config
         if not getmetatable(this) then
             setmetatable(this, P)
@@ -857,19 +879,7 @@ function P.define_package(rule, context)
             setmetatable(this.export, { __index = pkg.export })
         end
         if not this.rules then this.rules = {} end
-    end
 
-    rule = table.merge(copy(context.template or {}), rule)
-    table.merge(this, rule)
-
-    if not pkg.source or not getmetatable(pkg.source) then
-        pkg.source = Source:create(pkg.source, pkg.name)
-        if pkg.patches and pkg.source:is_scm() then
-            pkg.source.ignore_dirty = 'patches'
-        end
-    end
-
-    if config then
         local build, install = this.build, this.install
 
         for spec in each(pkg.requires) do
