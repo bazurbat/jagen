@@ -804,27 +804,16 @@ function P:process_config2(config, this)
     return new_packages
 end
 
-function P.define_package(rule, context)
+function P.define_package(rule)
     rule = P:new(rule)
 
-    if not context then
-        context = {
-            name = rule.name,
-            config = rule.config,
-            template = rule.template or {},
-            implicit = true
-        }
-    end
-    if not context.config and context.template then
-        context.config = context.template.config
-    end
-    context = Context:new(context)
+    local template = rule.template or {}
+    local config = rule.config or template.config
     rule.config, rule.template = nil, nil
 
     local pkg = packages[rule.name]
     if not pkg then
         pkg = P:new { rule.name }
-        pkg.contexts = {}
         pkg.configs = {}
         pkg.build = {}
         pkg.install = {}
@@ -837,11 +826,9 @@ function P.define_package(rule, context)
         local module, filename = find_module('pkg/'..rule.name)
         if module then
             table.merge(pkg, P:new(assert(module())))
-            append(pkg.contexts, Context:new { filename = filename })
         end
         packages[rule.name] = pkg
     end
-    append_uniq(context, pkg.contexts)
 
     for key in each { 'source', 'patches' } do
         if rule[key] then
@@ -851,7 +838,7 @@ function P.define_package(rule, context)
         end
     end
 
-    local config, template, this = context.config, context.template, pkg
+    local this = pkg
     if config then this = pkg:add_config(config) end
 
     rule = table.merge(copy(template or {}), rule)
@@ -920,22 +907,17 @@ function P.define_package(rule, context)
     return pkg
 end
 
-function package(rule, template)
-    rule = P:new(rule)
-    local context, level, info = {
-        name = rule.name,
-        config = rule.config,
-        template = rule.template or template
-    }, 2
-    repeat
-        info = debug.getinfo(level, 'Sl')
-        level = level+1
-    until not info or info.what == 'main'
-    if info then
-        context.filename = info.source
-        context.line = info.currentline
-    end
-    return P.define_package(rule, context)
+function package(rule)
+    -- local context, level, info = {}, 2
+    -- repeat
+    --     info = debug.getinfo(level, 'Sl')
+    --     level = level+1
+    -- until not info or info.what == 'main'
+    -- if info then
+    --     context.filename = info.source
+    --     context.line = info.currentline
+    -- end
+    return P.define_package(rule)
 end
 
 function P:query(value, config)
@@ -1077,7 +1059,7 @@ function P.load_rules()
         pkg:check_build_configs()
         pkg:check_build_insource()
         pkg:check_build_toolchain()
-        pkg:check_usages()
+        -- pkg:check_usages()
         pkg:check_undefined_uses()
     end
 
