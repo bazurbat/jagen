@@ -506,7 +506,7 @@ function P:add_toolchain_requires()
         if build then
             local toolchain = build.toolchain
             if toolchain then
-                self:add_require(toolchain, { name = self.name, config = config })
+                self:add_require(toolchain, Context:new { name = self.name, config = config })
             end
         end
     end
@@ -728,7 +728,7 @@ function P:process_config(config, this)
             }
         }
         new_packages[p.name] = p
-        self:add_require(name, { config = config })
+        self:add_require(name, Context:new { config = config })
         this.uses = append_uniq(name, this.uses)
         build.rust_toolchain = rust_toolchain
     end
@@ -821,18 +821,18 @@ end
 function P.define_package(rule, context)
     rule = P:parse(rule)
 
+    if not context then context = Context:new() end
+    context.name = context.name or rule.name
+    context.template = context.template or rule.template
+    context.config = context.config or rule.config or rule.template and rule.template.config
+    rule.config, rule.template = nil, nil
+
     local pkg = packages[rule.name]
     if not pkg then
         pkg = P:create(rule.name)
         packages[rule.name] = pkg
     end
-
-    context = {
-        name = rule.name,
-        template = rule.template,
-        config = rule.config or rule.template and rule.template.config
-    }
-    rule.config, rule.template = nil, nil
+    append_uniq(context, pkg.contexts)
 
     local config = context.config
     local this = pkg
@@ -912,16 +912,16 @@ function P.define_package(rule, context)
 end
 
 function package(rule)
-    -- local context, level, info = {}, 2
-    -- repeat
-    --     info = debug.getinfo(level, 'Sl')
-    --     level = level+1
-    -- until not info or info.what == 'main'
-    -- if info then
-    --     context.filename = info.source
-    --     context.line = info.currentline
-    -- end
-    return P.define_package(rule)
+    local context, level, info = Context:new(), 2
+    repeat
+        info = debug.getinfo(level, 'Sl')
+        level = level+1
+    until not info or info.what == 'main'
+    if info then
+        context.filename = info.source
+        context.line = info.currentline
+    end
+    return P.define_package(rule, context)
 end
 
 function P:query(value, config)
