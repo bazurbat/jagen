@@ -227,16 +227,6 @@ function P:has_config(name)
     return self.configs and self.configs[name]
 end
 
-function P:add_config(name)
-    if not self.configs then
-        self.configs = {}
-    end
-    if not self.configs[name] then
-        self.configs[name] = {}
-    end
-    return self.configs[name]
-end
-
 function P:get(key, config)
     if config then
         if self.configs and self.configs[config] then
@@ -814,47 +804,49 @@ function P:process_config(config, this)
     return new_packages
 end
 
-function P.define_package(rule)
-    rule = P:new(rule)
+function P:create(name)
+    local pkg = {
+        name = name,
+        configs = {},
+        build = {},
+        install = {},
+        export = {},
+        rules = {}
+    }
+    setmetatable(pkg, self)
+    pkg:add_stage('unpack')
+    if pkg.name ~= 'patches' then
+        pkg:add_stage('patch')
+    end
+    pkg:add_stage('export')
+    local module, filename = find_module('pkg/'..name)
+    if module then
+        table.merge(pkg, P:new(assert(module())))
+    end
+    return pkg
+end
 
-    local template = rule.template or {}
-    local config = rule.config or template.config
-    rule.config, rule.template = nil, nil
+function P.define_package(rule, context)
+    rule = P:parse(rule)
 
     local pkg = packages[rule.name]
     if not pkg then
-        pkg = P:new { rule.name }
-        pkg.configs = {}
-        pkg.build = {}
-        pkg.install = {}
-        pkg.export = {}
-        pkg.rules = {}
-        pkg:add_stage('unpack')
-        if pkg.name ~= 'patches' then
-            pkg:add_stage('patch')
-        end
-        pkg:add_stage('export')
-        local module, filename = find_module('pkg/'..rule.name)
-        if module then
-            table.merge(pkg, P:new(assert(module())))
-        end
+        pkg = P:create(rule.name)
         packages[rule.name] = pkg
     end
 
+    context = {
+        name = rule.name,
+        template = rule.template,
+        config = rule.config or rule.template and rule.template.config
+    }
+    rule.config, rule.template = nil, nil
+
+    local config = context.config
     local this = pkg
-    if config then this = pkg:add_config(config) end
-
-    rule = table.merge(copy(template or {}), rule)
-    table.merge(this, rule)
-
-    if not pkg.source or not getmetatable(pkg.source) then
-        pkg.source = Source:create(pkg.source, pkg.name)
-        if pkg.patches and pkg.source:is_scm() then
-            pkg.source.ignore_dirty = 'patches'
-        end
-    end
-
     if config then
+        if not pkg.configs[config] then pkg.configs[config] = {} end
+        this = pkg.configs[config]
         this.name, this.config = pkg.name, config
         if not getmetatable(this) then
             setmetatable(this, P)
@@ -872,16 +864,32 @@ function P.define_package(rule)
             setmetatable(this.export, { __index = pkg.export })
         end
         if not this.rules then this.rules = {} end
+    end
 
+    rule = table.merge(copy(context.template or {}), rule)
+    table.merge(this, rule)
+
+    if not pkg.source or not getmetatable(pkg.source) then
+        pkg.source = Source:create(pkg.source, pkg.name)
+        if pkg.patches and pkg.source:is_scm() then
+            pkg.source.ignore_dirty = 'patches'
+        end
+    end
+
+    if config then
         local build, install = this.build, this.install
 
         for spec in each(pkg.requires) do
-            pkg:add_require(spec, { config = config, template = template })
+            pkg:add_require(spec, context)
         end
 
         for spec in each(rule.requires) do
-            local this_template = rule.requires.template or template
-            pkg:add_require(spec, { config = config, template = this_template })
+            local context = context
+            if rule.requires.template ~= nil and rule.requires.template ~= context.template then
+                context = copy(context)
+                context.template = rule.requires.template
+            end
+            pkg:add_require(spec, context)
         end
 
         -- Add configless stages to every config, then add rule-specific stages.
@@ -889,9 +897,12 @@ function P.define_package(rule)
         for stage in each(stages) do
             local target = this:add_rule2(stage, config)
             for spec in each(stage.requires) do
-                local template = stage.requires.template or template
-                local c = { config = config, template = template }
-                pkg:add_require(spec, c, target.stage)
+                local context = context
+                if stage.requires.template ~= nil and stage.requires.template ~= context.template then
+                    context = copy(context)
+                    context.template = stage.requires.template
+                end
+                pkg:add_require(spec, context, target.stage)
             end
         end
     end
