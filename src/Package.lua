@@ -532,18 +532,6 @@ function P:export_build_env()
     end
 end
 
-function P:add_toolchain_uses()
-    for this, config in self:each_config2(true) do
-        local build = this.build
-        if build then
-            local toolchain = rawget(build, 'toolchain')
-            if toolchain then
-                this.uses = append_uniq(toolchain, this.uses)
-            end
-        end
-    end
-end
-
 function P:export_dirs()
     local function export_build_dir(this, config)
         local export = this.export
@@ -756,6 +744,7 @@ function P:process_config(config, this)
     local toolchain = build.toolchain
     if toolchain then
         self:add_require(toolchain, Context:new { name = self.name, config = config })
+        this.uses = append_uniq(toolchain, this.uses)
     end
 
     if not build.dir then
@@ -1053,7 +1042,6 @@ function P.load_rules()
     end
 
     for _, pkg in pairs(packages) do
-        pkg:add_toolchain_uses()
         pkg:export_dirs()
         pkg:export_build_env()
     end
