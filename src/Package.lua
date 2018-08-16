@@ -327,7 +327,7 @@ function P:gettoolchain(config)
 end
 
 function P:add_target(target)
-    local name = target.existing
+    local name = target.stage
     local config = target.config
     local stages = self:get('stages', config)
     if not stages then
@@ -989,16 +989,10 @@ function P.process_rules(_packages)
     while next(_packages) do
         local new_packages = {}
         for _, pkg in pairs(_packages) do
-            for target in each(pkg.rules) do
-                local t = pkg:add_stage(target.stage, target.config)
-                t:add_inputs(target)
-            end
+            for_each(pkg.rules, function(t) pkg:add_target(t) end)
             for this, config in pkg:each_config2() do
                 table.assign(new_packages, pkg:process_config(config, this))
-                for target in each(this.rules) do
-                    local t = pkg:add_stage(target.stage, target.config)
-                    t:add_inputs(target)
-                end
+                for_each(this.rules, function(t) pkg:add_target(t) end)
             end
             pkg.source:derive_properties(pkg.name)
             pkg:add_toolchain_requires()
