@@ -91,6 +91,7 @@ function Target:__tostring(sep)
 end
 
 function Target:add_inputs(target)
+    assert(target)
     if target.inputs then
         for item in each(target.inputs) do
             self:append(item)

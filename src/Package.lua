@@ -326,6 +326,25 @@ function P:gettoolchain(config)
     return toolchain
 end
 
+function P:add_target(target)
+    local name = target.existing
+    local config = target.config
+    local stages = self:get('stages', config)
+    if not stages then
+        stages = self:set('stages', {}, config)
+    end
+    local existing = stages[name]
+    if existing then
+        existing:add_inputs(target)
+    else
+        target.name = self.name -- for the case of adopting from other pkg
+        existing = target
+        stages[name] = target
+        table.insert(stages, target)
+    end
+    return existing
+end
+
 function P:add_stage(name, config)
     local stages = self:get('stages', config)
     if not stages then
@@ -967,16 +986,15 @@ function P:process_source()
 end
 
 function P.process_rules(_packages)
-    local requires = {}
     while next(_packages) do
-        local patch_providers, np = {}, {}
+        local new_packages = {}
         for _, pkg in pairs(_packages) do
             for target in each(pkg.rules) do
                 local t = pkg:add_stage(target.stage, target.config)
                 t:add_inputs(target)
             end
             for this, config in pkg:each_config2() do
-                table.assign(_packages, pkg:process_config(config, this))
+                table.assign(new_packages, pkg:process_config(config, this))
                 for target in each(this.rules) do
                     local t = pkg:add_stage(target.stage, target.config)
                     t:add_inputs(target)
@@ -985,7 +1003,7 @@ function P.process_rules(_packages)
             pkg.source:derive_properties(pkg.name)
             pkg:add_toolchain_requires()
             if pkg.patches then
-                table.assign(patch_providers, pkg:add_patch_dependencies())
+                table.assign(new_packages, pkg:add_patch_dependencies())
             end
             for this, config in pkg:each_config2() do
                 for spec in each(pkg.uses or {}, this.uses or {}) do
@@ -994,7 +1012,7 @@ function P.process_rules(_packages)
                     local p = packages[use.name]
                     if not p or not p:has_config(config) then
                         local newpkg = P.define_package({ use.name, use.config or config })
-                        _packages[newpkg.name] = newpkg
+                        new_packages[newpkg.name] = newpkg
                     end
                 end
             end
@@ -1002,16 +1020,12 @@ function P.process_rules(_packages)
                 local spec, context, stage = item[1], item[2], item[3]
                 local new_pkg = pkg:define_use(spec, context)
                 pkg:define_require(spec, context, stage)
-                np[new_pkg.name] = new_pkg
+                new_packages[new_pkg.name] = new_pkg
                 pkg._requires = {}
             end
         end
-        _packages = {}
-        table.assign(_packages, np)
-        table.assign(_packages, patch_providers)
-        table.assign(requires, new_requires)
+        _packages = new_packages
     end
-    return requires
 end
 
 function P.load_rules()
@@ -1036,8 +1050,8 @@ function P.load_rules()
 
     push_context({ implicit = true })
 
-    local new_requires = P.process_rules(table.copy(packages))
-    new_packages = P.define_default_config()
+    P.process_rules(table.copy(packages))
+    local new_packages = P.define_default_config()
     P.process_rules(new_packages)
 
     for _, pkg in pairs(packages) do
