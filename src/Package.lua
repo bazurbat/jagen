@@ -920,7 +920,7 @@ function P.process_rules(_packages)
                 table.assign(new_packages, pkg:process_config(config, this))
                 for_each(this._collected_targets, function(t) pkg:add_target(t) end)
                 for spec in each(pkg.uses or {}, this.uses or {}) do
-                    local added = pkg:define_use(spec, { config = config })
+                    local added = pkg:define_use(spec, Context:new { config = config })
                     new_packages[added.name] = added
                 end
             end
