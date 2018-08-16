@@ -21,6 +21,7 @@ end
 local lua_package = package
 local packages = {}
 local used_packages = {}
+local used_requires = {}
 
 local current_context
 local context_stack = {}
@@ -379,28 +380,31 @@ end
 function P:add_require(spec, context, stage)
     local key = string.format('%s^%s^%s^%s', self.name, spec,
         tostring(context.config), tostring(context.template))
+    local key2 = string.format('%s^%s:%s^%s', spec, self.name, context.config or '', stage or '')
     self._requires[key] = { spec, context, stage }
+    used_requires[key2] = { self, spec, context.config, stage }
 end
 
-function P:define_require(spec, context, stage)
-    local config, template = context.config, context.template
+function P:add_require_dependencies(spec, config, stage)
     if not stage then
-        local build, install = self:get('build', config), self:get('install', config)
-        if build and build.type then
-            stage = 'configure'
-        elseif install and install.type then
-            stage = 'install'
-        else
+        if config then
+            local build, install = self:get('build', config), self:get('install', config)
+            if build and build.type then
+                stage = 'configure'
+            elseif install and install.type then
+                stage = 'install'
+            end
+        end
+        if not stage then
             stage = self:last(config).stage
         end
+        assert(stage)
     end
     local use = Target.from_use(spec)
-    local pkg = packages[use.name]
-    local l = pkg:last(use.config or config)
-    if not l then
-        l = Target.from_args(pkg.name, 'install', use.config or config)
-    end
-    self:add_stage(stage, config):append(l)
+    local pkg = packages[use.name] assert(pkg)
+    local req_target = pkg:last(use.config or config) assert(req_target)
+    local target = Target.from_args(self.name, stage, config)
+    self:add_target(target:append(req_target))
 end
 
 function P:add_patch_dependencies()
@@ -993,27 +997,19 @@ function P.process_rules(_packages)
             for this, config in pkg:each_config2() do
                 table.assign(new_packages, pkg:process_config(config, this))
                 for_each(this.rules, function(t) pkg:add_target(t) end)
+                for spec in each(pkg.uses or {}, this.uses or {}) do
+                    local added = pkg:define_use(spec, { config = config })
+                    new_packages[added.name] = added
+                end
             end
             pkg.source:derive_properties(pkg.name)
             pkg:add_toolchain_requires()
             if pkg.patches then
                 table.assign(new_packages, pkg:add_patch_dependencies())
             end
-            for this, config in pkg:each_config2() do
-                for spec in each(pkg.uses or {}, this.uses or {}) do
-                    local use = Target.from_use(spec)
-                    local config = use.config or config
-                    local p = packages[use.name]
-                    if not p or not p:has_config(config) then
-                        local newpkg = P.define_package({ use.name, use.config or config })
-                        new_packages[newpkg.name] = newpkg
-                    end
-                end
-            end
             for key, item in pairs(pkg._requires) do
                 local spec, context, stage = item[1], item[2], item[3]
                 local new_pkg = pkg:define_use(spec, context)
-                pkg:define_require(spec, context, stage)
                 new_packages[new_pkg.name] = new_pkg
                 pkg._requires = {}
             end
@@ -1026,7 +1022,7 @@ function P.load_rules()
     local def_loader = lua_package.loaders[2]
     lua_package.loaders[2] = find_module
 
-    packages, used_packages = {}, {}
+    packages, used_packages, used_requires = {}, {}, {}
 
     local function try_load_rules(dir)
         local filename = System.mkpath(dir, 'rules.lua')
@@ -1047,6 +1043,11 @@ function P.load_rules()
     P.process_rules(table.copy(packages))
     local new_packages = P.define_default_config()
     P.process_rules(new_packages)
+
+    for key, item in pairs(used_requires) do
+        local pkg, spec, config, stage = item[1], item[2], item[3], item[4]
+        pkg:add_require_dependencies(spec, config, stage)
+    end
 
     for _, pkg in pairs(packages) do
         pkg:add_toolchain_uses()
