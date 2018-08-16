@@ -45,7 +45,6 @@ local function write_common(w, pkg)
         'template',
         'uses',
         'rules',
-        '_requires'
     }
     local function custom_keys(_, key)
         return type(key) ~= 'number' and

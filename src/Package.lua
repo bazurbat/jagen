@@ -21,7 +21,9 @@ end
 local lua_package = package
 local packages = {}
 local used_packages = {}
-local used_requires = {}
+local all_required_packages = {}
+local required_packages = {}
+local required_specs = {}
 
 local current_context
 local context_stack = {}
@@ -378,11 +380,18 @@ function P:add_rule2(rule, config)
 end
 
 function P:add_require(spec, context, stage)
-    local key = string.format('%s^%s^%s^%s', self.name, spec,
+    local key = string.format('%s^%s^%s^%s', spec, self.name,
         tostring(context.config), tostring(context.template))
-    local key2 = string.format('%s^%s:%s^%s', spec, self.name, context.config or '', stage or '')
-    self._requires[key] = { spec, context, stage }
-    used_requires[key2] = { self, spec, context.config, stage }
+    if not all_required_packages[key] then
+        local item = { self, spec, context }
+        all_required_packages[key] = item
+        required_packages[key] = item 
+    end
+    local key2 = string.format('%s^%s:%s^%s', spec, self.name,
+        context.config or '', stage or '')
+    if not required_specs[key2] then
+        required_specs[key2] = { self, spec, context.config, stage }
+    end
 end
 
 function P:add_require_dependencies(spec, config, stage)
@@ -1007,12 +1016,13 @@ function P.process_rules(_packages)
             if pkg.patches then
                 table.assign(new_packages, pkg:add_patch_dependencies())
             end
-            for key, item in pairs(pkg._requires) do
-                local spec, context, stage = item[1], item[2], item[3]
-                local new_pkg = pkg:define_use(spec, context)
-                new_packages[new_pkg.name] = new_pkg
-                pkg._requires = {}
-            end
+        end
+        local required = required_packages
+        required_packages = {}
+        for key, item in pairs(required) do
+            local pkg, spec, context = item[1], item[2], item[3]
+            local used = pkg:define_use(spec, context)
+            new_packages[used.name] = used
         end
         _packages = new_packages
     end
@@ -1022,7 +1032,8 @@ function P.load_rules()
     local def_loader = lua_package.loaders[2]
     lua_package.loaders[2] = find_module
 
-    packages, used_packages, used_requires = {}, {}, {}
+    packages, used_packages = {}, {}
+    all_required_packages, required_packages, required_specs = {}, {}, {}
 
     local function try_load_rules(dir)
         local filename = System.mkpath(dir, 'rules.lua')
@@ -1044,7 +1055,7 @@ function P.load_rules()
     local new_packages = P.define_default_config()
     P.process_rules(new_packages)
 
-    for key, item in pairs(used_requires) do
+    for key, item in pairs(required_specs) do
         local pkg, spec, config, stage = item[1], item[2], item[3], item[4]
         pkg:add_require_dependencies(spec, config, stage)
     end
