@@ -317,7 +317,7 @@ function Jagen.command.clean(args)
     local targets, found = {}
     for i, pattern in iter(extend({}, args), map(string.to_target_pattern)) do
         for name, pkg in iter(packages) do
-            for config, this in pkg:each_config() do
+            for this, config in pkg:each_config() do
                 local spec = string.format('%s:%s', name, config)
                 if spec:match(pattern) then
                     targets[spec] = pkg
@@ -364,7 +364,7 @@ end
 local function generate_cargo_config(packages)
     local targets, lines = {}, {}
     local function do_generate(pkg)
-        for config, this in pkg:each_config() do
+        for this, config in pkg:each_config() do
             local build = pkg:get('build', config)
             if build and build.type == 'rust' and config ~= 'host' then
                 local build_system = Jagen.query(pkg, 'build_system', config):read()

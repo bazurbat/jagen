@@ -281,19 +281,6 @@ end
 function P:each_config(with_shared)
     return coroutine.wrap(function ()
             if with_shared then
-                coroutine.yield('-', self)
-            end
-            if self.configs then
-                for k, v in pairs(self.configs) do
-                    coroutine.yield(k, v)
-                end
-            end
-        end)
-end
-
-function P:each_config2(with_shared)
-    return coroutine.wrap(function ()
-            if with_shared then
                 coroutine.yield(self)
             end
             if self.configs then
@@ -516,13 +503,13 @@ end
 function P:export_build_env()
     local keys = { 'cc', 'cxx', 'arch', 'system', 'cpu',
                    'cflags', 'cxxflags', 'ldflags' }
-    for this, config in self:each_config2(true) do
+    for this, config in self:each_config(true) do
         local build = this.build
         if build.cxxflags == nil and build.cflags ~= nil then
             build.cxxflags = build.cflags
         end
     end
-    for this, config in self:each_config2() do
+    for this, config in self:each_config() do
         local build, export = this.build, this.export
         if build and export then
             for key in each(keys) do
@@ -545,7 +532,7 @@ function P:export_dirs()
         end
     end
     export_build_dir(self)
-    for config, this in self:each_config() do
+    for this, config in self:each_config() do
         export_build_dir(this, config)
     end
     local export, source = self.export, self.source
@@ -615,7 +602,7 @@ end
 
 function P:check_build_insource()
     local count, build = table.count(self.configs)
-    for config, this in self:each_config() do
+    for this, config in self:each_config() do
         build = this.build
         if build and build.in_source and build.in_source ~= 'multi' and count > 1 then
             print_warning("the package '%s' builds in source but has multiple configs defined, "..
@@ -629,7 +616,7 @@ end
 
 function P:check_build_toolchain()
     local build
-    for config, this in self:each_config() do
+    for this, config in self:each_config() do
         build = this.build
         if build and build.type and build.toolchain == nil then
             print_error("the package '%s' requires '%s' build for "..
@@ -649,7 +636,7 @@ function P:check_usages()
     end
     if not implicit then return end
     local build, install
-    for config, this in self:each_config() do
+    for this, config in self:each_config() do
         build = build or self:get('build', config)
         install = install or self:get('install', config)
     end
@@ -662,7 +649,7 @@ function P:check_usages()
 end
 
 function P:check_undefined_uses()
-    for config, this in self:each_config(true) do
+    for this, config in self:each_config(true) do
         for spec in each(this.uses or {}) do
             local use = Target.from_use(spec)
             if not packages[use.name] then
@@ -985,7 +972,7 @@ function P.process_rules(_packages)
         local new_packages = {}
         for _, pkg in pairs(_packages) do
             for_each(pkg.rules, function(t) pkg:add_target(t) end)
-            for this, config in pkg:each_config2() do
+            for this, config in pkg:each_config() do
                 table.assign(new_packages, pkg:process_config(config, this))
                 for_each(this.rules, function(t) pkg:add_target(t) end)
                 for spec in each(pkg.uses or {}, this.uses or {}) do

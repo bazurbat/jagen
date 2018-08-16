@@ -159,7 +159,7 @@ local function format_stage(target, pkg)
         for use in each(pkg.uses or {}) do
             append_uniq(Target.from_args(Target.from_use(use).name, 'export'), uses)
         end
-        for _, this in pkg:each_config() do
+        for this in pkg:each_config() do
             for use in each(this.uses or {}) do
                 append_uniq(Target.from_args(Target.from_use(use).name, 'export'), uses)
             end
