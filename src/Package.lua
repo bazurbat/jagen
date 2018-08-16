@@ -532,18 +532,6 @@ function P:export_build_env()
     end
 end
 
-function P:add_toolchain_requires()
-    for this, config in self:each_config2() do
-        local build = this.build
-        if build then
-            local toolchain = build.toolchain
-            if toolchain then
-                self:add_require(toolchain, Context:new { name = self.name, config = config })
-            end
-        end
-    end
-end
-
 function P:add_toolchain_uses()
     for this, config in self:each_config2(true) do
         local build = this.build
@@ -763,6 +751,11 @@ function P:process_config(config, this)
         self:add_require(name, Context:new { config = config })
         this.uses = append_uniq(name, this.uses)
         build.rust_toolchain = rust_toolchain
+    end
+
+    local toolchain = build.toolchain
+    if toolchain then
+        self:add_require(toolchain, Context:new { name = self.name, config = config })
     end
 
     if not build.dir then
@@ -1012,7 +1005,6 @@ function P.process_rules(_packages)
                 end
             end
             pkg.source:derive_properties(pkg.name)
-            pkg:add_toolchain_requires()
             if pkg.patches then
                 table.assign(new_packages, pkg:add_patch_dependencies())
             end
