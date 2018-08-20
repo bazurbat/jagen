@@ -6,6 +6,7 @@ local Command = require 'Command'
 
 local P = {}
 P.__index = P
+P.has_rust_rules = false
 
 local had_errors = false
 local had_warnings = false
@@ -841,6 +842,7 @@ function P:process_config(config, this)
         self:collect_require(name, Context:new { config = config })
         this.uses = append_uniq(name, this.uses)
         build.rust_toolchain = rust_toolchain
+        P.has_rust_rules = true
     end
 
     local toolchain = build.toolchain
@@ -959,6 +961,7 @@ function P.load_rules()
     local def_loader = lua_package.loaders[2]
     lua_package.loaders[2] = find_module
 
+    P.has_rust_rules = false
     _define_count = 0
     _context_count = 0
     packages, used_packages = {}, {}
