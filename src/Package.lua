@@ -18,6 +18,9 @@ local function print_warning(...)
     had_warnings = true
 end
 
+local _define_count = 0
+local _context_count = 0
+
 local lua_package = package
 local packages = {}
 local used_packages = {}
@@ -634,9 +637,8 @@ function P:create(name)
         build = {},
         install = {},
         export = {},
+        contexts = {},
         _collected_targets = {},
-        _requires = {},
-        contexts = {}
     }
     setmetatable(pkg, self)
     pkg:add_stage('unpack')
@@ -665,6 +667,8 @@ function package(rule)
 end
 
 function P.define_package(rule, context)
+    _define_count = _define_count + 1
+
     rule = P:parse(rule)
 
     if not context then context = Context:new() end
@@ -685,6 +689,18 @@ function P.define_package(rule, context)
     if config then
         if not pkg.configs[config] then pkg.configs[config] = {} end
         this = pkg.configs[config]
+        if not getmetatable(this) then
+            this.name, this.config = pkg.name, config
+            if not this.stages then this.stages = {} end
+            if not this._collected_targets then this._collected_targets = {} end
+            if not this.build then this.build = {} end
+            if not this.install then this.install = {} end
+            if not this.export then this.export = {} end
+            setmetatable(this, P)
+            setmetatable(this.build, { __index = pkg.build })
+            setmetatable(this.install, { __index = pkg.install })
+            setmetatable(this.export, { __index = pkg.export })
+        end
     end
 
     -- merge source and patches to shared part regardless of rule context
@@ -707,25 +723,6 @@ function P.define_package(rule, context)
     end
 
     if config then
-        this.name, this.config = pkg.name, config
-        if not getmetatable(this) then
-            setmetatable(this, P)
-        end
-        if not this.stages then this.stages = {} end
-        if not this.build then this.build = {} end
-        if not getmetatable(this.build) then
-            setmetatable(this.build, { __index = pkg.build })
-        end
-        if not this.install then this.install = {} end
-        if not getmetatable(this.install) then
-            setmetatable(this.install, { __index = pkg.install })
-        end
-        if not this.export then this.export = {} end
-        if not getmetatable(this.export) then
-            setmetatable(this.export, { __index = pkg.export })
-        end
-        if not this._collected_targets then this._collected_targets = {} end
-
         local build, install = this.build, this.install
 
         for spec in each(pkg.requires) do
@@ -769,7 +766,8 @@ end
 
 function P:define_use(spec, context)
     local config, template = context.config, context.template
-    local key = string.format('%s:%s:%s', spec, tostring(config), tostring(template))
+    -- local key = string.format('%s^%s:%s^%s', spec, tostring(context.name), tostring(config), tostring(template))
+    local key = string.format('%s^%s^%s', spec, tostring(config), tostring(template))
     local cached, results, pkg = used_packages[key]
     if cached then return unpack(cached) end
     local target = Target.from_use(spec)
@@ -961,6 +959,8 @@ function P.load_rules()
     local def_loader = lua_package.loaders[2]
     lua_package.loaders[2] = find_module
 
+    _define_count = 0
+    _context_count = 0
     packages, used_packages = {}, {}
     all_required_packages, required_packages, required_specs = {}, {}, {}
 
@@ -993,6 +993,12 @@ function P.load_rules()
         pkg:export_dirs()
         pkg:export_build_env()
     end
+
+    for _, pkg in pairs(packages) do
+        _context_count = _context_count + #pkg.contexts
+    end
+
+    -- print(string.format('defines: %d, contexts: %d', _define_count, _context_count))
 
     local source_exclude = os.getenv('jagen_source_exclude')
     local function is_scm(pkg)
