@@ -519,9 +519,9 @@ function table.merge(to, from)
     for k, v in pairs(from) do
         if type(k) ~= 'number' then
             if type(v) == 'table' then
-                to[k] = table.merge(to[k] or {}, v)
+                rawset(to, k, table.merge(rawget(to, k) or {}, v))
             else
-                to[k] = v
+                rawset(to, k, v)
             end
         end
     end
