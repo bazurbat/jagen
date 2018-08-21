@@ -408,6 +408,7 @@ function P:add_patch_dependencies()
             if not pkg then
                 pkg = P.define_package { name }
                 new_packages[pkg.name] = pkg
+                pkg.source = Source:create(pkg.source, pkg.name)
                 pkg.source:derive_properties(name)
             end
             return pkg
@@ -716,13 +717,6 @@ function P.define_package(rule, context)
     rule = table.merge(copy(context.template or {}), rule)
     table.merge(this, rule)
 
-    if not pkg.source or not getmetatable(pkg.source) then
-        pkg.source = Source:create(pkg.source, pkg.name)
-        if pkg.patches and pkg.source:is_scm() then
-            pkg.source.ignore_dirty = 'patches'
-        end
-    end
-
     if config then
         local build, install = this.build, this.install
 
@@ -915,6 +909,15 @@ function P.process_rules(_packages)
     while next(_packages) do
         local new_packages = {}
         for _, pkg in pairs(_packages) do
+            if pkg.source then
+                if not getmetatable(pkg.source) then
+                    pkg.source = Source:create(pkg.source, pkg.name)
+                    if pkg.patches and pkg.source:is_scm() then
+                        pkg.source.ignore_dirty = 'patches'
+                    end
+                end
+                pkg.source:derive_properties(pkg.name)
+            end
             for_each(pkg._collected_targets, function(t) pkg:add_target(t) end)
             for this, config in pkg:each_config() do
                 table.assign(new_packages, pkg:process_config(config, this))
@@ -924,7 +927,6 @@ function P.process_rules(_packages)
                     new_packages[added.name] = added
                 end
             end
-            pkg.source:derive_properties(pkg.name)
             if pkg.patches then
                 table.assign(new_packages, pkg:add_patch_dependencies())
             end
