@@ -767,11 +767,11 @@ end
 
 function P:define_use(spec, context)
     local config, template = context.config, context.template
+    local target = Target.from_use(spec)
     -- local key = string.format('%s^%s:%s^%s', spec, tostring(context.name), tostring(config), tostring(template))
-    local key = string.format('%s^%s^%s', spec, tostring(config), tostring(template))
+    local key = string.format('%s^%s^%s', tostring(target), tostring(config), tostring(template))
     local cached, results, pkg = used_packages[key]
     if cached then return unpack(cached) end
-    local target = Target.from_use(spec)
     local config = config or template and template.config
     if target.config == 'system' then -- skip those for now
         return
