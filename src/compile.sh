@@ -3,8 +3,6 @@
 pkg_compile() {
     local IFS="$jagen_IFS" S="$jagen_FS" A= MA="$(cat "${jagen_build_args_file:?}" 2>&-)"
 
-    [ "$pkg_source_dir" ] || return 0
-
     local is_offline= verbose_opt= jobs=
     local makefile=
 
@@ -20,11 +18,11 @@ pkg_compile() {
             pkg_run "${pkg_build_cmake_executable:?}" --build . -- $(pkg__get_cmake_args) "$@" $MA
             ;;
         make|kbuild)
-            if [ -f "$pkg_source_dir/GNUmakefile" ]; then
+            if [ -f "${pkg_source_dir:?}/GNUmakefile" ]; then
                 makefile="$pkg_source_dir/GNUmakefile"
-            elif [ -f "$pkg_source_dir/makefile" ]; then
+            elif [ -f "${pkg_source_dir:?}/makefile" ]; then
                 makefile="$pkg_source_dir/makefile"
-            elif [ -f "$pkg_source_dir/Makefile" ]; then
+            elif [ -f "${pkg_source_dir:?}/Makefile" ]; then
                 makefile="$pkg_source_dir/Makefile"
             fi
             if [ "$makefile" ]; then
@@ -53,14 +51,14 @@ pkg_compile() {
             ;;
         rust)
             export CARGO_TARGET_DIR="$pkg_build_dir"
-            cd "$pkg_source_dir"
+            cd "${pkg_source_dir:?}"
             pkg_is_release && A="--release"
             pkg_run rustup run "${pkg_build_rust_toolchain:?}" \
                 cargo build ${pkg_build_system:+--target=$pkg_build_system} \
                 $A "$@" $MA
             ;;
         gradle-android)
-            if ! [ -f "$pkg_source_dir/gradlew" ]; then
+            if ! [ -f "${pkg_source_dir:?}/gradlew" ]; then
                 die "failed to find Gradle wrapper (gradlew) script in the project's source directory: $pkg_source_dir"
             fi
             if pkg_is_release; then
@@ -68,7 +66,7 @@ pkg_compile() {
             else
                 A="assembleDebug"
             fi
-            pkg_run bash "$pkg_source_dir/gradlew" $A "$@" $MA
+            pkg_run bash "${pkg_source_dir:?}/gradlew" $A "$@" $MA
             ;;
         android-standalone-toolchain)
             require toolchain

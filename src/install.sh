@@ -1,8 +1,6 @@
 #!/bin/sh
 
 pkg_install() {
-    [ "$pkg_source_dir" ] || return 0
-
     local IFS="$jagen_IFS" MA="$(cat "${jagen_build_args_file:?}" 2>&-)"
     local pkg_install_type="${pkg_install_type:-$pkg_build_type}"
 
