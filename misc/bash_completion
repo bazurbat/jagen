@@ -9,6 +9,7 @@ _jagen_complete() {
     local scm_names_file="$jagen_build_dir/.jagen-scm-names"
     local configs_file="$jagen_build_dir/.jagen-configs"
     local targets_file="$jagen_build_dir/.jagen-targets"
+    local layers_file="$jagen_build_dir/.jagen-layers"
 
     local top_cmds='help clean refresh build src list update'
     local src_cmds='dirty status clean update delete each'
@@ -23,18 +24,15 @@ _jagen_complete() {
 
     _get_comp_words_by_ref -n : cur prev
 
-    # Special case to avoid a level of nesting
-    if [[ "${prev##*/}" == "jagen" ]]; then
-        jagen_command="jagen"
-    else
-        jagen_command=${COMP_WORDS[1]}
-    fi
-
+    jagen_command=${COMP_WORDS[1]}
     jagen_subcommand=${COMP_WORDS[2]}
 
+    if [ "$prev" == "jagen" -a ${#COMP_WORDS[*]} -le 2 ]; then
+        COMPREPLY=($(compgen -W "$help_opt $top_cmds" -- "$cur"))
+        return
+    fi
+
     case $jagen_command in
-        jagen)
-            COMPREPLY=($(compgen -W "$help_opt $top_cmds" -- "$cur")) ;;
         clean)
             if [[ "$prev" == "clean" ]]; then
                 COMPREPLY=($(compgen -W "$help_opt $(cat "$configs_file")" -- "$cur"))
@@ -63,14 +61,12 @@ _jagen_complete() {
             ;;
         list)
             if [[ "$prev" == "list" ]]; then
-                COMPREPLY=($(compgen -W "$help_opt packages" -- "$cur"))
+                COMPREPLY=($(compgen -W "$help_opt packages layers" -- "$cur"))
             elif [[ "$jagen_subcommand" == "packages" ]]; then
                 COMPREPLY=($(compgen -W "$help_opt $list_packages_opt" -- "$cur"))
             fi ;;
         update)
-            if [[ "$prev" == "update" ]]; then
-                COMPREPLY=($(compgen -W "$help_opt self" -- "$cur"))
-            fi ;;
+            COMPREPLY=($(compgen -W "$help_opt jagen self $(cat "$layers_file")" -- "$cur")) ;;
     esac
 
     __ltrim_colon_completions "$cur"

@@ -11,6 +11,7 @@ COMMANDS
   build     Build or rebuild the specified targets
   src       Manage SCM package sources
   list      List various information about the current project
+  update    Update the specified layers or Jagen itself
 
   Use 'jagen help <command>' to get help about individual commands.
 
@@ -220,7 +221,7 @@ COMMANDS
 ]]
 
 local list = [[
-Usage: jagen list packages [OPTIONS...]
+Usage: jagen list [packages|layers] [OPTIONS...]
 
   Lists various information about the current project.
 
@@ -247,16 +248,22 @@ COMMANDS
         is given without a value it is set to 999 which means show all
         contexts.
 
+  layers  Show currently defined layers and their file paths.
+
 ]]
 
 local update = [[
-Usage: jagen update self
+Usage: jagen update [<LAYER>|jagen|self]...
 
-  Updates Jagen.
+  Updates the specified layers or Jagen itself.
 
-COMMANDS
+SYNOPSIS
 
-  self  Update Jagen source repository.
+  Specify a list of shell-like patterns of layer names to update. To see all
+  currently defined layers use the `jagen list layers` command.
+
+  A special name 'jagen' can be used to update the Jagen repository associated
+  with the project. Alternatively the name 'self' can be used.
 
 ]]
 

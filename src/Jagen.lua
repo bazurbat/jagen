@@ -41,6 +41,21 @@ function Jagen.query(pkg, value, config)
     return Command:new('jagen-stage -q', value, pkg.name, config)
 end
 
+function Jagen._load_layers()
+    local path, layers = {}, {}
+    for dir in Command:new(quote(Jagen.cmd), 'get_path'):read('*a'):gmatch('[^\t\n]+') do
+        table.insert(path, dir)
+    end
+    assert(#path >= 2)
+    table.remove(path)
+    table.remove(path, 1)
+    for dir in each(path) do
+        local name = assert(dir:match('.*/(.+)'), 'item is not a path: '..dir)
+        layers[name] = dir
+    end
+    return layers
+end
+
 -- src
 
 local function scm_packages(patterns)
@@ -445,6 +460,7 @@ function Jagen.command.refresh(args, packages)
     local scm_names_file = assert(io.open(System.mkpath(Jagen.build_dir, '.jagen-scm-names'), 'wb'))
     local configs_file = assert(io.open(System.mkpath(Jagen.build_dir, '.jagen-configs'), 'wb'))
     local targets_file = assert(io.open(System.mkpath(Jagen.build_dir, '.jagen-targets'), 'wb'))
+    local layers_file = assert(io.open(System.mkpath(Jagen.build_dir, '.jagen-layers'), 'wb'))
     local stages, cstages, configs = {}, {}, {}
 
     for _, name in ipairs(names) do
@@ -479,11 +495,16 @@ function Jagen.command.refresh(args, packages)
     for config in pairs(configs) do
         assert(targets_file:write(string.format('::%s\n', config)))
     end
+    local layers = Jagen._load_layers()
+    for name, path in pairs(layers) do
+        assert(layers_file:write(string.format('%s\n', name)))
+    end
 
     names_file:close()
     scm_names_file:close()
     configs_file:close()
     targets_file:close()
+    layers_file:close()
 
     return ok
 end
@@ -580,8 +601,16 @@ function Jagen.command.list(args)
         return Jagen.command['help'] { 'list' }
     end
 
-    if args[1] ~= 'packages' then
+    if args[1] ~= 'packages' and args[1] ~= 'layers' then
         die("invalid list command '"..args[1].."', try 'jagen list help'")
+    end
+
+    if args[1] == 'layers' then
+        local layers = Jagen._load_layers()
+        for name, path in pairs(layers) do
+            io.write(string.format('%s: %s\n', name, path))
+        end
+        return true
     end
 
     local options = Options:new {
@@ -665,32 +694,56 @@ function Jagen.command.update(args)
         return Jagen.command['help'] { 'update' }
     end
 
-    if args[1] ~= 'self' then
-        die("invalid update command '"..args[1].."', try 'jagen list help'")
+    local sources = {
+        jagen = Source:create {
+            type = 'git',
+            dir = '$jagen_dir'
+        }
+    }
+
+    local layers = Jagen._load_layers()
+    for name, path in pairs(layers) do
+        sources[name] = Source:create { type = 'git', dir = path }
     end
 
-    local options = Options:new {
-        { 'help,h' },
-    }
-    args = options:parse(table.rest(args, 2))
-    if not args then
-        return 22
-    end
+    local options = Options:new { { 'help,h' } }
+    args = options:parse(table.rest(args, 1))
+    if not args then return 22 end
 
     if args['help'] then
         return Jagen.command['help'] { 'update' }
     end
 
-    local source = Source:create({
-            type = 'git',
-            dir = '$jagen_dir'
-        }, 'jagen')
-
-    if source:dirty() then
-        die("Could not update jagen in '%s': the source is dirty", System.expand(source.dir))
+    local keys = {}
+    for arg in each(args) do
+        if arg == 'self' then arg = 'jagen' end
+        local pattern, matched = string.convert_pattern(arg), false
+        for name, _ in pairs(sources) do
+            if name:match(pattern) then
+                table.insert(keys, name) matched = true
+            end
+        end
+        if not matched then
+            die("Could not find any layer matching: %s", arg)
+        end
     end
 
-    return source:update()
+    local retval = true
+    for key in each(keys) do
+        local source = sources[key]
+        if source:dirty() then
+            Log.warning("Not updating %s: the source directory '%s' is dirty", key, System.expand(source.dir))
+            retval = false
+        else
+            Log.message("Updating %s", key)
+            if not source:update() then
+                Log.warning("Failed to update %s in '%s'", key, System.expand(source.dir))
+                retval = false
+            end
+        end
+    end
+
+    return retval
 end
 
 function Jagen.command.image(args)

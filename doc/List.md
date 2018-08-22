@@ -1,7 +1,7 @@
 ### Cleaning
 
 ```
-Usage: jagen list packages [OPTIONS...]
+Usage: jagen list [packages|layers] [OPTIONS...]
 
   Lists various information about the current project.
 
@@ -27,4 +27,6 @@ COMMANDS
         toplevel packages explicitly defined in the rule files. If the option
         is given without a value it is set to 999 which means show all
         contexts.
+
+  layers  Show currently defined layers and their file paths.
 ```

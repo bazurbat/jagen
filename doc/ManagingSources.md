@@ -69,3 +69,22 @@ implicitly, otherwise the command will be run for all source directories.
   Run `ls` only for "hg" sources:
 
     jagen src each --type hg ls
+
+# Managing layers
+
+```
+Usage: jagen update [<LAYER>|jagen|self]...
+
+  Updates the specified layers or Jagen itself.
+
+SYNOPSIS
+
+  Specify a list of shell-like patterns of layer names to update. To see all
+  currently defined layers use the `jagen list layers` command.
+
+  A special name 'jagen' can be used to update the Jagen repository associated
+  with the project. Alternatively the name 'self' can be used.
+```
+
+Use the `update` command to update project layers or associated Jagen repo. Git
+source type is assumed for both.
