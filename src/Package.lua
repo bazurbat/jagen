@@ -409,7 +409,6 @@ function P:add_patch_dependencies()
                 pkg = P.define_package { name }
                 new_packages[pkg.name] = pkg
                 pkg.source = Source:create(pkg.source, pkg.name)
-                pkg.source:derive_properties(name)
             end
             return pkg
         end
@@ -916,7 +915,6 @@ function P.process_rules(_packages)
                         pkg.source.ignore_dirty = 'patches'
                     end
                 end
-                pkg.source:derive_properties(pkg.name)
             end
             for_each(pkg._collected_targets, function(t) pkg:add_target(t) end)
             for this, config in pkg:each_config() do
