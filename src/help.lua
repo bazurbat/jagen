@@ -260,10 +260,31 @@ Usage: jagen update [<LAYER>|jagen|self]...
 SYNOPSIS
 
   Specify a list of shell-like patterns of layer names to update. To see all
-  currently defined layers use the `jagen list layers` command.
+  currently defined layers use the `jagen list layers` command. If nothing is
+  specified then all layers will be updated.
 
-  A special name 'jagen' can be used to update the Jagen repository associated
-  with the project. Alternatively the name 'self' can be used.
+  Special names 'jagen' and 'self' can be added to the list to also update the
+  Jagen repository associated with the project. These special names do not
+  participate in the layer name pattern matching and should be specified
+  explicitly.
+
+EXAMPLES
+
+  To update all currently defined layers:
+
+    jagen update
+
+  To update only Jagen:
+
+    jagen update self
+
+  To update all layers and Jagen:
+
+    jagen update self '*'
+
+  To update only layers with names starting with 'ja':
+
+    jagen update 'ja*'
 
 ]]
 

@@ -690,20 +690,8 @@ function Jagen.command.list(args)
 end
 
 function Jagen.command.update(args)
-    if #args == 0 or help_requested(args) then
+    if help_requested(args) then
         return Jagen.command['help'] { 'update' }
-    end
-
-    local sources = {
-        jagen = Source:create {
-            type = 'git',
-            dir = '$jagen_dir'
-        }
-    }
-
-    local layers = Jagen._load_layers()
-    for name, path in pairs(layers) do
-        sources[name] = Source:create { type = 'git', dir = path }
     end
 
     local options = Options:new { { 'help,h' } }
@@ -714,19 +702,33 @@ function Jagen.command.update(args)
         return Jagen.command['help'] { 'update' }
     end
 
+    if #args == 0 then
+        table.insert(args, '*')
+    end
+
+    local layers, sources = Jagen._load_layers(), {}
+    for name, path in pairs(layers) do
+        sources[name] = Source:create { type = 'git', dir = path }
+    end
+
     local keys = {}
     for arg in each(args) do
-        if arg == 'self' then arg = 'jagen' end
-        local pattern, matched = string.convert_pattern(arg), false
-        for name, _ in pairs(sources) do
-            if name:match(pattern) then
-                table.insert(keys, name) matched = true
+        if arg == 'self' or arg == 'jagen' then
+            table.insert(keys, 'jagen') matched = true
+        else
+            local pattern, matched = string.convert_pattern(arg), false
+            for name, _ in pairs(sources) do
+                if name:match(pattern) then
+                    table.insert(keys, name) matched = true
+                end
+            end
+            if not matched then
+                die("Could not find any layer matching: %s", arg)
             end
         end
-        if not matched then
-            die("Could not find any layer matching: %s", arg)
-        end
     end
+
+    sources['jagen'] = Source:create { type = 'git', dir = '$jagen_dir' }
 
     local retval = true
     for key in each(keys) do
