@@ -61,7 +61,7 @@ local function scm_packages(patterns)
         end
     else
         for _, pkg in pairs(packages) do
-            if pkg.source:is_scm() then
+            if pkg.source and pkg.source:is_scm() then
                 table.insert(o, pkg)
             end
         end
