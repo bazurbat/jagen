@@ -31,7 +31,8 @@ function Source:parse(rule)
         local url = rule.location
         if url:match('%.hg$') then
             rule.type = 'hg'
-        elseif url:match('%.git$') or url:match('^git@') or
+        elseif url:match('^https?://github.com/') or
+               url:match('%.git$') or url:match('^git@') or
                url:match('^[%w._-]+@[%w._-]+:') then
             rule.type = 'git'
         elseif url:match('%.tar$') or url:match('%.zip$') or
