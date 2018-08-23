@@ -380,9 +380,12 @@ function P:add_require_dependencies(spec, config, stage)
             end
         end
         if not stage then
-            stage = self:last(config).stage
+            local last = self:last(config)
+            if last then
+                stage = last.stage
+            end
         end
-        assert(stage)
+        if not stage then return end
     end
     local use = Target.from_use(spec)
     local pkg = packages[use.name] assert(pkg)
@@ -656,6 +659,7 @@ end
 
 function package(rule)
     local context, level, info = Context:new(), 2
+    context.origin = 'package'
     repeat
         info = debug.getinfo(level, 'Sl')
         level = level+1
@@ -672,10 +676,19 @@ function P.define_package(rule, context)
 
     rule = P:parse(rule)
 
-    if not context then context = Context:new() end
-    context.name = context.name or rule.name
-    context.template = context.template or rule.template
-    context.config = context.config or rule.config or rule.template and rule.template.config
+    if not context or context.origin == 'package' then
+        if not context then
+            context = Context:new()
+            context.origin = 'this'
+        else
+            context.origin = nil
+        end
+        context.name = rule.name
+        context.template = rule.template
+        context.config = rule.config or rule.template and rule.template.config
+    end
+    local template = rule.template or context.template
+    local config = rule.config or context.config or template and template.config
     rule.config, rule.template = nil, nil
 
     local pkg = packages[rule.name]
@@ -683,9 +696,12 @@ function P.define_package(rule, context)
         pkg = P:create(rule.name)
         packages[rule.name] = pkg
     end
-    append_uniq(context, pkg.contexts)
+    if context.origin ~= 'this' then
+        append_uniq(context, pkg.contexts)
+    else
+        context.origin = nil
+    end
 
-    local config = context.config
     local this = pkg
     if config then
         if not pkg.configs[config] then pkg.configs[config] = {} end
@@ -713,7 +729,7 @@ function P.define_package(rule, context)
         end
     end
 
-    rule = table.merge(copy(context.template or {}), rule)
+    rule = table.merge(copy(template or {}), rule)
     table.merge(this, rule)
 
     if config then
@@ -725,7 +741,7 @@ function P.define_package(rule, context)
 
         for spec in each(rule.requires) do
             local context = context
-            if rule.requires.template ~= nil and rule.requires.template ~= context.template then
+            if rule.requires.template ~= nil and rule.requires.template ~= template then
                 context = copy(context)
                 context.template = rule.requires.template
             end
@@ -738,7 +754,7 @@ function P.define_package(rule, context)
             local target = this:collect_rule(stage, config)
             for spec in each(stage.requires) do
                 local context = context
-                if stage.requires.template ~= nil and stage.requires.template ~= context.template then
+                if stage.requires.template ~= nil and stage.requires.template ~= template then
                     context = copy(context)
                     context.template = stage.requires.template
                 end
@@ -760,31 +776,29 @@ end
 
 function P:define_use(spec, context)
     local config, template = context.config, context.template
-    local target = Target.from_use(spec)
-    -- local key = string.format('%s^%s:%s^%s', spec, tostring(context.name), tostring(config), tostring(template))
-    local key = string.format('%s^%s^%s', tostring(target), tostring(config), tostring(template))
-    local cached, results, pkg = used_packages[key]
-    if cached then return unpack(cached) end
-    local config = config or template and template.config
-    if target.config == 'system' then -- skip those for now
+    local use = Target.from_use(spec)
+    if use.name == context.name and use.config == context.config then
+        Log.warning('a package specification %s is recursive in the context: %s', spec, tostring(context))
         return
     end
-    if target.config and target.config ~= config then
+    local key = string.format('%s^%s^%s', tostring(use), tostring(config), tostring(template))
+    local cached, pkg = used_packages[key]
+    if cached then return cached end
+    local config = config or template and template.config
+    if use.config and use.config ~= config then
         pkg = P.define_package({
-            name = target.name,
-            config = target.config
-        })
-        results = { pkg, target.config }
+            name = use.name,
+            config = use.config,
+        }, Context:new { name = context.name, config = config })
     else
         pkg = P.define_package({
-            name = target.name,
+            name = use.name,
             config = config,
             template = template
         }, context)
-        results = { pkg, config }
     end
-    used_packages[key] = results
-    return unpack(results)
+    used_packages[key] = pkg
+    return pkg
 end
 
 function P:process_source()
@@ -832,7 +846,7 @@ function P:process_config(config, this)
             }
         }
         new_packages[p.name] = p
-        self:collect_require(name, Context:new { config = config })
+        self:collect_require(name, Context:new { name = name, config = config })
         this.uses = append_uniq(name, this.uses)
         build.rust_toolchain = rust_toolchain
         P.has_rust_rules = true
@@ -921,8 +935,10 @@ function P.process_rules(_packages)
                 table.assign(new_packages, pkg:process_config(config, this))
                 for_each(this._collected_targets, function(t) pkg:add_target(t) end)
                 for spec in each(pkg.uses or {}, this.uses or {}) do
-                    local added = pkg:define_use(spec, Context:new { config = config })
-                    new_packages[added.name] = added
+                    local added = pkg:define_use(spec, Context:new { name = pkg.name, config = config })
+                    if added then
+                        new_packages[added.name] = added
+                    end
                 end
             end
             if pkg.patches then
