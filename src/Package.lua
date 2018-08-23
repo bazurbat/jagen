@@ -125,6 +125,17 @@ local function find_module(modname)
     end
 end
 
+function P.init_rules()
+    P.has_rust_rules = false
+    _define_count = 0
+    _context_count = 0
+    packages = {}
+    used_packages = {}
+    all_required_packages = {}
+    required_packages = {}
+    required_specs = {}
+end
+
 function P:__tostring(sep)
     local c = {}
     if self.name then table.insert(c, self.name) end
@@ -782,6 +793,7 @@ function P:define_use(spec, context)
         return
     end
     local key = string.format('%s^%s^%s', tostring(use), tostring(config), tostring(template))
+    local fullkey = string.format('%s^%s', context.name, key)
     local cached, pkg = used_packages[key]
     if cached then return cached end
     local config = config or template and template.config
@@ -977,11 +989,7 @@ function P.load_rules()
     local def_loader = lua_package.loaders[2]
     lua_package.loaders[2] = find_module
 
-    P.has_rust_rules = false
-    _define_count = 0
-    _context_count = 0
-    packages, used_packages = {}, {}
-    all_required_packages, required_packages, required_specs = {}, {}, {}
+    P.init_rules()
 
     local function try_load_rules(dir)
         local filename = System.mkpath(dir, 'rules.lua')
