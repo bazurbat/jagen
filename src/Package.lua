@@ -420,7 +420,7 @@ function P:add_patch_dependencies()
         if name and name ~= 'none' then
             local pkg = packages[name]
             if not pkg then
-                pkg = P.define_package { name }
+                pkg = P.define_package { name = name }
                 new_packages[pkg.name] = pkg
                 pkg.source = Source:create(pkg.source, pkg.name)
             end
@@ -669,8 +669,10 @@ function P:create(name)
 end
 
 function package(rule)
-    local context, level, info = Context:new(), 2
-    context.origin = 'package'
+    rule = P:parse(rule)
+    local level, info = 2
+    local context = Context:new { name = rule.name, template = rule.template }
+    context.config = rule.config or rule.template and rule.template.config
     repeat
         info = debug.getinfo(level, 'Sl')
         level = level+1
@@ -685,21 +687,8 @@ end
 function P.define_package(rule, context)
     _define_count = _define_count + 1
 
-    rule = P:parse(rule)
-
-    if not context or context.origin == 'package' then
-        if not context then
-            context = Context:new()
-            context.origin = 'this'
-        else
-            context.origin = nil
-        end
-        context.name = rule.name
-        context.template = rule.template
-        context.config = rule.config or rule.template and rule.template.config
-    end
-    local template = rule.template or context.template
-    local config = rule.config or context.config or template and template.config
+    local template = rule.template or context and context.template
+    local config = rule.config or context and context.config or template and template.config
     rule.config, rule.template = nil, nil
 
     local pkg = packages[rule.name]
@@ -707,10 +696,8 @@ function P.define_package(rule, context)
         pkg = P:create(rule.name)
         packages[rule.name] = pkg
     end
-    if context.origin ~= 'this' then
+    if context then
         append_uniq(context, pkg.contexts)
-    else
-        context.origin = nil
     end
 
     local this = pkg
@@ -753,7 +740,7 @@ function P.define_package(rule, context)
         for spec in each(rule.requires) do
             local context = context
             if rule.requires.template ~= nil and rule.requires.template ~= template then
-                context = copy(context)
+                context = copy(context or {})
                 context.template = rule.requires.template
             end
             pkg:collect_require(spec, context)
@@ -766,7 +753,7 @@ function P.define_package(rule, context)
             for spec in each(stage.requires) do
                 local context = context
                 if stage.requires.template ~= nil and stage.requires.template ~= template then
-                    context = copy(context)
+                    context = copy(context or {})
                     context.template = stage.requires.template
                 end
                 pkg:collect_require(spec, context, target.stage)
@@ -786,30 +773,28 @@ function P.define_package(rule, context)
 end
 
 function P:define_use(spec, context)
-    local config, template = context.config, context.template
+    local name, config, template = context.name, context.config, context.template
     local use = Target.from_use(spec)
-    if use.name == context.name and use.config == context.config then
+    if use.name == name and use.config == config then
         Log.warning('a package specification %s is recursive in the context: %s', spec, tostring(context))
         return
     end
-    local key = string.format('%s^%s^%s', tostring(use), tostring(config), tostring(template))
-    local fullkey = string.format('%s^%s', context.name, key)
-    local cached, pkg = used_packages[key]
-    if cached then return cached end
-    local config = config or template and template.config
+    local key
     if use.config and use.config ~= config then
-        pkg = P.define_package({
-            name = use.name,
-            config = use.config,
-        }, Context:new { name = context.name, config = config })
+        key = spec
+        context = Context:new { name = name, config = config }
+        config = use.config
     else
-        pkg = P.define_package({
-            name = use.name,
-            config = config,
-            template = template
-        }, context)
+        key = string.format('%s:%s^%s', use.name, tostring(config), tostring(template))
     end
-    used_packages[key] = pkg
+    local fullkey = string.format('%s@%s', key, name)
+    local pkg, seen = used_packages[key], used_packages[fullkey]
+    if pkg then
+        if not seen then append_uniq(context, pkg.contexts) end
+    else
+        pkg = P.define_package({ name = use.name, config = config }, context)
+    end
+    used_packages[key] = pkg used_packages[fullkey] = true
     return pkg
 end
 
@@ -818,7 +803,7 @@ function P:process_source()
         pkg:add_rule { 'unpack',
             { 'repo', 'install', 'host' }
         }
-        P.define_package { 'repo', 'host' }
+        P.define_package { name = 'repo', config = 'host' }
     end
 end
 
@@ -889,7 +874,7 @@ function P:process_config(config, this)
             self:add_rule { 'autoreconf',
                 { 'libtool', 'install', 'host' }
             }
-            local p = P.define_package { 'libtool', 'host' }
+            local p = P.define_package { name = 'libtool', config = 'host' }
             new_packages[p.name] = p
         end
     end
@@ -897,7 +882,7 @@ function P:process_config(config, this)
     if build.type == 'linux-module' or build.kernel_modules == true or
         install and install.modules then
 
-        local p = P.define_package { 'kernel', config }
+        local p = P.define_package { name = 'kernel', config = config }
         new_packages[p.name] = p
 
         self:add_rule { 'configure', config,
@@ -962,7 +947,9 @@ function P.process_rules(_packages)
         for key, item in pairs(required) do
             local pkg, spec, context = item[1], item[2], item[3]
             local used = pkg:define_use(spec, context)
-            new_packages[used.name] = used
+            if used then
+                new_packages[used.name] = used
+            end
         end
         _packages = new_packages
     end
@@ -975,9 +962,9 @@ function P.define_default_config()
         if build and build.type and not next(pkg.configs) then
             local new_pkg
             if build.type == 'gradle-android' then
-                new_pkg = P.define_package { pkg.name, 'target' }
+                new_pkg = P.define_package { name = pkg.name, config = 'target' }
             else
-                new_pkg = P.define_package { pkg.name, 'host' }
+                new_pkg = P.define_package { name = pkg.name, config = 'host' }
             end
             new_packages[new_pkg.name] = new_pkg
         end
