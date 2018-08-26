@@ -86,6 +86,10 @@ function Source:create(source, name)
         source = Source:new(source)
     end
 
+    if source.name == nil then
+        source.name = name
+    end
+
     if source.location then
         if not source.filename then
             source.filename = source.location:match('^.*/(.+)$') or source.location
@@ -93,17 +97,17 @@ function Source:create(source, name)
         if not source.basename then
             source.basename = source:_basename(source.filename)
         end
-        if name and not source.dir then
+        if source.name and not source.dir then
             if source:is_scm() then
-                source.dir = System.mkpath('$jagen_src_dir', source.name or name)
+                source.dir = System.mkpath('$jagen_src_dir', source.name)
             else
-                source.dir = System.mkpath('$jagen_build_dir', name, source.basename)
+                source.dir = System.mkpath('$jagen_build_dir', source.name, source.basename)
             end
         end
     end
 
-    if name and not source.dir then
-        source.dir = System.mkpath('$jagen_src_dir', name)
+    if source.name and not source.dir then
+        source.dir = System.mkpath('$jagen_src_dir', source.name)
     end
 
     return source
@@ -167,7 +171,13 @@ function Source:clean()
 end
 
 function Source:update()
-    return true
+    local ok
+    if Jagen.flag 'offline' then
+        Log.message('not fetching %s: offline mode', self.name)
+    else
+        ok = self:fetch()
+    end
+    return ok and self:switch()
 end
 
 function Source:switch()
@@ -242,7 +252,7 @@ function GitSource:clean()
            self:command('clean -fxd'):exec()
 end
 
-function GitSource:update()
+function GitSource:fetch()
     local function extract_ref(line) return line:match('%w+%s+(.+)') end
     local function head_matching(name)
         return function (line) return line:match('^refs/heads/'..name:escape_pattern()..'$') end
@@ -413,7 +423,7 @@ function HgSource:clean()
     return purge_cmd:exec() and update_cmd:exec()
 end
 
-function HgSource:update()
+function HgSource:fetch()
     local cmd = self:command('pull')
     for branch in each(self:getbranches()) do
         cmd:append('--branch', branch)
@@ -494,7 +504,7 @@ function RepoSource:clean()
            self:command('forall -pc', squote(clean_cmd)):exec()
 end
 
-function RepoSource:update()
+function RepoSource:fetch()
     return self:reinit() and self:command('sync -nc'):exec()
 end
 

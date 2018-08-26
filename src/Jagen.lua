@@ -139,13 +139,14 @@ end
 function Jagen.src.update(args)
     local packages = scm_packages(args)
     local offline = Jagen.flag 'offline'
+    local ok
 
     -- Sorting from the shortest to the longest is needed for the case when the
     -- source directories are specified inside each other and we need to clone
     -- both: deeper one is cloned first, then clone complains about already
     -- existing non-empty directory.
     table.sort(packages, function (a, b)
-            return a.source.dir < b.source.dir
+            return (a.source.dir or '') < (b.source.dir or '')
         end)
 
     for pkg in each(packages) do
@@ -160,13 +161,9 @@ function Jagen.src.update(args)
             local head_name = source:head_name()
             Log.message('updating %s (%s)', pkg.name, head_name)
             old_head = source:head()
-            if not offline then
-                if not source:update() then
-                    die('failed to update %s (%s) in %s', pkg.name, head_name, dir)
-                end
-            end
-            if not source:switch() then
-                die('failed to switch %s (%s) to %s in %s', pkg.name, head_name, source:getrev(), dir)
+            ok = source:update()
+            if not ok then
+                die('failed to update %s (%s) in %s', pkg.name, head_name, dir)
             end
         else
             if offline then
