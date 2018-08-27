@@ -205,6 +205,14 @@ jagen__trim() {
     done
 }
 
+# Returns 0 if the first argument is the subdirectory of the second
+jagen_is_subdir() {
+    local dir1="$1" dir2="$2"
+    dir1="$([ "$dir1" ] && cd "$dir1" 2>&- && pwd -P)"
+    dir2="$([ "$dir2" ] && cd "$dir2" 2>&- && pwd -P)"
+    test "$dir1" -a "$dir2" && test "$dir2" != "${dir2#${dir1}}"
+}
+
 # Evaluates the supplied value until there are no more expansions possible and
 # echoes the result of the expansion.
 # Dies if the recursion depth exceeds 10.
