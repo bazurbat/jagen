@@ -160,7 +160,7 @@ function Jagen.src.update(args)
 
         if System.exists(dir) and not System.is_empty(dir) then
             if not source.ignore_dirty and source:dirty() then
-                Log.warning("not updating %s: source dir '%s' is dirty", pkg.name, dir)
+                Log.warning("could not update %s: the source directory '%s' has unsaved changes", pkg.name, dir)
                 ok = false
             else
                 local head_name = source:head_name()
@@ -745,7 +745,7 @@ function Jagen.command.update(args)
     for key in each(keys) do
         local source = sources[key]
         if source:dirty() then
-            Log.warning("not updating %s: the source directory '%s' is dirty", key, System.expand(source.dir))
+            Log.warning("not updating %s: the source directory '%s' has unsaved changes", key, System.expand(source.dir))
             retval = false
         else
             Log.message("updating %s", key)
