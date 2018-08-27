@@ -100,6 +100,15 @@ test "$dir1" -a "$dir2" && test "$dir1" = "$dir2"]],
         assert(dir1), assert(dir2)):exec()
 end
 
+-- Returns true if dir2 is the subdirectory of dir1
+function P.is_subdir(dir1, dir2)
+    return Command:newf([[dir1="%s" dir2="%s"
+if [ -d "$dir1" ]; then dir1=$(cd "$dir1" 2>&- && pwd -P); fi
+if [ -d "$dir2" ]; then dir2=$(cd "$dir2" 2>&- && pwd -P); fi
+test "$dir1" -a "$dir2" && test "$dir2" != "${dir2#$dir1}"]],
+        assert(dir1), assert(dir2)):exec()
+end
+
 -- Returns true if 'dir' is an existing directory and does not have the same
 -- physical path as other directory or the other directory does not exist.
 function P.can_delete_safely(dir, other_dir)
