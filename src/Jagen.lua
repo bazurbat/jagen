@@ -272,33 +272,35 @@ end
 function Jagen.clean_package(pkg, spec)
     local use = Target.from_use(spec)
     local config = use.config
-    local build = pkg:get('build', config)
-    if build then
-        local source_dir = Jagen.query(pkg, 'source_dir', config):read()
-        local build_dir = Jagen.query(pkg, 'build_dir', config):read()
-        local clean_dirs = {}
-        for dir in Jagen.query(pkg, 'build_clean', config):lines() do
-            append(clean_dirs, dir)
+    local clean_dirs = {}
+    for dir in Jagen.query(pkg, 'build_clean', config):lines() do
+        table.insert(clean_dirs, dir)
+    end
+    if #clean_dirs == 0 then
+        if config then
+            local build_dir = Jagen.query(pkg, 'build_dir', config):read()
+            table.insert(clean_dirs, build_dir)
+        else
+            local work_dir = Jagen.query(pkg, 'work_dir'):read()
+            table.insert(clean_dirs, work_dir)
         end
-        if #clean_dirs == 0 and build_dir then
-            clean_dirs = { build_dir }
-        end
-        for dir in each(clean_dirs) do
-            if source_dir and System.same_dir(dir, source_dir) then
-                if pkg.source and pkg.source:is_scm() then
-                    local why = pkg.source:clean_disabled()
-                    if why then
-                        Log.message('not cleaning sources of %s: %s', pkg.name, why)
-                    else
-                        Jagen.src.clean { assert(use.name) }
-                    end
+    end
+    local source_dir = Jagen.query(pkg, 'source_dir', config):read()
+    for dir in each(clean_dirs) do
+        if source_dir and System.same_dir(dir, source_dir) then
+            if pkg.source and pkg.source:is_scm() then
+                local why = pkg.source:clean_disabled()
+                if why then
+                    Log.message('not cleaning sources of %s: %s', pkg.name, why)
                 else
-                    Log.message('not removing %s because it is the source dir of %s', dir, pkg.name)
+                    Jagen.src.clean { assert(use.name) }
                 end
-            elseif System.can_delete_safely(dir, source_dir) then
-                Log.debug('removing %s', dir)
-                System.rmrf(dir)
+            else
+                Log.message('not removing %s because it is the source dir of %s', dir, pkg.name)
             end
+        elseif System.can_delete_safely(dir, source_dir) then
+            Log.debug('removing %s', dir)
+            System.rmrf(dir)
         end
     end
     if config then
