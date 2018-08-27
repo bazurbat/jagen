@@ -29,17 +29,18 @@ function Source:parse(rule)
 
     if rule and not rule.type and rule.location then
         local url = rule.location
-        if url:match('%.hg$') then
-            rule.type = 'hg'
-        elseif url:match('^https?://github.com/') or
-               url:match('%.git$') or url:match('^git@') or
+        if url:match('%.gz$') or url:match('%.tgz$') or
+           url:match('%.xz$') or url:match('%.txz$') or
+           url:match('%.bz2$') or url:match('%.tbz2$') or
+           url:match('%.zip$') or url:match('%.tar$') then
+            rule.type = 'dist'
+        elseif url:match('%.git$') or url:match('^git@') or
+               url:match('^https?://github.com/') or
                url:match('^[%w._-]+@[%w._-]+:') then
             rule.type = 'git'
-        elseif url:match('%.tar$') or url:match('%.zip$') or
-               url:match('%.tgz$') or url:match('%.gz$') or
-               url:match('%.txz$') or url:match('%.xz$') or
-               url:match('%.tbz2$') or url:match('%.bz2$')
-        then
+        elseif url:match('%.hg$') then
+            rule.type = 'hg'
+        else
             rule.type = 'dist'
         end
     end
