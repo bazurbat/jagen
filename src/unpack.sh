@@ -108,7 +108,6 @@ pkg_unpack() {
                 elif [ -z "$pkg_source_ignore_dirty" ] && jagen src dirty "$pkg_name"; then
                     die "could not update $pkg_name: the source is dirty"
                 else
-                    _jagen src clean "$pkg_name" || return
                     _jagen src update "$pkg_name" || return
                 fi
             else
