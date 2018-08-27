@@ -745,12 +745,12 @@ function Jagen.command.update(args)
     for key in each(keys) do
         local source = sources[key]
         if source:dirty() then
-            Log.warning("Not updating %s: the source directory '%s' is dirty", key, System.expand(source.dir))
+            Log.warning("not updating %s: the source directory '%s' is dirty", key, System.expand(source.dir))
             retval = false
         else
-            Log.message("Updating %s", key)
-            if not source:update() then
-                Log.warning("Failed to update %s in '%s'", key, System.expand(source.dir))
+            Log.message("updating %s", key)
+            if not source:fetch() or not source:switch() then
+                Log.warning("failed to update %s in %s", key, System.expand(source.dir))
                 retval = false
             end
         end
