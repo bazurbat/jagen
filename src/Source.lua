@@ -172,10 +172,8 @@ function Source:clean()
 end
 
 function Source:update()
-    local ok
-    if Jagen.flag 'offline' then
-        Log.message('not fetching %s: offline mode', self.name)
-    else
+    local ok = true
+    if not Jagen.flag 'offline' then
         ok = self:fetch()
     end
     return ok and self:switch()

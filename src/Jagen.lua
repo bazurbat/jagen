@@ -149,6 +149,10 @@ function Jagen.src.update(args)
             return (a.source.dir or '') < (b.source.dir or '')
         end)
 
+    if offline and #packages > 0 then
+        Log.message('skipping fetch due to offline mode')
+    end
+
     for pkg in each(packages) do
         local source = pkg.source
         local dir = System.expand(source.dir)
@@ -156,33 +160,43 @@ function Jagen.src.update(args)
 
         if System.exists(dir) and not System.is_empty(dir) then
             if not source.ignore_dirty and source:dirty() then
-                die("could not update %s: source dir '%s' is dirty", pkg.name, dir)
-            end
-            local head_name = source:head_name()
-            Log.message('updating %s (%s)', pkg.name, head_name)
-            old_head = source:head()
-            ok = source:update()
-            if not ok then
-                die('failed to update %s (%s) in %s', pkg.name, head_name, dir)
+                Log.warning("not updating %s: source dir '%s' is dirty", pkg.name, dir)
+                ok = false
+            else
+                local head_name = source:head_name()
+                Log.message('updating %s (%s)', pkg.name, head_name)
+                old_head = source:head()
+                if not source:update() then
+                    Log.warning('failed to update %s (%s) in %s', pkg.name, head_name, dir)
+                    ok = false
+                end
             end
         else
             if offline then
-                die("could not clone %s: offline mode", pkg.name)
-            end
-            Log.message('cloning %s from %s', pkg.name, source.location)
-            if not source:clone() then
-                die('failed to clone %s from %s to %s', pkg.name, source.location, dir)
+                Log.warning("could not clone %s: offline mode", pkg.name)
+                ok = false
+            else
+                Log.message('cloning %s from %s', pkg.name, source.location)
+                if not source:clone() then
+                    Log.warning('failed to clone %s from %s to %s', pkg.name, source.location, dir)
+                    ok = false
+                end
             end
         end
 
-        if not source:fixup() then
-            die('failed to fix up %s in %s', pkg.name, dir)
-        end
+        if System.exists(dir) then
+            if not source:fixup() then
+                Log.warning('failed to fix up %s in %s', pkg.name, dir)
+                ok = false
+            end
 
-        if source:head() ~= old_head then
-            assert(Target.from_args(pkg.name, 'unpack'):touch())
+            if source:head() ~= old_head then
+                assert(Target.from_args(pkg.name, 'unpack'):touch())
+            end
         end
     end
+
+    return ok
 end
 
 function Jagen.src.delete(args)
