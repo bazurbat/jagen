@@ -6,6 +6,7 @@ local Command = require 'Command'
 
 local P = {}
 P.__index = P
+P._templates = {}
 P.has_rust_rules = false
 
 local had_errors = false
@@ -91,12 +92,29 @@ function Context:__unm()
     return s
 end
 
-function Context:__eq(other)
-    return self.name == other.name and
-           self.config == other.config and
-           self.line == other.line and
-           self.filename == other.filename and
-           self.parent == other.parent
+function Context:tokey(with_parent)
+    local o = {}
+    if with_parent then
+        if self.name then
+            table.insert(o, self.name)
+        end
+        if self.filename then
+            table.insert(o, self.filename)
+        end
+        if self.line then
+            table.insert(o, self.line)
+        end
+    end
+    if self.config then
+        table.insert(o, self.config)
+    end
+    if self.template then
+        table.insert(o, tostring(self.template))
+    end
+    if self.include then
+        table.iextend(o, self.include)
+    end
+    return table.concat(o, ':')
 end
 
 local function push_context(new)
@@ -126,6 +144,7 @@ local function find_module(modname)
 end
 
 function P.init_rules()
+    P._templates = {}
     P.has_rust_rules = false
     _define_count = 0
     _context_count = 0
@@ -217,6 +236,20 @@ function P:parse(rule)
         local clean = rule.build.clean
         if type(clean) ~= 'table' then
             rule.build.clean = { clean }
+        end
+    end
+
+    if type(rule.include) == 'string' then
+        rule.include = { rule.include }
+    end
+    if rule.requires then
+        if type(rule.requires.include) == 'string' then
+            rule.requires.include = { rule.requires.include }
+        end
+    end
+    for stage in each(rule) do
+        if stage.requires and type(stage.requires.include) == 'string' then
+            stage.requires.include = { stage.requires.include }
         end
     end
 
@@ -366,8 +399,7 @@ function P:collect_rule(rule, config)
 end
 
 function P:collect_require(spec, context, stage)
-    local key = string.format('%s^%s^%s^%s', spec, self.name,
-        tostring(context.config), tostring(context.template))
+    local key = string.format('%s:%s^%s', spec, self.name, context:tokey())
     if not all_required_packages[key] then
         local item = { self, spec, context }
         all_required_packages[key] = item
@@ -673,6 +705,7 @@ function package(rule)
     local level, info = 2
     local context = Context:new { name = rule.name, template = rule.template }
     context.config = rule.config or rule.template and rule.template.config
+    context.include = rule.include
     repeat
         info = debug.getinfo(level, 'Sl')
         level = level+1
@@ -689,7 +722,8 @@ function P.define_package(rule, context)
 
     local template = rule.template or context and context.template
     local config = rule.config or context and context.config or template and template.config
-    rule.config, rule.template = nil, nil
+    local include = rule.include or context and context.include
+    rule.config, rule.template, rule.include = nil, nil, nil
 
     local pkg = packages[rule.name]
     if not pkg then
@@ -727,7 +761,13 @@ function P.define_package(rule, context)
         end
     end
 
-    rule = table.merge(copy(template or {}), rule)
+    local saved = rule
+    rule = copy(template or {})
+    for name in each(include) do
+        local t = P._templates[name]
+        if t then table.merge(rule, t) end
+    end
+    table.merge(rule, saved)
     table.merge(this, rule)
 
     if config then
@@ -743,6 +783,10 @@ function P.define_package(rule, context)
                 context = copy(context or {})
                 context.template = rule.requires.template
             end
+            if rule.requires.include ~= nil then
+                context = copy(context or {})
+                context.include = rule.requires.include
+            end
             pkg:collect_require(spec, context)
         end
 
@@ -755,6 +799,10 @@ function P.define_package(rule, context)
                 if stage.requires.template ~= nil and stage.requires.template ~= template then
                     context = copy(context or {})
                     context.template = stage.requires.template
+                end
+                if stage.requires.include ~= nil then
+                    context = copy(context or {})
+                    context.include = stage.requires.include
                 end
                 pkg:collect_require(spec, context, target.stage)
             end
@@ -772,6 +820,13 @@ function P.define_package(rule, context)
     return pkg
 end
 
+function template(rule)
+    rule = P:parse(rule)
+    local name = rule.name
+    rule.name = nil
+    P._templates[name] = rule
+end
+
 function P:define_use(spec, context)
     local name, config, template = context.name, context.config, context.template
     local use = Target.from_use(spec)
@@ -785,7 +840,7 @@ function P:define_use(spec, context)
         context = Context:new { name = name, config = config }
         config = use.config
     else
-        key = string.format('%s:%s^%s', use.name, tostring(config), tostring(template))
+        key = string.format('%s:%s', use.name, context:tokey())
     end
     local fullkey = string.format('%s@%s', key, name)
     local pkg, seen = used_packages[key], used_packages[fullkey]
