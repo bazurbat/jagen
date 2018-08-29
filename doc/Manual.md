@@ -6,12 +6,12 @@
 - [List Information](List.md)
 - [Building](Building.md)
 - [Cleaning](Cleaning.md)
-- [Targets](#targets)
 - [Rust Support](Rust.md)
 - [Managing package sources](ManagingSources.md)
 - [Manage filesystem images](Images.md)
 - [Install Bash completions](Installation.md)
-- [Writing build scripts](#writing-build-scripts)
+- [Rules](#rules)
+- [Targets](#targets)
 - [Build system internals](#build-system-internals)
 
 ### Introduction
@@ -140,49 +140,14 @@ package { 'nanomsg',
 }
 ```
 
-### Targets
+### Properties
 
-```
-  Targets are specified as '<name>:<stage>:<config>'. Available package stages
-  are filtered with the given expression. Omitted component means 'all'.  For
-  example:
-
-  utils              - select all stages of the utils package
-  utils:install      - select all utils install stages
-  utils::host        - select all host utils stages
-  utils:compile:host - select only host utils compile stage
-  :build:host        - select host build stages of all packages
-
-  When a target is succesfully built the stamp file is created in the build
-  directory with the name: <name>__<stage>__<config>. This file is used to
-  determine if the target is up to date. Deleting it will cause the
-  corresponding target to be rebuilt unconditionally next time the build system
-  runs.
-```
-
-## Writing build scripts
-
-### Rules
-
-Rules are processed by the `package` function and should be Lua table of
-the following form:
-
-```lua
-package { 'name', '[config]',
-  <overrides>,
-  { 'stage1', '[config]' },
-  { 'stage2', '[config]' },
-  ...
-}
-```
-
-where `name` the rule identifier which sets a package name, used to merge the
-rules and also to find pkg files. The `config` is optional.
+All possible package properties are described below. The first name is the key to use in the
+package definition, the second name (in the parentheses) is the name of the shell variable which
+can be used in custom scripts or as the part of another property value.
 
 ```lua
 {
-    name = 'package name',
-    config = 'package config'
     source = {
         type     = 'dist|git|hg|repo',
         location = 'filename|URL',
@@ -191,10 +156,10 @@ rules and also to find pkg files. The `config` is optional.
         sha1sum   = 'hash string',
         sha256sum = 'hash string',
 
-        dir      = 'path',     -- variable references are allowed
-        basename = 'filename', -- derived from filename if not set
-        filename = 'filename', -- derived from location if not set
-        exclude  = true,       -- assumed to be 'false' if not set
+        dir      = 'path',
+        basename = 'filename',
+        filename = 'filename',
+        exclude  = true,
 
         ignore_dirty = false
     },
@@ -239,108 +204,104 @@ rules and also to find pkg files. The `config` is optional.
 }
 ```
 
-- **pkg.name** (`pkg_name`) — the name of the package, it is derived from the
-  rule and do not need to be set explicitly
+- **name** (`pkg_name`) — The name of the package. It is derived from the rule and do not need to
+  be set explicitly.
 
-- **pkg.config** — a config for the current pkg rule, also derived from the
-  rule
+- **config** (`pkg_config`) — The config for the current pkg rule, also derived from the rule.
 
-- **pkg.contexts** — a list of contexts where rules for this package were
-  evaluated
+- **source** (`pkg_source_*`) — A Source object.
 
-- **pkg.source** (`pkg_source_*`) — Source object
-
-- **pkg.patches** — A list of objects of the form:
+- **patches** — A list of objects of the form:
 
         { 'name', num }
 
-  where `'name'` is the filename of the patch without the `.patch` extension
-  and the `num` is the number of leading slashes to strip from filenames when
-  applying the patch (passed as `-pnum` to the `patch` utility).
+  where `'name'` is the filename of the patch without the `.patch` extension and the `num` is the
+  number of leading slashes to strip from filenames when applying the patch (passed as `-pnum` to
+  the `patch` utility).
 
-- **pkg.patches.provider** — optional name of the package providing the
-  patches; defaults to "patches" if not specified
+- **patches.provider** — Optional name of the package providing the patches; defaults to
+  "patches" if not specified.
 
-- **pkg.build** (`pkg_build_*`) — Parameters for the build stage
+- **build** (`pkg_build_*`) — Parameters for the build stage.
 
-- **pkg.install** (`pkg_install_*`) — Parameters for the install stage
+- **install** (`pkg_install_*`) — Parameters for the install stage.
 
-- **pkg.requires** — A list of dependencies
+- **requires** — A list of dependencies.
 
-- **pkg.template** — A name or a list of names of templates for the current rule. The templates are
+- **template** — A name or a list of names of templates for the current rule. The templates are
   merged in order then the current rule is merged with the result. This way value type properties
   (such as strings and numbers) from the rule override values from the templates and array type
   values are appended. The mentioned templates should be defined with the `template` function
   beforehand.
 
-- **pkg.stages** — Stores rule targets. _Internal._
-
-- **pkg.configs** — Stores config-specific rules and targets. _Internal._
-
-- **pkg.work_dir** (`pkg_work_dir`) — The working directly for the package.
-  Default value: `$jagen_build_dir/$pkg_name`.
+- **work_dir** (`pkg_work_dir`) — The working directly for the package. Default value:
+  `$jagen_build_dir/$pkg_name`.
 
 ### Source
 
-- **source.basename** (`pkg_source_basename`) — The source filename without an
-  extension, `.git` or `.hg` are also considered extensions in this case.
-  Adjust this property to change the base directory inside the `tar` archive if
-  it is different from the filename or to change the name of the directory
-  where the source package should be checked out.
+- **source.basename** (`pkg_source_basename`) — The part of the source filename without the last
+  extension (`.git` and `.hg` are also considered extensions). It is used as the last component of
+  `source.dir` for dist sources and for SCM sources if the `source.name` is unset. Adjust this
+  property in the case when the base directory stored inside the `tar` archive differs from its
+  filename.
 
 - **source.bookmark** — The bookmark to pull on update (Hg sources only).
 
-- **source.bookmarks** — Additional bookmarks to pull on update (Hg sources
-  only).
+- **source.bookmarks** — Additional bookmarks to pull on update (Hg sources only).
 
 - **source.branch** — The branch to checkout/fetch on update (SCM sources only).
 
 - **source.branches** — Additional branches to fetch on update (SCM source only).
 
-- **source.dir** (`pkg_source_dir`) — An absolute path to the package sources.
+- **source.dir** (`pkg_source_dir`) — An absolute path to the package source directory. Defaults to
+  `$jagen_src_dir/source.name` for SCM sources and `$jagen_build_dir/source.name/source.basename`
+  for dist sources.
 
-- **source.exclude** (`pkg_source_exclude`) — If set to `true`, indicates to
-  the `unpack` stage to skip the source directly of this package.
+- **source.exclude** (`pkg_source_exclude`) — If set to `true` indicates that the source should not
+  be updated during the "unpack" stage and should not be patched during the "patch" stage. This
+  generally should be set for all manually managed and "work in progress" packages because having
+  unsaved changes in the source directory during the update is considered an error otherwise.
 
-- **source.exclude_submodules** — Set to `true` to completely ignore submodules
-  found in the Git repository, i.e. do not initialize nor update them
-  automatically when switching branches.
+- **source.exclude_submodules** — If set to `true` indicates that Git submodules found in the
+  repository should be ignored, i.e. not initialized or updated automatically when switching
+  branches.
 
-- **source.filename** (`pkg_source_filename`) — The pathname of the source
-  location after the last `/` or the whole location if it does not contain `/`.
+- **source.filename** (`pkg_source_filename`) — The part of the source location after the last `/`
+  or the whole location if it does not contain `/`. Adjust this property to store the downloaded
+  dist source under a different name than the last component of the URL.
 
 - **source.force_update** (`pkg_source_force_update`) — If set to `true` indicates that the source
   is force pushed on the upstream, so Jagen will update by `reset` instead of `merge`. Relevant
   only for Git sources. If this is not set the failure to merge will be considered an error.
 
-- **source.ignore\_dirty** — Ignore "dirty" status of the source directory.
+- **source.ignore\_dirty** — Ignore "dirty" status of the source directory and try to update/patch
+  it anyway.
 
 - **source.location** — The location of the source file or the repository URL.
 
-- **source.md5sum** (`pkg_source_md5sum`) — MD5 hash of the source file (for
-  dist sources only)
+- **source.md5sum** (`pkg_source_md5sum`) — MD5 hash of the source file (for dist sources only)
 
-- **source.name** (`pkg_source_name`) — The name of the working directory where the source is
-  checked out under the `$jagen_src_dir`. If unset the name of the package will be used.
+- **source.name** (`pkg_source_name`) — User defined name of the source. Defaults to the package
+  name which contains the current source definition. Also used as the last component of
+  `source.dir` for SCM sources, i.e. it sets the name of the directory where the source is checked
+  out under the `$jagen_src_dir`.
 
-- **source.sha1sum** (`pkg_source_sha1sum`) — SHA1 hash of the source file (for
-  dist sources only)
+- **source.sha1sum** (`pkg_source_sha1sum`) — SHA1 hash of the source file (for dist sources only)
 
-- **source.sha256sum** (`pkg_source_sha256sum`) — SHA256 hash of the source
-  file (for dist sources only)
+- **source.sha256sum** (`pkg_source_sha256sum`) — SHA256 hash of the source file (for dist sources
+  only)
 
-- **source.rev** — A revision identifier to checkout or update. Takes priority
-  over other revision specifiers (branch, tag, bookmark), the interpretation
-  depends on the underlying SCM.
+- **source.rev** — A revision identifier to checkout or update. Takes priority over other revision
+  specifiers (branch, tag, bookmark), the interpretation depends on the underlying SCM.
 
-- **source.tag** — The tag (Git) or revision (Hg) to checkout and fetch on
-  update, takes priority over a branch.
+- **source.tag** — The tag (Git) or revision (Hg) to checkout and fetch on update, takes priority
+  over a branch.
 
 - **source.tags** — Additional tags (Git) or revisions (Hg) to fetch on update.
 
-- **source.type** — A type of the source: dist, git, hg, repo. The packages
-  with the source types of "git", "hg" and "repo" are considered "SCM" packages
-  and can be managed by the `jagen src` command.
+- **source.type** — A type of the source: dist, git, hg, repo. The packages with the source types
+  of "git", "hg" and "repo" are considered "SCM" packages and can be managed by the `jagen src`
+  command.
 
 ### Build
 
@@ -694,6 +655,26 @@ install = value
 - **pkg_work_dir** (`pkg.work_dir`) — a location of the toplevel working
   directory for the package; can contain unpacked sources, several build
   directories, etc. depending on the configuration
+
+### Targets
+
+```
+  Targets are specified as '<name>:<stage>:<config>'. Available package stages
+  are filtered with the given expression. Omitted component means 'all'.  For
+  example:
+
+  utils              - select all stages of the utils package
+  utils:install      - select all utils install stages
+  utils::host        - select all host utils stages
+  utils:compile:host - select only host utils compile stage
+  :build:host        - select host build stages of all packages
+
+  When a target is succesfully built the stamp file is created in the build
+  directory with the name: <name>__<stage>__<config>. This file is used to
+  determine if the target is up to date. Deleting it will cause the
+  corresponding target to be rebuilt unconditionally next time the build system
+  runs.
+```
 
 ## Build system internals
 
