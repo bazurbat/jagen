@@ -165,6 +165,12 @@ rules and also to find pkg files. The `config` is optional.
 
 - **pkg.requires** — A list of dependencies
 
+- **pkg.template** — A name or a list of names of templates for the current rule. The templates are
+  merged in order then the current rule is merged with the result. This way value type properties
+  (such as strings and numbers) from the rule override values from the templates and array type
+  values are appended. The mentioned templates should be defined with the `template` function
+  beforehand.
+
 - **pkg.stages** — Stores rule targets. _Internal._
 
 - **pkg.configs** — Stores config-specific rules and targets. _Internal._

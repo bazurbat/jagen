@@ -108,8 +108,8 @@ function Context:tokey(with_parent)
     if self.config then
         table.insert(o, self.config)
     end
-    if self.include then
-        table.iextend(o, self.include)
+    if self.template then
+        table.iextend(o, self.template)
     end
     return table.concat(o, ':')
 end
@@ -236,17 +236,17 @@ function P:parse(rule)
         end
     end
 
-    if type(rule.include) == 'string' then
-        rule.include = { rule.include }
+    if type(rule.template) == 'string' then
+        rule.template = { rule.template }
     end
     if rule.requires then
-        if type(rule.requires.include) == 'string' then
-            rule.requires.include = { rule.requires.include }
+        if type(rule.requires.template) == 'string' then
+            rule.requires.template = { rule.requires.template }
         end
     end
     for stage in each(rule) do
-        if stage.requires and type(stage.requires.include) == 'string' then
-            stage.requires.include = { stage.requires.include }
+        if stage.requires and type(stage.requires.template) == 'string' then
+            stage.requires.template = { stage.requires.template }
         end
     end
 
@@ -700,7 +700,7 @@ end
 function package(rule)
     rule = P:parse(rule)
     local level, info = 2
-    local context = Context:new { name = rule.name, config = rule.config, include = rule.include }
+    local context = Context:new { name = rule.name, config = rule.config, template = rule.template }
     repeat
         info = debug.getinfo(level, 'Sl')
         level = level+1
@@ -716,8 +716,8 @@ function P.define_package(rule, context)
     _define_count = _define_count + 1
 
     local config = rule.config or context and context.config
-    local include = rule.include or context and context.include
-    rule.config, rule.include = nil, nil
+    local template = rule.template or context and context.template
+    rule.config, rule.template = nil, nil
 
     local pkg = packages[rule.name]
     if not pkg then
@@ -755,9 +755,9 @@ function P.define_package(rule, context)
         end
     end
 
-    local saved = rule
+    local arg_rule = rule
     rule = {}
-    for name in each(include) do
+    for name in each(template) do
         local template = P._templates[name]
         if template then
             table.merge(rule, template)
@@ -765,7 +765,7 @@ function P.define_package(rule, context)
             print_warning("a package '%s' includes a template '%s' which is not defined\n--> %s", pkg.name, name, tostring(context))
         end
     end
-    table.merge(rule, saved)
+    table.merge(rule, arg_rule)
     table.merge(this, rule)
 
     if config then
@@ -777,9 +777,9 @@ function P.define_package(rule, context)
 
         for spec in each(rule.requires) do
             local context = context
-            if rule.requires.include ~= nil then
+            if rule.requires.template ~= nil then
                 context = copy(context or {})
-                context.include = rule.requires.include
+                context.template = rule.requires.template
             end
             pkg:collect_require(spec, context)
         end
@@ -790,9 +790,9 @@ function P.define_package(rule, context)
             local target = this:collect_rule(stage, config)
             for spec in each(stage.requires) do
                 local context = context
-                if stage.requires.include ~= nil then
+                if stage.requires.template ~= nil then
                     context = copy(context or {})
-                    context.include = stage.requires.include
+                    context.template = stage.requires.template
                 end
                 pkg:collect_require(spec, context, target.stage)
             end
