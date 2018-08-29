@@ -98,17 +98,13 @@ function Source:create(source, name)
         if not source.basename then
             source.basename = source:_basename(source.filename)
         end
-        if source.name and not source.dir then
+        if not source.dir then
             if source:is_scm() then
-                source.dir = System.mkpath('$jagen_src_dir', source.name)
+                source.dir = System.mkpath('$jagen_src_dir', source.name or source.basename)
             else
-                source.dir = System.mkpath('$jagen_build_dir', source.name, source.basename)
+                source.dir = System.mkpath('$jagen_build_dir', assert(source.name), source.basename)
             end
         end
-    end
-
-    if source.name and not source.dir then
-        source.dir = System.mkpath('$jagen_src_dir', source.name)
     end
 
     return source
