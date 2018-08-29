@@ -38,6 +38,108 @@ simpler and a lighter-weight alternative to [OpenEmbedded][]/[Yocto][].
   [Yocto]: https://www.yoctoproject.org/
   [OpenEmbedded]: http://www.openembedded.org
 
+### Rules
+
+The build system is generated from a set of rules loaded from `rules.lua` files found across Jagen
+path.
+
+The Jagen path is formed from layer directories in the reverse order with the `lib` directory of
+the current project prepended and the `lib` directory in the associated Jagen source repository
+appended. The current value of the Jagen path is stored in the `$jagen_path` variable.
+
+The rule files are executed starting from the last one found in Jagen path so that definitions from
+the project are appended to the definitions from layers which are appended to generic definitions
+or to the definitions from earlier layers.
+
+Packages in the rule files are defined using the `package` function with a single "table" argument
+such as:
+
+```lua
+package { 'nanomsg',
+    source = 'https://github.com/nanomsg/nanomsg.git',
+    build  = 'cmake'
+}
+```
+
+This rule defines a package named "nanomsg" which should be downloaded from
+https://github.com/nanomsg/nanomsg.git and built using CMake. It is a shorthand for the full form:
+
+```lua
+package { 'nanomsg',
+    source = {
+        type = 'git',
+        location = 'https://github.com/nanomsg/nanomsg.git'
+    },
+    build = {
+        type = 'cmake'
+    }
+}
+```
+
+Package rules are merged recursively in order with the value type properties (string, number and
+boolean) override previous values and array type properties are appended. This means that later
+rule of the form:
+
+```lua
+package { 'nanomsg',
+    build = {
+        profile = 'debug',
+        options = {
+            'a', 'b'
+        }
+    }
+}
+```
+will effectively result in the following rule:
+
+```lua
+package { 'nanomsg',
+    source = {
+        type = 'git',
+        location = 'https://github.com/nanomsg/nanomsg.git'
+    },
+    build = {
+        type = 'cmake',
+        profile = 'debug',
+        options = {
+            'a', 'b'
+        }
+    }
+}
+```
+and an additional rule:
+
+```lua
+package { 'nanomsg',
+    source = {
+        location = 'https://github.com/me/myfork.git'
+    },
+    build = {
+        profile = 'release',
+        options = {
+            'c'
+        }
+    }
+}
+```
+will result in:
+
+```lua
+package { 'nanomsg',
+    source = {
+        type = 'git',
+        location = 'https://github.com/me/myfork.git'
+    },
+    build = {
+        type = 'cmake',
+        profile = 'release',
+        options = {
+            'a', 'b', 'c'
+        }
+    }
+}
+```
+
 ### Targets
 
 ```
