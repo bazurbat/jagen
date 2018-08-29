@@ -764,8 +764,12 @@ function P.define_package(rule, context)
     local saved = rule
     rule = copy(template or {})
     for name in each(include) do
-        local t = P._templates[name]
-        if t then table.merge(rule, t) end
+        local template = P._templates[name]
+        if template then
+            table.merge(rule, template)
+        else
+            print_warning("a package '%s' includes a template '%s' which is not defined\n--> %s", pkg.name, name, tostring(context))
+        end
     end
     table.merge(rule, saved)
     table.merge(this, rule)
