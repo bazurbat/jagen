@@ -37,12 +37,10 @@ local function write_common(w, pkg)
         'export',
         'install',
         'name',
-        'pass_template',
         'patches',
         'requires',
         'source',
         'stages',
-        'template',
         'uses',
         '_collected_targets',
     }

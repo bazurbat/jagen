@@ -108,9 +108,6 @@ function Context:tokey(with_parent)
     if self.config then
         table.insert(o, self.config)
     end
-    if self.template then
-        table.insert(o, tostring(self.template))
-    end
     if self.include then
         table.iextend(o, self.include)
     end
@@ -703,9 +700,7 @@ end
 function package(rule)
     rule = P:parse(rule)
     local level, info = 2
-    local context = Context:new { name = rule.name, template = rule.template }
-    context.config = rule.config or rule.template and rule.template.config
-    context.include = rule.include
+    local context = Context:new { name = rule.name, config = rule.config, include = rule.include }
     repeat
         info = debug.getinfo(level, 'Sl')
         level = level+1
@@ -720,10 +715,9 @@ end
 function P.define_package(rule, context)
     _define_count = _define_count + 1
 
-    local template = rule.template or context and context.template
-    local config = rule.config or context and context.config or template and template.config
+    local config = rule.config or context and context.config
     local include = rule.include or context and context.include
-    rule.config, rule.template, rule.include = nil, nil, nil
+    rule.config, rule.include = nil, nil
 
     local pkg = packages[rule.name]
     if not pkg then
@@ -762,7 +756,7 @@ function P.define_package(rule, context)
     end
 
     local saved = rule
-    rule = copy(template or {})
+    rule = {}
     for name in each(include) do
         local template = P._templates[name]
         if template then
@@ -783,10 +777,6 @@ function P.define_package(rule, context)
 
         for spec in each(rule.requires) do
             local context = context
-            if rule.requires.template ~= nil and rule.requires.template ~= template then
-                context = copy(context or {})
-                context.template = rule.requires.template
-            end
             if rule.requires.include ~= nil then
                 context = copy(context or {})
                 context.include = rule.requires.include
@@ -800,10 +790,6 @@ function P.define_package(rule, context)
             local target = this:collect_rule(stage, config)
             for spec in each(stage.requires) do
                 local context = context
-                if stage.requires.template ~= nil and stage.requires.template ~= template then
-                    context = copy(context or {})
-                    context.template = stage.requires.template
-                end
                 if stage.requires.include ~= nil then
                     context = copy(context or {})
                     context.include = stage.requires.include
@@ -832,7 +818,7 @@ function template(rule)
 end
 
 function P:define_use(spec, context)
-    local name, config, template = context.name, context.config, context.template
+    local name, config = context.name, context.config
     local use = Target.from_use(spec)
     if use.name == name and use.config == config then
         Log.warning('a package specification %s is recursive in the context: %s', spec, tostring(context))

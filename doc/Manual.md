@@ -141,7 +141,7 @@ rules and also to find pkg files. The `config` is optional.
   rule and do not need to be set explicitly
 
 - **pkg.config** — a config for the current pkg rule, also derived from the
-  rule or can be set by a template
+  rule
 
 - **pkg.contexts** — a list of contexts where rules for this package were
   evaluated
@@ -164,16 +164,6 @@ rules and also to find pkg files. The `config` is optional.
 - **pkg.install** (`pkg_install_*`) — Parameters for the install stage
 
 - **pkg.requires** — A list of dependencies
-
-- **pkg.template** — A template which should be used for the current rule.
-  Essentially this means that instead of the default base rule the specified
-  template will be taken and then current rule will be merged into it. This
-  template is also passed to the derived rules (from the "requires" lists).
-  Can be 'false' to disable applying the template to the current rule.
-
-- **pkg.pass_template** — A template which is passed to the derived rules but
-  not applied to the current rule itself. It is useful to break cycles of
-  requires.
 
 - **pkg.stages** — Stores rule targets. _Internal._
 
@@ -605,11 +595,10 @@ across layer directories. Each rule defines some piece of information about a
 package: build stages, type, location of source directory and so on. Rules with
 the same name are considered as belonging to the same package but evaluated
 independently at the point of reference. So, mentioning the package in the
-"requires" list of a package which has template and config will produce
-different result from standalone "package" declaration. Also order of rules
-matters, both in the rules file and across layers. See the `package`
-function in `src/Package.lua` file for complete information about evaluation
-logic.
+"requires" list of a package which has config will produce different result from
+standalone "package" declaration. Also order of rules matters, both in the rules
+file and across layers. See the `package` function in `src/Package.lua` file for
+complete information about evaluation logic.
 
 Package dependencies and build commands are written to `build.ninja` file in
 the `build` directory, additional package specific environment goes into
