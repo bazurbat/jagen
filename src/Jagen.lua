@@ -292,9 +292,11 @@ function Jagen.clean_package(pkg, spec)
     end
     if config then
         find_dirs(config)
+        Target.from_args(use.name, 'configure', config):remove()
     else
         for this, config in pkg:each_config(true) do
             find_dirs(config)
+            Target.from_args(use.name, 'configure', config):remove()
         end
     end
     Log.debug('clean %s %s %s', pkg.name, spec, table.concat(clean_dirs, ', '))
@@ -312,12 +314,8 @@ function Jagen.clean_package(pkg, spec)
                 Log.message('not removing %s because it is the source dir of %s', dir, pkg.name)
             end
         elseif System.can_delete_safely(dir, source_dir) then
-            Log.debug('removing %s', dir)
             System.rmrf(dir)
         end
-    end
-    if config then
-        Target.from_args(use.name, 'configure', config):remove()
     end
     return true
 end
