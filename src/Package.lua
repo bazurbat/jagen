@@ -29,6 +29,7 @@ local used_packages = {}
 local all_required_packages = {}
 local required_packages = {}
 local required_specs = {}
+local used_patches = {}
 
 local current_context
 local context_stack = {}
@@ -150,6 +151,7 @@ function P.init_rules()
     all_required_packages = {}
     required_packages = {}
     required_specs = {}
+    used_patches = {}
 end
 
 function P:__tostring(sep)
@@ -435,6 +437,9 @@ function P:add_require_dependencies(spec, config, stage)
 end
 
 function P:add_patch_dependencies()
+    if used_patches[self.name] then return end
+    used_patches[self.name] = true
+
     local new_packages = {}
 
     local function patch_names(pkg)
