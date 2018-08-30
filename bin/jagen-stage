@@ -201,8 +201,7 @@ run_stage() {
     pkg="$pkg_name${pkg_config:+ ($pkg_config)}"
 
     if is_function "$stage"; then
-        eval "$stage" $pkg_args ||
-            die "failed to run $pkg_stage stage of package $pkg"
+        eval "$stage" $pkg_args || exit
     else
         return 2
     fi
