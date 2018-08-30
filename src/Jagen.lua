@@ -297,6 +297,7 @@ function Jagen.clean_package(pkg, spec)
             find_dirs(config)
         end
     end
+    Log.debug('clean %s %s %s', pkg.name, spec, table.concat(clean_dirs, ', '))
     local source_dir = Jagen.query(pkg, 'source_dir', config):read()
     for dir in each(clean_dirs) do
         if source_dir and System.same_dir(dir, source_dir) then
