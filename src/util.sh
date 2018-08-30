@@ -151,12 +151,15 @@ pkg__get_cmake_args() {
 }
 
 pkg_get_build_profile() {
-    local profile="${pkg_build_profile:-$jagen_build_profile}"
+    local profile="$pkg_build_profile"
     case $profile in
         release|debug|release_with_debug)
             echo $profile ;;
-        *)
-            echo release ;;
+        *) if [ "$pkg_build_type" = 'android-gradle' ]; then
+               echo debug
+           else
+               echo "${jagen_build_profile:-release}"
+           fi ;;
     esac
 }
 
