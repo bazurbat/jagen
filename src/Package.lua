@@ -694,7 +694,6 @@ function P:create(name)
     if pkg.name ~= 'patches' then
         pkg:add_stage('patch')
     end
-    pkg:add_stage('export')
     local module, filename = find_module('pkg/'..name)
     if module then
         table.merge(pkg, P:new(assert(module())))
@@ -879,8 +878,6 @@ function P:process_config(config, this)
     if build.type then
         build.toolchain = self:gettoolchain(config)
     end
-    
-    self:add_stage('export', config)
 
     if build.type == 'rust' then
         local rust_toolchain = build.rust_toolchain or 'stable'
@@ -1058,6 +1055,17 @@ function P.load_rules()
     end
 
     for _, pkg in pairs(packages) do
+        for this, config in pkg:each_config(true) do
+            for spec in each(this.uses) do
+                local use = Target.from_use(spec)
+                local used = packages[use.name]
+                if used then
+                    for this, config in used:each_config(true) do
+                        used:add_stage('export', config)
+                    end
+                end
+            end
+        end
         pkg:export_dirs()
         pkg:export_build_env()
     end
