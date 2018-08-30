@@ -354,14 +354,21 @@ function Jagen.command.clean(args)
         return false
     end
 
-    local targets, found = {}
-    for i, pattern in iter(extend({}, args), map(string.to_target_pattern)) do
+    function argsub(p)
+        return string.gsub(p, ':$', ':*')
+    end
+
+    local specs, found = {}
+    for i, pattern in iter(extend({}, args), map(comp(argsub, string.convert_pattern))) do
         for name, pkg in iter(packages) do
-            for this, config in pkg:each_config() do
-                local spec = string.format('%s:%s', name, config)
-                if spec:match(pattern) then
-                    targets[spec] = pkg
-                    found = true
+            if name:match(pattern) then
+                specs[name] = pkg found = true
+            else
+                for this, config in pkg:each_config() do
+                    local spec = string.format('%s:%s', name, config)
+                    if spec:match(pattern) then
+                        specs[spec] = pkg found = true
+                    end
                 end
             end
         end
@@ -371,7 +378,7 @@ function Jagen.command.clean(args)
     end
 
     if args['match'] then
-        for spec, _ in pairs(targets) do
+        for spec, _ in pairs(specs) do
             print(spec)
         end
         return true
@@ -382,7 +389,7 @@ function Jagen.command.clean(args)
     -- clean_package uses query, need to regenerate includes beforehand
     if not Jagen.command.refresh() then return false end
 
-    for spec, pkg in pairs(targets) do
+    for spec, pkg in pairs(specs) do
         if not Jagen.clean_package(pkg, spec) then
             return false
         end
