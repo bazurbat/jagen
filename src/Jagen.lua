@@ -273,16 +273,28 @@ function Jagen.clean_package(pkg, spec)
     local use = Target.from_use(spec)
     local config = use.config
     local clean_dirs = {}
-    for dir in Jagen.query(pkg, 'build_clean', config):lines() do
-        table.insert(clean_dirs, dir)
+    function find_dirs(config)
+        local found = false
+        for dir in Jagen.query(pkg, 'build_clean', config):lines() do
+            append_uniq(dir, clean_dirs) found = true
+        end
+        if not found then
+            local def_dir
+            if config then
+                def_dir = Jagen.query(pkg, 'build_dir', config):read()
+            else
+                def_dir = Jagen.query(pkg, 'work_dir'):read()
+            end
+            if def_dir and #def_dir > 0 then
+                append_uniq(def_dir, clean_dirs)
+            end
+        end
     end
-    if #clean_dirs == 0 then
-        if config then
-            local build_dir = Jagen.query(pkg, 'build_dir', config):read()
-            table.insert(clean_dirs, build_dir)
-        else
-            local work_dir = Jagen.query(pkg, 'work_dir'):read()
-            table.insert(clean_dirs, work_dir)
+    if config then
+        find_dirs(config)
+    else
+        for this, config in pkg:each_config(true) do
+            find_dirs(config)
         end
     end
     local source_dir = Jagen.query(pkg, 'source_dir', config):read()
