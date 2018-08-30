@@ -20,7 +20,7 @@ include "$jagen__src_dir/install"
 include "$jagen__src_dir/image"
 
 jagen_stage_unpack() {
-    pkg_run rm -rf "${pkg_work_dir:?}"
+    _jagen clean "${pkg_name:?}"
     pkg_unpack
 }
 
