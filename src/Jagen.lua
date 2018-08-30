@@ -573,7 +573,9 @@ function Jagen.command.build(args)
                 if stage:match(pattern) then
                     append(targets, stage) found = true
                     if arg_clean then
-                        to_clean[tostring(this)] = pkg
+                        if not to_clean[name] then
+                            to_clean[tostring(this)] = pkg
+                        end
                     end
                 end
             end
