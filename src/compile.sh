@@ -57,7 +57,7 @@ pkg_compile() {
                 cargo build ${pkg_build_system:+--target=$pkg_build_system} \
                 $A "$@" $MA
             ;;
-        gradle-android)
+        android-gradle)
             if ! [ -f "${pkg_source_dir:?}/gradlew" ]; then
                 die "failed to find Gradle wrapper (gradlew) script in the project's source directory: $pkg_source_dir"
             fi

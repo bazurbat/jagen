@@ -177,7 +177,7 @@ local function format_stage(target, pkg)
 
     if target.stage == 'compile' then
         local build = pkg:get('build', target.config)
-        if build and build.type == 'gradle-android' then
+        if build and build.type == 'android-gradle' then
             vars.pool = 'gradle_android'
         end
     end

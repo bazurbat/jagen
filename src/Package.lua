@@ -856,7 +856,7 @@ function P:process_config(config, this)
     local new_packages = {}
     local build, install = this.build, this.install
 
-    if build.type == 'gradle-android' then
+    if build.type == 'android-gradle' then
         build.in_source = true
         self.source = self.source or {}
         if self.source.ignore_dirty == nil then
@@ -1006,7 +1006,7 @@ function P.define_default_config()
         local build = pkg.build
         if build and build.type and not next(pkg.configs) then
             local new_pkg
-            if build.type == 'gradle-android' then
+            if build.type == 'android-gradle' then
                 new_pkg = P.define_package { name = pkg.name, config = 'target' }
             else
                 new_pkg = P.define_package { name = pkg.name, config = 'host' }
