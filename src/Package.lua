@@ -1115,26 +1115,7 @@ function P.load_rules()
 end
 
 function P:query(value, config)
-    local result = {}
-
-    local function run_query(config)
-        return assert(System.pread('*l', 'jagen-stage -q %q %q %q',
-            assert(value), assert(self.name), config or ''))
-    end
-
-    if config then
-        assert(self:has_config(config),
-            "the package '"..self.name.."' does not have the config '"..config.."'")
-        result[config] = run_query(config)
-    elseif next(self.configs) then
-        for config, _ in pairs(self.configs) do
-            result[config] = run_query(config)
-        end
-    else
-        result['__'] = run_query()
-    end
-
-    return result
+    return Command:new('jagen-stage -q', value, self.name, config)
 end
 
 return P

@@ -37,10 +37,6 @@ function Jagen.flag(f)
     return false
 end
 
-function Jagen.query(pkg, value, config)
-    return Command:new('jagen-stage -q', value, pkg.name, config)
-end
-
 function Jagen._load_layers()
     local path, layers = {}, {}
     for dir in Command:new(quote(Jagen.cmd), 'get_path'):read('*a'):gmatch('[^\t\n]+') do
@@ -275,15 +271,15 @@ function Jagen.clean_package(pkg, spec)
     local clean_dirs = {}
     function find_dirs(config)
         local found = false
-        for dir in Jagen.query(pkg, 'build_clean', config):lines() do
+        for dir in pkg:query('build_clean', config):lines() do
             append_uniq(dir, clean_dirs) found = true
         end
         if not found then
             local def_dir
             if config then
-                def_dir = Jagen.query(pkg, 'build_dir', config):read()
+                def_dir = pkg:query('build_dir', config):read()
             else
-                def_dir = Jagen.query(pkg, 'work_dir'):read()
+                def_dir = pkg:query('work_dir'):read()
             end
             if def_dir and #def_dir > 0 then
                 append_uniq(def_dir, clean_dirs)
@@ -300,7 +296,7 @@ function Jagen.clean_package(pkg, spec)
         end
     end
     Log.debug('clean %s %s %s', pkg.name, spec, table.concat(clean_dirs, ', '))
-    local source_dir = Jagen.query(pkg, 'source_dir', config):read()
+    local source_dir = pkg:query('source_dir', config):read()
     for dir in each(clean_dirs) do
         if source_dir and System.same_dir(dir, source_dir) then
             if pkg.source and pkg.source:is_scm() then
@@ -413,7 +409,7 @@ local function generate_cargo_config(packages)
         for this, config in pkg:each_config() do
             local build = pkg:get('build', config)
             if build and build.type == 'rust' and config ~= 'host' then
-                local build_system = Jagen.query(pkg, 'build_system', config):read()
+                local build_system = pkg:query('build_system', config):read()
                 if build_system then
                     local toolchain = assert(packages[build.toolchain])
                     local toolchain_build = toolchain:get('build', config)
