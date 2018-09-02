@@ -219,7 +219,7 @@ jagen_is_subdir() {
 jagen__expand() {
     local value="$1" name="$2" maxdepth=10 depth=0
     while [ $depth -le $maxdepth ]; do
-        if echo "$value" | grep -vq -e '${' -e '$[[:alpha:]]'; then
+        if ! echo "$value" | grep -lq -e '${' -e '$[[:alpha:]]'; then
             echo "$value"; return
         fi
         # escape command substitution for the next eval
@@ -227,11 +227,6 @@ jagen__expand() {
         # double quoting here is necessary to preserve alternative IFS
         # characters (such as newline) inside the value
         value=$(eval echo \""$value"\") || return
-        if echo "$value" | grep -vq -e '${' -e '$[[:alpha:]]'; then
-            # final eval for the possible command substitution
-            value=$(eval echo \""$value"\")
-            echo "$value"; return
-        fi
         depth=$((depth+1))
     done
     [ $depth -gt $maxdepth ] && die "the recursion depth exceeded $maxdepth "\
