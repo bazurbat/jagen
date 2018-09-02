@@ -271,13 +271,13 @@ function Jagen.clean_package(pkg, spec)
     local clean_dirs = {}
     function find_dirs(config)
         local found = false
-        for dir in pkg:query('build_clean', config):lines() do
+        for dir in each(pkg:get_clean_dirs(config)) do
             append_uniq(dir, clean_dirs) found = true
         end
         if not found then
             local def_dir
             if config then
-                def_dir = pkg:query('build_dir', config):read()
+                def_dir = pkg:get_build_dir(config)
             else
                 def_dir = pkg:query('work_dir'):read()
             end
