@@ -382,7 +382,7 @@ function Jagen.command.clean(args)
     if not found then return false end 
 
     -- clean_package uses query, need to regenerate includes beforehand
-    if not Jagen.command.refresh() then return false end
+    if not Jagen.command.refresh({}, packages) then return false end
 
     for spec, pkg in pairs(specs) do
         if not Jagen.clean_package(pkg, spec) then
