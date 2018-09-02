@@ -63,18 +63,20 @@ for spec in $pkg_uses; do
 done; unset spec
 pkg_uses=${new_uses# }; unset new_uses
 
-# include uses
-for spec in $pkg_uses; do
-    include "$(pkg__export_fname "$spec")" || exit
-    if [ "$pkg_config" ]; then
-        include "$(pkg__export_fname "$spec" "$pkg_config")" || exit
-    fi
-    # assign "<name>_env_*" to "pkg_env_*" if unset
-    name=$(jagen_name_to_id "${spec%:*}")
-    for key in $(set | jagen_esed -n "s/^${name}_env_([[:alnum:]_]+)=.*/\1/p"); do
-        eval ": \${pkg_env_${key}=\$${name}_env_${key}}" || exit
-    done; unset name key
-done; unset spec
+if [ -z "$pkg_query" ]; then
+    # include uses
+    for spec in $pkg_uses; do
+        include "$(pkg__export_fname "$spec")" || exit
+        if [ "$pkg_config" ]; then
+            include "$(pkg__export_fname "$spec" "$pkg_config")" || exit
+        fi
+        # assign "<name>_env_*" to "pkg_env_*" if unset
+        name=$(jagen_name_to_id "${spec%:*}")
+        for key in $(set | jagen_esed -n "s/^${name}_env_([[:alnum:]_]+)=.*/\1/p"); do
+            eval ": \${pkg_env_${key}=\$${name}_env_${key}}" || exit
+        done; unset name key
+    done; unset spec
+fi
 
 pkg__assign_alias() {
     local IFS='='; set -- $1; unset IFS
@@ -89,7 +91,7 @@ for use_alias in $pkg_use_alias; do
     pkg__assign_alias "$use_alias" || exit
 done; unset use_alias
 
-if [ "$pkg_build_toolchain" ]; then
+if [ -z "$pkg_query" ] && [ "$pkg_build_toolchain" ]; then
     include "$(pkg__export_fname "$pkg_build_toolchain")" || exit
     if [ "$pkg_config" ]; then
         include "$(pkg__export_fname "$pkg_build_toolchain" "$pkg_config")" || exit
