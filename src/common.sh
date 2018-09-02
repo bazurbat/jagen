@@ -219,6 +219,9 @@ jagen_is_subdir() {
 jagen__expand() {
     local value="$1" name="$2" maxdepth=10 depth=0
     while [ $depth -le $maxdepth ]; do
+        if echo "$value" | grep -vq -e '${' -e '$[[:alpha:]]'; then
+            echo "$value"; return
+        fi
         # escape command substitution for the next eval
         value=$(echo "$value" | sed -e 's/$(/\\$(/g' -e 's/`/\\`/g')
         # double quoting here is necessary to preserve alternative IFS
