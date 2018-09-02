@@ -456,10 +456,10 @@ function Jagen.command.refresh(args, packages)
     local include_dir = assert(os.getenv('jagen_include_dir'))
     local log_dir = assert(os.getenv('jagen_log_dir'))
 
-    local pipe = Command:new('find "$jagen_include_dir"')
-                        :append('-mindepth 1 -maxdepth 1')
-                        :append('| grep -v ":export"'):popen()
-    System.rmrf(unpack(aslist(pipe:lines()))) pipe:close()
+    Command:new('find "$jagen_include_dir"')
+           :append('-mindepth 1 -maxdepth 1')
+           :append('\\! \\( -name "*:export.*" -o -name "*:export:*" \\)')
+           :append('-delete'):exec()
 
     for _, pkg in pairs(packages) do
         pkg:add_ordering_dependencies()
