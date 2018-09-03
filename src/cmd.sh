@@ -114,6 +114,19 @@ cmd_find_patch() {
     return 2
 }
 
+cmd_find_in_path() {
+    local arg='' path='' result=''
+    . "${jagen_dir:?}/env.sh" || return
+    set -- "$@"
+    for arg; do
+        path=$(find_in_path "$arg")
+        if [ -z "$path" ]; then path="$arg"; fi
+        result="${result}${jagen_S}${path}"
+    done
+    result=${result#$jagen_S}
+    printf '%s' "$result"
+}
+
 cmd_get_path() {
     . "$jagen_dir/env.sh" || return
     local IFS="$jagen_IFS"
@@ -132,6 +145,9 @@ case $mode in
         ;;
     find_patch)
         cmd_find_patch "$@"
+        ;;
+    find)
+        cmd_find_in_path "$@"
         ;;
     get_path)
         cmd_get_path "$@"
