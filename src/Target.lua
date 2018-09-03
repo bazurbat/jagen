@@ -105,6 +105,28 @@ function Target:append(input)
     return self
 end
 
+function Target:resove_inputs()
+    local names, targets, paths, unresolved = {}, {}, {}, {}
+    for item in each(self.inputs) do
+        if type(item) == 'string' and not item:match('^/') then
+            table.insert(names, item)
+        else
+            table.insert(targets, item)
+        end
+    end
+    if next(names) then
+        for i, path in ipairs(Jagen.find_in_path(names)) do
+            if names[i] == path then
+                table.insert(unresolved, path)
+            else
+                table.insert(paths, path)
+            end
+        end
+    end
+    target.inputs = extend(targets, paths)
+    return unresolved
+end
+
 function Target:touch()
     return Command:new('cd "$jagen_build_dir" && touch', quote(self)):exec()
 end

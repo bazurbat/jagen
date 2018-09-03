@@ -943,31 +943,6 @@ function P.define_default_config()
     return new_packages
 end
 
-function P:resolve_inputs()
-    for this, config in self:each_config(true) do
-        for target in each(this.stages) do
-            local names, targets, paths = {}, {}, {}
-            for item in each(target.inputs) do
-                if type(item) == 'string' and not item:match('^/') then
-                    table.insert(names, item)
-                else
-                    table.insert(targets, item)
-                end
-            end
-            if next(names) then
-                for i, path in ipairs(Command:new(quote(Jagen.cmd), 'find', quote(unpack(names))):aslist()) do
-                    if names[i] == path then
-                        print_warning("package %s requires file '%s' which was not found", self.name, path)
-                    else
-                        table.insert(paths, path)
-                    end
-                end
-            end
-            target.inputs = extend(targets, paths)
-        end
-    end
-end
-
 function P.load_rules()
     local def_loader = lua_package.loaders[2]
     lua_package.loaders[2] = find_module
@@ -1017,10 +992,6 @@ function P.load_rules()
 
     for _, pkg in pairs(packages) do
         _context_count = _context_count + #pkg.contexts
-    end
-
-    for _, pkg in pairs(packages) do
-        pkg:resolve_inputs()
     end
 
     -- print(string.format('defines: %d, contexts: %d', _define_count, _context_count))
