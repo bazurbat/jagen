@@ -166,15 +166,6 @@ local function format_stage(target, pkg)
         end
     end
 
-    if target.stage == 'provide_patches' then
-        -- Each output whose modification time the command did not change will
-        -- be treated as though it had never needed to be built. This means
-        -- that the packages which require the provided patches will no be
-        -- rebuilt if the patch files themselves have not changed even though
-        -- the provide_patches stage execution making them "dirty".
-        vars.restat = 'true'
-    end
-
     if target.stage == 'compile' then
         local build = pkg:get('build', target.config)
         if build and build.type == 'android-gradle' then

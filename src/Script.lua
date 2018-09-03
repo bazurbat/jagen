@@ -91,13 +91,12 @@ local function write_patches(w, pkg)
         write_var(name, patches[name])
     end
 
-    if #patches > 0 then
-        assert(patches.required and #patches == #patches.required)
+    local resolved = filter(function(item) return item[3] end, patches)
+    if #resolved > 0 then
         w('jagen_stage_apply_patches() {')
-        for i, item in ipairs(patches) do
-            local name = item[1]
-            local strip = item[2]
-            w('  pkg_run_patch %d "%s"', strip, patches.required[i])
+        for i, item in ipairs(resolved) do
+            local name, n, path = item[1], item[2], item[3]
+            w('  pkg_run_patch %d "%s"', n, path)
         end
         w('}')
     end

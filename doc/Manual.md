@@ -164,7 +164,6 @@ can be used in custom scripts or as the part of another property value.
         ignore_dirty = false
     },
     patches = {
-        provider = 'patches',
         { 'filename1', num },
         { 'filename2', num },
         ...
@@ -218,9 +217,6 @@ can be used in custom scripts or as the part of another property value.
   where `'name'` is the filename of the patch without the `.patch` extension and the `num` is the
   number of leading slashes to strip from filenames when applying the patch (passed as `-pnum` to
   the `patch` utility).
-
-- **patches.provider** — Optional name of the package providing the patches; defaults to
-  "patches" if not specified.
 
 - **build** (`pkg_build_*`) — Parameters for the build stage.
 
@@ -606,12 +602,6 @@ install = value
   special type "toolchain" can be used to install toolchain wrappers.
 
 - **pkg_name** — the package name of the currently executing stage
-
-- **pkg_patches_provided** (`pkg.patches.provided`) — a list of absolute patch
-  filenames which the current package is expected to provide
-
-- **pkg_patches_required** (`pkg.patches.required`) — a list of absolute patch
-  filenames which the current package requires
 
 - **pkg_query** — query
 

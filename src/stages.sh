@@ -28,19 +28,6 @@ jagen_stage_patch() {
     pkg_patch
 }
 
-jagen_stage_provide_patches() {
-    local IFS="$jagen_IFS"
-    for filename in ${pkg_patches_provided-}; do
-        if [ -f "$filename" ]; then
-            if ! [ -s "$filename" ]; then
-                die "providing a patch '$filename' but the file is empty"
-            fi
-        else
-            die "must provide a patch '$filename' but the file does not exist"
-        fi
-    done
-}
-
 jagen_stage_autoreconf() {
     pkg_autoreconf
 }

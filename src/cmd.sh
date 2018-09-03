@@ -97,23 +97,6 @@ cmd_image() {
     "${jagen_shell:-/bin/sh}" "$image_script" "$@"
 }
 
-cmd_find_patch() {
-    set -u
-    local name="${1:?}" filename=
-    . "${jagen_dir}/env.sh" || return
-    filename="${jagen_dist_dir}/patches/${name}.patch"
-    if [ -f "$filename" ]; then
-        echo "$filename"
-        return 0
-    fi
-    filename="$(find_in_path "patches/${name}.patch")"
-    if [ -f "$filename" ]; then
-        echo "$filename"
-        return 0
-    fi
-    return 2
-}
-
 cmd_find_in_path() {
     local arg='' path='' result=''
     . "${jagen_dir:?}/env.sh" || return
@@ -142,9 +125,6 @@ case $mode in
         ;;
     image)
         cmd_image "$@"
-        ;;
-    find_patch)
-        cmd_find_patch "$@"
         ;;
     find)
         cmd_find_in_path "$@"

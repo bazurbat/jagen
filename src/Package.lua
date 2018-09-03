@@ -29,7 +29,6 @@ local used_packages = {}
 local all_required_packages = {}
 local required_packages = {}
 local required_specs = {}
-local used_patches = {}
 
 local current_context
 local context_stack = {}
@@ -151,7 +150,6 @@ function P.init_rules()
     all_required_packages = {}
     required_packages = {}
     required_specs = {}
-    used_patches = {}
 end
 
 function P:__tostring(sep)
@@ -437,113 +435,38 @@ function P:add_require_dependencies(spec, config, stage)
 end
 
 function P:add_patch_dependencies()
-    if used_patches[self.name] then return end
-    used_patches[self.name] = true
-
-    local new_packages = {}
-
     local function patch_names(pkg)
-        local i, n = 0, #pkg.patches
-        return function()
-            i = i + 1
-            if i <= n then return pkg.patches[i][1] end
+        local names = {}
+        for item in each(pkg.patches) do
+            append(names, string.format('patches/%s.patch', item[1]))
         end
+        return names
     end
 
-    local function get_provider(name)
-        if name and name ~= 'none' then
-            local pkg = packages[name]
-            if not pkg then
-                pkg = P.define_package { name = name }
-                new_packages[pkg.name] = pkg
-                pkg.source = Source:create(pkg.source, pkg.name)
-            end
-            return pkg
-        end
-    end
-
-    local function get_provided_filename(provider, name)
-        return System.expand(System.mkpath(assert(provider.source.dir),
-            self.patches.dir or '', name..'.patch'))
-    end
-
-    local function find_in_path(name)
-        return System.pread('*l', '%s find_patch "%s"', Jagen.cmd, name)
-    end
-
-    local function add_inputs(pkg, inputs)
-        local stage = pkg.stages['unpack']
-        pkg.patches = pkg.patches or {}
-
-        -- Adding patch files to arguments modifies the command line which is
-        -- needed for Ninja to notice the changes in the list itself and rerun
-        -- the command.
-        for input in each(inputs) do
-            stage.inputs = append_uniq(input, stage.inputs)
-            stage.arg = append_uniq(input, stage.arg)
-            pkg.patches.required = append_uniq(input, pkg.patches.required)
-        end
-
-        table.sort(stage.arg or {})
-        table.sort(pkg.patches.required or {})
-    end
-
-    local function add_outputs(pkg, outputs)
-        local name = 'provide_patches'
-        local stage = pkg.stages[name]
-        if not stage then
-            pkg:add_stage(name)
-            stage = assert(pkg.stages[name])
-        end
-
-        pkg.patches = pkg.patches or {}
-
-        -- Adding patch files to arguments modifies the command line which is
-        -- needed for Ninja to notice the changes in the list itself and rerun
-        -- the command which then checks if the patches were indeed provided.
-        for output in each(outputs) do
-            stage.outputs = append_uniq(output, stage.outputs)
-            stage.arg = append_uniq(output, stage.arg)
-            pkg.patches.provided = append_uniq(output, pkg.patches.provided)
-        end
-
-        table.sort(stage.arg or {})
-        table.sort(pkg.patches.provided or {})
-    end
-
-    local provider = get_provider(self.patches.provider)
-    local filenames = {}
-
-    for name in patch_names(self) do
-        local filename
-        if provider then
-            filename = get_provided_filename(provider, name)
+    local stage = self.stages['unpack']
+    local names, unresolved = patch_names(self), {}
+    for i, path in ipairs(Jagen.find_in_path(names)) do
+        if path ~= names[i] then
+            stage.inputs = append_uniq(path, stage.inputs)
+            -- Adding patch files to arguments modifies the command line which
+            -- is needed for Ninja to notice the changes in the list itself and
+            -- rerun the command.
+            stage.arg = append_uniq(path, stage.arg)
+            self.patches[i][3] = path
         else
-            filename = find_in_path(name)
+            append(unresolved, path)
         end
-        if not filename then
-            provider = get_provider('patches')
-            filename = get_provided_filename(provider, name)
-        end
-        append_uniq(filename, filenames)
     end
-
-    add_inputs(self, filenames)
-    if provider then
-        add_outputs(provider, filenames)
+    if next(unresolved) then
+        print_warning('package %s requires patches which were not found: %s', self.name, table.concat(unresolved, ', '))
     end
-
-    return new_packages
 end
 
 function P:add_ordering_dependencies()
     local prev, common 
 
     for curr in self:each() do
-        if curr.stage == 'provide_patches' then
-            local unpack = assert(self.stages['unpack'])
-            curr.inputs = append(curr.inputs, unpack)
-        elseif curr.stage == 'export' and curr.config then
+        if curr.stage == 'export' and curr.config then
             curr:append(assert(common))
             curr:append(Target.from_args(common.name, 'export'))
         elseif curr.stage == 'export' then
@@ -988,9 +911,6 @@ function P.process_rules(_packages)
                         new_packages[added.name] = added
                     end
                 end
-            end
-            if pkg.patches then
-                table.assign(new_packages, pkg:add_patch_dependencies())
             end
         end
         local required = required_packages

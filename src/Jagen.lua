@@ -462,6 +462,7 @@ function Jagen.command.refresh(args, packages)
            :append('-delete'):exec()
 
     for _, pkg in pairs(packages) do
+        pkg:add_patch_dependencies()
         pkg:add_ordering_dependencies()
         Script:generate(pkg, include_dir)
 
@@ -825,6 +826,15 @@ function Jagen.command._compare_versions(args)
         return tostatus(false)
     else
         return tostatus(true)
+    end
+end
+
+function Jagen.find_in_path(names)
+    if not names then return end
+    if next(names) then
+        return Command:new(quote(Jagen.cmd), 'find', quote(unpack(names))):aslist()
+    else
+        return {}
     end
 end
 
