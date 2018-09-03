@@ -38,7 +38,7 @@ jagen_build_verbose=${jagen_build_verbose-}
 
 . "$jagen_dir/src/common.sh" || return
 
-jagen_host_arch="$(jagen__get_architecture)"
+# jagen_host_arch="$(jagen__get_architecture)"
 
 # Avoid import during init-root
 if [ "$jagen_project_dir" ]; then
