@@ -164,7 +164,7 @@ can be used in custom scripts or as the part of another property value.
         ignore_dirty = false
     },
     patches = {
-        { 'filename1', num },
+        'filename1',
         { 'filename2', num },
         ...
     },
@@ -210,13 +210,7 @@ can be used in custom scripts or as the part of another property value.
 
 - **source** (`pkg_source_*`) — A Source object.
 
-- **patches** — A list of objects of the form:
-
-        { 'name', num }
-
-  where `'name'` is the filename of the patch without the `.patch` extension and the `num` is the
-  number of leading slashes to strip from filenames when applying the patch (passed as `-pnum` to
-  the `patch` utility).
+- **patches** — A list of patch files to automatically apply during the "patch" stage.
 
 - **build** (`pkg_build_*`) — Parameters for the build stage.
 
@@ -298,6 +292,97 @@ can be used in custom scripts or as the part of another property value.
 - **source.type** — A type of the source: dist, git, hg, repo. The packages with the source types
   of "git", "hg" and "repo" are considered "SCM" packages and can be managed by the `jagen src`
   command.
+
+### Patches
+
+Packages can specify a list of patch files to apply during the "patch" stage in the `patches`
+property.
+
+Each item can be either a filename string or an object of the form:
+```lua
+{ 'filename', num }
+```
+where `filename` is the file name of the patch and the `num` is the number of leading slashes to
+strip from paths when applying the patch (passed as `-pnum` to the `patch` utility). The `num`
+is optional and defaults to `1` if not specified.
+
+For each patch filename `$name` Jagen tries to find the corresponding `pkg/$pkg_name/$name` file
+across the `$jagen_path`. If the package name has the variant suffix (`~suffix`) it also tries the
+paths with the suffix removed. Found patch files are added as dependencies of the "unpack" stage of
+the package, so the changes to the patch files will cause the rebuild. For example, given the
+definition:
+```lua
+package { 'mypackage~ver1',
+    patches = {
+        'filename1.patch',
+    }
+}
+```
+layers:
+```sh
+jagen_layers='
+../layer1
+../layer2
+'
+```
+and Jagen project in `~/work/project` and assuming the Jagen repo is in the default location the
+search order will be the following:
+```
+~/work/project/lib/pkg/mypackage~ver1/filename1.patch
+~/work/project/lib/pkg/mypackage/filename1.patch
+~/work/layer2/pkg/mypackage~ver1/filename1.patch
+~/work/layer2/pkg/mypackage/filename1.patch
+~/work/layer1/pkg/mypackage~ver1/filename1.patch
+~/work/layer1/pkg/mypackage/filename1.patch
+~/work/project/.jagen/lib/pkg/mypackage~ver1/filename.patch
+~/work/project/.jagen/lib/pkg/mypackage/filename.patch
+```
+The first filename found will be used. Note that common variant path (without the `~suffix`) from
+later layers overrides the more specific variants from earlier layers.
+
+The `patches` property can be set to `false` to remove the list of patches set by upper layers. Use
+it to start a new list or in the case when the source type is changed to SCM but the upper layer
+declares `dist` source with patches. For example, given the definition:
+```lua
+-- in layer1
+package { 'mypackage',
+    source = 'https://somewhere/mypackage.tar.gz',
+    patches = {
+        'somepatch1'
+    }
+}
+```
+and the rule:
+```lua
+-- in layer2
+package { 'mypackage',
+    patches = {
+        'somepatch2'
+    }
+}
+```
+the resulting rule will be:
+```lua
+package { 'mypackage',
+    patches = {
+        'somepatch1',
+        'somepatch2'
+    }
+}
+```
+but you can reset the list with the following pattern:
+```lua
+-- in layer2
+package { 'mypackage',
+    patches = false
+}
+package { 'mypackage',
+    patches = {
+        'somepatch2'
+    }
+}
+```
+`patches = false` will clean the previous value and the next rule just adds to the empty list.
 
 ### Build
 
