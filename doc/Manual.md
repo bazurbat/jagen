@@ -384,6 +384,11 @@ package { 'mypackage',
 ```
 `patches = false` will clean the previous value and the next rule just adds to the empty list.
 
+For rules declaring sources with SCM type such as git and hg the patches property is set to `false`
+implicitly which means that version controlled repositories will not be patched. If you want to
+apply previously declared patches anyway set the `patches` property to empty list `patches = {}` to
+suppress the implicit patch list reset.
+
 ### Build
 
 - **build.arch** — Specifies the target machine architecture. Assigned from

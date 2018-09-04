@@ -733,17 +733,23 @@ function P.define_package(rule, context)
         end
     end
 
-    -- merge source and patches to shared part regardless of rule context
-    for key in each { 'source', 'patches' } do
-        if rule[key] ~= nil then
-            if rule[key] == false then
-                pkg[key] = nil
-            else
-                if pkg[key] == nil then pkg[key] = {} end
-                table.merge(pkg[key], rule[key])
-            end
-            rule[key] = nil
+    if rule.source and Source:is_known(rule.source.type) then
+        if rule.patches == nil then
+            rule.patches = false
         end
+    end
+    -- merge source and patches to shared part regardless of rule context
+    if rule.patches ~= nil then
+        if rule.patches == false then
+            pkg.patches = nil
+        else
+            pkg.patches = table.merge(pkg.patches or {}, rule.patches)
+        end
+        rule.patches = nil
+    end
+    if rule.source then
+        pkg.source = table.merge(pkg.source or {}, rule.source)
+        rule.source = nil
     end
 
     local arg_rule = rule
