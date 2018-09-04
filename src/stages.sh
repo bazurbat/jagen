@@ -26,6 +26,7 @@ jagen_stage_unpack() {
 
 jagen_stage_patch() {
     pkg_patch
+    pkg_patch_copy_files
 }
 
 jagen_stage_autoreconf() {

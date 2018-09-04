@@ -35,6 +35,7 @@ local function write_common(w, pkg)
         'configs',
         'contexts',
         'export',
+        'files',
         'install',
         'name',
         'patches',
@@ -99,6 +100,22 @@ local function write_patches(w, pkg)
             w('  pkg_run_patch %d "%s"', n, path)
         end
         w('}')
+    end
+end
+
+local function write_files(w, pkg)
+    local files = pkg.files
+    if not files then return end
+
+    local function write_var(name, value)
+        return write_pkg_var(w, 'file_', name, value)
+    end
+
+    for i = 1, #files do
+        local item = files[i]
+        if item._src_path then
+            write_var(i, { item[1], item._src_path, item.path })
+        end
     end
 end
 
@@ -182,6 +199,7 @@ local function generate_script(filename, pkg, config)
     write_common(w, pkg)
     write_source(w, pkg)
     write_patches(w, pkg)
+    write_files(w, pkg)
     -- write install first to allow referencing install dir from build options
     write_install(w, pkg)
     write_build(w, pkg)

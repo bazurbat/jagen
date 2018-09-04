@@ -222,6 +222,20 @@ function P:parse(rule)
         end
     end
 
+    if type(rule.files) == 'table' then
+        local files = rule.files
+        for i = 1, #files do
+            local item = files[i]
+            if type(item) == 'string' then
+                files[i] = { item }
+            elseif type(item) == 'table' then
+                if not item.path and item.dir then
+                    item.path = item.dir..'/'..item[1]
+                end
+            end
+        end
+    end
+
     local function parse_section(name)
         if rule[name] ~= nil then
             if type(rule[name]) ~= 'table' then
@@ -475,6 +489,36 @@ function P:add_patch_dependencies()
     end
     if next(unresolved) then
         print_warning('package %s requires patches which were not found: %s', self.name, table.concat(unresolved, ', '))
+    end
+end
+
+function P:add_files_dependencies()
+    if not self.files or not next(self.files) then return end
+
+    local function getnames()
+        local o = {}
+        for item in each(self.files) do
+            append(o, string.format('%s', item[1]))
+        end
+        return o
+    end
+
+    local stage = self.stages['patch']
+    local names, unresolved = getnames(), {}
+    for i, path in ipairs(self:find_patches(names)) do
+        if path ~= names[i] then
+            stage.inputs = append_uniq(path, stage.inputs)
+            -- Adding patch files to arguments modifies the command line which
+            -- is needed for Ninja to notice the changes in the list itself and
+            -- rerun the command.
+            stage.arg = append_uniq(path, stage.arg)
+            self.files[i]._src_path = path
+        else
+            append(unresolved, path)
+        end
+    end
+    if next(unresolved) then
+        print_warning('package %s requires files which were not found: %s', self.name, table.concat(unresolved, ', '))
     end
 end
 

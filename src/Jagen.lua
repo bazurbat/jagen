@@ -463,6 +463,7 @@ function Jagen.command.refresh(args, packages)
 
     for _, pkg in pairs(packages) do
         pkg:add_patch_dependencies()
+        pkg:add_files_dependencies()
         pkg:add_ordering_dependencies()
         Script:generate(pkg, include_dir)
 
