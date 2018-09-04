@@ -435,17 +435,19 @@ function P:add_require_dependencies(spec, config, stage)
 end
 
 function P:add_patch_dependencies()
+    if not self.patches or not next(self.patches) then return end
+
     local function patch_names(pkg)
         local names = {}
         for item in each(pkg.patches) do
-            append(names, string.format('patches/%s.patch', item[1]))
+            append(names, string.format('%s', item[1]))
         end
         return names
     end
 
     local stage = self.stages['unpack']
     local names, unresolved = patch_names(self), {}
-    for i, path in ipairs(Jagen.find_in_path(names)) do
+    for i, path in ipairs(self:find_patches(names)) do
         if path ~= names[i] then
             stage.inputs = append_uniq(path, stage.inputs)
             -- Adding patch files to arguments modifies the command line which
@@ -1036,6 +1038,15 @@ end
 
 function P:query(value, config)
     return Command:new('jagen-stage -q', value, self.name, config)
+end
+
+function P:find_patches(names)
+    if not names then return end
+    if next(names) then
+        return Command:new(quote(Jagen.cmd), 'find_patches', quote(self.name), quote(unpack(names))):aslist()
+    else
+        return {}
+    end
 end
 
 function P:get_work_dir(config)
