@@ -208,6 +208,20 @@ function P:parse(rule)
 
     rule.source = Source:parse(rule.source)
 
+    if type(rule.patches) == 'table' then
+        local patches = rule.patches
+        for i = 1, #patches do
+            local item = patches[i]
+            if type(item) == 'string' then
+                patches[i] = { item, 1 }
+            elseif type(item) == 'table' then
+                if not item[2] then
+                    item[2] = 1
+                end
+            end
+        end
+    end
+
     local function parse_section(name)
         if rule[name] ~= nil then
             if type(rule[name]) ~= 'table' then
