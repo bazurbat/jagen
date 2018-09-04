@@ -111,19 +111,20 @@ cmd_find_in_path() {
 }
 
 cmd_find_patches() {
-    local name="$1" arg='' path='' result=''; shift
+    local name="$1" prefix="${1%~*}" rv= arg path; shift
     set -- "$@"
     . "${jagen_dir:?}/env.sh" || return
     for arg; do
-        for i in "pkg/$name/${arg}" "pkg/$name/${arg}.patch" "patches/${arg}.patch"; do
-            path=$(find_in_path "$i")
-            [ "$path" ] && break;
-        done
+        if [ "$prefix" = "$name" ]; then
+            path=$(find_in_path "pkg/$name/$arg")
+        else
+            path=$(find_in_path "pkg/$name/$arg" "pkg/$prefix/$arg")
+        fi
         [ "$path" ] || path="$arg"
-        result="${result}${jagen_S}${path}"
+        rv="$rv$jagen_S$path"
     done
-    result=${result#$jagen_S}
-    printf '%s' "$result"
+    rv=${rv#$jagen_S}
+    printf '%s' "$rv"
 }
 
 cmd_get_path() {

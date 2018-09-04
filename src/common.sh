@@ -57,14 +57,17 @@ include() {
 
 find_in_path() {
     local IFS="$jagen_IFS"
-    local name="${1:?}" path= i=
+    set -- "$@"
+    local layer name path
 
-    for i in $jagen_path; do
-        path="$i/$name"
-        if [ -f "$path" ]; then
-            printf "$path"
-            return
-        fi
+    for layer in $jagen_path; do
+        for name; do
+            path="$layer/$name"
+            if [ -f "$path" ]; then
+                printf '%s' "$path"
+                return
+            fi
+        done
     done
 }
 
