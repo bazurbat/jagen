@@ -143,9 +143,6 @@ case $mode in
     image)
         cmd_image "$@"
         ;;
-    find)
-        cmd_find_in_path "$@"
-        ;;
     find_patches)
         cmd_find_patches "$@"
         ;;

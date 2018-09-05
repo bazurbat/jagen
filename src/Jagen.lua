@@ -830,15 +830,6 @@ function Jagen.command._compare_versions(args)
     end
 end
 
-function Jagen.find_in_path(names)
-    if not names then return end
-    if next(names) then
-        return Command:new(quote(Jagen.cmd), 'find', quote(unpack(names))):aslist()
-    else
-        return {}
-    end
-end
-
 function Jagen.nproc()
     if Jagen._nproc then return Jagen._nproc end
     local name, nproc = System.pread('*l', 'uname -s')
