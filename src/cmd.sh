@@ -127,10 +127,29 @@ cmd_find_files() {
     printf '%s' "$rv"
 }
 
+echo_if_exists() {
+    if [ -f "$1" ]; then
+        echo "$1"
+    fi
+}
+
+cmd_find_for_refresh() {
+    . "$jagen_dir/env.sh" || return
+    local IFS="$jagen_S"
+    find $jagen_dir $(jagen__resolve_layers) $jagen_project_lib_dir '(' \
+        -name '.git' -o \
+        -name tags -o \
+        -name Session.vim \
+    ')' -prune -o -print
+    echo_if_exists "$jagen_project_dir/config.sh"
+    echo_if_exists "$jagen_project_dir/env.sh"
+    echo_if_exists "$jagen_project_dir/jagen"
+    echo_if_exists "$jagen_project_dir/rules.lua"
+}
+
 cmd_get_path() {
     . "$jagen_dir/env.sh" || return
-    local IFS="$jagen_IFS"
-    jagen__expand_layers $jagen_layers
+    jagen__get_path
 }
 
 mode="${1:?}"
@@ -145,6 +164,9 @@ case $mode in
         ;;
     find_files)
         cmd_find_files "$@"
+        ;;
+    find_for_refresh)
+        cmd_find_for_refresh "$@"
         ;;
     get_path)
         cmd_get_path "$@"

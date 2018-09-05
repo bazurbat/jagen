@@ -47,6 +47,10 @@ function Jagen:path()
     return path
 end
 
+function Jagen:find_for_refresh()
+    return Command:new(quote(Jagen.cmd), 'find_for_refresh'):aslist()
+end
+
 function Jagen._load_layers()
     local path, layers = Jagen:path(), {}
     assert(#path >= 2)
@@ -599,8 +603,6 @@ function Jagen.command.build(args)
     if #args > 0 and #targets == 0 then
         return false
     end
-
-    Jagen.command.refresh(nil, packages)
 
     for spec, pkg in pairs(to_clean) do
         if not Jagen.clean_package(pkg, spec) then

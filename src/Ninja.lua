@@ -68,6 +68,19 @@ local function format_rule(name, command)
     return format('rule %s\n%scommand = %s', name, indent(4), command)
 end
 
+local function format_inputs(inputs)
+    local lines = { '' }
+    extend(lines, sort(map(function (x)
+                    return indented(escape(tostring(x)), 16)
+        end, inputs or {})))
+    return join_escaped(lines)
+end
+
+local function format_refresh(files)
+    return format('build build.ninja: refresh%s\n%s%s', format_inputs(files),
+        indent(4), binding('description', 'refresh'))
+end
+
 local function format_build(build)
     local lines = { '' }
 
@@ -79,14 +92,6 @@ local function format_build(build)
                 end, sort(table.rest(outputs, 2))))
             append(lines, indent(12))
         end
-        return join_escaped(lines)
-    end
-
-    local function format_inputs(inputs)
-        local lines = { '' }
-        extend(lines, sort(map(function (x)
-                        return indented(escape(tostring(x)), 16)
-            end, inputs or {})))
         return join_escaped(lines)
     end
 
@@ -212,9 +217,13 @@ function P.generate(out_file, rules)
         format_pool('rust_toolchain', 1),
         format_rule('stage', join {
                 separated(Jagen.shell), 'jagen-stage $args'
+            }),
+        format_rule('refresh', join {
+                Jagen.shell, System.expand('$jagen_project_dir/jagen')..' refresh'
             })
     }
 
+    append(lines, format_refresh(Jagen:find_for_refresh()))
     extend(lines, pmap(format_package, sorted_rules))
 
     file:write(join_nl(lines))
