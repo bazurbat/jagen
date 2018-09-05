@@ -68,6 +68,17 @@ local function format_rule(name, command)
     return format('rule %s\n%scommand = %s', name, indent(4), command)
 end
 
+local function format_outputs(outputs)
+    local lines = { escape(outputs[1]) }
+    if #outputs > 1 then
+        extend(lines, map(function (x)
+                    return indented(escape(tostring(x)), 8)
+            end, sort(table.rest(outputs, 2))))
+        append(lines, indent(12))
+    end
+    return join_escaped(lines)
+end
+
 local function format_inputs(inputs)
     local lines = { '' }
     extend(lines, sort(map(function (x)
@@ -76,24 +87,22 @@ local function format_inputs(inputs)
     return join_escaped(lines)
 end
 
-local function format_refresh(files)
-    return format('build build.ninja: refresh%s\n%s%s', format_inputs(files),
+local function format_refresh(files, packages)
+    local include_dir = System.expand(os.getenv('jagen_include_dir'))
+    local outputs = { 'build.ninja' }
+    local function append_includes(pkg)
+        append(outputs, System.mkpath(include_dir, string.format('%s.sh', pkg.name)))
+        for name, config in pairs(pkg.configs) do
+            append(outputs, System.mkpath(include_dir, string.format('%s:%s.sh', pkg.name, name)))
+        end
+    end
+    for pkg in each(packages) do append_includes(pkg) end
+    return format('build %s: refresh%s\n%s%s', format_outputs(outputs), format_inputs(files),
         indent(4), binding('description', 'refresh'))
 end
 
 local function format_build(build)
     local lines = { '' }
-
-    local function format_outputs(outputs)
-        local lines = { escape(outputs[1]) }
-        if #outputs > 1 then
-            extend(lines, map(function (x)
-                        return indented(escape(tostring(x)), 8)
-                end, sort(table.rest(outputs, 2))))
-            append(lines, indent(12))
-        end
-        return join_escaped(lines)
-    end
 
     local function format_uses(uses)
         local lines = {}
@@ -223,7 +232,7 @@ function P.generate(out_file, rules)
             })
     }
 
-    append(lines, format_refresh(Jagen:find_for_refresh()))
+    append(lines, format_refresh(Jagen:find_for_refresh(), sorted_rules))
     extend(lines, pmap(format_package, sorted_rules))
 
     file:write(join_nl(lines))
