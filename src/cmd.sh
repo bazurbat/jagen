@@ -110,7 +110,7 @@ cmd_find_in_path() {
     printf '%s' "$result"
 }
 
-cmd_find_patches() {
+cmd_find_files() {
     local name="$1" prefix="${1%~*}" rv= arg path; shift
     set -- "$@"
     . "${jagen_dir:?}/env.sh" || return
@@ -143,8 +143,8 @@ case $mode in
     image)
         cmd_image "$@"
         ;;
-    find_patches)
-        cmd_find_patches "$@"
+    find_files)
+        cmd_find_files "$@"
         ;;
     get_path)
         cmd_get_path "$@"
