@@ -259,7 +259,7 @@ jagen__resolve_layer() {
 # Tries to resolve all entries in $jagen_layers and prints the
 # jagen_S-separated list of absolute directory paths.
 jagen__resolve_layers() {
-    local layer path result IFS="$jagen_S"
+    local layer path result= IFS="$jagen_S"
     for layer in $jagen_layers; do
         path=$(jagen__resolve_layer "$layer")
         if [ -z "$path" ]; then
