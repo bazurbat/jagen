@@ -30,7 +30,7 @@ pkg__uri_is_local() {
 }
 
 pkg__unpack_dist() {
-    local src_path="${1:?}" work_dir="${2:?}" dist_type=
+    local src_path="${1:?}" dest_dir="${2:?}" dist_type=
     local dist_path="${jagen_dist_dir:?}/${pkg_source_filename:?}"
 
     if ! [ -f "$dist_path" ]; then
@@ -73,8 +73,8 @@ pkg__unpack_dist() {
     [ -f "$dist_path" ] ||
         die "could not find $dist_path for unpacking"
 
-    pkg_run mkdir -p "$work_dir"
-    pkg_run cd "$work_dir"
+    [ -d "$dest_dir" ] || pkg_run mkdir -p "$dest_dir"
+    pkg_run cd "$dest_dir"
 
     case $dist_type in
         application/x-sharedlib)
