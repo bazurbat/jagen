@@ -1024,7 +1024,7 @@ function P.load_rules()
         end
     end
 
-    for dir in Command:new(quote(Jagen.cmd), 'get_path'):read('*a'):gmatch('[^\t\n]+') do
+    for dir in each(Jagen:path()) do
         try_load_rules(dir)
     end
     try_load_rules(System.mkpath(Jagen.project_dir))

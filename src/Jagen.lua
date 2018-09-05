@@ -37,11 +37,18 @@ function Jagen.flag(f)
     return false
 end
 
-function Jagen._load_layers()
-    local path, layers = {}, {}
+function Jagen:path()
+    if self._path then return self._path end
+    local path = {}
     for dir in Command:new(quote(Jagen.cmd), 'get_path'):read('*a'):gmatch('[^\t\n]+') do
-        table.insert(path, dir)
+        append(path, dir)
     end
+    self._path = path
+    return path
+end
+
+function Jagen._load_layers()
+    local path, layers = Jagen:path(), {}
     assert(#path >= 2)
     table.remove(path)
     table.remove(path, 1)
