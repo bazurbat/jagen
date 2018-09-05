@@ -135,8 +135,12 @@ echo_if_exists() {
 
 cmd_find_for_refresh() {
     . "$jagen_dir/env.sh" || return
-    local IFS="$jagen_S"
-    find $jagen_dir $(jagen__resolve_layers) $jagen_project_lib_dir '(' \
+    local paths="$jagen_dir" IFS="$jagen_S"
+    paths="${paths}${jagen_S}$(jagen__resolve_layers)"
+    if [ -d "$jagen_project_lib_dir" ]; then
+        paths="${paths}${jagen_S}${jagen_project_lib_dir}"
+    fi
+    find $paths '(' \
         -name '.git' -o \
         -name tags -o \
         -name Session.vim \
