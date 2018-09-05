@@ -1,6 +1,7 @@
 return {
     source = {
-        dir = '/usr'
+        -- FIXME: tried to remove on clean
+        -- dir = '/usr'
     },
     build = {
         cflags = '-march=native',

@@ -180,6 +180,10 @@ local function format_stage(target, pkg)
         end
     end
 
+    if target.stage == 'clean' then
+        uses = {}
+    end
+
     if target.stage == 'compile' then
         local build = pkg:get('build', target.config)
         if build and build.type == 'android-gradle' then

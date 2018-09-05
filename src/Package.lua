@@ -523,10 +523,13 @@ function P:add_files_dependencies()
 end
 
 function P:add_ordering_dependencies()
-    local prev, common 
+    local prev, prev2, common
 
     for curr in self:each() do
-        if curr.stage == 'export' and curr.config then
+        if curr.stage == 'clean' and curr.config then
+            curr:append(Target.from_args(curr.name, 'clean'))
+            prev2 = curr
+        elseif curr.stage == 'export' and curr.config then
             curr:append(assert(common))
             curr:append(Target.from_args(common.name, 'export'))
         elseif curr.stage == 'export' then
@@ -538,6 +541,10 @@ function P:add_ordering_dependencies()
                 else
                     curr.inputs = append(curr.inputs, prev)
                 end
+            end
+            if prev2 then
+                curr:append(prev2)
+                prev2 = nil
             end
 
             prev = curr
@@ -673,6 +680,7 @@ function P:create(name)
         _collected_targets = {},
     }
     setmetatable(pkg, self)
+    pkg:add_stage('clean')
     pkg:add_stage('unpack')
     if pkg.name ~= 'patches' then
         pkg:add_stage('patch')
@@ -730,6 +738,7 @@ function P.define_package(rule, context)
             setmetatable(this.build, { __index = pkg.build })
             setmetatable(this.install, { __index = pkg.install })
             setmetatable(this.export, { __index = pkg.export })
+            pkg:add_stage('clean', config)
         end
     end
 

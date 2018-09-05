@@ -513,3 +513,11 @@ case $(uname) in
         jagen_esed() { sed -r "$@"; }
         ;;
 esac
+
+jagen_is_same_dir() {
+    local dir1="$1" dir2="$2"
+    [ "$dir1" = "$dir2" ] && return
+    dir1=$([ "$dir1" ] && cd "$dir1" 2>&- && pwd -P)
+    dir2=$([ "$dir2" ] && cd "$dir2" 2>&- && pwd -P)
+    test "$dir1" -a "$dir2" -a "$dir1" = "$dir2"
+}

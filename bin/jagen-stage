@@ -63,7 +63,7 @@ for spec in $pkg_uses; do
 done; unset spec
 pkg_uses=${new_uses# }; unset new_uses
 
-if [ -z "$pkg_query" ]; then
+if [ -z "$pkg_query" -a "$pkg_stage" != clean ]; then
     # include uses
     for spec in $pkg_uses; do
         include "$(pkg__export_fname "$spec")" || exit
@@ -91,7 +91,7 @@ for use_alias in $pkg_use_alias; do
     pkg__assign_alias "$use_alias" || exit
 done; unset use_alias
 
-if [ -z "$pkg_query" ] && [ "$pkg_build_toolchain" ]; then
+if [ -z "$pkg_query" -a "$pkg_stage" != clean ] && [ "$pkg_build_toolchain" ]; then
     include "$(pkg__export_fname "$pkg_build_toolchain")" || exit
     if [ "$pkg_config" ]; then
         include "$(pkg__export_fname "$pkg_build_toolchain" "$pkg_config")" || exit
@@ -180,7 +180,7 @@ if [ "$pkg_query" ]; then
 fi
 
 case $pkg_stage in
-    unpack)
+    clean|unpack)
         cd "$jagen_build_dir"
         ;;
     patch)
