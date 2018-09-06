@@ -15,7 +15,7 @@ pkg_patch_copy_files() {
     local IFS="$jagen_IFS" i=0 name value src dst dir
     while :; do
         i=$((i+1))
-        name="\$pkg_file_$i"
+        name="\$pkg_files_$i"
         value=$(eval echo \"$name\")
         [ "$value" ] || break;
         set -- $value

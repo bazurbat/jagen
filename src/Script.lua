@@ -108,7 +108,7 @@ local function write_files(w, pkg)
     if not files then return end
 
     local function write_var(name, value)
-        return write_pkg_var(w, 'file_', name, value)
+        return write_pkg_var(w, 'files_', name, value)
     end
 
     for i = 1, #files do
