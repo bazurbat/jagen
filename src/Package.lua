@@ -222,6 +222,9 @@ function P:parse(rule)
         end
     end
 
+    if type(rule.files) == 'string' then
+        rule.files = { rule.files }
+    end
     if type(rule.files) == 'table' then
         local files = rule.files
         for i = 1, #files do
@@ -518,7 +521,7 @@ function P:add_files_dependencies()
         end
     end
     if next(unresolved) then
-        print_warning('package %s requires files which were not found: %s', self.name, table.concat(unresolved, ', '))
+        print_warning('could not find supplemental files for %s: %s', self.name, table.concat(unresolved, ', '))
     end
 end
 
