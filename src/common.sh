@@ -223,6 +223,9 @@ jagen__expand() {
     local value="$1" name="$2" maxdepth=10 depth=0
     while [ $depth -le $maxdepth ]; do
         if ! echo "$value" | grep -lq -e '${' -e '$[[:alpha:]]'; then
+            if [ "$value" != "${value#*\`}" -o "$value" != "${value#*\$(}" ]; then
+                value=$(eval echo \""$value"\")
+            fi
             echo "$value"; return
         fi
         # escape command substitution for the next eval
