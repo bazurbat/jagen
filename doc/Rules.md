@@ -128,6 +128,12 @@ can be used in custom scripts or as the part of another property value.
         { 'filename2', num },
         ...
     },
+    files = {
+        'filename1',
+        { 'filename2' },
+        { 'filename3, dir='/some/path' },
+        { 'filename4', path='/some/path/dest_filename' },
+    },
     build = {
         type = 'gnu|cmake|kbuild|make|linux-kernel|linux-module',
 
@@ -348,6 +354,32 @@ For rules declaring sources with SCM type such as git and hg the patches propert
 implicitly which means that version controlled repositories will not be patched. If you want to
 apply previously declared patches anyway set the `patches` property to empty list `patches = {}` to
 suppress the implicit patch list reset.
+
+## Files
+
+The "files" property specifies a list of supplementary files for the package. These files are added
+as inputs to the "patch" stage and copied into the specified path when this stage is executed.
+
+Each item in the list can be either a string or an object of the form:
+```lua
+{ 'filename', dir='/target/directory', path=/target/path/with/filename' }
+```
+`dir` defines the target directory where the `filename` should be copied and `path` defines full
+destination path. Use `path` if you want to have different source and target file names. The `path`
+property takes precedence over `dir` if both are specified. Having only `dir` effectively means
+`path=dir/filename`. If neither is set the file will be copied to the package build directory
+(`$pkg_build_dir`).
+
+The `filename` is searched in the package-specific directory across layers using the same algorithm
+as for patch files. It can be a relative path such as `files/filename` so you can organize large
+collections of supplementary files.
+
+There are syntax shortcuts available for the property, the following rules have the same meaning:
+```lua
+files = 'filename1'
+files = { 'filename1' }
+files = { { 'filename1' } }
+```
 
 ## Build
 
