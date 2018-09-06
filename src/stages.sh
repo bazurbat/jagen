@@ -20,22 +20,7 @@ include "$jagen__src_dir/install"
 include "$jagen__src_dir/image"
 
 jagen_stage_clean() {
-    local dir toclean= IFS="$jagen_S"
-    if [ "$pkg_build_clean" ]; then
-        for dir in $pkg_build_clean; do
-            toclean="$toclean$jagen_S$dir"
-        done
-    elif [ "$pkg_config" ]; then
-        toclean="$pkg_build_dir"
-    else
-        toclean="$pkg_work_dir"
-    fi
-    for dir in $toclean; do
-        if [ -d "$dir" ]; then
-            debug "cleaning $dir"
-            pkg_run rm -rf "$dir"
-        fi
-    done
+    pkg_clean
 }
 
 jagen_stage_unpack() {
