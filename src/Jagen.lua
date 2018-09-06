@@ -276,57 +276,6 @@ function Jagen.command.help(args)
     end
 end
 
-function Jagen.clean_package(pkg, spec)
-    local use = Target.from_use(spec)
-    local config = use.config
-    local clean_dirs = {}
-    function find_dirs(config)
-        local found = false
-        for dir in each(pkg:get_clean_dirs(config)) do
-            append_uniq(dir, clean_dirs) found = true
-        end
-        if not found then
-            local def_dir
-            if config then
-                def_dir = pkg:get_build_dir(config)
-            else
-                def_dir = pkg:query('work_dir'):read()
-            end
-            if def_dir and #def_dir > 0 then
-                append_uniq(def_dir, clean_dirs)
-            end
-        end
-    end
-    if config then
-        find_dirs(config)
-        Target.from_args(use.name, 'configure', config):remove()
-    else
-        for this, config in pkg:each_config(true) do
-            find_dirs(config)
-            Target.from_args(use.name, 'configure', config):remove()
-        end
-    end
-    Log.debug('clean %s %s %s', pkg.name, spec, table.concat(clean_dirs, ', '))
-    local source_dir = pkg:query('source_dir', config):read()
-    for dir in each(clean_dirs) do
-        if source_dir and System.same_dir(dir, source_dir) then
-            if pkg.source and pkg.source:is_scm() then
-                local why = pkg.source:clean_disabled()
-                if why then
-                    Log.message('not cleaning sources of %s: %s', pkg.name, why)
-                else
-                    Jagen.src.clean { assert(use.name) }
-                end
-            else
-                Log.message('not removing %s because it is the source dir of %s', dir, pkg.name)
-            end
-        elseif System.can_delete_safely(dir, source_dir) then
-            System.rmrf(dir)
-        end
-    end
-    return true
-end
-
 function Jagen.command.clean(args)
     local options = Options:new {
         { 'help,h' },
@@ -360,7 +309,7 @@ function Jagen.command.clean(args)
         return false
     end
 
-    function argsub(p)
+    local function argsub(p)
         return string.gsub(p, ':$', ':*')
     end
 
@@ -368,12 +317,13 @@ function Jagen.command.clean(args)
     for i, pattern in iter(extend({}, args), map(comp(argsub, string.convert_pattern))) do
         for name, pkg in iter(packages) do
             if name:match(pattern) then
-                specs[name] = pkg found = true
+                append(specs, name..':clean') found = true
             else
                 for this, config in pkg:each_config() do
                     local spec = string.format('%s:%s', name, config)
                     if spec:match(pattern) then
-                        specs[spec] = pkg found = true
+                        append(specs, string.format('%s:clean:%s', name, config))
+                        found = true
                     end
                 end
             end
@@ -384,7 +334,7 @@ function Jagen.command.clean(args)
     end
 
     if args['match'] then
-        for spec, _ in pairs(specs) do
+        for spec in each(specs) do
             print(spec)
         end
         return true
@@ -392,16 +342,7 @@ function Jagen.command.clean(args)
 
     if not found then return false end 
 
-    -- clean_package uses query, need to regenerate includes beforehand
-    if not Jagen.command.refresh({}, packages) then return false end
-
-    for spec, pkg in pairs(specs) do
-        if not Jagen.clean_package(pkg, spec) then
-            return false
-        end
-    end
-
-    return true
+    return Jagen.command.build(specs)
 end
 
 local function prepare_root()
@@ -571,17 +512,19 @@ function Jagen.command.build(args)
         return false
     end
 
-    local targets, to_clean, arg_clean = {}, {}, args['clean']
+    local targets, arg_clean = {}, args['clean']
     for i, pattern in iter(extend({}, args), map(string.to_target_pattern)) do
         local found = false
         for name, pkg in iter(packages) do
             for target, this in pkg:each() do
                 local stage = tostring(target)
                 if stage:match(pattern) then
-                    append(targets, stage) found = true
+                    targets[stage] = true found = true
                     if arg_clean then
-                        if not to_clean[name] then
-                            to_clean[tostring(this)] = pkg
+                        if target.config then
+                            targets[string.format('%s:clean:%s', name, target.config)] = true
+                        else
+                            targets[string.format('%s:clean', name)] = true
                         end
                     end
                 end
@@ -593,21 +536,17 @@ function Jagen.command.build(args)
     end
 
     if args['match'] then
-        for target in each(targets) do
+        local keys = table.keys(targets)
+        table.sort(keys)
+        for target in each(keys) do
             print(target)
         end
         return true
     end
 
     -- some targets were specified but none matched, consider this an error
-    if #args > 0 and #targets == 0 then
+    if #args > 0 and not next(targets) then
         return false
-    end
-
-    for spec, pkg in pairs(to_clean) do
-        if not Jagen.clean_package(pkg, spec) then
-            return false
-        end
     end
 
     local args_path = System.mkpath(Jagen.build_dir, '.build-args')
@@ -616,7 +555,7 @@ function Jagen.command.build(args)
         args_file:write(table.concat(args._args, '\n'))
     end
     args_file:close()
-    local ok = Command:new(quote(Jagen.cmd), 'build', tostring(args), unpack(targets)):exec()
+    local ok = Command:new(quote(Jagen.cmd), 'build', tostring(args), unpack(table.keys(targets))):exec()
     io.open(args_path, 'w'):close()
     return ok
 end
