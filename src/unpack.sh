@@ -104,8 +104,12 @@ pkg_clean() {
     fi
     for dir in $toclean; do
         if [ -d "$dir" ]; then
-            debug "cleaning $dir"
-            pkg_run rm -rf "$dir"
+            if jagen_is_same_dir "$dir" "$pkg_source_dir"; then
+                warning "not removing $dir: source dir of $pkg_name"
+            else
+                debug "removing $dir"
+                pkg_run rm -rf "$dir"
+            fi
         fi
     done
 }
