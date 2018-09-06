@@ -131,9 +131,7 @@ for name in $(set | jagen_esed -n 's/^pkg_env_([[:alnum:]_]+)=.*/\1/p'); do
 done; unset name
 
 # expand single-quoted pkg_* and collected variables
-for name in $(set | jagen_esed -n 's/^(pkg_[[:alnum:]_]+)=.*/\1/p') $pkg__expand_names; do
-    eval $name='$(jagen__expand "$(IFS= eval echo \$$name)" "$name")' || exit
-done; unset name
+eval "$(jagen__expand "$(set | grep '^pkg_')")"
 
 # config-specific adjustment of pkg env
 if [ "$pkg_config" ]; then
