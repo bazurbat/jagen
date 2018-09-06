@@ -527,7 +527,6 @@ function P:add_ordering_dependencies()
 
     for curr in self:each() do
         if curr.stage == 'clean' and curr.config then
-            curr:append(Target.from_args(curr.name, 'clean'))
             prev2 = curr
         elseif curr.stage == 'export' and curr.config then
             curr:append(assert(common))
