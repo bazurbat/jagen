@@ -13,7 +13,7 @@ local function write_pkg_var(w, prefix, name, value)
     elseif tp == 'table' then
         local values = table.ivalues(value)
         if #values > 0 then
-            w("pkg_%s%s='%s'", prefix, name, table.concat(values, '\n'))
+            w("pkg_%s%s='%s'", prefix, name, table.concat(values, '\t'))
         end
         local keys = sort(table.keys(value))
         for k in each(keys) do
