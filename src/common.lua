@@ -341,25 +341,11 @@ function string.escape_pattern(p)
 end
 
 function string.convert_pattern(s)
+    if s == '' then s = '*' end
     s = string.escape_pattern(s)
     s = string.format('^%s$', s)
     s = string.gsub(s, '%%%?', '[%%w%%p]')
     s = string.gsub(s, '%%%*', '[%%w%%p]*')
-    return s
-end
-
-function string.to_target_pattern(s)
-    if #s == 0 then return s end
-    if not (s:match(':') or s:match('*') or s:match('?')) then
-        s = s..':*'
-    end
-    s = s:gsub('::', ':*:')
-    s = s:gsub('^:', '*:')
-    s = s:gsub(':$', ':*')
-    s = s:escape_pattern(s)
-    s = string.format('^%s$', s)
-    s = s:gsub('%%%?', '[%%w%%p]')
-    s = s:gsub('%%%*', '[%%w%%p]*')
     return s
 end
 
