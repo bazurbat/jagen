@@ -868,6 +868,9 @@ function P:process_config(config, this)
         if build.toolchain == nil then
             build.toolchain = 'android-sdk-tools:host'
         end
+        if build.profile == nil then
+            build.profile = 'debug'
+        end
     end
 
     if build.type then
