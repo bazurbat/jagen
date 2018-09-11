@@ -27,6 +27,10 @@ jagen_stage_unpack() {
     pkg_unpack
 }
 
+jagen_stage_update() {
+    pkg_unpack
+}
+
 jagen_stage_patch() {
     pkg_patch
     pkg_patch_copy_files

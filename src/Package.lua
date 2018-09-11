@@ -390,6 +390,7 @@ end
 function P:add_target(target)
     local shared = { unpack = true, patch  = true, autoreconf = true }
     local name = target.stage
+    if name == 'update' then name = 'unpack' end
     local config = not shared[name] and target.config
     local stages = self:get('stages', config)
     if not stages then
@@ -679,9 +680,7 @@ function P:create(name)
     setmetatable(pkg, self)
     pkg:add_stage('clean')
     pkg:add_stage('unpack')
-    if pkg.name ~= 'patches' then
-        pkg:add_stage('patch')
-    end
+    pkg:add_stage('patch')
     local module, filename = find_module('pkg/'..name)
     if module then
         table.merge(pkg, P:new(assert(module())))
@@ -916,7 +915,7 @@ function P:process_config(config, this)
     end
 
     if build.in_source and self.source.ignore_dirty ~= false then
-        if self.source:is_scm() then
+        if Source:is_known(self.source.type) then
             self.source.ignore_dirty = 'in_source'
         end
     end
@@ -971,14 +970,6 @@ function P.process_rules(_packages)
     while next(_packages) do
         local new_packages = {}
         for _, pkg in pairs(_packages) do
-            if pkg.source then
-                if not getmetatable(pkg.source) then
-                    pkg.source = Source:create(pkg.source, pkg.name)
-                    if pkg.patches and pkg.source:is_scm() then
-                        pkg.source.ignore_dirty = 'patches'
-                    end
-                end
-            end
             for_each(pkg._collected_targets, function(t) pkg:add_target(t) end)
             for this, config in pkg:each_config() do
                 table.assign(new_packages, pkg:process_config(config, this))
@@ -988,6 +979,16 @@ function P.process_rules(_packages)
                     if added then
                         new_packages[added.name] = added
                     end
+                end
+            end
+            if pkg.source and not getmetatable(pkg.source) then
+                pkg.source = Source:create(pkg.source, pkg.name)
+                if pkg.source:is_scm() then
+                    if pkg.patches then
+                        pkg.source.ignore_dirty = 'patches'
+                    end
+                    local unpack = pkg.stages['unpack']
+                    unpack.stage = 'update'
                 end
             end
         end
