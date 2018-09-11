@@ -323,11 +323,6 @@ function P:set(key, value, config)
     return value
 end
 
-function P:last(config)
-    local stages = self:get('stages', config)
-    if stages then return stages[#stages] end
-end
-
 function P:each()
     return coroutine.wrap(function ()
             if self.stages then
@@ -440,28 +435,33 @@ function P:collect_require(spec, context, stage)
     end
 end
 
-function P:add_require_dependencies(spec, config, stage)
-    if not stage then
-        if config then
-            local build, install = self:get('build', config), self:get('install', config)
-            if build and build.type then
-                stage = 'configure'
-            elseif install and install.type then
-                stage = 'install'
-            end
-        end
-        if not stage then
-            local last = self:last(config)
-            if last then
-                stage = last.stage
-            end
-        end
-        if not stage then return end
+function P:add_required_stage(config)
+    local build, install, name = self:get('build', config), self:get('install', config)
+    if install and install.type then
+        name = 'install'
+    elseif build and build.type then
+        name = 'compile'
+    else
+        name = 'install'
     end
-    local use = Target.from_use(spec)
-    local pkg = packages[use.name] assert(pkg)
-    local req_target = pkg:last(use.config or config) assert(req_target)
+    return self:add_stage(name, config)
+end
+
+function P:add_require_target(spec, config, stage)
+    if not stage then
+        local build, install = self:get('build', config), self:get('install', config)
+        if build and build.type then
+            stage = 'configure'
+        elseif install and install.type then
+            stage = 'install'
+        else
+            stage = 'install'
+        end
+    end
     local target = Target.from_args(self.name, stage, config)
+    local use = Target.from_use(spec)
+    local req_pkg = packages[use.name] assert(req_pkg)
+    local req_target = req_pkg:add_required_stage(use.config or config)
     self:add_target(target:append(req_target))
 end
 
@@ -1048,7 +1048,7 @@ function P.load_rules()
 
     for key, item in pairs(required_specs) do
         local pkg, spec, config, stage = item[1], item[2], item[3], item[4]
-        pkg:add_require_dependencies(spec, config, stage)
+        pkg:add_require_target(spec, config, stage)
     end
 
     for _, pkg in pairs(packages) do

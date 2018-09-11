@@ -9,6 +9,5 @@ return {
         env = {
             ANDROID_NDK_HOME = "$pkg_source_dir"
         }
-    },
-    { 'install' }
+    }
 }
