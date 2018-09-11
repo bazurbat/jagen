@@ -638,24 +638,19 @@ function P:check_build_toolchain()
 end
 
 function P:check_usages()
-    local implicit = true
-    for context in each(self.contexts) do
-        if not context.implicit then
-            implicit = false
-            break
+    for this, config in self:each_config(true) do
+        for spec in each(this.uses or {}) do
+            local use = Target.from_use(spec)
+            local pkg = packages[use.name] assert(pkg)
+            local cfg = use.config or config
+            local build, install = pkg:get('build', cfg), pkg:get('install', cfg)
+            if (not build or build and not build.type) and
+               (not install or install and not install.type) and
+               not pkg.source then
+               print_warning("A package '%s' uses a package '%s' which does not have build, install or source "..
+                   "rules defined. Possible reason could be incorrect package name spelling or missing pkg file.%s", self.name, pkg.name, self:format_at())
+           end
         end
-    end
-    if not implicit then return end
-    local build, install
-    for this, config in self:each_config() do
-        build = build or self:get('build', config)
-        install = install or self:get('install', config)
-    end
-    if (not build or build and not build.type) and
-       (not install or install and not install.type) then
-        print_warning("a package '%s' is defined implicitly but has no build or install rules, "..
-            "please check if the name is correct or create a rule for the '%s' "..
-            "package to remove this warning%s", self.name, self.name, self:format_at())
     end
 end
 
@@ -1102,7 +1097,7 @@ function P.load_rules()
         pkg:check_build_configs()
         pkg:check_build_insource()
         pkg:check_build_toolchain()
-        -- pkg:check_usages()
+        pkg:check_usages()
         pkg:check_undefined_uses()
     end
 
