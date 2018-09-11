@@ -871,6 +871,9 @@ function P:process_config(config, this)
         if build.profile == nil then
             build.profile = 'debug'
         end
+        if build.clean == nil then
+            build.clean = '$pkg_build_dir/app/build'
+        end
     end
 
     if build.type then
