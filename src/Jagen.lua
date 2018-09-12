@@ -531,6 +531,9 @@ function Jagen.command.build(args)
                         end
                     elseif not configp and not target.config then
                         targets[tostring(target)] = true found = true
+                        if arg_clean then
+                            targets[tostring(Target.from_args(name, 'clean'))] = true
+                        end
                     end
                 end
             end
