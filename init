@@ -2,7 +2,7 @@
 
 set -eu
 
-jagen_uri="https://github.com/bazurbat/jagen.git"
+jagen_url="https://github.com/bazurbat/jagen.git"
 env_file="env.sh"
 config_file="config.sh"
 runner_script="jagen"
@@ -69,11 +69,20 @@ need_cmd() {
     fi
 }
 
-ensure_cloned() {
-    if ! [ -d "$jagen_dir" ]; then
+git_clone() {
+    local url="${1:?}" dir="${2:?}"
+    if ! [ -d "$dir" ]; then
         need_cmd git
-        git clone "$jagen_uri" "$jagen_dir"
+        git clone --depth 1 -- "$url" "$dir"
     fi
+}
+
+path_is_url() {
+    [ "$1" != "${1#?*://?*/?*}"   ] && return # 0 if match: prot://host/dir
+    [ "$1" != "${1#*/?}"          ] || return # 1 if not contains / or ends with /
+    [ "$1" != "${1#git@?*:?*/?*}" ] && return # 0 if matches like git@github.com:name/dir
+    [ "$1" != "${1#?*:?*/?*}"     ] && return # 0 if matches like github.com:name/dir
+    return 1
 }
 
 parse_command_line() {
@@ -177,6 +186,8 @@ EOF
 }
 
 main() {
+    local layer path
+
     parse_command_line "$@"
     if [ -z "${use_force-}" -a "$(ls -A)" ]; then
         die "not initializing non-empty directory without force"
@@ -184,11 +195,16 @@ main() {
     jagen_dir=$(dirname $0)
     if [ "$jagen_dir" = . ]; then
         jagen_dir=".jagen"
-        ensure_cloned
+        git_clone "$jagen_url" "$jagen_dir"
     fi
     jagen_dir=$(cd "$jagen_dir" 2>&- && pwd -P)
 
     for layer in ${init_jagen_layers-}; do
+        if path_is_url "$layer"; then
+            path=${layer##*/} path=${path%.git} path="./layer/$path"
+            git_clone "$layer" "$path"
+            layer="$path"
+        fi
         jagen_layers="${jagen_layers-}$layer
 "
     done
