@@ -128,14 +128,28 @@ local function pop_context()
     return o
 end
 
-local function find_module(modname)
+local function find_module(name)
+    assert(name)
+    local names, common_name = {}, name:match('([%w%p]+)~.*')
+    if common_name then
+        append(names, string.format('pkg/%s/%s', name, common_name))
+        append(names, string.format('pkg/%s', name))
+        append(names, string.format('pkg/%s/%s', common_name, common_name))
+        append(names, string.format('pkg/%s', common_name))
+    else
+        append(names, string.format('pkg/%s/%s', name, name))
+        append(names, string.format('pkg/%s', name))
+    end
+
     for path in string.gmatch(lua_package.path, '[^;]+') do
-        local filename = string.gsub(path, '%?', modname)
-        local file = io.open(filename, 'rb')
-        if file then
-            local module = assert(loadstring(assert(file:read('*a')), filename))
-            file:close()
-            return module, filename
+        for name in each(names) do
+            local filename = string.gsub(path, '%?', name)
+            local file = io.open(filename, 'rb')
+            if file then
+                local module = assert(loadstring(assert(file:read('*a')), filename))
+                file:close()
+                return module, filename
+            end
         end
     end
 end
@@ -681,7 +695,7 @@ function P:create(name)
     pkg:add_stage('clean')
     pkg:add_stage('unpack')
     pkg:add_stage('patch')
-    local module, filename = find_module('pkg/'..name)
+    local module, filename = find_module(name)
     if module then
         table.merge(pkg, P:new(assert(module())))
     end
