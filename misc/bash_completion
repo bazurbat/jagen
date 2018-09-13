@@ -43,7 +43,7 @@ _jagen_complete() {
         refresh)
             COMPREPLY=($(compgen -W "$help_opt" -- "$cur")) ;;
         build)
-            COMPREPLY=($(compgen -W "$help_opt $build_opt $(cat "$targets_file")" -- "$cur")) ;;
+            COMPREPLY=($(compgen -W "$help_opt $build_opt $(cat "$names_file") $(cat "$targets_file")" -- "$cur")) ;;
         src)
             if [[ "$prev" == "src" ]]; then
                 COMPREPLY=($(compgen -W "$help_opt $src_cmds" -- "$cur"))
