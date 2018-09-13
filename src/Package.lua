@@ -337,6 +337,10 @@ function P:set(key, value, config)
     return value
 end
 
+function P:is_scm()
+    return self.source and Source:is_known(self.source.type)
+end
+
 function P:each()
     return coroutine.wrap(function ()
             if self.stages then
@@ -1003,6 +1007,21 @@ function P.process_rules(_packages)
                     end
                     local unpack = pkg.stages['unpack']
                     unpack.stage = 'update'
+                end
+            end
+            for target in pkg:each() do
+                for input in each(target.inputs) do
+                    if input.stage == 'unpack' then
+                        local pkg = packages[input.name]
+                        if pkg and pkg:is_scm() then
+                            input.stage = 'update'
+                        end
+                    elseif input.stage == 'update' then
+                        local pkg = packages[input.name]
+                        if pkg and not pkg:is_scm() then
+                            input.stage = 'unpack'
+                        end
+                    end
                 end
             end
         end
