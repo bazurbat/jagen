@@ -72,7 +72,7 @@ pkg_fix_la() {
 pkg_fix_config_script() {
     local filename="${1:?}"
     if [ "$pkg_install_root" -a -f "$filename" ]; then
-        pkg_run jagen_esed -ri "s|^(prefix=)$pkg_install_prefix$|\1$pkg_install_root|" $filename
+        pkg_run jagen_esed -i "s|^(prefix=)$pkg_install_prefix$|\1$pkg_install_root|" $filename
     fi
 }
 
