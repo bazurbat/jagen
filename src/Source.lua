@@ -459,7 +459,7 @@ function RepoSource:command(...)
                        'repo', '--no-pager', ...)
 end
 
-function HgSource:getscmdir()
+function RepoSource:getscmdir()
     return System.mkpath(self.dir, '.repo')
 end
 
