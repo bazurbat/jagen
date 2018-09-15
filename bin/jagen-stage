@@ -127,11 +127,13 @@ pkg_install_dir="$pkg_install_root$pkg_install_prefix"
 # set pkg_env_* in the environment, collecting names for later expand
 for name in $(set | jagen_esed -n 's/^pkg_env_([[:alnum:]_]+)=.*/\1/p'); do
     eval "export $name=\"\$pkg_env_$name\"" || exit
-    pkg__expand_names=${pkg__expand_names}${jagen_FS}${name}
+    pkg__expand_names="${pkg__expand_names} -e $name"
 done; unset name
 
 # expand single-quoted pkg_* and collected variables
-eval "$(jagen__expand "$(set | grep '^pkg_')")"
+eval "$(jagen__expand "$(set | grep -e '^pkg_' $pkg__expand_names)")"
+
+unset pkg__expand_names
 
 # config-specific adjustment of pkg env
 if [ "$pkg_config" ]; then
