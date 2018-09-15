@@ -100,6 +100,42 @@ package { 'nanomsg',
 }
 ```
 
+## Package files
+
+Packages can be defined in "package files" separately from rules. These files serve as a "baseline"
+definition of a package and are applied the first time the given package name is encountered as if
+the definition was given directly before the rule. Contrary to the definitions in rules the
+definitions from package files are not merged across layers, the first one which is found will be
+used, the later ones are not considered. This is the main mechanism of overriding in Jagen. Also,
+generally, the package files should not have a config, and define things like source, build type
+and custom stages which should be shared between all configs of the package.
+
+The package files are executed as Lua files and are expected to return the package definition, the
+typical is the form:
+
+```lua
+return {
+    source = {
+        type = 'git'
+        location = 'https://github.com/nanomsg/nanomsg.git'
+    },
+    build = {
+        type = 'cmake'
+    }
+}
+```
+
+Note the `return` instead of `package` and no name or config. The name is derived implicitly from
+the package file name.
+
+These package files are searched in `$jagen_path` in a manner similar to rules but in a `pkg`
+subdirectory of each layer. For a given package `zeromq~var1` the search path will be:
+
+    pkg/zeromq~var1/zeromq.lua
+    pkg/zeromq~var1.lua
+    pkg/zeromq/zeromq.lua
+    pkg/zeromq.lua
+
 ## Properties
 
 All possible package properties are described below. The first name is the key to use in the
