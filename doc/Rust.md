@@ -1,5 +1,9 @@
 ## Rust Support
 
+_Note: This section is out of date and Rust support is broken at the moment.
+The implementation is still there. Contact me on Gitter if you are interested
+in testing this feature._
+
 Jagen supports [Rust](https://www.rust-lang.org) natively. It assumes "Cargo" packages for now. Use
 build type `rust` to enable it for the package, for example:
 ```lua
