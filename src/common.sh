@@ -51,7 +51,7 @@ include() {
         . "$pathname"
     else
         error "include $pathname not found"
-        return 1
+        return 2
     fi
 }
 
@@ -359,7 +359,7 @@ jagen__get_endianness() {
     fi
 }
 
-jagen__get_architecture() {
+jagen_get_system() {
     local _ostype="$(uname -s)"
     local _cputype="$(uname -m)"
 
