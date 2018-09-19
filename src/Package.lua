@@ -898,23 +898,28 @@ function P:process_config(config, this)
     end
 
     if build.type == 'rust' then
-        local rust_toolchain = build.rust_toolchain or 'stable'
-        local name = string.format('rust-%s%s', rust_toolchain,
+        build.rust_toolchain = build.rust_toolchain or 'stable'
+        local name = string.format('rust-%s%s', build.rust_toolchain,
             build.system and '-'..build.system or '')
-        local p = P.define_package {
+        local pkg = P.define_package {
             name   = name,
             config = config,
             build = {
                 type      = 'rust-toolchain',
                 toolchain = 'rustup:host',
-                name      = rust_toolchain,
+                name      = build.rust_toolchain,
                 system    = build.system,
+            },
+            export = {
+                env = {
+                    RUSTUP_HOME = '$rustup_env_RUSTUP_HOME',
+                    CARGO_HOME = "$pkg_build_dir"
+                }
             }
         }
-        new_packages[p.name] = p
+        new_packages[pkg.name] = pkg
         self:collect_require(name, Context:new { name = name, config = config })
         this.uses = append_uniq(name, this.uses)
-        build.rust_toolchain = rust_toolchain
         P.has_rust_rules = true
     end
 

@@ -373,7 +373,7 @@ local function generate_cargo_config(packages)
                 else
                     Log.warning("could not determine a target system to build the package '%s' in '%s' config: "..
                         "verify that the selected toolchain specifies a system or set 'build.system' explicitly "..
-                        "for this package%s", name, config, pkg:format_at())
+                        "for this package%s", pkg.name, config, pkg:format_at())
                 end
             end
         end
