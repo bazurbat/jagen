@@ -142,6 +142,7 @@ cmd_find_for_refresh() {
     fi
     find $paths '(' \
         -name '.git' -o \
+        -path '*jagen/doc' -o \
         -name tags -o \
         -name Session.vim \
     ')' -prune -o -print
