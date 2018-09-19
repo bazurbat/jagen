@@ -70,7 +70,5 @@ jagen_stage_export() {
         content="${content}${jagen_S}${name}_${key}='$(eval echo \"\$${prefix}_${key}\")'"
     done
     content=${content#$jagen_S}
-    if [ "$content" ]; then
-        echo "$content" > "$outfile"
-    fi
+    echo "$content" > "$outfile"
 }

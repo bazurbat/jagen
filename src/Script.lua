@@ -207,11 +207,9 @@ local function generate_script(filename, pkg, config)
     write_export(w, pkg, config)
     write_uses(w, pkg, config)
 
-    if #lines > 0 then
-        local file = assert(io.open(filename, 'w+'))
-        file:write(table.concat(lines, '\n'), '\n')
-        file:close()
-    end
+    local file = assert(io.open(filename, 'w+'))
+    file:write(table.concat(lines, '\n'), '\n')
+    file:close()
 end
 
 function P:generate(pkg, dir)
