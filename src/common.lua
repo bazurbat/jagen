@@ -280,7 +280,7 @@ end
 
 -- this one preserves empty fields:
 --     split('=a==b=', '=') -> [ '', 'a', '', 'b', '' ]
-function string.split(s, sep)
+function string.split(s, sep, num)
     local o, b, e = {}
     local init = 1
 
@@ -289,7 +289,12 @@ function string.split(s, sep)
         if not b then b = 0 end
         table.insert(o, string.sub(s, init, b-1))
         if e then init = e + 1 end
-    until b == 0
+        if num and num > 0 then num = num - 1 end
+    until b == 0 or num == 0
+
+    if b ~= 0 then
+        table.insert(o, string.sub(s, init))
+    end
 
     return o
 end
@@ -346,6 +351,19 @@ function string.convert_pattern(s)
     s = string.format('^%s$', s)
     s = string.gsub(s, '%%%?', '[%%w%%p]')
     s = string.gsub(s, '%%%*', '[%%w%%p]*')
+    return s
+end
+
+function string.to_pattern(s)
+    if s == '' then s = '*' end
+    if s == ':' then s = '*:*' end
+    s = string.gsub(s, '^:', '*:')
+    s = string.gsub(s, ':$', ':*')
+    s = string.escape_pattern(s)
+    s = string.format('^%s$', s)
+    s = string.gsub(s, '%%%*%%%*', '[^%%c%%s]*')
+    s = string.gsub(s, '%%%*', '[^:%%c%%s]*')
+    s = string.gsub(s, '%%%?', '[^%%c%%s]')
     return s
 end
 

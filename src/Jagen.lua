@@ -515,24 +515,20 @@ function Jagen.command.build(args)
     local targets, arg_clean = {}, args['clean']
 
     for arg in each(args) do
-        local namep, stagep, configp = unpack(map(string.convert_pattern, arg:split(':')))
         local found = false
+        local namep, stagep = unpack(map(string.to_pattern, arg:split(':', 1)))
         for name, pkg in iter(packages, filter(function (_, name) return name:match(namep) end)) do
             for target in pkg:each() do
-                if not configp and not stagep then
+                if not stagep then
                     targets[tostring(target)] = true found = true
-                elseif target.stage:match(stagep) then
-                    if configp and target.config and target.config:match(configp) then
-                        if target.stage ~= 'clean' or stagep == '^clean$' then
+                else
+                    local stage = target:to_stage()
+                    if stage:match(stagep) then
+                        if target.stage ~= 'clean' or stagep:match('^%^clean') or stagep:match('^%^clean%:') then
                             targets[tostring(target)] = true found = true
                         end
                         if arg_clean then
                             targets[tostring(Target.from_args(name, 'clean', target.config))] = true
-                        end
-                    elseif not configp and not target.config then
-                        targets[tostring(target)] = true found = true
-                        if arg_clean then
-                            targets[tostring(Target.from_args(name, 'clean'))] = true
                         end
                     end
                 end

@@ -75,6 +75,14 @@ function Target.from_use(spec)
     end
 end
 
+function Target:to_stage()
+    if self.config then
+        return string.format('%s:%s', self.stage, self.config)
+    else
+        return self.stage
+    end
+end
+
 function Target:__eq(other)
     return self.name   == other.name   and
            self.stage  == other.stage  and
