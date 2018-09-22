@@ -1041,16 +1041,17 @@ function P.define_rust_packages()
             local build = this.build
             if build.type == 'rust' then
                 build.rust_toolchain = build.rust_toolchain or 'stable'
+                build.rust_target = build.rust_target or pkg:get_rust_target(config)
                 local name = string.format('rust-%s%s', build.rust_toolchain,
-                    build.system and '-'..build.system or '')
+                    build.rust_target and '-'..build.rust_target or '')
                 local rust_pkg = P.define_package {
                     name   = name,
                     config = config,
                     build = {
-                        type      = 'rust-toolchain',
-                        toolchain = 'rustup:host',
-                        name      = build.rust_toolchain,
-                        system    = build.system,
+                        type        = 'rust-toolchain',
+                        toolchain   = 'rustup:host',
+                        name        = build.rust_toolchain,
+                        rust_target = build.rust_target
                     },
                     export = {
                         env = {
@@ -1192,6 +1193,35 @@ function P:get_clean_dirs(config)
     if rawget(build, 'clean') then
         return self:query('build_clean', config):aslist()
     end
+end
+
+function P:get_toolchain_system(config)
+    local toolchain = (self:get('build', config) or self.build).toolchain
+    if not toolchain then return end
+    local pkg = packages[toolchain]
+    if not pkg then return end
+    return (pkg:get('build', config) or pkg.build).system
+end
+
+function P:get_system(config)
+    local system = (self:get('build', config) or self.build).system
+    if system then
+        return system
+    else
+        return self:get_toolchain_system(config)
+    end
+end
+
+function P:get_rust_target(config)
+    local system = (self:get('build', config) or self.build).system
+    if system then return system end
+    system = self:get_toolchain_system(config)
+    if not system then return end
+    local triple = system:split('-')
+    if #triple == 3 and triple[2] == 'linux' and not triple[3]:match('^android') then
+        table.insert(triple, 2, 'unknown')
+    end
+    return table.concat(triple, '-')
 end
 
 return P

@@ -361,7 +361,7 @@ local function generate_cargo_config(packages)
         for this, config in pkg:each_config() do
             local build = pkg:get('build', config)
             if build and build.type == 'rust' and config ~= 'host' then
-                local build_system = pkg:query('build_system', config):read()
+                local build_system = build.rust_target
                 if build_system then
                     local toolchain = assert(packages[build.toolchain])
                     local toolchain_build = toolchain:get('build', config)
