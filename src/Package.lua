@@ -897,32 +897,6 @@ function P:process_config(config, this)
         build.toolchain = self:gettoolchain(config)
     end
 
-    if build.type == 'rust' then
-        build.rust_toolchain = build.rust_toolchain or 'stable'
-        local name = string.format('rust-%s%s', build.rust_toolchain,
-            build.system and '-'..build.system or '')
-        local pkg = P.define_package {
-            name   = name,
-            config = config,
-            build = {
-                type      = 'rust-toolchain',
-                toolchain = 'rustup:host',
-                name      = build.rust_toolchain,
-                system    = build.system,
-            },
-            export = {
-                env = {
-                    RUSTUP_HOME = '$rustup_env_RUSTUP_HOME',
-                    CARGO_HOME = "$pkg_build_dir"
-                }
-            }
-        }
-        new_packages[pkg.name] = pkg
-        self:collect_require(name, Context:new { name = name, config = config })
-        this.uses = append_uniq(name, this.uses)
-        P.has_rust_rules = true
-    end
-
     local toolchain = build.toolchain
     if toolchain then
         self:collect_require(toolchain, Context:new { name = self.name, config = config })
@@ -1060,6 +1034,41 @@ function P.define_default_config()
     return new_packages
 end
 
+function P.define_rust_packages()
+    local new_packages = {}
+    for _, pkg in pairs(packages) do
+        for this, config in pkg:each_config() do
+            local build = this.build
+            if build.type == 'rust' then
+                build.rust_toolchain = build.rust_toolchain or 'stable'
+                local name = string.format('rust-%s%s', build.rust_toolchain,
+                    build.system and '-'..build.system or '')
+                local rust_pkg = P.define_package {
+                    name   = name,
+                    config = config,
+                    build = {
+                        type      = 'rust-toolchain',
+                        toolchain = 'rustup:host',
+                        name      = build.rust_toolchain,
+                        system    = build.system,
+                    },
+                    export = {
+                        env = {
+                            RUSTUP_HOME = '$rustup_env_RUSTUP_HOME',
+                            CARGO_HOME = "$pkg_build_dir"
+                        }
+                    }
+                }
+                new_packages[name] = rust_pkg
+                pkg:collect_require(name, Context:new { name = name, config = config })
+                this.uses = append_uniq(name, this.uses)
+                P.has_rust_rules = true
+            end
+        end
+    end
+    return new_packages
+end
+
 function P.load_rules()
     local def_loader = lua_package.loaders[2]
     lua_package.loaders[2] = find_module
@@ -1085,6 +1094,7 @@ function P.load_rules()
     P.process_rules(table.copy(packages))
     local new_packages = P.define_default_config()
     P.process_rules(new_packages)
+    P.process_rules(P.define_rust_packages())
 
     for key, item in pairs(required_specs) do
         local pkg, spec, config, stage = item[1], item[2], item[3], item[4]
