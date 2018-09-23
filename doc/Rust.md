@@ -86,16 +86,16 @@ The specified toolchain will be added to the package dependencies, downloaded an
 automatically during the build.
 
 For each distinct Rust toolchain name and target (specified as a `system` or derived from a
-toolchain`) a separate `rust-\*` package will be added to the project, such as:
-`rust-1.26.2-x86_64-unknown-linux-musl` or `rust-stable-android-standalone`. This way you can have
+toolchain) a separate `rust-*` package will be added to the project, such as:
+`rust-1.26.2-x86_64-unknown-linux-musl` or `rust-stable-android-standalone-arm`. This way you can have
 different packages using different Rust toolchains and targets in the same project.
 
-The `rust` type packages are built out of source with `$CARGO\_TARGET\_DIR` set to
-`$pkg\_build\_dir` which defaults to `$jagen\_build\_dir/<name>/<config>` which will be
+The `rust` type packages are built out of source with `$CARGO_TARGET_DIR` set to
+`$pkg_build_dir` which defaults to `$jagen_build_dir/<name>/<config>` which will be
 `build/hello/host` directory in the current project for the examples above.
 
-Each project has a separate `$RUSTUP\_HOME` (which defaults to `$jagen\_dist\_dir/rustup` and
-`$CARGO\_HOME` (which defaults to `$jagen\_dist\_dir/cargo`). When the `rustup` package is
+Each project has a separate `$RUSTUP_HOME` (which defaults to `$jagen_dist_dir/rustup` and
+`$CARGO_HOME` (which defaults to `$jagen_dist_dir/cargo`). When the `rustup` package is
 installed it is linked to `host/bin` directory which is added to `$PATH` by default, so you can use
 `rustup` and other Cargo commands manually to manage Rust environment if the project-specific
 `env.sh` is sourced in the current Shell.
