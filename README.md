@@ -72,13 +72,13 @@ See [User Guide](doc/UserGuide.md) for more information.
 
 ## Reference
 
-- [Initialization](Init.md)
-- [Build](Build.md)
-- [Clean](Clean.md)
-- [List Information](List.md)
-- [Package sources](Src.md)
-- [Filesystem images](Image.md)
-- [Rust Support](Rust.md)
-- [Rules](Rules.md)
-- [Build System](BuildSystem.md)
-- [Bash completions](Completions.md)
+- [Initialization](doc/Init.md)
+- [Build](doc/Build.md)
+- [Clean](doc/Clean.md)
+- [List Information](doc/List.md)
+- [Package sources](doc/Src.md)
+- [Filesystem images](doc/Image.md)
+- [Rust Support](doc/Rust.md)
+- [Rules](doc/Rules.md)
+- [Build System](doc/BuildSystem.md)
+- [Bash completions](doc/Completions.md)
