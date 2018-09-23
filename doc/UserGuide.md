@@ -132,17 +132,3 @@ relative paths should be specified as observed from the project's directory
 which is the current directory when running the init command.
 
 The details of using the `-L` option are out of scope of this guide for now.
-
-# Reference
-
-- [Initializing](Initializing.md)
-- [List Information](List.md)
-- [Building](Building.md)
-- [Cleaning](Cleaning.md)
-- [Targets](Manual.md#targets)
-- [Rust Support](Rust.md)
-- [Managing package sources](ManagingSources.md)
-- [Manage filesystem images](Images.md)
-- [Install Bash completions](Installation.md)
-- [Writing build scripts](Manual.md#writing-build-scripts)
-- [Build system internals](Manual.md#build-system-internals)

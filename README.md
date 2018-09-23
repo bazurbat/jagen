@@ -69,3 +69,16 @@ Do not forget to add `jagen/misc/bash_completion` to your Bash completion
 configuration to make overall experience much more pleasant.
 
 See [User Guide](doc/UserGuide.md) for more information.
+
+## Reference
+
+- [Initialization](Init.md)
+- [Build](Build.md)
+- [Clean](Clean.md)
+- [List Information](List.md)
+- [Package sources](Src.md)
+- [Filesystem images](Image.md)
+- [Rust Support](Rust.md)
+- [Rules](Rules.md)
+- [Build System](BuildSystem.md)
+- [Bash completions](Completions.md)
