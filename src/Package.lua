@@ -581,7 +581,7 @@ function P:export_build_env()
                    'cflags', 'cxxflags', 'ldflags' }
     for this, config in self:each_config(true) do
         local build = this.build
-        if build.cxxflags == nil and build.cflags ~= nil then
+        if rawget(build, 'cxxflags') == nil and rawget(build, 'cflags') ~= nil then
             build.cxxflags = build.cflags
         end
     end
@@ -589,7 +589,9 @@ function P:export_build_env()
         local build, export = this.build, this.export
         if build and export then
             for key in each(keys) do
-                if rawget(export, key) == nil then export[key] = build[key] end
+                if rawget(export, key) == nil then
+                    export[key] = rawget(build, key) or rawget(self.build, key)
+                end
             end
         end
     end
