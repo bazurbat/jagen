@@ -326,6 +326,25 @@ function P:get(key, config)
     end
 end
 
+function P:get_build(key, config)
+    local value = (self:get('build', config) or self.build)[key]
+    if value ~= nil then
+        return value
+    else
+        return self:get_toolchain_build(key, config)
+    end
+end
+
+function P:get_toolchain_build(key, config)
+    local toolchain = (self:get('build', config) or self.build).toolchain
+    if toolchain then
+        local pkg = packages[toolchain]
+        if pkg then
+            return pkg:get_build(key, config)
+        end
+    end
+end
+
 function P:set(key, value, config)
     if config then
         self.configs = self.configs or {}
@@ -1036,6 +1055,16 @@ function P.define_default_config()
     return new_packages
 end
 
+function P:_derive_rust_target(config)
+    local system = self:get_build('system', config)
+    if not system then return end
+    local triple = system:split('-')
+    if #triple == 3 and triple[2] == 'linux' and not triple[3]:match('^android') then
+        table.insert(triple, 2, 'unknown')
+    end
+    return table.concat(triple, '-')
+end
+
 function P.define_rust_packages()
     local new_packages = {}
     for _, pkg in pairs(packages) do
@@ -1043,7 +1072,7 @@ function P.define_rust_packages()
             local build = this.build
             if build.type == 'rust' then
                 build.rust_toolchain = build.rust_toolchain or 'stable'
-                build.rust_target = build.rust_target or pkg:get_rust_target(config)
+                build.rust_target = build.rust_target or pkg:_derive_rust_target(config)
                 local name = string.format('rust-%s%s', build.rust_toolchain,
                     build.rust_target and '-'..build.rust_target or '')
                 local rust_pkg = P.define_package {
@@ -1197,33 +1226,14 @@ function P:get_clean_dirs(config)
     end
 end
 
-function P:get_toolchain_system(config)
-    local toolchain = (self:get('build', config) or self.build).toolchain
-    if not toolchain then return end
-    local pkg = packages[toolchain]
-    if not pkg then return end
-    return (pkg:get('build', config) or pkg.build).system
-end
-
-function P:get_system(config)
-    local system = (self:get('build', config) or self.build).system
-    if system then
-        return system
-    else
-        return self:get_toolchain_system(config)
-    end
-end
-
-function P:get_rust_target(config)
-    local system = (self:get('build', config) or self.build).system
-    if system then return system end
-    system = self:get_toolchain_system(config)
-    if not system then return end
-    local triple = system:split('-')
-    if #triple == 3 and triple[2] == 'linux' and not triple[3]:match('^android') then
-        table.insert(triple, 2, 'unknown')
-    end
-    return table.concat(triple, '-')
+function P.all_configs()
+    return coroutine.wrap(function ()
+            for name, pkg in pairs(packages) do
+                for this, config in pkg:each_config() do
+                    coroutine.yield(this, config, pkg)
+                end
+            end
+        end)
 end
 
 return P

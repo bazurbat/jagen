@@ -357,32 +357,27 @@ end
 
 local function generate_cargo_config(packages)
     local targets, lines = {}, {}
-    local function do_generate(pkg)
-        for this, config in pkg:each_config() do
-            local build = pkg:get('build', config)
-            if build and build.type == 'rust' and config ~= 'host' then
-                local build_system = build.rust_target
-                if build_system then
-                    local toolchain = assert(packages[build.toolchain])
-                    local toolchain_build = toolchain:get('build', config)
-                    local system = toolchain_build.system
-                    local cc = toolchain_build.cc or build.cc or 'gcc'
-                    if system and cc then
-                        targets[build_system] = string.format('%s-%s', system, cc)
-                    end
-                else
-                    Log.warning("could not determine a target system to build the package '%s' in '%s' config: "..
-                        "verify that the selected toolchain specifies a system or set 'build.system' explicitly "..
-                        "for this package%s", pkg.name, config, pkg:format_at())
+    for this, config, pkg in Package.all_configs() do
+        local build = this.build
+        if build.type == 'rust' and config ~= 'host' then
+            if build.rust_target then
+                local system = pkg:get_build('system', config)
+                if not system then
+                    Log.warning("could not find 'system' for Rust package '%s'%s",
+                        pkg.name, pkg:format_at())
                 end
+                local cc = pkg:get_build('cc', config) or 'gcc'
+                if system and cc then
+                    targets[build.rust_target] = string.format('%s-%s', system, cc)
+                end
+            else
+                Log.warning([[could not determine target for cross-compiled Rust package '%s'%s]],
+                    pkg.name, pkg:format_at())
             end
         end
     end
-    for name, pkg in pairs(packages) do
-        do_generate(pkg)
-    end
-    for target, bin in pairs(targets) do
-        table.insert(lines, string.format('[target.%s]\nlinker = "%s"', target, bin))
+    for target, path in pairs(targets) do
+        table.insert(lines, string.format('[target.%s]\nlinker = "%s"', target, path))
     end
     local config_dir = assert(os.getenv('jagen_cargo_config_dir'))
     local config_path = System.mkpath(config_dir, 'config')
