@@ -51,6 +51,10 @@ add_PATH "$jagen_host_dir/bin"
 add_LD_LIBRARY_PATH "$jagen_host_dir/lib"
 export PATH LD_LIBRARY_PATH
 
+# this should come from rustup package but is not configurable yet
+export RUSTUP_HOME="$jagen_dist_dir/rustup"
+export CARGO_HOME="$jagen_dist_dir/cargo"
+
 jagen__set_path
 
 import env || true # it is OK if no env was found

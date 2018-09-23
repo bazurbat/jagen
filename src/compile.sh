@@ -54,7 +54,7 @@ pkg_compile() {
             cd "${pkg_source_dir:?}"
             pkg_is_release && A="--release"
             pkg_run rustup run "${pkg_build_rust_toolchain:?}" \
-                cargo build ${pkg_build_rust_target:+--target=$pkg_build_rust_target} \
+                cargo build ${pkg_build_system:+--target=$pkg_build_system} \
                 $A "$@" $MA
             ;;
         android-gradle)

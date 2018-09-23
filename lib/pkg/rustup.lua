@@ -20,10 +20,12 @@ return {
     install = true,
     env = {
         RUSTUP_HOME = '$jagen_dist_dir/rustup',
+        CARGO_HOME = '$jagen_dist_dir/cargo'
     },
     export = {
         env = {
             RUSTUP_HOME = '$pkg_env_RUSTUP_HOME',
+            CARGO_HOME = '$pkg_env_CARGO_HOME'
         }
     }
 }

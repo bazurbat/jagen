@@ -359,20 +359,12 @@ local function generate_cargo_config(packages)
     local targets, lines = {}, {}
     for this, config, pkg in Package.all_configs() do
         local build = this.build
-        if build.type == 'rust' and config ~= 'host' then
-            if build.rust_target then
-                local system = pkg:get_build('system', config)
-                if not system then
-                    Log.warning("could not find 'system' for Rust package '%s'%s",
-                        pkg.name, pkg:format_at())
-                end
-                local cc = pkg:get_build('cc', config) or 'gcc'
-                if system and cc then
-                    targets[build.rust_target] = string.format('%s-%s', system, cc)
-                end
-            else
-                Log.warning([[could not determine target for cross-compiled Rust package '%s'%s]],
-                    pkg.name, pkg:format_at())
+        if build.type == 'rust' then
+            local system = pkg:get_build('system', config)
+            local cc = pkg:get_build('cc', config) or pkg:get_toolchain_build('cc', config) or 'gcc'
+            local toolchain_system = pkg:get_toolchain_build('system', config)
+            if system and cc and toolchain_system then
+                targets[system] = string.format('%s-%s', toolchain_system, cc)
             end
         end
     end

@@ -327,12 +327,7 @@ function P:get(key, config)
 end
 
 function P:get_build(key, config)
-    local value = (self:get('build', config) or self.build)[key]
-    if value ~= nil then
-        return value
-    else
-        return self:get_toolchain_build(key, config)
-    end
+    return (self:get('build', config) or self.build)[key]
 end
 
 function P:get_toolchain_build(key, config)
@@ -1056,7 +1051,7 @@ function P.define_default_config()
 end
 
 function P:_derive_rust_target(config)
-    local system = self:get_build('system', config)
+    local system = self:get_toolchain_build('system', config)
     if not system then return end
     local triple = system:split('-')
     if #triple == 3 and triple[2] == 'linux' and not triple[3]:match('^android') then
@@ -1072,26 +1067,26 @@ function P.define_rust_packages()
             local build = this.build
             if build.type == 'rust' then
                 build.rust_toolchain = build.rust_toolchain or 'stable'
-                build.rust_target = build.rust_target or pkg:_derive_rust_target(config)
+                build.system = build.system or pkg:_derive_rust_target(config)
                 local name = string.format('rust-%s%s', build.rust_toolchain,
-                    build.rust_target and '-'..build.rust_target or '')
-                local rust_pkg = P.define_package {
+                    build.system and '-'..build.system or '')
+                local rust_toolchain = P.define_package {
                     name   = name,
                     config = config,
                     build = {
-                        type        = 'rust-toolchain',
-                        toolchain   = 'rustup:host',
-                        name        = build.rust_toolchain,
-                        rust_target = build.rust_target
+                        type      = 'rust-toolchain',
+                        toolchain = 'rustup:host',
+                        name      = build.rust_toolchain,
+                        system    = build.system
                     },
                     export = {
                         env = {
                             RUSTUP_HOME = '$rustup_env_RUSTUP_HOME',
-                            CARGO_HOME = "$pkg_build_dir"
+                            CARGO_HOME = '$rustup_env_CARGO_HOME'
                         }
                     }
                 }
-                new_packages[name] = rust_pkg
+                new_packages[name] = rust_toolchain
                 pkg:collect_require(name, Context:new { name = name, config = config })
                 this.uses = append_uniq(name, this.uses)
                 P.has_rust_rules = true
