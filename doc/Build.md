@@ -11,6 +11,7 @@ Option             | Description
 -h, --help         | print this help message
 -m, --match        | print expanded value of target patterns and exit
 -c, --clean        | clean package's build directories before the build
+-i, --interactive  | build targets in interactive mode
 -a, --all          | continue until everything is up to date
 -n, --no-rebuild   | do not rebuild targets which are already up to date
 -p, --progress     | show build progress
@@ -23,6 +24,12 @@ The specified patterns are expanded and matching targets are rebuilt. Use the
 Use the '--clean' option to remove the package's build directories before the
 start. It also causes the 'configure' stage of the affected packages to become
 out of date.
+
+With the '--interactive' option the specified target commands will be run directly without going
+through Jagen wrapper. This allows build tools to detect the terminal and show colored messages but
+the output will not be captured and target dependencies will not be honored. This means that in the
+most cases you will need to run the build without the '-i' option first to make sure all
+requirements are up to date.
 
 Use the '--all' option to build everything out of date in the current project
 in addition to the specified targets.

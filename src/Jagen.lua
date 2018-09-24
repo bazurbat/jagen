@@ -490,6 +490,7 @@ function Jagen.command.build(args)
         { 'help,h' },
         { 'match,m' },
         { 'clean,c' },
+        { 'interactive,i' },
         { 'all,a' },
         { 'no-rebuild,n' },
         { 'progress,p' },
@@ -554,7 +555,15 @@ function Jagen.command.build(args)
         args_file:write(table.concat(args._args, '\n'))
     end
     args_file:close()
-    local ok = Command:new(quote(Jagen.cmd), 'build', tostring(args), unpack(table.keys(targets))):exec()
+    local ok
+    if args['interactive'] then
+        for key in pairs(targets) do
+            ok = Command:new(quote('jagen-stage'), '-i', unpack(key:split(':'))):exec()
+            if not ok then return ok end
+        end
+    else
+        ok = Command:new(quote(Jagen.cmd), 'build', tostring(args), unpack(table.keys(targets))):exec()
+    end
     io.open(args_path, 'w'):close()
     return ok
 end
