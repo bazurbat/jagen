@@ -34,6 +34,10 @@ directory. Like so:
 
 The project directory can also be called "build root" for a family of packages.
 
+Having shared Jagen sources allows you to build several projects using the same Jagen version which
+can be more convenient if you have a lot of projects or are following the master closely, while
+piping produces more self-contained project and makes it easier to move it around.
+
 ### Options
 
 Option      | Description

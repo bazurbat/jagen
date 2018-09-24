@@ -75,6 +75,7 @@ See [User Guide](doc/UserGuide.md) for more information.
 - [Initialization](doc/Init.md)
 - [Build](doc/Build.md)
 - [Clean](doc/Clean.md)
+- [Update](doc/Update.md)
 - [List Information](doc/List.md)
 - [Package sources](doc/Source.md)
 - [Filesystem images](doc/Image.md)
