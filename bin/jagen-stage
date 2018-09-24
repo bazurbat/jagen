@@ -4,20 +4,11 @@ if [ "$1" = '-i' ]; then
     pkg__interactive=1; shift
 fi
 
-if [ "$1" = '-q' ]; then
-    shift
-    pkg_query="${1:?}"
-    pkg_name="${2:?}"
-    pkg_config="$3"
-    # do not print anything else to allow usage in scripts
-    jagen_debug=
-else
-    pkg_name="${1:?}"
-    pkg_stage="${2:?}"
-    pkg_config="$3"
-    shift 3
-    pkg_args="$@"
-fi
+pkg_name="${1:?}"
+pkg_stage="${2:?}"
+pkg_config="$3"
+shift 3
+pkg_args="$@"
 
 . "${jagen_dir:?}/src/stages.sh" || exit
 
@@ -25,11 +16,9 @@ pkg__stamp_name="${pkg_name}:${pkg_stage}${pkg_config:+:${pkg_config}}"
 pkg__stamp_file="${jagen_build_dir:?}/${pkg__stamp_name}"
 pkg__log_file="${jagen_log_dir:?}/${pkg__stamp_name}.log"
 
-if [ -z "$pkg_query" ]; then
-    : >"$pkg__log_file"
-    if [ -z "${pkg__interactive-}" ]; then
-        exec >>"$pkg__log_file" 2>&1
-    fi
+: >"$pkg__log_file"
+if [ -z "${pkg__interactive-}" ]; then
+    exec >>"$pkg__log_file" 2>&1
 fi
 
 cd "$jagen_build_dir" || exit
@@ -63,7 +52,7 @@ for spec in $pkg_uses; do
 done; unset spec
 pkg_uses=${new_uses# }; unset new_uses
 
-if [ -z "$pkg_query" -a "$pkg_stage" != clean ]; then
+if [ "$pkg_stage" != clean ]; then
     # include uses
     for spec in $pkg_uses; do
         include "$(pkg__export_fname "$spec")" || exit
@@ -91,7 +80,7 @@ for use_alias in $pkg_use_alias; do
     pkg__assign_alias "$use_alias" || exit
 done; unset use_alias
 
-if [ -z "$pkg_query" -a "$pkg_stage" != clean ] && [ "$pkg_build_toolchain" ]; then
+if [ "$pkg_stage" != clean ] && [ "$pkg_build_toolchain" ]; then
     include "$(pkg__export_fname "$pkg_build_toolchain")" || exit
     if [ "$pkg_config" ]; then
         include "$(pkg__export_fname "$pkg_build_toolchain" "$pkg_config")" || exit
@@ -160,24 +149,6 @@ fi
 if [ "$pkg__file" ]; then
     include "$pkg__file" || exit
 fi; unset pkg__file
-
-if [ "$pkg_query" ]; then
-    case $pkg_query in
-        work_dir)
-            printf '%s' "$pkg_work_dir" ;;
-        source_dir)
-            printf '%s' "$pkg_source_dir" ;;
-        build_dir)
-            printf '%s' "$pkg_build_dir" ;;
-        install_dir)
-            printf '%s' "$pkg_install_dir" ;;
-        build_clean)
-            printf '%s' "$pkg_build_clean" ;;
-        build_system)
-            printf '%s' "$pkg_build_system" ;;
-    esac
-    exit 0
-fi
 
 case $pkg_stage in
     clean|unpack)

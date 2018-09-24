@@ -1189,10 +1189,6 @@ function P.load_rules()
     return packages, not had_errors
 end
 
-function P:query(value, config)
-    return Command:new('jagen-stage -q', value, self.name, config)
-end
-
 function P:find_files(names)
     if not names then return end
     if next(names) then
@@ -1204,22 +1200,6 @@ end
 
 function P:get_work_dir(config)
     return self:get('work_dir', config)
-end
-
-function P:get_build_dir(config)
-    local build = self:get('build', config)
-    if build then
-        if rawget(build, 'dir') then
-            return self:query('build_dir', config):read()
-        end
-    end
-end
-
-function P:get_clean_dirs(config)
-    local build = self:get('build', config)
-    if rawget(build, 'clean') then
-        return self:query('build_clean', config):aslist()
-    end
 end
 
 function P.all_configs()

@@ -719,8 +719,6 @@ install = value
 
 - **pkg_name** — the package name of the currently executing stage
 
-- **pkg_query** — query
-
 - **pkg_run_on_error** — error hook
 
 - **pkg_source** (`source.type source.location`) — concatenated type and
