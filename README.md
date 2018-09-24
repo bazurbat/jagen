@@ -76,7 +76,7 @@ See [User Guide](doc/UserGuide.md) for more information.
 - [Build](doc/Build.md)
 - [Clean](doc/Clean.md)
 - [List Information](doc/List.md)
-- [Package sources](doc/Src.md)
+- [Package sources](doc/Source.md)
 - [Filesystem images](doc/Image.md)
 - [Rust Support](doc/Rust.md)
 - [Rules](doc/Rules.md)

@@ -9,7 +9,7 @@ COMMANDS
   clean     Clean up build root
   refresh   Regenerate the build system
   build     Build or rebuild the specified targets
-  src       Manage SCM package sources
+  source    Manage SCM package sources
   list      List various information about the current project
   update    Update the specified layers or Jagen itself
 
@@ -137,8 +137,8 @@ local targets = [[
 
 ]]
 
-local src = [[
-Usage: jagen src <command> [PACKAGES...]
+local source = [[
+Usage: jagen source <command> [PACKAGES...]
 
   Manage SCM package sources.
 
@@ -175,12 +175,12 @@ COMMANDS
 
   The 'delete' command deletes packages source directories.
 
-  Run `jagen src each --help` to see the reference for the 'each' subcommand.
+  Run `jagen source each --help` to see the reference for the 'each' subcommand.
 
 ]]
 
 local src_each = [[
-Usage: jagen src each <command>
+Usage: jagen source each <command>
 
   Execute Shell command for each source directory.
 
@@ -197,15 +197,15 @@ EXAMPLES
 
   Run `git status` for sources of type 'git':
 
-    jagen src each git status
+    jagen source each git status
 
   Run `ls` for all source directories:
 
-    jagen src each ls
+    jagen source each ls
 
   Run `ls` only for 'hg' sources:
 
-    jagen src each --type hg ls
+    jagen source each --type hg ls
 
 ]]
 
@@ -294,7 +294,8 @@ return {
     clean   = clean,
     refresh = refresh,
     build   = build,
-    src     = src,
+    source  = source,
+    src     = source,
     src_each = src_each,
     image   = image,
     list    = list,

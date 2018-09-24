@@ -11,7 +11,7 @@ _jagen_complete() {
     local targets_file="$jagen_build_dir/.jagen-targets"
     local layers_file="$jagen_build_dir/.jagen-layers"
 
-    local top_cmds='help clean refresh build src list update'
+    local top_cmds='help clean refresh build source src list update'
     local src_cmds='dirty status clean update delete each'
     local src_each_opt='--type'
     local src_types='git hg repo'
@@ -44,8 +44,8 @@ _jagen_complete() {
             COMPREPLY=($(compgen -W "$help_opt" -- "$cur")) ;;
         build)
             COMPREPLY=($(compgen -W "$help_opt $build_opt $(cat "$names_file") $(cat "$targets_file")" -- "$cur")) ;;
-        src)
-            if [[ "$prev" == "src" ]]; then
+        src|source)
+            if [[ "$prev" == "source" ]] || [[ "$prev" == "src" ]]; then
                 COMPREPLY=($(compgen -W "$help_opt $src_cmds" -- "$cur"))
             else
                 if [[ "$jagen_subcommand" == "each" ]]; then

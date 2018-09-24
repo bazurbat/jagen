@@ -96,9 +96,17 @@ local function scm_packages(patterns)
     return o
 end
 
-Jagen.src = {}
+Jagen.source = {}
+Jagen.src = {
+    dirty  = Jagen.source.dirty,
+    status = Jagen.source.status,
+    clean  = Jagen.source.clean,
+    update = Jagen.source.update,
+    delete = Jagen.source.delete,
+    each   = Jagen.source.each,
+}
 
-function Jagen.src.dirty(args)
+function Jagen.source.dirty(args)
     local packages = scm_packages(args)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
@@ -110,7 +118,7 @@ function Jagen.src.dirty(args)
     return false
 end
 
-function Jagen.src.status(args)
+function Jagen.source.status(args)
     local packages = scm_packages(args)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
@@ -131,7 +139,7 @@ function Jagen.src.status(args)
     return true
 end
 
-function Jagen.src.clean(args)
+function Jagen.source.clean(args)
     local packages = scm_packages(args)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
@@ -143,7 +151,7 @@ function Jagen.src.clean(args)
     end
 end
 
-function Jagen.src.update(args)
+function Jagen.source.update(args)
     local packages = scm_packages(args)
     local offline = Jagen.flag 'offline'
     local ok
@@ -206,7 +214,7 @@ function Jagen.src.update(args)
     return ok
 end
 
-function Jagen.src.delete(args)
+function Jagen.source.delete(args)
     local packages = scm_packages(args)
     for _, pkg in ipairs(packages) do
         local source = pkg.source
@@ -219,7 +227,7 @@ function Jagen.src.delete(args)
     end
 end
 
-function Jagen.src.each(args)
+function Jagen.source.each(args)
     local options = Options:new {
         { 'help,h' },
         { 'type=' },
@@ -551,20 +559,21 @@ function Jagen.command.build(args)
     return ok
 end
 
-function Jagen.command.src(args)
+function Jagen.command.source(args)
     local first = args[1]
-    local command = Jagen.src[first]
+    local command = Jagen.source[first]
     if first then
         if command then
             table.remove(args, 1)
             return command(args)
         else
-            die('invalid src subcommand: %s', first)
+            die('invalid source subcommand: %s', first)
         end
     else
-        return Jagen.command.help { 'src' }
+        return Jagen.command.help { 'source' }
     end
 end
+Jagen.command.src = Jagen.command.source
 
 function Jagen.command.list(args)
     if #args == 0 or help_requested(args) then

@@ -1,7 +1,7 @@
 # Managing package sources
 
 ```
-Usage: jagen src <command> [PACKAGES...]
+Usage: jagen source <command> [PACKAGES...]
 
   Manage SCM package sources.
 
@@ -38,12 +38,14 @@ COMMANDS
 
   The 'delete' command deletes packages source directories.
 
-  Run `jagen src each --help` to see the reference for the 'each' subcommand.
+  Run `jagen source each --help` to see the reference for the 'each' subcommand.
 ```
 
-## src each
+It is possible to use `src` as an alternative command name instead of `source`.
 
-Usage: `jagen src each <command>`
+## source each
+
+Usage: `jagen source each <command>`
 
 Execute Shell command for each source directory.
 
@@ -60,15 +62,15 @@ implicitly, otherwise the command will be run for all source directories.
 
   Run `git status` for sources of type "git":
 
-    jagen src each git status
+    jagen source each git status
 
   Run `ls` for all source directories:
 
-    jagen src each ls
+    jagen source each ls
 
   Run `ls` only for "hg" sources:
 
-    jagen src each --type hg ls
+    jagen source each --type hg ls
 
 # Managing layers
 
