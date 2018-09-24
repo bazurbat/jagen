@@ -705,6 +705,7 @@ function P:create(name)
         name = name,
         stages = {},
         configs = {},
+        source = {},
         build = {},
         install = {},
         export = {},
