@@ -396,7 +396,7 @@ function P:each_config(with_shared)
 end
 
 function P:gettoolchain(config)
-    local host_toolchain = 'system-native'
+    local host_toolchain = 'system-native:host'
     local target_toolchain = os.getenv('jagen_target_toolchain')
     if target_toolchain and #target_toolchain == 0 then
         target_toolchain = nil
