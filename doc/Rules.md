@@ -136,6 +136,104 @@ subdirectory of each layer. For a given package `zeromq~var1` the search path wi
     pkg/zeromq/zeromq.lua
     pkg/zeromq.lua
 
+## Variants
+
+Package rules can inherit properties from already defined packages using `extends` declaration.
+Those "extended" packages are called "variants" and can add or override properties from their base.
+This facility provides a shorthand to declare a group of packages with minor differences.
+
+For example, the definitions:
+
+```lua
+package { 'nanomsg', 'host',
+    source = {
+        type = 'git'
+        location = 'https://github.com/nanomsg/nanomsg.git'
+    },
+    build = {
+        type = 'cmake',
+        options = { 'param1', 'param2' }
+    }
+}
+package { 'nanomsg~stable', 'host',
+    extends = 'nanomsg',
+    source = { branch = 'stable' },
+    build = { options = 'override' }
+}
+package { 'nanomsg~dev', 'host',
+    extends = 'nanomsg',
+    source = { branch = 'dev' },
+    build = { options = { 'add' } }
+}
+```
+
+effectively have the same effect as the:
+
+```lua
+package { 'nanomsg', 'host',
+    source = {
+        type = 'git'
+        location = 'https://github.com/nanomsg/nanomsg.git'
+    },
+    build = {
+        type = 'cmake',
+        options = { 'param1', 'param2' }
+    }
+}
+package { 'nanomsg~stable', 'host',
+    source = {
+        type = 'git'
+        location = 'https://github.com/nanomsg/nanomsg.git',
+        branch = 'stable'
+    },
+    build = {
+        type = 'cmake',
+        options = { 'override' }
+    }
+}
+package { 'nanomsg~dev', 'host',
+    source = {
+        type = 'git'
+        location = 'https://github.com/nanomsg/nanomsg.git',
+        branch = 'dev'
+    },
+    build = {
+        type = 'cmake',
+        options = { 'param1', 'param2', 'add' }
+    }
+}
+```
+
+Note the way build options are merged. Basically, building different branches with different
+options at the same time is the main purpose this feature was designed for. Useful for testing and
+CI.
+
+The variants are considered separate packages and should have different names. As a consequence all
+of them will be cloned to different directories (`$jagen_src_dir/$pkg_name` by default) and built
+separately.
+
+The final definition (after merging rules from all layers) for the base package is copied and
+properties from the extending rule are applied on top. Variant rules are not merged with each other
+as normal rules do, only the latest rule takes an effect replacing the previous definitions if any.
+
+You can "use spec" syntax to explicitly request a config from a base package:
+
+```lua
+package { 'nanomsg2',
+    extends = 'nanomsg:host'
+}
+```
+
+which has the same effect as:
+
+```lua
+package { 'nanomsg2', 'host',
+    extends = 'nanomsg'
+}
+```
+
+If the config is not specified then all configs from the base package will be copied.
+
 ## Properties
 
 All possible package properties are described below. The first name is the key to use in the
