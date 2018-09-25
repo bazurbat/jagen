@@ -934,12 +934,20 @@ function P:define_use(spec, context)
 end
 
 function P:process_source()
-    if pkg.source and pkg.source.type == 'repo' then
-        pkg:add_rule { 'unpack',
-            { 'repo', 'install', 'host' }
-        }
-        P.define_package { name = 'repo', config = 'host' }
+    self.source = Source:create(self.source, self.name)
+    if self.source:is_scm() then
+        if self.patches then
+            self.source.ignore_dirty = 'patches'
+        end
+        local unpack = self.stages['unpack']
+        unpack.stage = 'update'
     end
+    -- if pkg.source and pkg.source.type == 'repo' then
+    --     pkg:add_rule { 'unpack',
+    --         { 'repo', 'install', 'host' }
+    --     }
+    --     P.define_package { name = 'repo', config = 'host' }
+    -- end
 end
 
 function P:process_config(config, this)
@@ -1046,16 +1054,6 @@ function P.process_rules(_packages)
                     if added then
                         new_packages[added.name] = added
                     end
-                end
-            end
-            if pkg.source and not getmetatable(pkg.source) then
-                pkg.source = Source:create(pkg.source, pkg.name)
-                if pkg.source:is_scm() then
-                    if pkg.patches then
-                        pkg.source.ignore_dirty = 'patches'
-                    end
-                    local unpack = pkg.stages['unpack']
-                    unpack.stage = 'update'
                 end
             end
             for target in pkg:each() do
@@ -1175,12 +1173,20 @@ function P.load_rules()
     P.process_rules(table.copy(packages))
     local new_packages = P.define_default_config()
     P.process_rules(new_packages)
+
     new_packages = {}
     for name, item in pairs(P._variants) do
         new_packages[name] = P.define_variant(item[1], item[2])
     end
     P.process_rules(new_packages)
+
     P.process_rules(P.define_rust_packages())
+
+    new_packages = {}
+    for _, pkg in pairs(packages) do
+        pkg:process_source()
+    end
+    P.process_rules(new_packages)
 
     for key, item in pairs(required_specs) do
         local pkg, spec, config, stage = item[1], item[2], item[3], item[4]
