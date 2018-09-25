@@ -156,6 +156,7 @@ end
 
 function P.init_rules()
     P._templates = {}
+    P._variants = {}
     P.has_rust_rules = false
     _define_count = 0
     _context_count = 0
@@ -468,6 +469,10 @@ function P:collect_require(spec, context, stage)
     end
 end
 
+function P.collect_variants(rule, context)
+    P._variants[rule.name] = { rule, context }
+end
+
 function P:add_required_stage(config)
     local build, install, name = self:get('build', config), self:get('install', config)
     if install and install.type then
@@ -735,7 +740,11 @@ function package(rule)
         context.filename = info.source
         context.line = info.currentline
     end
-    return P.define_package(rule, context)
+    if rule.extends then
+        return P.collect_variants(rule, context)
+    else
+        return P.define_package(rule, context)
+    end
 end
 
 function P.define_package(rule, context)
@@ -845,6 +854,50 @@ function P.define_package(rule, context)
     end
 
     return pkg
+end
+
+function P.define_variant(rule, context)
+    local use = Target.from_use(rule.extends)
+    if rule.name == use.name then
+        print_error("a package '%s' extends itself\n--> %s", rule.name, tostring(context))
+        return
+    end
+    if packages[rule.name] then
+        print_error("can not define a variant package '%s', another package with the same name is already defined\n--> %s", rule.name, tostring(context))
+        return
+    end
+    local pkg = packages[use.name]
+    if not pkg then
+        print_error("a package '%s' extends '%s' which is not defined\n--> %s", rule.name, use.name, tostring(context))
+        return
+    end
+    if rule.config and not use.config then
+        use.config = rule.config
+    end
+    if use.config and not pkg:has_config(use.config) then
+        print_error("a package '%s' extends '%s:%s' but the package '%s' does not have a config '%s'\n--> %s", rule.name, use.name, use.config, use.name, use.config, tostring(context))
+        return
+    end
+    pkg = copy(pkg)
+    pkg.name = rule.name
+    if use.config then
+        for config in pairs(pkg.configs) do
+            if config ~= use.config then
+                pkg.configs[config] = nil
+            end
+        end
+        if rule.config ~= use.config then
+            local this = pkg.configs[use.config]
+            this.config = rule.config
+            for target in each(this.stages) do
+                target.config = rule.config
+            end
+            pkg.configs[rule.config] = this
+            pkg.configs[use.config] = nil
+        end
+    end
+    packages[rule.name] = pkg
+    return P.define_package(rule, context)
 end
 
 function template(rule)
@@ -1121,6 +1174,11 @@ function P.load_rules()
 
     P.process_rules(table.copy(packages))
     local new_packages = P.define_default_config()
+    P.process_rules(new_packages)
+    new_packages = {}
+    for name, item in pairs(P._variants) do
+        new_packages[name] = P.define_variant(item[1], item[2])
+    end
     P.process_rules(new_packages)
     P.process_rules(P.define_rust_packages())
 
