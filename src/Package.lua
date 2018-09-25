@@ -880,13 +880,18 @@ function P.define_variant(rule, context)
     end
     pkg = copy(pkg)
     pkg.name = rule.name
+    for this, _ in pkg:each_config(true) do
+        for target in each(this.stages) do
+            target.name = rule.name
+        end
+    end
     if use.config then
         for config in pairs(pkg.configs) do
             if config ~= use.config then
                 pkg.configs[config] = nil
             end
         end
-        if rule.config ~= use.config then
+        if rule.config and rule.config ~= use.config then
             local this = pkg.configs[use.config]
             this.config = rule.config
             for target in each(this.stages) do
