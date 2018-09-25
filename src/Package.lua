@@ -934,20 +934,22 @@ function P:define_use(spec, context)
 end
 
 function P:process_source()
-    self.source = Source:create(self.source, self.name)
-    if self.source:is_scm() then
+    if getmetatable(self.source) then return end
+    local source, added = Source:create(self.source, self.name), {}
+    if source.type == 'repo' then
+        self:add_rule { 'unpack', { 'repo', 'install', 'host' } }
+        local repo = P.define_package { name = 'repo', config = 'host' }
+        added.repo = repo
+    end
+    if source:is_scm() then
         if self.patches then
-            self.source.ignore_dirty = 'patches'
+            source.ignore_dirty = 'patches'
         end
         local unpack = self.stages['unpack']
         unpack.stage = 'update'
     end
-    -- if pkg.source and pkg.source.type == 'repo' then
-    --     pkg:add_rule { 'unpack',
-    --         { 'repo', 'install', 'host' }
-    --     }
-    --     P.define_package { name = 'repo', config = 'host' }
-    -- end
+    self.source = source
+    return added
 end
 
 function P:process_config(config, this)
@@ -1182,11 +1184,13 @@ function P.load_rules()
 
     P.process_rules(P.define_rust_packages())
 
-    new_packages = {}
-    for _, pkg in pairs(packages) do
-        pkg:process_source()
-    end
-    P.process_rules(new_packages)
+    repeat
+        new_packages = {}
+        for _, pkg in pairs(packages) do
+            table.assign(new_packages, pkg:process_source())
+        end
+        P.process_rules(new_packages)
+    until not next(new_packages)
 
     for key, item in pairs(required_specs) do
         local pkg, spec, config, stage = item[1], item[2], item[3], item[4]
