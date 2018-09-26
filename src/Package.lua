@@ -72,6 +72,9 @@ function Context:__tostring()
         if self.line then append(':', self.line) end
         if self.name or self.config then append(')') end
     end
+    if self.template then
+        append(' [', concat(self.template, ', '), ']')
+    end
     if self.implicit and #lines > 0 then
         append(' *')
     end
