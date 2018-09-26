@@ -1157,7 +1157,7 @@ function P.define_rust_packages()
                     }
                 }
                 new_packages[name] = rust_toolchain
-                pkg:collect_require(name, Context:new { name = name, config = config })
+                pkg:collect_require(name, Context:new { name = pkg.name, config = config })
                 this.uses = append_uniq(name, this.uses)
                 P.has_rust_rules = true
             end
