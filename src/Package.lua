@@ -894,6 +894,7 @@ function P.define_variant(rule, context)
     for this, _ in pkg:each_config(true) do
         for target in each(this.stages) do
             target.name = rule.name
+            this.stages[target.stage] = target
         end
     end
     if use.config then
@@ -961,8 +962,7 @@ function P:process_source()
         if self.patches then
             source.ignore_dirty = 'patches'
         end
-        local unpack = self.stages['unpack']
-        unpack.stage = 'update'
+        self.stages.unpack.stage = 'update'
     end
     self.source = source
     return added
