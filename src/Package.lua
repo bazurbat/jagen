@@ -1074,21 +1074,6 @@ function P.process_rules(_packages)
                     end
                 end
             end
-            for target in pkg:each() do
-                for input in each(target.inputs) do
-                    if input.stage == 'unpack' then
-                        local pkg = packages[input.name]
-                        if pkg and pkg:is_scm() then
-                            input.stage = 'update'
-                        end
-                    elseif input.stage == 'update' then
-                        local pkg = packages[input.name]
-                        if pkg and not pkg:is_scm() then
-                            input.stage = 'unpack'
-                        end
-                    end
-                end
-            end
         end
         local required = required_packages
         required_packages = {}
@@ -1207,6 +1192,24 @@ function P.load_rules()
         end
         P.process_rules(new_packages)
     until not next(new_packages)
+
+    for _, pkg in pairs(packages) do
+        for target in pkg:each() do
+            for input in each(target.inputs) do
+                if input.stage == 'unpack' then
+                    local pkg = packages[input.name]
+                    if pkg and pkg:is_scm() then
+                        input.stage = 'update'
+                    end
+                elseif input.stage == 'update' then
+                    local pkg = packages[input.name]
+                    if pkg and not pkg:is_scm() then
+                        input.stage = 'unpack'
+                    end
+                end
+            end
+        end
+    end
 
     for key, item in pairs(required_specs) do
         local pkg, spec, config, stage = item[1], item[2], item[3], item[4]
