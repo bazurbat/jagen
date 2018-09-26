@@ -98,6 +98,14 @@ function Target:__tostring(sep)
     return table.concat(o, sep)
 end
 
+function Target:__rawtostring()
+    local saved = Target.__tostring
+    Target.__tostring = nil
+    local s = tostring(self)
+    Target.__tostring = saved
+    return s
+end
+
 function Target:add_inputs(target)
     assert(target)
     if target.inputs then
