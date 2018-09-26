@@ -456,7 +456,7 @@ function P:collect_rule(rule, config)
 end
 
 function P:collect_require(spec, context, stage)
-    local key = string.format('%s:%s^%s', spec, self.name, context:tokey())
+    local key = string.format('%s:%s^%s', spec, self.name, context and context:tokey() or '')
     if not all_required_packages[key] then
         local item = { self, spec, context }
         all_required_packages[key] = item
@@ -749,6 +749,14 @@ end
 
 function P.define_package(rule, context)
     _define_count = _define_count + 1
+
+    if not context then
+        context = Context:new {
+            name = rule.name,
+            config = rule.config,
+            template = rule.template
+        }
+    end
 
     local config = rule.config or context and context.config
     local template = rule.template or context and context.template
