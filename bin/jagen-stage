@@ -151,7 +151,7 @@ if [ "$pkg__file" ]; then
 fi; unset pkg__file
 
 case $pkg_stage in
-    clean|unpack)
+    clean|unpack|update)
         cd "$jagen_build_dir"
         ;;
     patch)
