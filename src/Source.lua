@@ -199,9 +199,31 @@ function GitSource:new(o)
     return o
 end
 
+function GitSource:_getremoteref()
+    if self.rev then
+        return string.format('refs/%s', self.rev)
+    elseif self:gettag() then
+        return string.format('refs/tags/%s', self:gettag())
+    elseif self:getbranch() then
+        return string.format('refs/remotes/%s/%s', self.origin, self:getbranch())
+    else
+        return string.format('refs/remotes/%s/master', self.origin)
+    end
+end
+
+function GitSource:_is_shallow()
+    return System.file_exists(System.mkpath(assert(self.dir), '.git', 'shallow'))
+end
+
 function GitSource:_needs_submodules()
-    return not self.exclude_submodules and
-        System.file_exists(System.mkpath(assert(self.dir), '.gitmodules'))
+    if self.exclude_submodules then
+        return false
+    elseif self.__have_gitmodules ~= nil then
+        return self.__have_gitmodules
+    else
+        self.__have_gitmodules = System.file_exists(System.mkpath(self.dir, '.gitmodules'))
+        return self.__have_gitmodules
+    end
 end
 
 function GitSource:_update_submodules(...)
@@ -252,111 +274,62 @@ function GitSource:clean()
 end
 
 function GitSource:fetch()
-    local function extract_ref(line) return line:match('%w+%s+(.+)') end
-    local function head_matching(name)
-        return function (line) return line:match('^refs/heads/'..name:escape_pattern()..'$') end
-    end
-    local function tag_matching(name)
-        return function (line) return line:match('^refs/tags/'..name:escape_pattern()..'$') end
-    end
+    local fmt, commands, specs = string.format, {}, {}
     if self.location then
-        if not self:command('remote set-url', assert(self.origin), quote(self.location)):exec() then
-            return false
-        end
+        append(commands, self:command('remote set-url', self.origin, quote(self.location)))
     end
-    local refspecs, ok = {}, true
-    local remotes = aslist(vmap(extract_ref)(self:command('ls-remote -q --heads --tags'):lines()))
-    local rev, branches = self:getrev(), self:getbranches()
-    if not rev then branches = { 'master' } end
-    for branch in each(branches) do
-        for ref in vfilter(head_matching(branch))(each(remotes)) do
-            append(refspecs, string.format('"+refs/heads/%s:refs/remotes/%s/%s"',
-                branch, self.origin, branch))
-        end
+    for branch in each(self:getbranches()) do
+        append(specs, fmt('+refs/heads/%s:refs/remotes/%s/%s', branch, self.origin, branch))
     end
     for tag in each(self:gettags()) do
-        for ref in vfilter(tag_matching(tag))(each(remotes)) do
-            append(refspecs, string.format('"+refs/tags/%s:refs/tags/%s"', tag, tag))
-        end
+        append(specs, fmt('+refs/tags/%s:refs/tags/%s', tag, tag))
     end
     if self.rev then
-        if #self.rev ~= 40 then
-            Log.error('Git rev should be fully spelled (40 char) object name')
-            return false
-        end
-        append(refspecs, string.format("%s", self.rev))
+        append(specs, fmt('+%s:refs/%s', self.rev, self.rev))
     end
-    if #refspecs > 0 then
-        return self:command('fetch', quote(self.origin), table.concat(refspecs, ' ')):exec() and
-               self:_update_submodules()
+    local fetch = self:command('fetch')
+    if not self.shallow and self:_is_shallow() then
+        fetch:append('--unshallow')
     end
-    return true
+    fetch:append(self.origin)
+    for spec in each(specs) do
+        fetch:append(quote(spec))
+    end
+    append(commands, fetch)
+    for command in each(commands) do
+        if not command:exec() then return end
+    end
+    return self:_update_submodules()
 end
 
 function GitSource:switch()
-    local function checkout(ref)
-        return self:command('checkout -q', quote(assert(ref)), '--'):exec()
-    end
-    local function update_submodules()
-        return self:_update_submodules('--no-fetch')
-    end
-    local function verify(ref)
-        return ref and self:command('show-ref -q --verify', ref):exec()
-    end
-
-    if self.rev then
-        return checkout(self.rev) and update_submodules()
-    end
-
-    local tag = self:gettag()
-    if tag then
-        local ref = string.format('refs/tags/%s', tag)
-        if verify(ref) then
-            return checkout(ref) and update_submodules()
+    local commands = {}
+    local function getrev()
+        if self.rev then
+            return 'refs/'..self.rev
         else
-            Log.error("the tag '%s' does not exist", tag)
-            return false
+            return self:getrev() or 'master'
         end
     end
-
-    local branch = self:getbranch() or 'master'
-    local ref = string.format('refs/heads/%s', branch)
-    local remote_ref = string.format('refs/remotes/%s/%s', assert(self.origin), branch)
-    local local_valid, remote_valid = verify(ref), verify(remote_ref)
-
-    if local_valid then
-        if not checkout(branch) then
-            return false
-        end
-        if remote_valid then
-            if self.force_update then
-                if not self:command('reset --hard', remote_ref):exec() then
-                    return false
-                end
-            else
-                if not self:command('merge --ff-only', remote_ref):exec() then
-                    return false
-                end
-            end
-        end
-    elseif remote_valid then
-        if not checkout(remote_ref) then
-            return false
-        end
+    append(commands, self:command('checkout -q', quote(getrev()), '--'))
+    if self.force_update then
+        append(commands, self:command('reset --hard', quote(self:_getremoteref()), '--'))
     else
-        Log.error("the branch '%s' does not exist", branch)
-        return false
+        append(commands, self:command('merge --ff-only', quote(self:_getremoteref())))
     end
-
-    return update_submodules()
+    for command in each(commands) do
+        if not command:exec() then return end
+    end
+    return self:_update_submodules('--no-fetch')
 end
 
 function GitSource:clone()
     assert(self.location) assert(self.dir)
     -- even for unattended cases the progress is useful to watch in logs
     local clone_cmd = Command:new('git clone --progress')
-    for branch in each(self:getbranches()) do
-        clone_cmd:append('--branch', quote(branch))
+    local branch, tag = self:getbranch(), self:gettag()
+    if tag or branch then
+        clone_cmd:append('--branch', quote(tag or branch))
     end
     if self.shallow then
         local smart = false
@@ -377,7 +350,7 @@ function GitSource:clone()
         end
     end
     clone_cmd:append('--', quote(self.location), quote(self.dir))
-    return clone_cmd:exec() and self:_update_submodules()
+    return clone_cmd:exec() and self:update()
 end
 
 function GitSource:fixup()
