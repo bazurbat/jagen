@@ -1171,6 +1171,18 @@ function P.load_rules()
     end
     try_load_rules(System.mkpath(Jagen.root_dir))
 
+    do
+        local project_dir = os.getenv('jagen_project_dir')
+        if project_dir ~= nil then
+            local filename = System.mkpath(project_dir, '.jagen-rules.lua')
+            local file = io.open(filename, 'rb')
+            if file then
+                assert(loadstring(file:read('*a'), filename))()
+                file:close()
+            end
+        end
+    end
+
     push_context({ implicit = true })
 
     P.process_rules(table.copy(packages))
