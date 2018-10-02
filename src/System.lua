@@ -21,9 +21,11 @@ end
 function P.mkpath(...)
     local sep = '/'
     local path = {}
-    for _, c in ipairs({...}) do
-        if #c > 0 then
-            table.insert(path, c)
+    for i = 1, select('#', ...) do
+        local arg = select(i, ...)
+        if arg == nil then error("bad argument #"..i.." to 'mkpath' (string expected, got nil)") end
+        if #arg > 0 then
+            table.insert(path, arg)
         end
     end
     return table.concat(path, sep)
