@@ -17,7 +17,7 @@ end
 Jagen =
 {
     dir         = os.getenv('jagen_dir'),
-    project_dir = os.getenv('jagen_project_dir'),
+    root_dir = os.getenv('jagen_root_dir'),
 
     shell = os.getenv('jagen_shell'),
     flags = os.getenv('jagen_flags'),

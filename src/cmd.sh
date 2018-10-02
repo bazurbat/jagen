@@ -137,8 +137,8 @@ cmd_find_for_refresh() {
     . "$jagen_dir/env.sh" || return
     local paths="$jagen_dir" IFS="$jagen_S"
     paths="${paths}${jagen_S}$(jagen__resolve_layers)"
-    if [ -d "$jagen_project_lib_dir" ]; then
-        paths="${paths}${jagen_S}${jagen_project_lib_dir}"
+    if [ -d "$jagen_root_lib_dir" ]; then
+        paths="${paths}${jagen_S}${jagen_root_lib_dir}"
     fi
     find $paths '(' \
         -name '.git' -o \
@@ -146,10 +146,10 @@ cmd_find_for_refresh() {
         -name tags -o \
         -name Session.vim \
     ')' -prune -o -print
-    echo_if_exists "$jagen_project_dir/config.sh"
-    echo_if_exists "$jagen_project_dir/env.sh"
-    echo_if_exists "$jagen_project_dir/jagen"
-    echo_if_exists "$jagen_project_dir/rules.lua"
+    echo_if_exists "$jagen_root_dir/config.sh"
+    echo_if_exists "$jagen_root_dir/env.sh"
+    echo_if_exists "$jagen_root_dir/jagen"
+    echo_if_exists "$jagen_root_dir/rules.lua"
 }
 
 cmd_get_path() {

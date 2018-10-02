@@ -67,7 +67,7 @@ function Context:__tostring()
     if self.filename then
         if #lines > 0 then append(' ') end
         if self.name or self.config then append('(') end
-        local filename, removed = self.filename:remove_prefix(System.dirname(Jagen.project_dir))
+        local filename, removed = self.filename:remove_prefix(System.dirname(Jagen.root_dir))
         if removed then append('...') end append(filename)
         if self.line then append(':', self.line) end
         if self.name or self.config then append(')') end
@@ -1169,7 +1169,7 @@ function P.load_rules()
     for dir in each(Jagen:path()) do
         try_load_rules(dir)
     end
-    try_load_rules(System.mkpath(Jagen.project_dir))
+    try_load_rules(System.mkpath(Jagen.root_dir))
 
     push_context({ implicit = true })
 

@@ -674,9 +674,9 @@ install = value
 - **jagen_FS** — Field separator (`<tab>`).
 - **jagen_IFS** — IFS (`<newline><tab>`).
 - **jagen_bin_dir** — The location of the `bin` directory
-  (`$jagen_project_dir/bin`).
+  (`$jagen_root_dir/bin`).
 - **jagen_build_dir** — The location of the `build` directory
-  (`$jagen_project_dir/build`).
+  (`$jagen_root_dir/build`).
 - **jagen_build_profile** — Global package build profile.
 - **jagen_build_verbose** — Indicates whether the build system should run
   verbosely.
@@ -689,14 +689,14 @@ install = value
 - **jagen_debug** — Debug level.
 - **jagen_dir** — The location of the Jagen source directory.
 - **jagen_dist_dir** — The location of the `dist` directory
-  (`$jagen_project_dir/dist`).
+  (`$jagen_root_dir/dist`).
 - **jagen_flags** — Space-separated list of flags.
 - **jagen_host_cmake_module_path** — The `CMAKE_MODULE_PATH` for "host" config.
   Overrides `$jagen_cmake_module_path` if set, empty value disables.
 - **jagen_host_dir** — The location of the `host` directory
-  (`$jagen_project_dir/host`).
+  (`$jagen_root_dir/host`).
 - **jagen_include_dir** — The location of the `include` directory
-  (`$jagen_project_dir/include`).
+  (`$jagen_root_dir/include`).
 - **jagen_jobs** — The default number of jobs to run for build commands.
   Default: the number of processors on the system. Overriden by the
   package-specific `build.jobs` property.
@@ -710,9 +710,9 @@ install = value
 - **jagen_path** — Import path. Derived from layer locations.
 - **jagen_private_dir** — The location of the private directory (can be set
   from project-specific config).
-- **jagen_project_dir** — The location of the current project directory.
-- **jagen_project_lib_dir** — The location of the current project `lib`
-  directory (`$jagen_project_dir/lib`).
+- **jagen_root_dir** — The location of the current project directory.
+- **jagen_root_lib_dir** — The location of the current project `lib`
+  directory (`$jagen_root_dir/lib`).
 - **jagen_shell** — Override shell used to run internal scripts.
 - **jagen_source_exclude** — A space-separated list of package name patterns
   which should not be updated or patched during the build. Applies only to
@@ -721,12 +721,12 @@ install = value
   character. If the pattern starts with `!` its meaning is negated, i.e. it
   excludes all not matching packages.
 - **jagen_src_dir** — The location of the `src` directory
-  (`$jagen_project_dir/src`).
+  (`$jagen_root_dir/src`).
 - **jagen_target_board** — The name of the current target board.
 - **jagen_target_cmake_module_path** — The `CMAKE_MODULE_PATH` for "target"
   config. Overrides `$jagen_cmake_module_path` if set, empty value disables.
 - **jagen_target_dir** — The location of the `target` directory
-  (`$jagen_project_dir/target`).
+  (`$jagen_root_dir/target`).
 - **jagen_target_toolchain** — The name of the current target toolchain.
 
 ## Stage-specific variables

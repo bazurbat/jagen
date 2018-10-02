@@ -122,8 +122,8 @@ write_env() {
 #!/bin/sh
 
 jagen_dir=$jagen_dir
-jagen_project_dir=$(pwd -P)
-export jagen_dir jagen_project_dir
+jagen_root_dir=$(pwd -P)
+export jagen_dir jagen_root_dir
 
 . "\$jagen_dir/env.sh"; sts=\$?
 if [ \$sts != 0 ]; then
@@ -132,15 +132,15 @@ if [ \$sts != 0 ]; then
 fi
 
 add_PATH "\$jagen_dir/bin"
-add_PATH "\$jagen_project_dir/bin"
+add_PATH "\$jagen_root_dir/bin"
 EOF
 }
 
 write_runner() {
     cat >"$runner_script" <<'EOF'
 #!/bin/sh
-jagen_project_dir=$(cd "$(dirname "$0")" && pwd -P)
-. "$jagen_project_dir/env.sh"; sts=$?
+jagen_root_dir=$(cd "$(dirname "$0")" && pwd -P)
+. "$jagen_root_dir/env.sh"; sts=$?
 [ $sts = 0 ] || exit $sts
 _jagen "$@"
 EOF
@@ -150,7 +150,7 @@ EOF
 write_config() {
     cat >"$config_file" <<EOF
 # jagen_dir         - refers to the jagen source directory
-# jagen_project_dir - refers to the current project directory
+# jagen_root_dir - refers to the current project directory
 
 EOF
     if [ "${jagen_layer_path-}" ]; then
@@ -172,10 +172,10 @@ jagen_layers="${jagen_layers-}"
 jagen_flags="${jagen_flags-}"
 
 # A directory for downloaded distribution files.
-jagen_dist_dir="${jagen_dist_dir-\$jagen_project_dir/dist}"
+jagen_dist_dir="${jagen_dist_dir-\$jagen_root_dir/dist}"
 
 # A directory for package sources.
-jagen_src_dir="${jagen_src_dir-\$jagen_project_dir/src}"
+jagen_src_dir="${jagen_src_dir-\$jagen_root_dir/src}"
 
 # Space separated list of package names excluded from cleaning and updating.
 jagen_source_exclude="${jagen_source_exclude-}"

@@ -1,9 +1,9 @@
 #!/bin/sh
 
-if ! [ "$jagen_project_dir" ]; then
+if ! [ "$jagen_root_dir" ]; then
     echo "This script just forwards its arguments to the currently sourced \
 Jagen project's runner and by itself does nothing."
     exit 22
 fi
 
-exec "$jagen_project_dir/jagen" "$@"
+exec "$jagen_root_dir/jagen" "$@"

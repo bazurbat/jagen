@@ -246,11 +246,11 @@ jagen__resolve_layer() {
     local layer="${1:?}" path dir
     case $layer in
         /*) path="$layer" ;;
-  ./*|../*) path="${jagen_project_dir:?}/$layer" ;;
+  ./*|../*) path="${jagen_root_dir:?}/$layer" ;;
          *) for dir in ${jagen_layer_path-} .; do
                 case $dir in
                     /*) ;;
-                     *) dir="$jagen_project_dir/$dir" ;;
+                     *) dir="$jagen_root_dir/$dir" ;;
                 esac
                 path="$dir/$layer"
                 [ -d "$path" ] && break
@@ -278,7 +278,7 @@ jagen__get_path() {
     local path
     path="$jagen_dir/lib"
     path="${path}${jagen_S}$(jagen__resolve_layers)"
-    path="${path}${jagen_S}$jagen_project_lib_dir"
+    path="${path}${jagen_S}$jagen_root_lib_dir"
     echo "$path"
 }
 

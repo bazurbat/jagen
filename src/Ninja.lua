@@ -232,7 +232,7 @@ function P.generate(out_file, rules)
                 separated(Jagen.shell), 'jagen-stage $args'
             }),
         format_rule('refresh', join {
-                Jagen.shell, System.expand('$jagen_project_dir/jagen')..' refresh'
+                Jagen.shell, System.expand('$jagen_root_dir/jagen')..' refresh'
             })
     }
 
