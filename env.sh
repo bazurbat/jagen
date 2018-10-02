@@ -39,7 +39,7 @@ jagen_build_verbose=${jagen_build_verbose-}
 . "$jagen_dir/src/common.sh" || return
 
 # Avoid import during init-root
-if [ "$jagen_root_dir" ]; then
+if [ "$jagen_root_dir" ] && [ -f "$jagen_root_dir/config.sh" ]; then
     include "$jagen_root_dir/config"
 fi
 
