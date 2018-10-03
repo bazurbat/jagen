@@ -516,11 +516,13 @@ function Jagen.command.build(args)
         for name, pkg in iter(packages, filter(function (_, name) return name:match(namep) end)) do
             for target in pkg:each() do
                 if not stagep then
-                    targets[tostring(target)] = true found = true
+                    if arg_clean or target.stage ~= 'clean' then
+                        targets[tostring(target)] = true found = true
+                    end
                 else
                     local stage = target:to_stage()
                     if stage:match(stagep) then
-                        if target.stage ~= 'clean' or stagep:match('^%^clean') or stagep:match('^%^clean%:') then
+                        if target.stage ~= 'clean' or stagep:match('^%^clean%$$') or stagep:match('^%^clean%%%:') then
                             targets[tostring(target)] = true found = true
                         end
                         if arg_clean then
