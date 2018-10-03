@@ -1088,6 +1088,27 @@ function P.process_rules(_packages)
     end
 end
 
+function P.define_project_package(project_dir)
+    assert(project_dir)
+    local name = project_dir:match('.*/([^/]+)')
+    if not name then return end
+    local exists, mkpath, build = System.file_exists, System.mkpath
+    if exists(mkpath(project_dir, 'CMakeLists.txt')) then
+        build = { type = 'cmake' }
+    elseif exists(mkpath(project_dir, 'configure')) then
+        build = { type = 'gnu' }
+    elseif exists(mkpath(project_dir, 'autogen.sh')) then
+        build = { type = 'gnu', generate = true }
+    end
+    if build then
+        P.define_package(P:parse {
+                name = name,
+                source = '.',
+                build = build
+            })
+    end
+end
+
 function P.define_default_config()
     local new_packages = {}
     for _, pkg in pairs(table.copy(packages)) do
@@ -1171,15 +1192,14 @@ function P.load_rules()
     end
     try_load_rules(System.mkpath(Jagen.root_dir))
 
-    do
-        local project_dir = os.getenv('jagen_project_dir')
-        if project_dir ~= nil then
-            local filename = System.mkpath(project_dir, '.jagen-rules.lua')
-            local file = io.open(filename, 'rb')
-            if file then
-                assert(loadstring(file:read('*a'), filename))()
-                file:close()
-            end
+    local project_dir = os.getenv('jagen_project_dir')
+    if project_dir then
+        P.define_project_package(project_dir)
+        local filename = System.mkpath(project_dir, '.jagen-rules.lua')
+        local file = io.open(filename, 'rb')
+        if file then
+            assert(loadstring(file:read('*a'), filename))()
+            file:close()
         end
     end
 
