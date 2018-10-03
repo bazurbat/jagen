@@ -186,12 +186,23 @@ jagen_source_exclude="${jagen_source_exclude-}"
 # The default build profile: release|debug|release_with_debug
 jagen_build_profile="${jagen_build_profile-release}"
 EOF
+if [ "${jagen_project_dir-}" ]; then
+    cat >>"$config_file" <<EOF
+
+# A directory of the project associated with this root.
+jagen_project_dir="$jagen_project_dir"
+EOF
+fi
 }
 
 main() {
     local layer path
 
     parse_command_line "$@"
+
+    if [ -f '.jagen-rules.lua' ]; then
+        jagen_project_dir=$(pwd -P)
+    fi
 
     if [ "${jagen_root_dir-}" ]; then
         [ -d "$jagen_root_dir" ] || mkdir -p "$jagen_root_dir"
