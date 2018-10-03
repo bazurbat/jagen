@@ -38,6 +38,7 @@ SYNOPSIS:
 OPTIONS:
 
   -h, --help   show this usage information
+  -d, --dir    initialize the specified directory
   -a, --flag   add the flag to jagen_flags
   -f, --force  force to initialize non-empty directory
   -L           add the directory to jagen_layer_path
@@ -97,6 +98,8 @@ parse_command_line() {
                     case $1 in
                         -h|--help)
                             show_usage; exit 0 ;;
+                        -d|--dir)
+                            jagen_root_dir="$2"; shift ;;
                         -a|--flag)
                             jagen_flags="${jagen_flags-} $2"; shift ;;
                         -f|--force)
@@ -122,7 +125,7 @@ write_env() {
 #!/bin/sh
 
 jagen_dir=$jagen_dir
-jagen_root_dir=$(pwd -P)
+jagen_root_dir=$jagen_root_dir
 export jagen_dir jagen_root_dir
 
 . "\$jagen_dir/env.sh"; sts=\$?
@@ -189,9 +192,19 @@ main() {
     local layer path
 
     parse_command_line "$@"
+
+    if [ "${jagen_root_dir-}" ]; then
+        [ -d "$jagen_root_dir" ] || mkdir -p "$jagen_root_dir"
+        cd "$jagen_root_dir"
+    else
+        jagen_root_dir=.
+    fi
+    jagen_root_dir=$(pwd -P)
+
     if [ -z "${use_force-}" -a "$(ls -A)" ]; then
         die "not initializing non-empty directory without force"
     fi
+
     jagen_dir=$(dirname $0)
     if [ "$jagen_dir" = . ]; then
         jagen_dir=".jagen"
