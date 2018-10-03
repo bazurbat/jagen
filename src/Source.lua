@@ -40,6 +40,9 @@ function Source:parse(rule)
             rule.type = 'git'
         elseif url:match('%.hg$') then
             rule.type = 'hg'
+        elseif url == '.' then
+            rule.type = 'dir'
+            rule.location = System.expand('$jagen_project_dir')
         else
             rule.type = 'dist'
         end
@@ -101,6 +104,8 @@ function Source:create(source, name)
         if not source.dir then
             if source:is_scm() then
                 source.dir = System.mkpath('$jagen_src_dir', source.name or source.basename)
+            elseif source.type == 'dir' then
+                source.dir = source.location
             else
                 source.dir = System.mkpath('$jagen_build_dir', assert(source.name), source.basename)
             end
