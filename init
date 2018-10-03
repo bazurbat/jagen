@@ -6,10 +6,11 @@ jagen_url="https://github.com/bazurbat/jagen.git"
 env_file="env.sh"
 config_file="config.sh"
 runner_script="jagen"
+FS="$(printf '\t')"
 
 show_usage() {
     cat <<EOF
-Usage: init [OPTIONS...] [--] [LAYERS...]
+Usage: init [OPTIONS...] [--] [ARGS...]
 
   Initializes current directory as a Jagen project.
 
@@ -90,31 +91,32 @@ parse_command_line() {
     local eoa=
 
     while [ $# -gt 0 ]; do
-        case $1 in
+        if [ "$eoa" ]; then
+            jagen_args="${jagen_args-}${FS}${1}"
+        else
+            case $1 in
             --) eoa=1 ;;
-            -*) if [ "${eoa:-}" ]; then
-                    init_jagen_layers="${init_jagen_layers-} $1"
-                else
-                    case $1 in
-                        -h|--help)
-                            show_usage; exit 0 ;;
-                        -d|--dir)
-                            jagen_root_dir="$2"; shift ;;
-                        -a|--flag)
-                            jagen_flags="${jagen_flags-} $2"; shift ;;
-                        -f|--force)
-                            use_force=1 ;;
-                        -L)
-                            jagen_layer_path="${jagen_layer_path-} $2"; shift ;;
-                        *)
-                            die "invalid option: $1"
-                    esac
-                fi ;;
+             *) case $1 in
+                -h|--help)
+                    show_usage; exit 0 ;;
+                -d|--dir)
+                    jagen_root_dir="$2"; shift ;;
+                -a|--flag)
+                    jagen_flags="${jagen_flags-} $2"; shift ;;
+                -f|--force)
+                    use_force=1 ;;
+                -L)
+                    jagen_layer_path="${jagen_layer_path-} $2"; shift ;;
+                *)
+                    die "invalid option: $1"
+                esac ;;
              *) init_jagen_layers="${init_jagen_layers-} $1" ;;
-        esac
+            esac
+        fi
         shift
     done
 
+    jagen_args=${jagen_args+${jagen_args#$FS}}
     jagen_flags=${jagen_flags+${jagen_flags# }}
     jagen_layer_path=${jagen_layer_path+${jagen_layer_path# }}
     init_jagen_layers=${init_jagen_layers+${init_jagen_layers# }}
@@ -245,8 +247,15 @@ $jagen_layers"
     fi
     write_config "$config_file"
 
+    if [ -z "${jagen_args-}" ]; then
+        jagen_args='refresh'
+    fi
+
     . ./env.sh || exit
-    jagen refresh
+    (
+        IFS="$FS"
+        jagen $jagen_args
+    )
 }
 
 main "$@"
