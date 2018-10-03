@@ -101,6 +101,10 @@ local function format_refresh(files, packages)
         indent(4), binding('description', 'refresh'))
 end
 
+local function format_phony(files)
+    return format('build %s: phony', format_outputs(files))
+end
+
 local function format_build(build)
     local lines = { '' }
 
@@ -236,7 +240,10 @@ function P.generate(out_file, rules)
             })
     }
 
-    append(lines, format_refresh(Jagen:find_for_refresh(), sorted_rules))
+    local for_refresh = Jagen:find_for_refresh()
+    append(lines, format_refresh(for_refresh, sorted_rules))
+    append(lines, format_phony(for_refresh))
+
     extend(lines, pmap(format_package, sorted_rules))
 
     file:write(join_nl(lines))
