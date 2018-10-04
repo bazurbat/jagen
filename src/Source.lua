@@ -201,19 +201,10 @@ end
 function GitSource:new(o)
     local o = Source.new(self, o)
     o.origin = o.origin or 'origin'
-    return o
-end
-
-function GitSource:_getremoteref()
-    if self.rev then
-        return string.format('refs/%s', self.rev)
-    elseif self:gettag() then
-        return string.format('refs/tags/%s', self:gettag())
-    elseif self:getbranch() then
-        return string.format('refs/remotes/%s/%s', self.origin, self:getbranch())
-    else
-        return string.format('refs/remotes/%s/master', self.origin)
+    if o.shallow == nil then
+        o.shallow = true
     end
+    return o
 end
 
 function GitSource:_is_shallow()
@@ -240,6 +231,10 @@ end
 
 function GitSource:command(...)
     return Command:new('git --no-pager --git-dir=.git -C', quote(assert(self.dir)), ...)
+end
+
+function GitSource:getrev()
+    return self.rev or self:gettag() or self:getbranch() or 'master'
 end
 
 function GitSource:getscmdir()
@@ -278,11 +273,8 @@ function GitSource:clean()
            self:command('clean -fxd'):exec()
 end
 
-function GitSource:fetch()
-    local fmt, commands, specs = string.format, {}, {}
-    if self.location then
-        append(commands, self:command('remote set-url', self.origin, quote(self.location)))
-    end
+function GitSource:_getspecs()
+    local fmt, specs = string.format, {}
     for branch in each(self:getbranches()) do
         append(specs, fmt('+refs/heads/%s:refs/remotes/%s/%s', branch, self.origin, branch))
     end
@@ -292,35 +284,73 @@ function GitSource:fetch()
     if self.rev then
         append(specs, fmt('+%s:refs/%s', self.rev, self.rev))
     end
+    if not next(specs) then
+        append(specs, fmt('+refs/heads/master:refs/remotes/%s/master', self.origin))
+    end
+    return specs
+end
+
+function GitSource:_sync_config()
+    local fmt, commands, specs = string.format, {}, {}
+    local key, specs = fmt('remote.%s.fetch', self.origin), self:_getspecs()
+    if self:command('config', '--get', quote(key)):exec() then
+        append(commands, self:command('config', '--unset-all', quote(key)))
+    end
+    for spec in each(self:_getspecs()) do
+        append(commands, self:command('config', '--add', quote(key), quote(spec)))
+    end
+    if self.location then
+        append(commands, self:command('remote', 'set-url', quote(self.origin), quote(self.location)))
+    end
+    for command in each(commands) do
+        if not command:exec() then return end
+    end
+    return true
+end
+
+function GitSource:fetch()
+    if not self.location then return true end
     local fetch = self:command('fetch')
     if not self.shallow and self:_is_shallow() then
         fetch:append('--unshallow')
     end
-    fetch:append(self.origin)
-    for spec in each(specs) do
+    fetch:append(quote(self.location))
+    for spec in each(self:_getspecs()) do
         fetch:append(quote(spec))
     end
-    append(commands, fetch)
-    for command in each(commands) do
-        if not command:exec() then return end
+    return fetch:exec() and self:_update_submodules()
+end
+
+function GitSource:_getremoteref()
+    local fmt = string.format
+    if self.rev then
+        return fmt('refs/%s', self.rev)
+    elseif self:gettag() then
+        return fmt('refs/tags/%s', self:gettag())
+    elseif self:getbranch() then
+        return fmt('refs/remotes/%s/%s', self.origin, self:getbranch())
+    else
+        return fmt('refs/remotes/%s/master', self.origin)
     end
-    return self:_update_submodules()
 end
 
 function GitSource:switch()
     local commands = {}
-    local function getrev()
+    local function getref()
         if self.rev then
             return 'refs/'..self.rev
         else
-            return self:getrev() or 'master'
+            return self:getrev()
         end
     end
-    append(commands, self:command('checkout -q', quote(getrev()), '--'))
-    if self.force_update then
-        append(commands, self:command('reset --hard', quote(self:_getremoteref()), '--'))
-    else
-        append(commands, self:command('merge --ff-only', quote(self:_getremoteref())))
+    if not self:_sync_config() then return end
+    append(commands, self:command('checkout -q', quote(getref()), '--'))
+    if not self.rev and not self:gettag() then
+        if self.force_update then
+            append(commands, self:command('reset --hard', quote(self:_getremoteref()), '--'))
+        else
+            append(commands, self:command('merge --ff-only', quote(self:_getremoteref())))
+        end
     end
     for command in each(commands) do
         if not command:exec() then return end

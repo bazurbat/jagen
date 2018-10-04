@@ -381,6 +381,11 @@ can be used in custom scripts or as the part of another property value.
 - **source.sha256sum** (`pkg_source_sha256sum`) — SHA256 hash of the source file (for dist sources
   only)
 
+- **source.shallow** (`pkg_source_shallow`) — Specifies that the source should be cloned with the
+  history truncated to the latest commit only (depth 1). Applies only for Git. Default: `true`, set
+  to `false` explicitly to override. If this setting is changed to `false` when the source is
+  already cloned then Jagen will unshallow it during the next fetch.
+
 - **source.rev** — A revision identifier to checkout or update. Takes priority over other revision
   specifiers (branch, tag, bookmark), the interpretation depends on the underlying SCM.
 
