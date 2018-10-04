@@ -195,6 +195,13 @@ EOF
 fi
 }
 
+on_exit() {
+    if [ "${_created_root_dir-}" ]; then
+        cd /
+        rm -rf "$jagen_root_dir"
+    fi
+}
+
 main() {
     local layer path
 
@@ -205,12 +212,20 @@ main() {
 
     parse_command_line "$@"
 
+    # trapping INT which does nothing is necessary because otherwise the
+    # on_exit does not execute on SIGINT
+    trap : INT
+    trap on_exit EXIT
+
     if [ -f '.jagen-rules.lua' ]; then
         jagen_project_dir=$(pwd -P)
     fi
 
     if [ "${jagen_root_dir-}" ]; then
-        [ -d "$jagen_root_dir" ] || mkdir -p "$jagen_root_dir"
+        if ! [ -d "$jagen_root_dir" ]; then
+            mkdir -p "$jagen_root_dir"
+            _created_root_dir=1
+        fi
         cd "$jagen_root_dir"
     else
         jagen_root_dir=.
@@ -253,6 +268,10 @@ $jagen_layers"
     if [ -z "${jagen_args-}" ]; then
         jagen_args='refresh'
     fi
+
+    # at this point we consider the root successfully created and not try to
+    # delete if the later refresh fails
+    trap - INT EXIT
 
     . ./env.sh || exit
     (
