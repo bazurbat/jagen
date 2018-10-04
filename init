@@ -198,6 +198,11 @@ fi
 main() {
     local layer path
 
+    if ! [ -t 1 ]; then
+        export GIT_TERMINAL_PROMPT=0
+        export GIT_SSH_COMMAND="ssh -o BatchMode=yes"
+    fi
+
     parse_command_line "$@"
 
     if [ -f '.jagen-rules.lua' ]; then
