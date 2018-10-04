@@ -96,20 +96,18 @@ parse_command_line() {
         else
             case $1 in
             --) eoa=1 ;;
-             *) case $1 in
-                -h|--help)
-                    show_usage; exit 0 ;;
-                -d|--dir)
-                    jagen_root_dir="$2"; shift ;;
-                -a|--flag)
-                    jagen_flags="${jagen_flags-} $2"; shift ;;
-                -f|--force)
-                    use_force=1 ;;
-                -L)
-                    jagen_layer_path="${jagen_layer_path-} $2"; shift ;;
-                *)
-                    die "invalid option: $1"
-                esac ;;
+            -h|--help)
+                show_usage; exit 0 ;;
+            -d|--dir)
+                jagen_root_dir="$2"; shift ;;
+            -a|--flag)
+                jagen_flags="${jagen_flags-} $2"; shift ;;
+            -f|--force)
+                use_force=1 ;;
+            -L)
+                jagen_layer_path="${jagen_layer_path-} $2"; shift ;;
+            -*)
+                die "invalid option: $1" ;;
              *) init_jagen_layers="${init_jagen_layers-} $1" ;;
             esac
         fi
