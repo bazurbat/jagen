@@ -52,6 +52,13 @@ with fast-forward on each update. This mode can also be convenient for repositor
 seldom worked on to allow making commits and pushing from the working directory the same way as
 when using Git manually.
 
+If neither rev nor tag nor bookmark nor branch is specified then no corresponding parameter will be
+passed to SCM command invocation. The SCM tool will choose it's own default. For Git this means
+that the "master" branch will be checked out. Additionally, the configuration will be set to update
+only "master" branch for shallow repositories or all branches for normal (not shallow) repositories
+during fetch the same way as `git clone` command initially does. For Hg sources the "default"
+branch will be chosen.
+
 As a safety measure, during the update stage or with the `jagen source update` command Jagen will
 refuse to update repositories which have unsaved changes (dirty). Clean them or stash the changes
 to let the update continue.

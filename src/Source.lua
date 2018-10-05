@@ -285,7 +285,11 @@ function GitSource:_getspecs()
         append(specs, fmt('+%s:refs/%s', self.rev, self.rev))
     end
     if not next(specs) then
-        append(specs, fmt('+refs/heads/master:refs/remotes/%s/master', self.origin))
+        if self.shallow then
+            append(specs, fmt('+refs/heads/master:refs/remotes/%s/master', self.origin))
+        else
+            append(specs, fmt('+refs/heads/*:refs/remotes/%s/*', self.origin))
+        end
     end
     return specs
 end
