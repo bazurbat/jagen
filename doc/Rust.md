@@ -14,6 +14,12 @@ package { 'hello',
 }
 ```
 
+Note that this and further example package definitions do not contain `source` property. If this is
+the case Jagen expects to find the package sources in `$jagen_src_dir/hello` directory which is
+`<project-root>/src/hello` by default. You can copy or link already existing Rust project into this
+directory or add `source` definition to the examples to let Jagen clone the sources from a remote
+location. See more about defining package sources in [Managing Sources](Source.md) section.
+
 By default `stable` Rust toolchain is assumed for the package which will be downloaded and cached
 in `$jagen_dist_dir/rustup` directory during the first build. To change the toolchain use the
 `rust_toolchain` build property:
