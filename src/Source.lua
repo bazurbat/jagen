@@ -297,7 +297,7 @@ end
 function GitSource:_sync_config()
     local fmt, commands, specs = string.format, {}, {}
     local key, specs = fmt('remote.%s.fetch', self.origin), self:_getspecs()
-    if self:command('config', '--get', quote(key)):exec() then
+    if self:command('config', '--get', quote(key)):read() then
         append(commands, self:command('config', '--unset-all', quote(key)))
     end
     for spec in each(self:_getspecs()) do
