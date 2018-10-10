@@ -133,20 +133,20 @@ function Source:getbranches()
     return prepend(self.branches or {}, self.branch)
 end
 
-function Source:gettags()
-    return prepend(self.tags or {}, self.tag)
-end
-
-function Source:getbookmarks()
-    return prepend(self.bookmarks or {}, self.bookmark)
-end
-
 function Source:getbranch()
     return self:getbranches()[1]
 end
 
+function Source:gettags()
+    return prepend(self.tags or {}, self.tag)
+end
+
 function Source:gettag()
     return self:gettags()[1]
+end
+
+function Source:getbookmarks()
+    return prepend(self.bookmarks or {}, self.bookmark)
 end
 
 function Source:getbookmark()
@@ -154,7 +154,11 @@ function Source:getbookmark()
 end
 
 function Source:getrev()
-    return self.rev or self:gettag() or self:getbookmark() or self:getbranch()
+    return self.rev
+end
+
+function Source:getdefaultref()
+    return self:getrev() or self:gettag() or self:getbookmark() or self:getbranch()
 end
 
 function Source:getscmdir()
@@ -236,7 +240,13 @@ function GitSource:command(...)
 end
 
 function GitSource:getrev()
-    return self.rev or self:gettag() or self:getbranch() or 'master'
+    if self.rev then
+        return string.format('refs/%s', self.rev)
+    end
+end
+
+function GitSource:getdefaultref()
+    return self:getrev() or self:gettag() or self:getbranch()
 end
 
 function GitSource:getscmdir()
@@ -277,32 +287,54 @@ end
 
 function GitSource:_getspecs()
     local fmt, specs = string.format, {}
-    for branch in each(self:getbranches()) do
-        append(specs, fmt('+refs/heads/%s:refs/remotes/%s/%s', branch, self.origin, branch))
-    end
-    for tag in each(self:gettags()) do
-        append(specs, fmt('+refs/tags/%s:refs/tags/%s', tag, tag))
-    end
     if self.rev then
         append(specs, fmt('+%s:refs/%s', self.rev, self.rev))
     end
-    if not next(specs) then
-        if self.shallow then
-            append(specs, fmt('+refs/heads/master:refs/remotes/%s/master', self.origin))
-        else
-            append(specs, fmt('+refs/heads/*:refs/remotes/%s/*', self.origin))
+    for tag in each(self:gettags()) do
+        if tag then
+            append(specs, fmt('+refs/tags/%s:refs/tags/%s', tag, tag))
+        end
+    end
+    if self.origin then
+        for branch in each(self:getbranches()) do
+            if branch then
+                append(specs, fmt('+refs/heads/%s:refs/remotes/%s/%s', branch, self.origin, branch))
+            end
+        end
+        if not next(specs) then
+            if self.shallow then
+                append(specs, fmt('+refs/heads/master:refs/remotes/%s/master', self.origin))
+            else
+                append(specs, fmt('+refs/heads/*:refs/remotes/%s/*', self.origin))
+            end
         end
     end
     return specs
 end
 
+function GitSource:fetch()
+    local fetch = self:command('fetch')
+    if not self.shallow and self:_is_shallow() then
+        fetch:append('--unshallow')
+    end
+    local repo, specs = self.location or self.origin, self:_getspecs()
+    if repo and next(specs) then
+        fetch:append(quote(repo))
+        for spec in each(self:_getspecs()) do
+            fetch:append(quote(spec))
+        end
+    end
+    return fetch:exec() and self:_update_submodules()
+end
+
 function GitSource:_sync_config()
-    local fmt, commands, specs = string.format, {}, {}
-    local key, specs = fmt('remote.%s.fetch', self.origin), self:_getspecs()
+    local fmt, commands, specs = string.format, {}, self:_getspecs()
+    if not self.origin or not next(specs) then return true end
+    local key = fmt('remote.%s.fetch', self.origin)
     if self:command('config', '--get', quote(key)):read() then
         append(commands, self:command('config', '--unset-all', quote(key)))
     end
-    for spec in each(self:_getspecs()) do
+    for spec in each(specs) do
         append(commands, self:command('config', '--add', quote(key), quote(spec)))
     end
     if self.location then
@@ -314,48 +346,29 @@ function GitSource:_sync_config()
     return true
 end
 
-function GitSource:fetch()
-    if not self.location then return true end
-    local fetch = self:command('fetch')
-    if not self.shallow and self:_is_shallow() then
-        fetch:append('--unshallow')
-    end
-    fetch:append(quote(self.location))
-    for spec in each(self:_getspecs()) do
-        fetch:append(quote(spec))
-    end
-    return fetch:exec() and self:_update_submodules()
-end
-
 function GitSource:_getremoteref()
     local fmt = string.format
-    if self.rev then
-        return fmt('refs/%s', self.rev)
-    elseif self:gettag() then
-        return fmt('refs/tags/%s', self:gettag())
-    elseif self:getbranch() then
-        return fmt('refs/remotes/%s/%s', self.origin, self:getbranch())
-    else
-        return fmt('refs/remotes/%s/master', self.origin)
+    if not self.rev and not self:gettag() and self.origin then
+        if self:getbranch() then
+            return fmt('refs/remotes/%s/%s', self.origin, self:getbranch())
+        else
+            return fmt('refs/remotes/%s/master', self.origin)
+        end
     end
 end
 
 function GitSource:switch()
-    local commands = {}
-    local function getref()
-        if self.rev then
-            return 'refs/'..self.rev
-        else
-            return self:getrev()
-        end
-    end
     if not self:_sync_config() then return end
-    append(commands, self:command('checkout -q', quote(getref()), '--'))
-    if not self.rev and not self:gettag() then
+    local commands = {}
+    local ref, remoteref = self:getdefaultref() or 'master', self:_getremoteref()
+    if ref then
+        append(commands, self:command('checkout -q', quote(ref), '--'))
+    end
+    if remoteref then
         if self.force_update then
-            append(commands, self:command('reset --hard', quote(self:_getremoteref()), '--'))
+            append(commands, self:command('reset --hard', quote(remoteref), '--'))
         else
-            append(commands, self:command('merge --ff-only', quote(self:_getremoteref())))
+            append(commands, self:command('merge --ff-only', quote(remoteref)))
         end
     end
     for command in each(commands) do
@@ -431,7 +444,7 @@ end
 function HgSource:clean()
     local purge_cmd = self:command('purge --all')
     local update_cmd = self:command('update --clean')
-    local rev = self:getrev()
+    local rev = self:getdefaultref()
     if rev then update_cmd:append('--rev', rev) end
     return purge_cmd:exec() and update_cmd:exec()
 end
@@ -452,7 +465,7 @@ end
 
 function HgSource:switch()
     local cmd = self:command('update --check')
-    local rev = self:getrev()
+    local rev = self:getdefaultref()
     if rev then cmd:append('--rev', rev) end
     return cmd:exec()
 end
@@ -491,7 +504,7 @@ function RepoSource:manifest_rev()
 end
 
 function RepoSource:reinit()
-    local rev, manifest_rev = assert(self:getrev()), self:manifest_rev()
+    local rev, manifest_rev = assert(self:getdefaultref()), self:manifest_rev()
     if rev ~= manifest_rev then
         -- pipe to cat to inhibit prompting a user on a terminal
         return self:command('init -b', quote(rev), '| cat'):exec()
@@ -530,7 +543,7 @@ function RepoSource:clone()
     -- depth to save disk space and let the Repo tool deal with it
     return Command:new('mkdir', '-p', quote(assert(self.dir))):exec() and
            self:command('init', '-u', quote(assert(self.location)),
-                                '-b', quote(assert(self:getrev()))
+                                '-b', quote(assert(self:getdefaultref()))
                                 '--depth', 1):exec()
 end
 
