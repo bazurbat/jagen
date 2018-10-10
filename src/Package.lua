@@ -459,7 +459,7 @@ function P:collect_rule(rule, config)
 end
 
 function P:collect_require(spec, context, stage)
-    local key = string.format('%s:%s^%s', spec, self.name, context and context:tokey() or '')
+    local key = string.format('%s->%s^%s', spec, self.name, context and context:tokey() or '')
     if not all_required_packages[key] then
         local item = { self, spec, context }
         all_required_packages[key] = item
@@ -761,9 +761,16 @@ function P.define_package(rule, context)
         }
     end
 
-    local config = rule.config or context and context.config
-    local template = rule.template or context and context.template
+    local config = rule.config or context.config
+    local template = rule.template or context.template
     rule.config, rule.template = nil, nil
+
+    if config and config ~= context.config or
+       template and template ~= context.template then
+        context = copy(context)
+        context.config = config
+        context.template = template
+    end
 
     local pkg = packages[rule.name]
     if not pkg then
