@@ -828,6 +828,10 @@ function P.define_package(rule, context)
     if config then
         local build, install = this.build, this.install
 
+        if config == 'target' and build.target_requires_host then
+            rule.requires = append_uniq(pkg.name..':host', rule.requires)
+        end
+
         for spec in each(pkg.requires) do
             pkg:collect_require(spec, context)
         end
@@ -1050,10 +1054,6 @@ function P:process_config(config, this)
     end
     if install and install.type and install.type ~= false then
         self:add_stage('install', config)
-    end
-
-    if config == 'target' and build.target_requires_host then
-        rule.requires = append(rule.requires or {}, { self.name, 'host' })
     end
 
     return new_packages
