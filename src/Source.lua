@@ -200,7 +200,9 @@ end
 
 function GitSource:new(o)
     local o = Source.new(self, o)
-    o.origin = o.origin or 'origin'
+    if o.origin == nil then
+        o.origin = 'origin'
+    end
     if o.shallow == nil then
         o.shallow = true
     end
