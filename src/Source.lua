@@ -213,10 +213,6 @@ function GitSource:new(o)
     return o
 end
 
-function GitSource:_is_shallow()
-    return System.file_exists(System.mkpath(assert(self.dir), '.git', 'shallow'))
-end
-
 function GitSource:_needs_submodules()
     if self.exclude_submodules then
         return false
@@ -266,7 +262,9 @@ function GitSource:head_name()
         ref = ref:gsub('^HEAD%s+->%s+', '')
         ref = ref:gsub('^HEAD,%s+', '')
         ref = ref:gsub('^HEAD', '')
-        ref = ref:gsub(self.origin..'/HEAD', '')
+        if self.origin then
+            ref = ref:gsub(self.origin..'/HEAD', '')
+        end
         ref = ref:gsub(', , ', ', ')
         ref = ref:gsub(', $', '')
         if #ref > 0 then
@@ -301,35 +299,14 @@ function GitSource:_getspecs()
                 append(specs, fmt('+refs/heads/%s:refs/remotes/%s/%s', branch, self.origin, branch))
             end
         end
-        if not next(specs) then
-            if self.shallow then
-                append(specs, fmt('+refs/heads/master:refs/remotes/%s/master', self.origin))
-            else
-                append(specs, fmt('+refs/heads/*:refs/remotes/%s/*', self.origin))
-            end
-        end
     end
     return specs
 end
 
-function GitSource:fetch()
-    local fetch = self:command('fetch')
-    if not self.shallow and self:_is_shallow() then
-        fetch:append('--unshallow')
-    end
-    local repo, specs = self.location or self.origin, self:_getspecs()
-    if repo and next(specs) then
-        fetch:append(quote(repo))
-        for spec in each(self:_getspecs()) do
-            fetch:append(quote(spec))
-        end
-    end
-    return fetch:exec() and self:_update_submodules()
-end
-
 function GitSource:_sync_config()
+    if not self.origin then return true end
     local fmt, commands, specs = string.format, {}, self:_getspecs()
-    if not self.origin or not next(specs) then return true end
+    if not next(specs) then return true end
     local key = fmt('remote.%s.fetch', self.origin)
     if self:command('config', '--get', quote(key)):read() then
         append(commands, self:command('config', '--unset-all', quote(key)))
@@ -337,42 +314,64 @@ function GitSource:_sync_config()
     for spec in each(specs) do
         append(commands, self:command('config', '--add', quote(key), quote(spec)))
     end
-    if self.location then
-        append(commands, self:command('remote', 'set-url', quote(self.origin), quote(self.location)))
-    end
     for command in each(commands) do
         if not command:exec() then return end
     end
     return true
 end
 
-function GitSource:_getremoteref()
-    local fmt = string.format
-    if not self.rev and not self:gettag() and self.origin then
-        if self:getbranch() then
-            return fmt('refs/remotes/%s/%s', self.origin, self:getbranch())
-        else
-            return fmt('refs/remotes/%s/master', self.origin)
+function GitSource:fetch()
+    local function have_remotes()
+        return self:command('config --get-regexp "^remote\\."'):read() ~= nil
+    end
+    local function is_shallow()
+        return System.file_exists(System.mkpath(assert(self.dir), '.git', 'shallow'))
+    end
+    -- this is probably a locally initialized repo which was not pushed yet
+    if not have_remotes() then return true end
+    if self.origin and self.location then
+        local set_url = self:command('remote', 'set-url', quote(self.origin), quote(self.location))
+        if not set_url:exec() then return end
+    end
+    local fetch = self:command('fetch')
+    if not self.shallow and is_shallow() then
+        fetch:append('--unshallow')
+    end
+    if self.origin then
+        fetch:append(quote(self.origin))
+        for spec in each(self:_getspecs()) do
+            fetch:append(quote(spec))
         end
     end
+    self._did_fetch = true
+    return fetch:exec() and self:_update_submodules() and self:_sync_config()
 end
 
 function GitSource:switch()
-    if not self:_sync_config() then return end
-    local commands = {}
-    local ref, remoteref = self:getdefaultref() or 'master', self:_getremoteref()
+    local ref = self:getdefaultref()
     if ref then
-        append(commands, self:command('checkout -q', quote(ref), '--'))
+        local cmd = self:command('checkout -q', quote(ref), '--')
+        if not cmd:exec() then return end
     end
-    if remoteref then
-        if self.force_update then
-            append(commands, self:command('reset --hard', quote(remoteref), '--'))
-        else
-            append(commands, self:command('merge --ff-only', quote(remoteref)))
+    local function on_branch()
+        return self:command('symbolic-ref -q HEAD'):read() ~= nil
+    end
+    if on_branch() then
+        local branch, remoteref = self:getbranch()
+        if not branch and self._did_fetch then
+            remoteref = 'FETCH_HEAD'
+        elseif branch and self.origin then
+            remoteref = string.format('refs/remotes/%s/%s', self.origin, branch)
         end
-    end
-    for command in each(commands) do
-        if not command:exec() then return end
+        if remoteref then
+            local cmd
+            if self.force_update then
+                cmd = self:command('reset --hard', quote(remoteref), '--')
+            else
+                cmd = self:command('merge --ff-only', quote(remoteref))
+            end
+            if not cmd:exec() then return end
+        end
     end
     return self:_update_submodules('--no-fetch')
 end
