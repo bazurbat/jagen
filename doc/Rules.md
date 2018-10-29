@@ -335,13 +335,11 @@ can be used in custom scripts or as the part of another property value.
   property in the case when the base directory stored inside the `tar` archive differs from its
   filename.
 
-- **source.bookmark** — The bookmark to pull on update (Hg sources only).
+- **source.bookmark** — The bookmark to pull on update (Hg sources only). Can be a list in which
+  case the last item is used a bookmark which is used for the work directory.
 
-- **source.bookmarks** — Additional bookmarks to pull on update (Hg sources only).
-
-- **source.branch** — The branch to checkout/fetch on update (SCM sources only).
-
-- **source.branches** — Additional branches to fetch on update (SCM source only).
+- **source.branch** — The branch to checkout/fetch on update (SCM sources only). Can be a list in
+  which case the last item will be used as a branch to checkout.
 
 - **source.dir** (`pkg_source_dir`) — An absolute path to the package source directory. Defaults to
   `$jagen_src_dir/source.name` for SCM sources and `$jagen_build_dir/source.name/source.basename`
@@ -390,9 +388,7 @@ can be used in custom scripts or as the part of another property value.
   specifiers (branch, tag, bookmark), the interpretation depends on the underlying SCM.
 
 - **source.tag** — The tag (Git) or revision (Hg) to checkout and fetch on update, takes priority
-  over a branch.
-
-- **source.tags** — Additional tags (Git) or revisions (Hg) to fetch on update.
+  over a branch. Can be a list in which case the last item is the tag to checkout.
 
 - **source.type** — A type of the source: dist, git, hg, repo. The packages with the source types
   of "git", "hg" and "repo" are considered "SCM" packages and can be managed by the `jagen src`

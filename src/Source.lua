@@ -94,6 +94,16 @@ function Source:create(source, name)
         source.name = name
     end
 
+    if source.branch ~= nil and type(source.branch) ~= 'table' then
+        source.branch = { source.branch }
+    end
+    if source.tag ~= nil and type(source.tag) ~= 'table' then
+        source.tag = { source.tag }
+    end
+    if source.bookmark ~= nil and type(source.bookmark) ~= 'table' then
+        source.bookmark = { source.bookmark }
+    end
+
     if source.location then
         if not source.filename then
             source.filename = source.location:match('^.*/(.+)$') or source.location
@@ -129,28 +139,16 @@ function Source:clean_disabled()
     end
 end
 
-function Source:getbranches()
-    return prepend(self.branches or {}, self.branch)
-end
-
 function Source:getbranch()
-    return self:getbranches()[1]
-end
-
-function Source:gettags()
-    return prepend(self.tags or {}, self.tag)
+    return self.branch and self.branch[#self.branch]
 end
 
 function Source:gettag()
-    return self:gettags()[1]
-end
-
-function Source:getbookmarks()
-    return prepend(self.bookmarks or {}, self.bookmark)
+    return self.tag and self.tag[#self.tag]
 end
 
 function Source:getbookmark()
-    return self:getbookmarks()[1]
+    return self.bookmark and self.bookmark[#self.bookmark]
 end
 
 function Source:getrev()
@@ -288,13 +286,13 @@ function GitSource:_getspecs()
     if self.rev then
         append(specs, fmt('+%s:refs/%s', self.rev, self.rev))
     end
-    for tag in each(self:gettags()) do
+    for tag in each(self.tag) do
         if tag then
             append(specs, fmt('+refs/tags/%s:refs/tags/%s', tag, tag))
         end
     end
     if self.origin then
-        for branch in each(self:getbranches()) do
+        for branch in each(self.branch) do
             if branch then
                 append(specs, fmt('+refs/heads/%s:refs/remotes/%s/%s', branch, self.origin, branch))
             end
@@ -450,13 +448,13 @@ end
 
 function HgSource:fetch()
     local cmd = self:command('pull')
-    for branch in each(self:getbranches()) do
+    for branch in each(self.branch) do
         cmd:append('--branch', branch)
     end
-    for bookmark in each(self:getbookmarks()) do
+    for bookmark in each(self.bookmark) do
         cmd:append('--bookmark', bookmark)
     end
-    for tag in each(append(self:gettags(), self.rev)) do
+    for tag in each(append(self.tag, self.rev)) do
         cmd:append('--rev', tag)
     end
     return cmd:exec()
@@ -471,10 +469,10 @@ end
 
 function HgSource:clone()
     local cmd = Command:new('hg clone')
-    for branch in each(self:getbranches()) do
+    for branch in each(self.branch) do
         cmd:append('--branch', branch)
     end
-    for rev in each(extend(self:getbookmarks(), self.gettags())) do
+    for rev in each(extend(self.bookmark, self.tag)) do
         cmd:append('--rev', rev)
     end
     cmd:append(quote(assert(self.location)))
