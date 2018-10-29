@@ -523,6 +523,10 @@ function table.merge(to, from)
     for k, v in pairs(from) do
         if type(k) ~= 'number' then
             if type(v) == 'table' then
+                local rtv = rawget(to, k)
+                if rtv ~= nil and type(rtv) ~= 'table' then
+                    rawset(to, k, { rtv })
+                end
                 rawset(to, k, table.merge(rawget(to, k) or {}, v))
             else
                 rawset(to, k, v)
