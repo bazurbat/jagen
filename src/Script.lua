@@ -11,7 +11,7 @@ local function write_pkg_var(w, prefix, name, value)
     elseif tp == 'boolean' then
         w("pkg_%s%s='yes'", prefix, name)
     elseif tp == 'table' then
-        local values = table.ivalues(value)
+        local values = table.ivalues(table.filter(value, function (v) return v end))
         if #values > 0 then
             w("pkg_%s%s='%s'", prefix, name, table.concat(values, '\t'))
         end
