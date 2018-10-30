@@ -12,6 +12,8 @@ function Source:new(o)
 end
 
 function Source:parse(rule)
+    if not rule then return end
+
     if type(rule) == 'string' then
         rule = { location = rule }
     elseif type(rule) == 'table' then
@@ -27,8 +29,8 @@ function Source:parse(rule)
         end
     end
 
-    if rule and not rule.type and rule.location then
-        local url = rule.location
+    local url = rule.location
+    if not rule.type and rule.location then
         if url:match('%.gz$') or url:match('%.tgz$') or
            url:match('%.xz$') or url:match('%.txz$') or
            url:match('%.bz2$') or url:match('%.tbz2$') or
@@ -43,6 +45,8 @@ function Source:parse(rule)
         elseif url == '.' then
             rule.type = 'dir'
             rule.location = System.expand('$jagen_project_dir')
+        elseif not url:match('^.+://.+/.+$') and url:match('[%w_-]+') then
+            rule.type = 'dist:gdrive'
         else
             rule.type = 'dist'
         end

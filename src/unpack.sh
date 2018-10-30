@@ -1,24 +1,51 @@
 #!/bin/sh
 
+pkg__download_cleanup() {
+    if [ "$pkg__current_download" ]; then
+        for item in $pkg__current_download; do
+            pkg_run rm -f "$item"
+        done
+        pkg__current_download=
+    fi
+}
+
+pkg__on_download_int() {
+    trap - INT EXIT
+    pkg__download_cleanup
+    exit
+}
+
 pkg__on_download_exit() {
-   if [ "$pkg__current_download" ]; then
-       pkg_run rm -f "$pkg__current_download"
-   fi
+    trap - INT EXIT
+    pkg__download_cleanup
 }
 
 pkg__download() {
     local src_path="${1:?}"
     local dest_path="${2:?}"
-
-    pkg__current_download="$dest_path"
-
-    trap pkg__on_download_exit EXIT
+    local cookie_path= confirm_key=
 
     pkg_run mkdir -p "${dest_path%/*}"
-    curl -L "$src_path" -o "$dest_path" ||
-        die "failed to download $src_path"
+    trap pkg__on_download_int INT
+    trap pkg__on_download_exit EXIT
 
-    trap - EXIT
+    if [ "$pkg_source_type" = "dist:gdrive" ]; then
+        cookie_path=$(mktemp)
+        [ "$cookie_path" ] || die "failed to create a temp file for storing cookies"
+
+        pkg__current_download="$cookie_path $dest_path"
+        pkg_run curl -fL -c "$cookie_path" "https://drive.google.com/uc?export=download&id=$src_path" -o "$dest_path"
+
+        confirm_key=$(awk '$1 ~ /#HttpOnly_.drive.google.com/ && $6 ~ /^download_warning_/ { print $NF }' "$cookie_path")
+        if [ "$confirm_key" ]; then
+            pkg_run curl -fL "https://drive.google.com/uc?export=download&confirm=$confirm_key&id=$src_path" -o "$dest_path"
+        fi
+    else
+        pkg__current_download="$dest_path"
+        pkg_run curl -fL "$src_path" -o "$dest_path"
+    fi
+
+    trap - INT EXIT
 }
 
 pkg__path_is_uri() {
@@ -34,7 +61,7 @@ pkg__unpack_dist() {
     local dist_path="${jagen_dist_dir:?}/${pkg_source_filename:?}"
 
     if ! [ -f "$dist_path" ]; then
-        if pkg__path_is_uri "$src_path"; then
+        if [ "$pkg_source_type" = "dist:gdrive" ] || pkg__path_is_uri "$src_path"; then
             if in_flags offline && ! pkg__uri_is_local "$src_path"; then
                 die "unable to download $src_path: offline mode"
             else
@@ -121,7 +148,7 @@ pkg_unpack() {
     local src_path="$2"
 
     case $src_type in
-        dist)
+        dist|dist:*)
             pkg__unpack_dist "$src_path" "$pkg_work_dir"
             ;;
         git|hg|repo)
