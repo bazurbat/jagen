@@ -494,6 +494,7 @@ function Jagen.command.build(args)
         { 'all,a' },
         { 'no-rebuild,n' },
         { 'progress,p' },
+        { 'follow,f' },
         { 'quiet,q' },
     }
     args = options:parse(args)

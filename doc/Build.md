@@ -41,6 +41,11 @@ The '--progress' option enables printing of the build progress from all logs in
 parallel. If this option is not given the output is shown only for targets
 directly specified on the command line.
 
+The '--follow' option allows monitoring the output from build commands in real
+time. Works best when used for a single package or dependent targets because
+when there are several package builds in progress their output will be
+intermixed.
+
 The '--quiet' option disables build progress output from Jagen and leaves the
 build tool (Ninja) connected directly to the terminal.
 

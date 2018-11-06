@@ -18,7 +18,18 @@ pkg__log_file="${jagen_log_dir:?}/${pkg__stamp_name}.log"
 
 : >"$pkg__log_file"
 if [ -z "${pkg__interactive-}" ]; then
-    exec >>"$pkg__log_file" 2>&1
+    if [ "$jagen__stage_quiet" ]; then
+        exec 1>>"$pkg__log_file" 2>&1
+    else
+        pkg__pipe=$(mktemp -u /tmp/jagen.XXXXXXXX)
+        trap "exit 2" INT
+        trap "rm -f \"$pkg__pipe\"" EXIT
+        mkfifo "$pkg__pipe" || exit 1
+        # no need to save a pid and kill tee manually because it finishes when
+        # the current shell closes the pipe on exit
+        tee <"$pkg__pipe" -a "$pkg__log_file" &
+        exec 1>"$pkg__pipe" 2>&1
+    fi
 fi
 
 cd "$jagen_build_dir" || exit

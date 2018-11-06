@@ -27,7 +27,7 @@ cleanup() {
 
 cmd_build() {
     local IFS="$(printf '\n\t')"
-    local build_all no_rebuild show_progress is_quiet with_output
+    local build_all no_rebuild show_all follow_progress is_quiet
     local targets log logs sts build_log="${jagen_log_dir:?}/build.log"
 
     assert_ninja_found
@@ -36,7 +36,8 @@ cmd_build() {
         case $1 in
             --all) build_all=1 ;;
             --no-rebuild) no_rebuild=1 ;;
-            --progress) show_progress=1 ;;
+            --progress) show_all=1 ;;
+            --follow) follow_progress=1 ;;
             --quiet) is_quiet=1 ;;
             -*) ;; # ignore unknown options
              *) targets="${targets}${S}${1}"
@@ -52,39 +53,37 @@ cmd_build() {
         : > "$log" || return
     done
 
+    [ "$build_all" ] && targets=
+
     if [ -z "$no_rebuild" ]; then
         rm -f $targets || return
     fi
 
-    if ! [ "$is_quiet" ]; then
-        if [ "$show_progress" ]; then
+    trap 'exit 2' INT
+    trap cleanup EXIT
+
+    if [ "$is_quiet" -o "$follow_progress" ]; then
+        export jagen__stage_quiet=1
+    fi
+
+    if [ ! "$is_quiet" -a "$follow_progress" ]; then
+        if [ "$show_all" ]; then
             tail -qFc0 "$jagen_log_dir"/*.log 2>/dev/null &
-            with_output=1
             tail_pid=$!
         elif [ "$logs" ]; then
             tail -qFn+1 "$build_log" $logs 2>/dev/null &
-            with_output=1
             tail_pid=$!
         fi
     fi
 
-    trap cleanup INT
-
-    # It is hard to reliably reproduce but testing shows that both syncs are
-    # necessary to avoid losing log messages from console. When neither of
-    # 'show_*' options are supplied we do not sync assuming non-interactive run
-    # (build server) not caring about console logs that much.
-
-    [ "$build_all" ] && targets=
-    if [ "$with_output" ]; then
-        sync
-        ninja $targets >"$build_log"; sts=$?
-        sync
+    if [ "$tail_pid" ]; then
+        # redirecting the output to the build log is needed to let tail buffer
+        # it because otherwise when ninja writes to the console at the same
+        # time as tail the lines often mix with each other
+        ninja $targets >"$build_log" 2>&1; sts=$?
     else
         ninja $targets; sts=$?
     fi
-
-    cleanup
 
     return $sts
 }
