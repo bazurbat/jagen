@@ -14,7 +14,9 @@ Option             | Description
 -i, --interactive  | build targets in interactive mode
 -a, --all          | continue until everything is up to date
 -n, --no-rebuild   | do not rebuild targets which are already up to date
--p, --progress     | show build progress
+-f, --follow       | follow a build output for the specified targets only
+-F, --follow-all   | follow all build output
+-q, --quiet        | inhibit build output
 
 ### Synopsis
 
@@ -25,34 +27,38 @@ Use the '--clean' option to remove the package's build directories before the
 start. It also causes the 'configure' stage of the affected packages to become
 out of date.
 
-With the '--interactive' option the specified target commands will be run directly without going
-through Jagen wrapper. This allows build tools to detect the terminal and show colored messages but
-the output will not be captured and target dependencies will not be honored. This means that in the
-most cases you will need to run the build without the '-i' option first to make sure all
-requirements are up to date.
+Use the '--interactive' option to allow build tools to detect the terminal and
+show colored messages. This mode ignores target dependencies and does not
+capture command output. Run build without '-i' to bring all targets up to date
+before using this option.
 
-Use the '--all' option to build everything out of date in the current project
-in addition to the specified targets.
+Use the '--all' option to build everything out of date in the current project in
+addition to the specified targets.
 
 The '--no-rebuild' option causes the command to behave similarly to 'make': it
 ensures that targets are up to date instead of rebuilding them unconditionally.
 
-The '--progress' option enables printing of the build progress from all logs in
-parallel. If this option is not given the output is shown only for targets
-directly specified on the command line.
-
 The '--follow' option allows monitoring the output from build commands in real
-time. Works best when used for a single package or dependent targets because
+time. It shows the output only for targets specified for the current build
+command. Works best when used for a single package or dependent targets because
 when there are several package builds in progress their output will be
 intermixed.
 
-The '--quiet' option disables build progress output from Jagen and leaves the
-build tool (Ninja) connected directly to the terminal.
+The '--follow-all' option shows the output from all currently running build
+commands at the same time. This includes the targets building as dependencies of
+the ones specified as build command arguments and all others not currently up to
+date if used in combination with '--all' option.
 
-Arguments after '--' will be passed literally to the underlying build tool.
-The handling depends on the build tool in question but be aware of the case
-when multiple targets matched as the same arguments will be passed to all of
-their build commands which might have surprising results.
+If neither the '--follow' nor the '--follow-all' option is given the output of
+all commands shown in turn after they complete.
+
+The '--quiet' option disables printing of the command outputs to the terminal.
+The output is still saved to logs.
+
+Arguments after '--' will be passed literally to the underlying build tool.  The
+handling depends on the build tool in question but be aware of the case when
+multiple targets matched as the same arguments will be passed to all of their
+build commands which might have surprising results.
 
 It is best to use this functionality to quickly adjust the behaviour of a
 single compile or configure command, such as:

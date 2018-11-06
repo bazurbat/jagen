@@ -493,8 +493,8 @@ function Jagen.command.build(args)
         { 'interactive,i' },
         { 'all,a' },
         { 'no-rebuild,n' },
-        { 'progress,p' },
         { 'follow,f' },
+        { 'follow-all,F' },
         { 'quiet,q' },
     }
     args = options:parse(args)

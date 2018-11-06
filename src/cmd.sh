@@ -31,7 +31,7 @@ cleanup() {
 
 cmd_build() {
     local IFS="$(printf '\n\t')"
-    local build_all no_rebuild show_all follow_progress is_quiet
+    local build_all no_rebuild follow_all follow_selected is_quiet
     local targets log logs sts build_log="${jagen_log_dir:?}/build.log"
 
     assert_ninja_found
@@ -40,8 +40,8 @@ cmd_build() {
         case $1 in
             --all) build_all=1 ;;
             --no-rebuild) no_rebuild=1 ;;
-            --progress) show_all=1 ;;
-            --follow) follow_progress=1 ;;
+            --follow) follow_selected=1 ;;
+            --follow-all) follow_all=1 ;;
             --quiet) is_quiet=1 ;;
             -*) ;; # ignore unknown options
              *) targets="${targets}${S}${1}"
@@ -66,16 +66,16 @@ cmd_build() {
     trap 'exit 2' INT
     trap cleanup EXIT
 
-    if [ "$is_quiet" -o "$follow_progress" ]; then
+    if [ "$is_quiet" -o "$follow_selected" -o "$follow_all" ]; then
         export jagen__stage_quiet=1
     fi
 
-    if [ ! "$is_quiet" -a "$follow_progress" ]; then
-        if [ "$show_all" ]; then
-            tail -qFc0 "$jagen_log_dir"/*.log 2>/dev/null &
+    if [ ! "$is_quiet" ]; then
+        if [ "$follow_selected" ]; then
+            tail -qFc0 "$build_log" $logs 2>/dev/null &
             tail_pid=$!
-        elif [ "$logs" ]; then
-            tail -qFn+1 "$build_log" $logs 2>/dev/null &
+        elif [ "$follow_all" ]; then
+            tail -qFc0 "$jagen_log_dir"/*.log 2>/dev/null &
             tail_pid=$!
         fi
     fi
