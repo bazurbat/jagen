@@ -561,7 +561,8 @@ function Jagen.command.build(args)
     local ok
     if args['interactive'] then
         for key in pairs(targets) do
-            ok = Command:new(quote('jagen-stage'), '-i', unpack(key:split(':'))):exec()
+            local a = key:split(':')
+            ok = Command:newf('jagen-stage -i %s %s %s', a[1] or "''", a[2] or "''", a[3] or "''"):exec()
             if not ok then return ok end
         end
     else
