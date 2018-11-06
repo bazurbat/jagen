@@ -11,6 +11,10 @@ die() {
     exit 1
 }
 
+is_wsl() {
+    grep -q Microsoft /proc/version 2>&-
+}
+
 assert_ninja_found() {
     if [ -z "$(command -v ninja)" ]; then
         die "could not find 'ninja' command in your PATH, please install \
@@ -81,6 +85,12 @@ cmd_build() {
         # it because otherwise when ninja writes to the console at the same
         # time as tail the lines often mix with each other
         ninja $targets >"$build_log" 2>&1; sts=$?
+        if is_wsl; then
+            # the console on Windows is really slow
+            sleep 0.5
+        else
+            sleep 0.1
+        fi
     else
         ninja $targets; sts=$?
     fi
