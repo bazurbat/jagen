@@ -309,7 +309,10 @@ jagen__versions() {
 }
 
 jagen__get_cmake_version() {
-    printf "%s" $(cmake --version | head -1 | cut -d' ' -f3)
+    if [ -z "$jagen__cached_cmake_version" ]; then
+        jagen__cached_cmake_version=$(cmake --version | head -1 | cut -d' ' -f3)
+    fi
+    printf "%s" "$jagen__cached_cmake_version"
 }
 
 jagen__is_empty() {
