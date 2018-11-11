@@ -83,6 +83,7 @@ OPTIONS
   -i, --interactive   enable interactive mode
   -a, --all           continue until everything is up to date
   -n, --no-rebuild    do not rebuild targets which are already up to date
+  -p, --progress      print the output of build targets after completion
   -f, --follow        follow a build output for the specified targets only
   -F, --follow-all    follow all build output
   -q, --quiet         inhibit build output
@@ -110,6 +111,9 @@ SYNOPSIS
   it ensures that targets are up to date instead of rebuilding them
   unconditionally.
 
+  The '--progress' option prints the buffered output of all build targets as
+  soon as they complete. 
+
   The '--follow' option allows monitoring the output from build commands in real
   time. It shows the output only for targets specified for the current build
   command. Works best when used for a single package or dependent targets
@@ -120,9 +124,6 @@ SYNOPSIS
   commands at the same time. This includes the targets building as dependencies
   of the ones specified as build command arguments and all others not currently
   up to date if used in combination with '--all' option.
-
-  If neither the '--follow' nor the '--follow-all' option is given the output of
-  all commands shown in turn after they complete.
 
   The '--quiet' option disables printing of the command outputs to the terminal.
   The output is still saved to logs.
