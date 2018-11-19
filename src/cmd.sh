@@ -159,6 +159,7 @@ cmd_find_for_refresh() {
         -name tags -o \
         -name Session.vim \
     ')' -prune -o -print
+    echo "$jagen_root_dir"
     echo_if_exists "$jagen_root_dir/config.sh"
     echo_if_exists "$jagen_root_dir/env.sh"
     echo_if_exists "$jagen_root_dir/jagen"
