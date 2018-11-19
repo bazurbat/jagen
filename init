@@ -217,6 +217,13 @@ main() {
     trap : INT
     trap on_exit EXIT
 
+    jagen_dir=$(dirname $0)
+    if [ "$jagen_dir" = . ]; then
+        jagen_dir=".jagen"
+        git_clone "$jagen_url" "$jagen_dir"
+    fi
+    jagen_dir=$(cd "$jagen_dir" 2>&- && pwd -P)
+
     if [ -f '.jagen-rules.lua' ]; then
         jagen_project_dir=$(pwd -P)
     fi
@@ -235,13 +242,6 @@ main() {
     if [ -z "${use_force-}" -a "$(ls -A)" ]; then
         die "not initializing non-empty directory without force"
     fi
-
-    jagen_dir=$(dirname $0)
-    if [ "$jagen_dir" = . ]; then
-        jagen_dir=".jagen"
-        git_clone "$jagen_url" "$jagen_dir"
-    fi
-    jagen_dir=$(cd "$jagen_dir" 2>&- && pwd -P)
 
     for layer in ${init_jagen_layers-}; do
         if path_is_url "$layer"; then
