@@ -2,14 +2,28 @@
 
 _jagen_complete() {
     local word="$2" prev_word="$3"
-    local cur prev
+    local cur prev bin dir build_dir
     local jagen_command jagen_subcommand
 
-    local names_file="$jagen_build_dir/.jagen-names"
-    local scm_names_file="$jagen_build_dir/.jagen-scm-names"
-    local configs_file="$jagen_build_dir/.jagen-configs"
-    local targets_file="$jagen_build_dir/.jagen-targets"
-    local layers_file="$jagen_build_dir/.jagen-layers"
+    bin=${COMP_WORDS[0]}
+    dir=${bin%/*}
+    if [[ "$dir" == "$bin" ]]; then
+        dir="$jagen_dir"
+        build_dir="$jagen_build_dir"
+    else
+        build_dir=$(source "$dir/env.sh"
+                    echo "$jagen_build_dir")
+    fi
+    [ "$dir" ] || return 0
+
+    jagen_command=${COMP_WORDS[1]}
+    jagen_subcommand=${COMP_WORDS[2]}
+
+    local names_file="$build_dir/.jagen-names"
+    local scm_names_file="$build_dir/.jagen-scm-names"
+    local configs_file="$build_dir/.jagen-configs"
+    local targets_file="$build_dir/.jagen-targets"
+    local layers_file="$build_dir/.jagen-layers"
 
     local top_cmds='help clean refresh build source src list update'
     local src_cmds='dirty status clean update delete each'
@@ -19,15 +33,9 @@ _jagen_complete() {
     local build_opt='-m --match -c --clean -a --all -n --no-rebuild -p --progress -q --quiet'
     local list_packages_opt='--depth -d --all -a'
 
-    # environment is not sourced
-    [ "$jagen_dir" ] || return 2
-
     _get_comp_words_by_ref -n : cur prev
 
-    jagen_command=${COMP_WORDS[1]}
-    jagen_subcommand=${COMP_WORDS[2]}
-
-    if [ "$prev" == "jagen" -a ${#COMP_WORDS[*]} -le 2 ]; then
+    if [[ "$prev" =~ jagen$ && ${#COMP_WORDS[*]} -le 2 ]]; then
         COMPREPLY=($(compgen -W "$help_opt $top_cmds" -- "$cur"))
         return
     fi
