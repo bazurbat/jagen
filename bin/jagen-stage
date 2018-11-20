@@ -27,7 +27,7 @@ _on_exit() {
             cat "$pkg__log_file" 1>&3
         fi
     fi
-    exit $pkg__run_last_error
+    [ $pkg__run_last_error = 0 ] || exit $pkg__run_last_error
 }
 
 trap 'exit 2' INT
