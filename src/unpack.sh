@@ -156,7 +156,7 @@ pkg_unpack() {
                [ "$pkg_source_exclude" ]; then
                 message "not updating $pkg_name: the source is excluded"
             else
-                _jagen src update "$pkg_name" || return
+                pkg_run _jagen src update "$pkg_name"
             fi
             ;;
     esac
