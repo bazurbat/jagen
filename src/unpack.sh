@@ -1,23 +1,8 @@
 #!/bin/sh
 
 pkg__download_cleanup() {
-    if [ "$pkg__current_download" ]; then
-        for item in $pkg__current_download; do
-            pkg_run rm -f "$item"
-        done
-        pkg__current_download=
-    fi
-}
-
-pkg__on_download_int() {
-    trap - INT EXIT
-    pkg__download_cleanup
-    exit
-}
-
-pkg__on_download_exit() {
-    trap - INT EXIT
-    pkg__download_cleanup
+    pkg__rm $pkg__current_download
+    pkg__current_download=
 }
 
 pkg__download() {
@@ -26,11 +11,9 @@ pkg__download() {
     local cookie_path= confirm_key=
 
     pkg_run mkdir -p "${dest_path%/*}"
-    trap pkg__on_download_int INT
-    trap pkg__on_download_exit EXIT
 
     if [ "$pkg_source_type" = "dist:gdrive" ]; then
-        cookie_path=$(mktemp)
+        cookie_path=$(mktemp /tmp/jagen-cookie.XXXXXXXX)
         [ "$cookie_path" ] || die "failed to create a temp file for storing cookies"
 
         pkg__current_download="$cookie_path $dest_path"
@@ -45,7 +28,8 @@ pkg__download() {
         pkg_run curl -fL "$src_path" -o "$dest_path"
     fi
 
-    trap - INT EXIT
+    # cleanup only cookie if set
+    pkg__current_download="$cookie_path"
 }
 
 pkg__path_is_uri() {

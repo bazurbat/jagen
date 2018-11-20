@@ -30,6 +30,16 @@ pkg_run() {
     fi
 }
 
+pkg__rm() {
+    local item
+    for item in "$@"; do
+        if [ "$item" ]; then
+            debug "removing $item"
+            rm -f "$item"
+        fi
+    done
+}
+
 pkg_run_patch() {
     local num="${1:?}" filename="${2:?}"
     pkg_run patch -p"$num" -i "$filename"
