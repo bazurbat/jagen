@@ -10,6 +10,8 @@ pkg__download() {
     local dest_path="${2:?}"
     local cookie_path= confirm_key=
 
+    jagen__need_cmd curl
+
     pkg_run mkdir -p "${dest_path%/*}"
 
     if [ "$pkg_source_type" = "dist:gdrive" ]; then
