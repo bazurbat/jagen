@@ -8,7 +8,7 @@ jagen_stage_install() {
     if [ -f "${jagen_dist_dir:?}/repo" ]; then
         pkg_run cp -v "$jagen_dist_dir/repo" "$dest"
     else
-        curl "$2" > "$dest/repo" || die
+        pkg__curl "$2" > "$dest/repo" || die
     fi
     pkg_run chmod +x "$dest/repo"
 }

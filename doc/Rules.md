@@ -698,6 +698,12 @@ install = value
   (`$jagen_root_dir/host`).
 - **jagen_include_dir** — The location of the `include` directory
   (`$jagen_root_dir/include`).
+- **jagen_insecure** — Adds the `--insecure` flag to curl command during
+  downloads if set. This disables verifying of servers certificates. Please be
+  very careful with this flag! It is intended only for the case when a corporate
+  proxy MITMs you with invalid certificate or build env does not have an
+  appropriate CA installed but you are in a rush. Do not forget to unset this
+  flag once the problem is fixed.
 - **jagen_jobs** — The default number of jobs to run for build commands.
   Default: the number of processors on the system. Overriden by the
   package-specific `build.jobs` property.

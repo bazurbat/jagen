@@ -393,8 +393,16 @@ function GitSource:clone()
         if self.location:match('^https?://') then
             local url = self.location..'/info/refs?service=git-upload-pack'
             local pattern = 'Content%-Type: application/x%-git'
-            local command = Command:new('curl -fisS', quote(url))
-            if command:exists() and command:read('*a'):match(pattern) then
+            local command = Command:new('curl', '-fisS')
+            if not string.empty(os.getenv('jagen_insecure')) then
+                command:append('--insecure')
+            end
+            command:append(quote(url))
+            if not command:exists() then
+                Log.error("need 'curl' (command not found)")
+                return
+            end
+            if command:read('*a'):match(pattern) then
                 smart = true
             end
         else

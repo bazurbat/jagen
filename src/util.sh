@@ -39,6 +39,11 @@ pkg__rm() {
     done
 }
 
+pkg__curl() {
+    jagen__need_cmd curl
+    pkg_run curl -fL ${jagen_insecure:+--insecure} "$@"
+}
+
 pkg_run_patch() {
     local num="${1:?}" filename="${2:?}"
     pkg_run patch -p"$num" -i "$filename"

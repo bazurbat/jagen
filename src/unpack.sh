@@ -10,8 +10,6 @@ pkg__download() {
     local dest_path="${2:?}"
     local cookie_path= confirm_key=
 
-    jagen__need_cmd curl
-
     pkg_run mkdir -p "${dest_path%/*}"
 
     if [ "$pkg_source_type" = "dist:gdrive" ]; then
@@ -19,15 +17,15 @@ pkg__download() {
         [ "$cookie_path" ] || die "failed to create a temp file for storing cookies"
 
         pkg__current_download="$cookie_path $dest_path"
-        pkg_run curl -fL -c "$cookie_path" "https://drive.google.com/uc?export=download&id=$src_path" -o "$dest_path"
+        pkg__curl -c "$cookie_path" "https://drive.google.com/uc?export=download&id=$src_path" -o "$dest_path"
 
         confirm_key=$(awk '$1 ~ /#HttpOnly_.drive.google.com/ && $6 ~ /^download_warning_/ { print $NF }' "$cookie_path")
         if [ "$confirm_key" ]; then
-            pkg_run curl -fL "https://drive.google.com/uc?export=download&confirm=$confirm_key&id=$src_path" -o "$dest_path"
+            pkg__curl "https://drive.google.com/uc?export=download&confirm=$confirm_key&id=$src_path" -o "$dest_path"
         fi
     else
         pkg__current_download="$dest_path"
-        pkg_run curl -fL "$src_path" -o "$dest_path"
+        pkg__curl "$src_path" -o "$dest_path"
     fi
 
     # cleanup only cookie if set
