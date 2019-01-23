@@ -32,14 +32,14 @@ _on_exit() {
     pkg__download_cleanup
 
     if [ -z "$jagen__stage_quiet" -a -z "$jagen__stage_verbose" ]; then
-        if [ "$pkg__run_last_error" != 0 ] && ! in_list "$pkg__log_file" $jagen__cmd_logs; then
+        if [ "$jagen__last_error" != 0 ] && ! in_list "$pkg__log_file" $jagen__cmd_logs; then
             # In the case when the output is buffered by ninja and the command
             # was interrupted the output will be discarded and cat will not
             # print anything. This is actually what we want in this case.
             cat "$pkg__log_file" 1>&3
         fi
     fi
-    [ $pkg__run_last_error = 0 ] || exit $pkg__run_last_error
+    [ $jagen__last_error = 0 ] || exit $jagen__last_error
 }
 
 # Do not allow to interrupt the stage. Commands running through pkg_run will

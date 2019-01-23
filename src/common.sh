@@ -1,5 +1,7 @@
 #!/bin/sh
 
+jagen__last_error=0
+
 message() {
     printf "(I) %s\n" "$*"
 }
@@ -38,6 +40,7 @@ die() {
     else
         error "$*"
     fi
+    jagen__last_error=$ret
     exit $ret
 }
 

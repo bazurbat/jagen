@@ -1,7 +1,6 @@
 #!/bin/sh
 
 : ${pkg_run_on_error:=exit}
-pkg__run_last_error=0
 
 pkg__get_jobs() {
     printf "%s" "${pkg_build_jobs:-${jagen_jobs:-$(jagen_nproc)}}"
@@ -24,8 +23,8 @@ pkg_run() {
     esac
 
     debug1 $cmd "$*"
-    $cmd "$@"; pkg__run_last_error=$?
-    if [ "$pkg__run_last_error" != 0 ]; then
+    $cmd "$@"; jagen__last_error=$?
+    if [ "$jagen__last_error" != 0 ]; then
         $pkg_run_on_error
     fi
 }
