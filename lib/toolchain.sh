@@ -61,7 +61,7 @@ toolchain_generate_wrappers() {
         die "toolchain_generate_wrappers: the src dir '$src_dir' does not exist"
 
     if [ "$prefix" ]; then
-        paths=$(find "$src_dir" -maxdepth 1 -type f -name "${prefix}*")
+        paths=$(find "$src_dir/bin" "$src_dir" -maxdepth 1 -type f -name "${prefix}*")
         [ "$paths" ] || die "Failed to find any files matching ${prefix}* in $src_dir, \
 no toolchain wrappers will be generated. Please verify that the specified toolchain build \
 system and source directory are correct."

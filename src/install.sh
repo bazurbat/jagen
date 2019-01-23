@@ -48,7 +48,7 @@ pkg_install() {
         toolchain)
             require toolchain
             toolchain_generate_wrappers    \
-                "${pkg_source_dir:?}/bin"  \
+                "${pkg_source_dir:?}"      \
                 "${pkg_toolchain_prefix}"
             ;;
         rust-toolchain)
@@ -69,7 +69,7 @@ pkg_install() {
         android-standalone-toolchain)
             require toolchain
             toolchain_generate_wrappers    \
-                "${pkg_build_dir:?}/bin"   \
+                "${pkg_build_dir:?}"       \
                 "${pkg_toolchain_prefix}"
             ;;
     esac
