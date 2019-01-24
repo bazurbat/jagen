@@ -5,7 +5,6 @@ return {
         sha256sum = '89e9bfc7ffe615f40a72c2492df0488f25fc20404e5f474501c8d55941337f71',
     },
     build = {
-        arch   = 'arm',
         system = 'arm-linux-gnueabi',
         toolchain = false
     },

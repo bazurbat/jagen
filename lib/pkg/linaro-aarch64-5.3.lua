@@ -5,7 +5,6 @@ return {
         sha256sum = '1941dcf6229d6706bcb89b7976d5d43d170efdd17c27d5fe1738e7ecf22adc37',
     },
     build = {
-        arch   = 'aarch64',
         system = 'aarch64-linux-gnu',
         toolchain = false
     },

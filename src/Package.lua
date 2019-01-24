@@ -278,6 +278,10 @@ function P:parse(rule)
     parse_section('build')
     parse_section('install')
 
+    if rule.build and rule.build.system and rule.build.arch == nil then
+        rule.build.arch = string.match(rule.build.system, '^(%w+)-?')
+    end
+
     if rule.build and rule.build.clean ~= nil then
         local clean = rule.build.clean
         if type(clean) ~= 'table' then

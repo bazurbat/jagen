@@ -8,7 +8,6 @@ return {
         basename  = 'mips-2012.03'
     },
     build = {
-        arch   = 'mips',
         system = 'mips-linux-gnu',
         toolchain = false
     },

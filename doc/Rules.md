@@ -520,8 +520,10 @@ files = { { 'filename1' } }
 
 ## Build
 
-- **build.arch** — Specifies the target machine architecture. Assigned from
-  toolchain if unset. Exported automatically.
+- **build.arch** — Specifies the target machine architecture. Derived from
+  `build.system` if unset, inherited from the toolchain otherwise. Set to
+  `false` to use inherited value even if the `build.system` is set. Exported
+  automatically.
 
 - **build.autoreconf** — If set to `true`, indicates that `autoreconf` stage is
   necessary for the package. Also causes `libtool` to be installed for the
