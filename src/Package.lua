@@ -948,7 +948,7 @@ function P:define_use(spec, context)
     end
     local key
     if use.config and use.config ~= config then
-        key = spec
+        key = string.format('%s:%s', use.name, use.config)
         context = Context:new { name = name, config = config }
         config = use.config
     else
