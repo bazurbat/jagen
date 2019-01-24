@@ -205,28 +205,18 @@ on_exit() {
 main() {
     local layer path
 
+    parse_command_line "$@"
+
     if ! [ -t 1 ]; then
         export GIT_TERMINAL_PROMPT=0
         export GIT_SSH_COMMAND="ssh -o BatchMode=yes"
     fi
 
-    parse_command_line "$@"
-
-    # trapping INT which does nothing is necessary because otherwise the
-    # on_exit does not execute on SIGINT
+    # Just do nothing on SIGINT because many shells (except Bash) do not call
+    # EXIT handler when exiting due to a signal. External commands (such as
+    # Git) will still receive SIGINT on CTRL-C.
     trap : INT
     trap on_exit EXIT
-
-    jagen_dir=$(dirname $0)
-    if [ "$jagen_dir" = . ]; then
-        jagen_dir=".jagen"
-        git_clone "$jagen_url" "$jagen_dir"
-    fi
-    jagen_dir=$(cd "$jagen_dir" 2>&- && pwd -P)
-
-    if [ -f '.jagen-rules.lua' ]; then
-        jagen_project_dir=$(pwd -P)
-    fi
 
     if [ "${jagen_root_dir-}" ]; then
         if ! [ -d "$jagen_root_dir" ]; then
@@ -239,8 +229,19 @@ main() {
     fi
     jagen_root_dir=$(pwd -P)
 
-    if [ -z "${use_force-}" -a "$(ls -A)" ]; then
+    if [ -z "${use_force-}" -a "$(echo *)" != '*' ]; then
         die "not initializing non-empty directory without force"
+    fi
+
+    jagen_dir=$(dirname $0)
+    if [ "$jagen_dir" = . ]; then
+        jagen_dir=".jagen"
+        git_clone "$jagen_url" "$jagen_dir"
+    fi
+    jagen_dir=$(cd "$jagen_dir" 2>&- && pwd -P)
+
+    if [ -f '.jagen-rules.lua' ]; then
+        jagen_project_dir=$(pwd -P)
     fi
 
     for layer in ${init_jagen_layers-}; do
