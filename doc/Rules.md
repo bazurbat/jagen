@@ -659,6 +659,11 @@ build = value
 
 - **install.root** (`pkg_install_root`) — Install root.
 
+- **install.sysroot** — Sets the value of the `--sysroot` argument added to the generated toolchain
+  wrappers. Applicable only to the packages with install type 'toolchain'. Some pre-built vendor
+  toolchains have it hardcoded to something strange and require passing the argument explicitly on
+  the compiler command line.
+
 - **install.type** (`pkg_install_type`) — Specifies the installation type of
   the package. If not set defaults to the value of `build.type`. An additional
   special type "toolchain" can be used to install toolchain wrappers.

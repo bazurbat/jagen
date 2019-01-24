@@ -26,6 +26,15 @@ strings
 strip
 '
 
+toolchain_sysroot_programs='
+c++
+clang
+clang++
+cpp
+g++
+gcc
+'
+
 toolchain_cc() {
     printf "${1:-${CC:-${pkg_build_system:+${pkg_build_system}-}gcc}}"
 }
@@ -53,7 +62,7 @@ toolchain_generate_wrappers() {
     local src_dir="${1:?}" prefix="$2" dest_dir="${jagen_bin_dir:?}"
     local IFS="$jagen_IFS" S="$jagen_S"
     local PATH="$(list_remove : "$dest_dir" $PATH)"
-    local item paths dest
+    local item item2 paths dest
 
     [ -d "$dest_dir" ] || \
         die "toolchain_generate_wrappers: the dest dir '$dest_dir' does not exist"
@@ -79,6 +88,16 @@ system and source directory are correct."
         cat >"$dest" <<EOF || return
 exec \$jagen_ccache "$item" "\$@"
 EOF
+        if [ "$pkg_install_sysroot" ]; then
+            for item2 in $toolchain_sysroot_programs; do
+                if [ "${dest}" != "${dest%$item2}" ]; then
+                    cat >"$dest" <<EOF || return
+exec \$jagen_ccache "$item" --sysroot="$pkg_install_sysroot" "\$@"
+EOF
+                    break
+                fi
+            done
+        fi
         chmod +x "$dest" || return
     done
 }
