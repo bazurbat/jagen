@@ -15,10 +15,7 @@ return {
             '--disable-gas',
             '--disable-gold',
             '--disable-gprof',
-            '--disable-gdbserver',
-            '--disable-readline',
-            '--with-system-readline',
-            '--with-system-zlib',
+            '--disable-gdbserver'
         }
-    }
+    },
 }
