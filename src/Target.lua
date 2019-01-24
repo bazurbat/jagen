@@ -61,14 +61,23 @@ end
 
 function Target.from_use(spec)
     local function parse(spec)
+        local spec, alias = unpack(spec:split(' as '))
         local name, config = unpack(string.split2(spec, ':'))
-        return Target.from_args(name, nil, config)
+        local target = Target.from_args(name, nil, config)
+        if not string.empty(alias) then
+            target.alias = alias
+        end
+        return target
     end
     if type(spec) == 'string' then
         return parse(spec)
     elseif type(spec) == 'table' then
         local use = parse(spec[1])
-        use.alias = spec[2]
+        if spec.as then
+            use.alias = spec.as
+        elseif type(spec[2]) == 'string' then
+            use.alias = spec[2]
+        end
         return use
     else
         error('invalid use specification: '..pretty(spec))
