@@ -341,9 +341,11 @@ can be used in custom scripts or as the part of another property value.
 - **source.branch** — The branch to checkout/fetch on update (SCM sources only). Can be a list in
   which case the last item will be used as a branch to checkout.
 
-- **source.dir** (`pkg_source_dir`) — An absolute path to the package source directory. Defaults to
+- **source.dir** (`pkg_source_dir`) — A path to the package source directory. Defaults to
   `$jagen_src_dir/source.name` for SCM sources and `$jagen_build_dir/source.name/source.basename`
-  for dist sources.
+  for dist sources. If the path does not start with `/`, `$`, space or control character it is
+  interpreted as a relative to the default directory, otherwise it is taken verbatim and considered
+  an absolute path.
 
 - **source.exclude** (`pkg_source_exclude`) — If set to `true` indicates that the source should not
   be updated during the "unpack" stage and should not be patched during the "patch" stage. This

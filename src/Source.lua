@@ -80,7 +80,7 @@ function Source:_basename(filename)
 end
 
 function Source:create(source, name)
-    local source = source or {}
+    local source, dir = source or {}
 
     if source.type == 'dist' then
         source = DistSource:new(source)
@@ -96,6 +96,11 @@ function Source:create(source, name)
 
     if source.name == nil then
         source.name = name
+    end
+
+    if source.dir and string.match(source.dir, '^[^%c%s%z/$]') then
+        dir = source.dir
+        source.dir = nil
     end
 
     if source.branch ~= nil and type(source.branch) ~= 'table' then
@@ -128,6 +133,10 @@ function Source:create(source, name)
 
     if source.dir == nil then
         source.dir = System.mkpath('$jagen_src_dir', source.name)
+    end
+
+    if dir then
+        source.dir = System.mkpath(source.dir, dir)
     end
 
     return source
