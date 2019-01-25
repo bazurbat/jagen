@@ -1189,11 +1189,16 @@ function P.load_rules()
 
     P.init_rules()
 
+    local prelude = [[
+        local Log    = require 'Log'
+        local System = require 'System'
+    ]]
+
     local function try_load_rules(dir)
         local filename = System.mkpath(dir, 'rules.lua')
         local file = io.open(filename, 'rb')
         if file then
-            assert(loadstring(file:read('*a'), filename))()
+            assert(loadstring(prelude..file:read('*a'), filename))()
             file:close()
         end
     end
