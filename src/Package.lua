@@ -1115,7 +1115,8 @@ function P.define_project_package(project_dir)
         P.define_package(P:parse {
                 name = name,
                 source = '.',
-                build = build
+                build = build,
+                install = false
             })
     end
 end
