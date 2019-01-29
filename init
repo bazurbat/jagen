@@ -38,11 +38,12 @@ SYNOPSIS:
 
 OPTIONS:
 
-  -h, --help   show this usage information
-  -d, --dir    initialize the specified directory
-  -a, --flag   add the flag to jagen_flags
-  -f, --force  force to initialize non-empty directory
-  -L           add the directory to jagen_layer_path
+  -h, --help     show this usage information
+  -d, --dir      initialize the specified directory
+  -a, --flag     add the flag to jagen_flags
+  -f, --force    force to initialize non-empty directory
+  -p, --project  initialize the current directory in project mode
+  -L             add the directory to jagen_layer_path
 
   The following flags are reserved by the core:
   
@@ -100,6 +101,8 @@ parse_command_line() {
                 show_usage; exit 0 ;;
             -d|--dir)
                 jagen_root_dir="$2"; shift ;;
+            -p|--project)
+                init_project=1 ;;
             -a|--flag)
                 jagen_flags="${jagen_flags-} $2"; shift ;;
             -f|--force)
@@ -218,6 +221,12 @@ main() {
     trap : INT
     trap on_exit EXIT
 
+    if [ "${init_project-}" -o -f "$wd/.jagen-rules.lua" ]; then
+        jagen_project_dir=$wd
+        jagen_root_dir="jagen-root"
+        use_force=1
+    fi
+
     if [ "${jagen_root_dir-}" ]; then
         if ! [ -d "$jagen_root_dir" ]; then
             mkdir -p "$jagen_root_dir"
@@ -241,10 +250,6 @@ main() {
         jagen_dir="$wd/$jagen_dir"
     fi
     jagen_dir=$(cd "$jagen_dir" && pwd -P)
-
-    if [ -f '.jagen-rules.lua' ]; then
-        jagen_project_dir=$(pwd -P)
-    fi
 
     for layer in ${init_jagen_layers-}; do
         if path_is_url "$layer"; then
