@@ -73,10 +73,10 @@ need_cmd() {
 }
 
 git_clone() {
-    local url="${1:?}" dir="${2:?}"
+    local url="${1}" dir="${2}" branch="${3-}"
     if ! [ -d "$dir" ]; then
         need_cmd git
-        git clone --depth 1 -- "$url" "$dir"
+        git clone --depth 1 ${branch:+--branch $branch} -- "$url" "$dir"
     fi
 }
 
@@ -105,6 +105,10 @@ parse_command_line() {
                 init_project=1 ;;
             -a|--flag)
                 jagen_flags="${jagen_flags-} $2"; shift ;;
+            -j|--jagen-branch)
+                jagen_branch="$2"; shift ;;
+            -b|--branch)
+                jagen_layer_branch="$2"; shift ;;
             -f|--force)
                 use_force=1 ;;
             -L)
@@ -245,7 +249,7 @@ main() {
     jagen_dir=$(dirname "$0")
     if [ "$jagen_dir" = . ]; then  # assuming init is piped to shell
         jagen_dir=".jagen"
-        git_clone "$jagen_url" "$jagen_dir"
+        git_clone "$jagen_url" "$jagen_dir" ${jagen_branch-}
     else                           # assuming init was ran from jagen dir
         jagen_dir="$wd/$jagen_dir"
     fi
@@ -254,7 +258,7 @@ main() {
     for layer in ${init_jagen_layers-}; do
         if path_is_url "$layer"; then
             path=${layer##*/} path=${path%.git} path="./layer/$path"
-            git_clone "$layer" "$path"
+            git_clone "$layer" "$path" ${jagen_layer_branch-}
             layer="$path"
         fi
         jagen_layers="${jagen_layers-}$layer
