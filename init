@@ -269,6 +269,15 @@ main() {
 $jagen_layers"
     fi
 
+    if [ "${jagen_flags#*-ccache}" != "$jagen_flags" ]; then
+        jagen_flags=$(echo "$jagen_flags" | sed 's/ \?-ccache \?/ /')
+    elif [ "${jagen_flags#*ccache}" = "$jagen_flags" ] &&
+         [ "$(command -v ccache 2>/dev/null)" ]; then
+        jagen_flags="$jagen_flags ccache"
+    fi
+    jagen_flags=${jagen_flags# }
+    jagen_flags=${jagen_flags% }
+
     write_env
     write_runner
     if [ -f "$config_file" ]; then
