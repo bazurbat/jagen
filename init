@@ -227,8 +227,8 @@ main() {
 
     if [ "${init_project-}" -o -f "$wd/.jagen-rules.lua" ]; then
         jagen_project_dir=$wd
-        jagen_root_dir="jagen-root"
         use_force=1
+        : "${jagen_root_dir:=jagen-root}"
     fi
 
     if [ "${jagen_root_dir-}" ]; then
