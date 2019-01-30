@@ -2,9 +2,30 @@
 
 [![Join the chat at https://gitter.im/bazurbat/jagen](https://badges.gitter.im/bazurbat/jagen.svg)](https://gitter.im/bazurbat/jagen?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Jagen eases the development of multiple interdependent software packages by generating a meta
-project which abstracts the peculiarities of their respective build and source control systems and
-provides instruments to uniformly manage them as a whole.
+Jagen eases the development of multiple interdependent software packages by abstracting away
+peculiarities of their build and source control systems and providing tools to uniformly manage them
+as a whole.
+
+## Features
+
+- Simple declarative rules to define packages.
+- Initialize a build root using a single command (fast onboarding).
+- Build or rebuild any stage of any package taking dependencies into the account.
+- Reproduce the same environment on CI and development machines.
+- Complex projects can consist of layers (similar to OE/Yocto but much more straightforward).
+- Out of the box support for common build systems: CMake, Autotools, Android Gradle. In many cases
+  can handle packages using bare Make as well without additional configuration.
+- Built-in source management facilities (similar to Repo and GClient) supporting
+  [Git](https://git-scm.com/) and [Mercurial](https://www.mercurial-scm.org/) (Hg).
+- Automatic downloading of distribution archives (from everything [curl](https://curl.haxx.se/)
+  supports \+ special handling of GDrive).
+- Designed for cross-compilation from the start.
+- Easy to add custom pre-built toolchains.
+- Supports using of multiple toolchains in the same build root.
+- Packages can dynamically export environment or settings for other packages.
+- First class [Rust](https://www.rust-lang.org/) language support.
+- Fully assisted Bash completion (fast and offers items relevant for the current project).
+- An extensive set of facilities to accommodate packages with custom build systems or special needs.
 
 ## Getting Started
 
