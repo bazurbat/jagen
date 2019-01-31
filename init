@@ -88,6 +88,14 @@ path_is_url() {
     return 1
 }
 
+real_path() {
+    if [ "${1-}" ]; then
+        (cd "$1" && pwd -P)
+    else
+        pwd -P
+    fi
+}
+
 parse_command_line() {
     local eoa=
 
@@ -203,20 +211,42 @@ fi
 }
 
 on_exit() {
-    if [ "${_created_root_dir-}" ]; then
-        cd /
+    if [ "${init_created_root_dir-}" ]; then
         rm -rf "$jagen_root_dir"
     fi
 }
 
 main() {
-    local layer path wd="$(pwd -P)"
-
+    local layer path wd="$(real_path)"
     parse_command_line "$@"
 
-    if ! [ -t 1 ]; then
+    jagen_dir=$(dirname "$0")
+    if [ "$jagen_dir" = . ]; then
+        if [ -t 0 ]; then
+            # init can not work inside Jagen repository
+            show_usage; exit 0
+        fi
+        # we are being piped to shell
+        jagen_dir=".jagen"
+    else
+        jagen_dir=$(real_path "$jagen_dir")
+    fi
+
+    if ! [ -t 1 ]; then # the output is not connected to a terminal
         export GIT_TERMINAL_PROMPT=0
         export GIT_SSH_COMMAND="ssh -o BatchMode=yes"
+    fi
+
+    [ -f ".jagen-rules.lua" ] && init_project=1
+
+    if [ "${init_project-}" ]; then
+        jagen_project_dir=$wd
+        use_force=1
+    fi
+
+    if [ "${init_project-}" ] || ! [ -t 0 ]; then
+        # default root dir if piped or in project mode
+        : "${jagen_root_dir:=jagen-root}"
     fi
 
     # Just do nothing on SIGINT because many shells (except Bash) do not call
@@ -225,43 +255,27 @@ main() {
     trap : INT
     trap on_exit EXIT
 
-    if [ "${init_project-}" -o -f "$wd/.jagen-rules.lua" ]; then
-        jagen_project_dir=$wd
-        use_force=1
-        : "${jagen_root_dir:=jagen-root}"
-    fi
-
     if [ "${jagen_root_dir-}" ]; then
         if ! [ -d "$jagen_root_dir" ]; then
             mkdir -p "$jagen_root_dir"
-            _created_root_dir=1
+            init_created_root_dir=1
         fi
         cd "$jagen_root_dir"
-    else
-        jagen_root_dir=.
     fi
-    jagen_root_dir=$(pwd -P)
+    jagen_root_dir=$(real_path)
 
     if [ -z "${use_force-}" -a "$(echo *)" != '*' ]; then
         die "not initializing non-empty directory without force"
     fi
 
-    jagen_dir=$(dirname "$0")
-    if [ "$jagen_dir" = . ]; then  # assuming init is piped to shell
-        jagen_dir=".jagen"
-        git_clone "$jagen_url" "$jagen_dir" ${jagen_branch-}
-    else                           # assuming init was ran from jagen dir
-        jagen_dir="$wd/$jagen_dir"
-    fi
-    jagen_dir=$(cd "$jagen_dir" && pwd -P)
+    git_clone "$jagen_url" "$jagen_dir" ${jagen_branch-}
+    jagen_dir=$(real_path "$jagen_dir")
 
     for layer in ${init_jagen_layers-}; do
         if path_is_url "$layer"; then
             path=${layer##*/} path=${path%.git} path="./layer/$path"
             git_clone "$layer" "$path" ${jagen_layer_branch-}
             layer="$path"
-        elif [ -d "$wd/$layer" ]; then
-            layer=$(cd "$wd/$layer" && pwd -P)
         fi
         jagen_layers="${jagen_layers-}$layer
 "
