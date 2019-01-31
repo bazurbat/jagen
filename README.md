@@ -29,14 +29,35 @@ as a whole.
 
 ## Getting Started
 
-The fastest way to create a project from scratch is to pipe the init script directly from GitHub.
+To initialize a new build root pipe Jagen's init script into the shell:
 
 ```
-curl -fsSL https://raw.githubusercontent.com/bazurbat/jagen/master/init | sh -s -- -d root-hello
+curl -fsS https://git.io/fhyEM | sh -s -- https://github.com/bazurbat/jagen-start
 ```
 
-This will initialize the `root-hello` directory as an empty project. Add to it a file `rules.lua`
-with the following contents:
+It will create a `jagen-root` directory with the [tutorial
+layer](https://github.com/bazurbat/jagen-start) preconfigured. You can immediately build it using
+the command:
+
+```
+./jagen-root/jagen build
+```
+
+Done. Find the results in the `jagen-root/host` directory. If some stage failed its output will be
+displayed on the console. Fix the problem and execute the build command again. It will continue from
+where it left off until everything is built.
+
+## Package Rules
+
+To see the list of available packages in the project and where they are defined use the `list
+packages` command:
+
+```
+./jagen-root/jagen list packages
+```
+
+All rules for the "Getting Started" project are contained in the
+`jagen-root/layer/jagen-start/rules.lua` file. It looks like this:
 
 ```lua
 package { 'nanomsg',
@@ -88,20 +109,6 @@ package { 'hello-sqlite',
     requires = 'sqlite'
 }
 ```
-
-Run the build command:
-
-```
-./root-hello/jagen build
-```
-
-During the build Jagen will clone the specified tags or branches of nanomsg, googletest,
-hello-nanomsg and hello-sqlite repositories to the `root-hello/src` directory. Also it will
-download `sqlite-autoconf-3250200.tar.gz` archive to `root-hello/dist` directory and verify its
-checksum. Then it will compile the packages respecting the dependencies as specified by the
-`requires` declarations. The compiled packages will be installed to `root-hello/host` directory.
-The build system takes this into an account when passing the environment to "configure" stages to
-allow CMake and PkgConfig to find their config and module files.
 
 ## Reference
 
