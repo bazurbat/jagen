@@ -260,6 +260,8 @@ main() {
             path=${layer##*/} path=${path%.git} path="./layer/$path"
             git_clone "$layer" "$path" ${jagen_layer_branch-}
             layer="$path"
+        elif [ -d "$wd/$layer" ]; then
+            layer=$(cd "$wd/$layer" && pwd -P)
         fi
         jagen_layers="${jagen_layers-}$layer
 "
