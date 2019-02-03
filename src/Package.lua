@@ -1031,10 +1031,7 @@ function P:process_config(config, this)
     if build.type == 'gnu' then
         if build.generate or build.autoreconf then
             self:add_rule { 'autoreconf',
-                { 'libtool', 'install', 'host' }
             }
-            local p = P.define_package { name = 'libtool', config = 'host' }
-            new_packages[p.name] = p
         end
     end
 

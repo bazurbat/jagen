@@ -526,8 +526,7 @@ files = { { 'filename1' } }
   automatically.
 
 - **build.autoreconf** — If set to `true`, indicates that `autoreconf` stage is
-  necessary for the package. Also causes `libtool` to be installed for the
-  host.
+  necessary for the package.
 
 - **build.cflags** — Specifies additional C compiler flags. Exported
   automatically.
@@ -568,8 +567,7 @@ files = { { 'filename1' } }
 
 - **build.generate** (`pkg_build_generate`) — If set to `true`, indicates that
   `autoreconf` stage is necessary for the package. Specifically `autoreconf`
-  should be done by running `autogen.sh` script in the source directory. Also
-  causes `libtool` to be install for the host.
+  should be done by running `autogen.sh` script in the source directory.
 
 - **build.generator** (`pkg_build_generator`) — If the package build type is
   'cmake' sets its CMake generator.
