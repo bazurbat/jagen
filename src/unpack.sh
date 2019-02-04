@@ -1,5 +1,12 @@
 #!/bin/sh
 
+pkg__is_scm() {
+    case $pkg_source_type in
+        git|hg|repo) return 0 ;;
+    esac
+    return 1
+}
+
 pkg__download_cleanup() {
     pkg__rm $pkg__current_download
     pkg__current_download=
@@ -116,7 +123,22 @@ pkg_clean() {
     for dir in $toclean; do
         if [ -d "$dir" ]; then
             if jagen_is_same_dir "$dir" "$pkg_source_dir"; then
-                warning "not removing $dir: source dir of $pkg_name"
+                if pkg__is_scm; then
+                    if [ "$pkg_source_exclude" ]; then
+                        message "not cleaning '$dir' of $pkg_name: the source directory is excluded"
+                    elif _jagen src dirty "$pkg_name"; then
+                        if [ "$pkg_source_ignore_dirty" ]; then
+                            message "ignoring dirty status of '$dir' of $pkg_name: $pkg_source_ignore_dirty"
+                            pkg_run _jagen src clean "$pkg_name"
+                        else
+                            warning "not cleaning '$dir' of $pkg_name: the source directory is dirty"
+                        fi
+                    else
+                        pkg_run _jagen src clean "$pkg_name"
+                    fi
+                else
+                    warning "not removing '$dir' of $pkg_name: it is the source directory"
+                fi
             else
                 debug "removing $dir"
                 pkg_run rm -rf "$dir"
