@@ -118,7 +118,9 @@ pkg_clean() {
     elif [ "$pkg_config" ]; then
         toclean="$pkg_build_dir"
     else
-        toclean="$pkg_work_dir"
+        # This works for dist in_source packages only because the source dir is
+        # inside the work dir in the default configuration.
+        toclean="$pkg_work_dir${jagen_S}$pkg_source_dir"
     fi
     for dir in $toclean; do
         if [ -d "$dir" ]; then
