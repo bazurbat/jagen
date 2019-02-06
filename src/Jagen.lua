@@ -330,7 +330,9 @@ end
 function Jagen.command.clean(args)
     local options = Options:new {
         { 'help,h' },
-        { 'match,m' }
+        { 'match,m' },
+        { 'ignore-dirty,y' },
+        { 'ignore-exclude,x' }
     }
     args = options:parse(args)
     if not args then return false end
@@ -338,6 +340,9 @@ function Jagen.command.clean(args)
     if args['help'] then
         return Jagen.command['help'] { 'clean' }
     end
+
+    local ignore_dirty = args['ignore-dirty'] or os.getenv('jagen__ignore_dirty')
+    local ignore_exclude = args['ignore-exclude'] or os.getenv('jagen__ignore_exclude')
 
     local packages, ok = Package.load_rules()
     if not ok then
@@ -395,6 +400,13 @@ function Jagen.command.clean(args)
         end
     else
         if not found then return false end 
+    end
+
+    if ignore_dirty then
+        append(specs, '--ignore-dirty')
+    end
+    if ignore_exclude then
+        append(specs, '--ignore-exclude')
     end
 
     return Jagen.command.build(specs)
