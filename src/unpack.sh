@@ -124,18 +124,7 @@ pkg_clean() {
         if [ -d "$dir" ]; then
             if jagen_is_same_dir "$dir" "$pkg_source_dir"; then
                 if pkg__is_scm; then
-                    if [ "$pkg_source_exclude" ]; then
-                        message "not cleaning '$dir' of $pkg_name: the source directory is excluded"
-                    elif _jagen src dirty "$pkg_name"; then
-                        if [ "$pkg_source_ignore_dirty" ]; then
-                            message "ignoring dirty status of '$dir' of $pkg_name: $pkg_source_ignore_dirty"
-                            pkg_run _jagen src clean "$pkg_name"
-                        else
-                            warning "not cleaning '$dir' of $pkg_name: the source directory is dirty"
-                        fi
-                    else
-                        pkg_run _jagen src clean "$pkg_name"
-                    fi
+                    pkg_run _jagen src clean "$pkg_name"
                 else
                     warning "not removing '$dir' of $pkg_name: it is the source directory"
                 fi
@@ -158,12 +147,7 @@ pkg_unpack() {
             pkg__unpack_dist "$src_path" "$pkg_work_dir"
             ;;
         git|hg|repo)
-            if [ -d "$pkg_source_dir" ] && ! jagen__is_empty "$pkg_source_dir" && \
-               [ "$pkg_source_exclude" ]; then
-                message "not updating $pkg_name: the source is excluded"
-            else
-                pkg_run _jagen src update "$pkg_name"
-            fi
+            pkg_run _jagen src update "$pkg_name"
             ;;
     esac
 }

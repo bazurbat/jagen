@@ -140,21 +140,52 @@ function Jagen.source.status(args)
 end
 
 function Jagen.source.clean(args)
-    local packages = scm_packages(args)
-    for _, pkg in ipairs(packages) do
+    local packages, ok = scm_packages(args), true
+
+    function clean(source)
+        local ok = source:clean()
+        if ok then
+            assert(Target.from_args(assert(source.name), 'clean'):touch())
+        end
+        return ok
+    end
+
+    for pkg in each(packages) do
         local source = pkg.source
-        Log.message('clean %s in %s', pkg.name, source.dir)
-        if not pkg.source:clean() then
-            die('failed to clean %s (%s) in %s',
-                pkg.name, source:head_name(), source.dir)
+        if source:exists() then
+            local dir = System.expand(source.dir)
+            if source.exclude then
+                Log.message("not cleaning %s: the source is excluded", pkg.name)
+            elseif source:dirty() then
+                if source.ignore_dirty then
+                    Log.message("cleaning %s: ignoring dirty status of '%s' (%s)", pkg.name, dir, source.ignore_dirty)
+                    ok = clean(source)
+                else
+                    Log.warning("not cleaning %s: the source directory '%s' has unsaved changes", pkg.name, dir)
+                    ok = false
+                end
+            else
+                Log.message("cleaning %s: %s", pkg.name, dir)
+                ok = clean(source)
+            end
         end
     end
+    
+    return ok
 end
 
 function Jagen.source.update(args)
-    local packages = scm_packages(args)
+    local packages, ok = scm_packages(args), true
     local offline = Jagen.flag 'offline'
-    local ok
+
+    function update(source)
+        local old_head = source:head()
+        local ok = source:update()
+        if ok and source:head() ~= old_head then
+            assert(Target.from_args(assert(source.name), 'unpack'):touch())
+        end
+        return ok
+    end
 
     -- Sorting from the shortest to the longest is needed for the case when the
     -- source directories are specified inside each other and we need to clone
@@ -164,31 +195,12 @@ function Jagen.source.update(args)
             return (a.source.dir or '') < (b.source.dir or '')
         end)
 
-    if offline and #packages > 0 then
-        Log.message('skipping fetch due to offline mode')
-    end
-
     for pkg in each(packages) do
         local source = pkg.source
         local dir = System.expand(source.dir)
-        local old_head
-
-        if System.exists(dir) and not System.is_empty(dir) then
-            if not source.ignore_dirty and source:dirty() then
-                Log.warning("could not update %s: the source directory '%s' has unsaved changes", pkg.name, dir)
-                ok = false
-            else
-                local head_name = source:head_name()
-                Log.message('updating %s (%s)', pkg.name, head_name)
-                old_head = source:head()
-                if not source:update() then
-                    Log.warning('failed to update %s (%s) in %s', pkg.name, head_name, dir)
-                    ok = false
-                end
-            end
-        else
+        if not source:exists() then
             if offline then
-                Log.warning("could not clone %s: offline mode", pkg.name)
+                Log.warning("not cloning %s: offline mode", pkg.name)
                 ok = false
             else
                 Log.message('cloning %s from %s', pkg.name, source.location)
@@ -197,16 +209,27 @@ function Jagen.source.update(args)
                     ok = false
                 end
             end
+        else
+            if source.exclude then
+                Log.message("not updating %s: the source is excluded", pkg.name)
+            elseif source:dirty() then
+                if source.ignore_dirty then
+                    Log.message("updating %s: ignoring dirty status of '%s' (%s)", pkg.name, dir, source.ignore_dirty)
+                    ok = update(source)
+                else
+                    Log.warning("not updating %s: the source directory '%s' has unsaved changes", pkg.name, dir)
+                    ok = false
+                end
+            else
+                Log.message("updating %s: %s", pkg.name, dir)
+                ok = update(source)
+            end
         end
 
-        if System.exists(dir) then
+        if source:exists() then
             if not source:fixup() then
                 Log.warning('failed to fix up %s in %s', pkg.name, dir)
                 ok = false
-            end
-
-            if source:head() ~= old_head then
-                assert(Target.from_args(pkg.name, 'unpack'):touch())
             end
         end
     end

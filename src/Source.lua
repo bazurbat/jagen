@@ -79,6 +79,12 @@ function Source:_basename(filename)
     return filename
 end
 
+function Source:exists()
+    return Command:newf([[
+dir="%s" type="%s"; [ -d "$dir" -a -d "$dir/.$type" ] ]],
+        self.dir, self.type):exec()
+end
+
 function Source:create(source, name)
     local source, dir = source or {}
 
