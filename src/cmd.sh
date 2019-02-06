@@ -44,6 +44,8 @@ cmd_build() {
             --follow) follow_selected=1 ;;
             --follow-all) follow_all=1 ;;
             --quiet) is_quiet=1 ;;
+            --ignore-dirty) export jagen__ignore_dirty=1 ;;
+            --ignore-exclude) export jagen__ignore_exclude=1 ;;
             -*) ;; # ignore unknown options
              *) targets="${targets}${S}${1}"
                 logs="${logs}${S}${jagen_log_dir}/${1}.log" ;;

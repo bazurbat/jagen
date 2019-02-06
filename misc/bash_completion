@@ -25,12 +25,15 @@ _jagen_complete() {
     local targets_file="$build_dir/.jagen-targets"
     local layers_file="$build_dir/.jagen-layers"
 
+    local ignore_opt='-y --ignore-dirty -x --ignore_exclude'
     local top_cmds='help clean refresh build source src list update'
     local src_cmds='dirty status clean update delete each'
+    local src_clean_opt="$ignore_opt"
+    local src_update_opt="$ignore_opt"
     local src_each_opt='--type'
     local src_types='git hg repo'
     local help_opt='-h --help'
-    local build_opt='-m --match -c --clean -i --interactive -a --all -n --no-rebuild -p --progress -f --follow -F --follow-all -q --quiet'
+    local build_opt="-m --match -c --clean -i --interactive -a --all -n --no-rebuild -p --progress -f --follow -F --follow-all -q --quiet $ignore_opt"
     local list_packages_opt='--depth -d --all -a'
 
     _get_comp_words_by_ref -n : cur prev
@@ -56,17 +59,21 @@ _jagen_complete() {
             if [[ "$prev" == "source" ]] || [[ "$prev" == "src" ]]; then
                 COMPREPLY=($(compgen -W "$help_opt $src_cmds" -- "$cur"))
             else
-                if [[ "$jagen_subcommand" == "each" ]]; then
-                    if [[ "$prev" == "--type" ]]; then
-                        COMPREPLY=($(compgen -W "$src_types" -- "$cur"))
-                    else
-                        COMPREPLY=($(compgen -W "$help_opt $src_each_opt" -- "$cur"))
-                    fi
-                else
-                    COMPREPLY=($(compgen -W "$(cat "$scm_names_file")" -- "$cur"))
-                fi
-            fi
-            ;;
+                case $jagen_subcommand in
+                    clean)
+                        COMPREPLY=($(compgen -W "$src_clean_opt $(cat "$scm_names_file")" -- "$cur")) ;;
+                    update)
+                        COMPREPLY=($(compgen -W "$src_update_opt $(cat "$scm_names_file")" -- "$cur")) ;;
+                    each)
+                        if [[ "$prev" == "--type" ]]; then
+                            COMPREPLY=($(compgen -W "$src_types" -- "$cur"))
+                        else
+                            COMPREPLY=($(compgen -W "$help_opt $src_each_opt" -- "$cur"))
+                        fi ;;
+                    *)
+                        COMPREPLY=($(compgen -W "$(cat "$scm_names_file")" -- "$cur")) ;;
+                esac
+            fi ;;
         list)
             if [[ "$prev" == "list" ]]; then
                 COMPREPLY=($(compgen -W "$help_opt packages layers" -- "$cur"))

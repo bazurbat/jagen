@@ -140,7 +140,16 @@ function Jagen.source.status(args)
 end
 
 function Jagen.source.clean(args)
+    local options = Options:new {
+        { 'ignore-dirty,y' },
+        { 'ignore-exclude,x' }
+    }
+    args = options:parse(args)
+    if not args then return false end
+
     local packages, ok = scm_packages(args), true
+    local ignore_dirty = args['ignore-dirty'] or os.getenv('jagen__ignore_dirty')
+    local ignore_exclude = args['ignore-exclude'] or os.getenv('jagen__ignore_exclude')
 
     function clean(source)
         local ok = source:clean()
@@ -154,11 +163,12 @@ function Jagen.source.clean(args)
         local source = pkg.source
         if source:exists() then
             local dir = System.expand(source.dir)
-            if source.exclude then
+            if not ignore_exclude and source.exclude then
                 Log.message("not cleaning %s: the source is excluded", pkg.name)
             elseif source:dirty() then
-                if source.ignore_dirty then
-                    Log.message("cleaning %s: ignoring dirty status of '%s' (%s)", pkg.name, dir, source.ignore_dirty)
+                ignore_dirty = ignore_dirty and 'forced' or source.ignore_dirty
+                if ignore_dirty then
+                    Log.message("cleaning %s: ignoring dirty status of '%s' (%s)", pkg.name, dir, ignore_dirty)
                     ok = clean(source)
                 else
                     Log.warning("not cleaning %s: the source directory '%s' has unsaved changes", pkg.name, dir)
@@ -175,8 +185,17 @@ function Jagen.source.clean(args)
 end
 
 function Jagen.source.update(args)
+    local options = Options:new {
+        { 'ignore-dirty,y' },
+        { 'ignore-exclude,x' }
+    }
+    args = options:parse(args)
+    if not args then return false end
+
     local packages, ok = scm_packages(args), true
     local offline = Jagen.flag 'offline'
+    local ignore_dirty = args['ignore-dirty'] or os.getenv('jagen__ignore_dirty')
+    local ignore_exclude = args['ignore-exclude'] or os.getenv('jagen__ignore_exclude')
 
     function update(source)
         local old_head = source:head()
@@ -210,11 +229,12 @@ function Jagen.source.update(args)
                 end
             end
         else
-            if source.exclude then
+            if not ignore_exclude and source.exclude then
                 Log.message("not updating %s: the source is excluded", pkg.name)
             elseif source:dirty() then
-                if source.ignore_dirty then
-                    Log.message("updating %s: ignoring dirty status of '%s' (%s)", pkg.name, dir, source.ignore_dirty)
+                ignore_dirty = ignore_dirty and 'forced' or source.ignore_dirty
+                if ignore_dirty then
+                    Log.message("updating %s: ignoring dirty status of '%s' (%s)", pkg.name, dir, ignore_dirty)
                     ok = update(source)
                 else
                     Log.warning("not updating %s: the source directory '%s' has unsaved changes", pkg.name, dir)
@@ -524,6 +544,8 @@ function Jagen.command.build(args)
         { 'follow,f' },
         { 'follow-all,F' },
         { 'quiet,q' },
+        { 'ignore-dirty,y' },
+        { 'ignore-exclude,x' }
     }
     args = options:parse(args)
     if not args then return false end
