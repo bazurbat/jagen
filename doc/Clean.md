@@ -6,6 +6,11 @@ Usage: jagen clean [package[:config]...]
   Deletes package build directories or all generated files and directories
   inside the current build root.
 
+OPTIONS
+
+  -y, --ignore-dirty    ignore dirty status of source directories
+  -x, --ignore-exclude  do not skip excluded packages
+
 SYNOPSIS
 
   There can be multiple arguments in the form of: <name> or <name>:<config>.

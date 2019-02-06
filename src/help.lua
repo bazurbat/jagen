@@ -42,6 +42,11 @@ Usage: jagen clean [package[:config]...]
   Deletes package build directories or all generated files and directories
   inside the current build root.
 
+OPTIONS
+
+  -y, --ignore-dirty    ignore dirty status of source directories
+  -x, --ignore-exclude  do not skip excluded packages
+
 SYNOPSIS
 
   There can be multiple arguments in the form of: <name> or <name>:<config>.
@@ -77,16 +82,18 @@ Usage: jagen build [OPTION...] [PATTERN...] [--] [TOOL OPTIONS...]
 
 OPTIONS
 
-  -h, --help          print this help message
-  -m, --match         print expanded value of target patterns and exit
-  -c, --clean         clean package's build directories before the build
-  -i, --interactive   enable interactive mode
-  -a, --all           continue until everything is up to date
-  -n, --no-rebuild    do not rebuild targets which are already up to date
-  -p, --progress      print the output of build targets after completion
-  -f, --follow        follow a build output for the specified targets only
-  -F, --follow-all    follow all build output
-  -q, --quiet         inhibit build output
+  -h, --help            print this help message
+  -m, --match           print expanded value of target patterns and exit
+  -c, --clean           clean package's build directories before the build
+  -i, --interactive     enable interactive mode
+  -a, --all             continue until everything is up to date
+  -n, --no-rebuild      do not rebuild targets which are already up to date
+  -p, --progress        print the output of build targets after completion
+  -f, --follow          follow a build output for the specified targets only
+  -F, --follow-all      follow all build output
+  -q, --quiet           inhibit build output
+  -y, --ignore-dirty    ignore dirty status of source directories
+  -x, --ignore-exclude  do not skip excluded packages
 
   Use the command 'jagen help targets' for information about targets.
 

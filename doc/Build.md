@@ -6,18 +6,20 @@ Builds or rebuilds the specified targets.
 
 ### Options
 
-Option             | Description
--------------------|------------
--h, --help         | print this help message
--m, --match        | print expanded value of target patterns and exit
--c, --clean        | clean package's build directories before the build
--i, --interactive  | build targets in interactive mode
--a, --all          | continue until everything is up to date
--n, --no-rebuild   | do not rebuild targets which are already up to date
--p, --progress     | print the output of build targets after completion
--f, --follow       | follow a build output for the specified targets only
--F, --follow-all   | follow all build output
--q, --quiet        | inhibit build output
+Option               | Description
+---------------------|------------
+-h, --help           | print this help message
+-m, --match          | print expanded value of target patterns and exit
+-c, --clean          | clean package's build directories before the build
+-i, --interactive    | build targets in interactive mode
+-a, --all            | continue until everything is up to date
+-n, --no-rebuild     | do not rebuild targets which are already up to date
+-p, --progress       | print the output of build targets after completion
+-f, --follow         | follow a build output for the specified targets only
+-F, --follow-all     | follow all build output
+-q, --quiet          | inhibit build output
+-y, --ignore-dirty   | ignore dirty status of source directories
+-x, --ignore-exclude | do not skip excluded packages
 
 ### Synopsis
 
