@@ -428,7 +428,7 @@ function P:gettoolchain(config)
 end
 
 function P:add_target(target)
-    local shared = { unpack = true, patch  = true, autoreconf = true }
+    local shared = { unpack = true, patch  = true, generate = true }
     local name = target.stage
     if name == 'update' then name = 'unpack' end
     local config = not shared[name] and target.config
@@ -1029,9 +1029,16 @@ function P:process_config(config, this)
     end
 
     if build.type == 'gnu' then
-        if build.generate or build.autoreconf then
-            self:add_rule { 'autoreconf',
-            }
+        local generate, autoreconf = build.generate, build.autoreconf
+        if generate == nil and autoreconf then
+            generate = 'autoreconf'
+        end
+        if generate then
+            self.build.generate = generate
+            self:add_rule { 'generate' }
+        end
+        if rawget(build, 'generate') then
+            rawset(build, 'generate', nil)
         end
     end
 

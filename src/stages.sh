@@ -36,8 +36,8 @@ jagen_stage_patch() {
     pkg_patch_copy_files
 }
 
-jagen_stage_autoreconf() {
-    pkg_autoreconf
+jagen_stage_generate() {
+    pkg_generate
 }
 
 jagen_stage_configure() {

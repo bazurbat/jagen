@@ -271,8 +271,7 @@ can be used in custom scripts or as the part of another property value.
     build = {
         type = 'gnu|cmake|kbuild|make|linux-kernel|linux-module',
 
-        autoreconf = true,
-        generate   = true,
+        generate   = true, -- or 'autogen' or 'autoconf'
         generator  = 'Ninja',
         configure_file = 'path',
         configure_needs_install_dir = true,
@@ -525,9 +524,6 @@ files = { { 'filename1' } }
   `false` to use inherited value even if the `build.system` is set. Exported
   automatically.
 
-- **build.autoreconf** — If set to `true`, indicates that `autoreconf` stage is
-  necessary for the package.
-
 - **build.cflags** — Specifies additional C compiler flags. Exported
   automatically.
 
@@ -565,9 +561,11 @@ files = { { 'filename1' } }
   directory. Default: `$pkg_work_dir` or `$pkg_work_dir/$pkg_config` if
   `$pkg_config` is set. Exported automatically.
 
-- **build.generate** (`pkg_build_generate`) — If set to `true`, indicates that
-  `autoreconf` stage is necessary for the package. Specifically `autoreconf`
-  should be done by running `autogen.sh` script in the source directory.
+- **build.generate** (`pkg_build_generate`) — Indicates that the package's build system needs to be
+  regenerated before running configure. Causes a 'generate' stage to be added before a 'configure'
+  stage. Relevant only for the gnu build type. If set to `true` value or a string "autogen" the
+  'generate' stage will try `./autogen.sh` script if found in the source directory and `autoreconf`
+  command otherwise. If set to an "autoreconf" string value it will run the `autoreconf` command.
 
 - **build.generator** (`pkg_build_generator`) — If the package build type is
   'cmake' sets its CMake generator.
@@ -764,9 +762,6 @@ install = value
   `LDFLAGS`.
 
 - **pkg_build_dir** (`build.dir`) — the location of the package build directory
-
-- **pkg_build_generate** (`build.generate`) — if build type is "gnu" and
-  `autogen.sh` is found in the source directory — run it
 
 - **pkg_build_generator** (`build.generator`) — if build type is "CMake" sets
   per-package CMake generator option (passed in -G argument).

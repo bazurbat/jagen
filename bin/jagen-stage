@@ -194,7 +194,7 @@ case $pkg_stage in
     clean|unpack|update)
         cd "$jagen_build_dir"
         ;;
-    patch)
+    patch|generate)
         if [ "$pkg_source_dir" ] && [ -d "$pkg_source_dir" ]; then
             pkg_run cd "$pkg_source_dir"
         fi
