@@ -589,7 +589,7 @@ function Jagen.command.build(args)
                             targets[tostring(target)] = true found = true
                         end
                         if arg_clean then
-                            targets[tostring(Target.from_args(name, 'clean', target.config))] = true
+                            targets[tostring(Target.from_args(name, 'clean', target.config))] = true found = true
                         end
                     end
                 end
