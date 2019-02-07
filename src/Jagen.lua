@@ -168,7 +168,7 @@ function Jagen.source.clean(args)
             elseif source:dirty() then
                 ignore_dirty = ignore_dirty and 'forced' or source.ignore_dirty
                 if ignore_dirty then
-                    Log.message("cleaning %s: ignoring dirty status of '%s' (%s)", pkg.name, dir, ignore_dirty)
+                    Log.message("cleaning %s: ignoring dirty status of '%s' (%s)", pkg.name, dir, tostring(ignore_dirty))
                     ok = clean(source)
                 else
                     Log.warning("not cleaning %s: the source directory '%s' has unsaved changes", pkg.name, dir)
@@ -234,7 +234,7 @@ function Jagen.source.update(args)
             elseif source:dirty() then
                 ignore_dirty = ignore_dirty and 'forced' or source.ignore_dirty
                 if ignore_dirty then
-                    Log.message("updating %s: ignoring dirty status of '%s' (%s)", pkg.name, dir, ignore_dirty)
+                    Log.message("updating %s: ignoring dirty status of '%s' (%s)", pkg.name, dir, tostring(ignore_dirty))
                     ok = update(source)
                 else
                     Log.warning("not updating %s: the source directory '%s' has unsaved changes", pkg.name, dir)
