@@ -185,7 +185,7 @@ local function format_stage(target, pkg)
     end
 
     if target.stage == 'clean' then
-        uses = {}
+        uses = target.order_only or {}
     end
 
     if target.stage == 'compile' then

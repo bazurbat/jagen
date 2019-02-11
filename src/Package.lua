@@ -571,11 +571,17 @@ function P:add_files_dependencies()
 end
 
 function P:add_ordering_dependencies()
-    local prev, prev2, common
+    local prev, prev_clean, prev_cclean, common
 
     for curr in self:each() do
+        if curr.stage == 'clean' then
+            if prev_clean then
+                curr.order_only = append(curr.order_only, prev_clean)
+            end
+            prev_clean = curr
+        end
         if curr.stage == 'clean' and curr.config then
-            prev2 = curr
+            prev_cclean = curr
         elseif curr.stage == 'export' and curr.config then
             curr:append(assert(common))
             curr:append(Target.from_args(common.name, 'export'))
@@ -589,9 +595,9 @@ function P:add_ordering_dependencies()
                     curr.inputs = append(curr.inputs, prev)
                 end
             end
-            if prev2 then
-                curr:append(prev2)
-                prev2 = nil
+            if prev_cclean then
+                curr:append(prev_cclean)
+                prev_cclean = nil
             end
 
             prev = curr
