@@ -265,34 +265,39 @@ jagen__resolve_layer() {
 # Tries to resolve all entries in $jagen_layers and prints the
 # jagen_S-separated list of absolute directory paths.
 jagen__resolve_layers() {
-    local layer path result= IFS="$jagen_S"
+    local layer path result= rv=0 IFS="$jagen_S"
     for layer in ${jagen_layers-}; do
         path=$(jagen__resolve_layer "$layer")
         if [ -z "$path" ]; then
             error "failed to resolve layer: $layer"
+            rv=2
         else
             result="${result}${jagen_S}${path}"
         fi
     done
     echo "${result#$jagen_S}"
+    return $rv
 }
 
 jagen__get_path() {
-    local path
+    local path rv=0
     path="$jagen_dir/lib"
-    path="${path}${jagen_S}$(jagen__resolve_layers)"
+    path="${path}${jagen_S}$(jagen__resolve_layers)"; rv=$?
     path="${path}${jagen_S}$jagen_root_lib_dir"
     echo "$path"
+    return $rv
 }
 
 # Sets '$jagen_path' and '$LUA_PATH' for the current project.
 jagen__set_path() {
-    local item IFS="$jagen_S"
+    local item paths IFS="$jagen_S"
+
+    paths=$(jagen__get_path) || return
 
     export jagen_path=
     export LUA_PATH="$jagen_dir/src/?.lua;;"
 
-    for item in $(jagen__get_path); do
+    for item in $paths; do
         jagen_path="${item}${jagen_FS}${jagen_path}"
         LUA_PATH="$item/?.lua;$LUA_PATH"
     done

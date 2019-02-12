@@ -55,7 +55,7 @@ export PATH LD_LIBRARY_PATH
 export RUSTUP_HOME="$jagen_dist_dir/rustup"
 export CARGO_HOME="$jagen_dist_dir/cargo"
 
-jagen__set_path
+jagen__set_path || return
 
 import env || true # it is OK if no env was found
 
