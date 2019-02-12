@@ -105,7 +105,7 @@ cmd_build() {
 }
 
 cmd_image() {
-    . "$jagen_dir/env.sh" || return
+    . "$jagen_dir/src/common.sh" || return
     local image_script="$(find_in_path "image.sh")"
     [ "$image_script" ] ||
         die "the current project does not support image creation"
@@ -114,7 +114,7 @@ cmd_image() {
 
 cmd_find_in_path() {
     local arg='' path='' result=''
-    . "${jagen_dir:?}/env.sh" || return
+    . "${jagen_dir:?}/src/common.sh" || return
     set -- "$@"
     for arg; do
         path=$(find_in_path "$arg")
@@ -128,7 +128,7 @@ cmd_find_in_path() {
 cmd_find_files() {
     local name="$1" prefix="${1%~*}" rv= arg path; shift
     set -- "$@"
-    . "${jagen_dir:?}/env.sh" || return
+    . "${jagen_dir:?}/src/common.sh" || return
     for arg; do
         if [ "$prefix" = "$name" ]; then
             path=$(find_in_path "pkg/$name/$arg")
@@ -149,9 +149,9 @@ echo_if_exists() {
 }
 
 cmd_find_for_refresh() {
-    . "$jagen_dir/env.sh" || return
+    . "$jagen_dir/src/common.sh" || return
     local paths="$jagen_dir" IFS="$jagen_S"
-    paths="${paths}${jagen_S}$(jagen__resolve_layers)"
+    paths="${paths}${jagen_S}$(jagen__resolve_layers)" || return
     if [ -d "$jagen_root_lib_dir" ]; then
         paths="${paths}${jagen_S}${jagen_root_lib_dir}"
     fi
@@ -169,7 +169,7 @@ cmd_find_for_refresh() {
 }
 
 cmd_get_path() {
-    . "$jagen_dir/env.sh" || return
+    . "$jagen_dir/src/common.sh" || return
     jagen__get_path
 }
 
