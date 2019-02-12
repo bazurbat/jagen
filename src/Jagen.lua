@@ -634,6 +634,8 @@ function Jagen.command.build(args)
     return ok
 end
 
+Jagen.command['do'] = Jagen.command.build
+
 function Jagen.command.source(args)
     local first = args[1]
     local command = Jagen.source[first]
