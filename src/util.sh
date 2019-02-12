@@ -11,6 +11,8 @@ pkg_run() {
     local cmd="$1" jobs="$(pkg__get_jobs)"
     shift
 
+    jagen__need_cmd "$cmd"
+
     case $cmd in
         make)
             cmd="$cmd -j$jobs"

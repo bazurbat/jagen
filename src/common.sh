@@ -329,7 +329,7 @@ jagen__is_empty() {
 
 jagen__need_cmd() {
     if ! command -v "$1" > /dev/null 2>&1; then
-        die "need '$1' (command not found)"
+        die "need '$1': command not found"
     fi
 }
 
