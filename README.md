@@ -2,9 +2,14 @@
 
 [![Join the chat at https://gitter.im/bazurbat/jagen](https://badges.gitter.im/bazurbat/jagen.svg)](https://gitter.im/bazurbat/jagen?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Jagen eases the development of multiple interdependent software packages by abstracting away
-peculiarities of their build and source control systems and providing tools to uniformly manage them
-as a whole.
+Jagen is an utility tool that saves software engineers time. It combines selected features of
+workspace and package managers to automate common day-to-day development and integration tasks such
+as setting up the environment, downloading distribution archives, managing patches, keeping
+dependent source repositories up to date and rebuilding parts of the project as needed.
+
+It is mostly intended as a very lightweight alternative to
+[Repo](https://source.android.com/setup/develop/repo)/[GClient](https://www.chromium.org/developers/how-tos/depottools)
+and [Yocto](https://www.yoctoproject.org).
 
 ## Features
 
