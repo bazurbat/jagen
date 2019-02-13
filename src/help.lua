@@ -44,8 +44,9 @@ Usage: jagen clean [package[:config]...]
 
 OPTIONS
 
+  -x, --exclude         treat all sources as excluded
   -y, --ignore-dirty    ignore dirty status of source directories
-  -x, --ignore-exclude  do not skip excluded packages
+  -Y, --ignore-exclude  do not skip excluded packages
 
 SYNOPSIS
 
@@ -92,8 +93,9 @@ OPTIONS
   -f, --follow          follow a build output for the specified targets only
   -F, --follow-all      follow all build output
   -q, --quiet           inhibit build output
+  -x, --exclude         treat all sources as excluded
   -y, --ignore-dirty    ignore dirty status of source directories
-  -x, --ignore-exclude  do not skip excluded packages
+  -Y, --ignore-exclude  do not skip excluded packages
 
   Use the command 'jagen help targets' for information about targets.
 

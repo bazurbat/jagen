@@ -142,12 +142,13 @@ end
 function Jagen.source.clean(args)
     local options = Options:new {
         { 'ignore-dirty,y' },
-        { 'ignore-exclude,x' }
+        { 'ignore-exclude,Y' }
     }
     args = options:parse(args)
     if not args then return false end
 
     local packages, ok = scm_packages(args), true
+    local force_exclude = os.getenv('jagen__force_exclude')
     local ignore_dirty = args['ignore-dirty'] or os.getenv('jagen__ignore_dirty')
     local ignore_exclude = args['ignore-exclude'] or os.getenv('jagen__ignore_exclude')
 
@@ -163,7 +164,7 @@ function Jagen.source.clean(args)
         local source = pkg.source
         if source:exists() then
             local dir = System.expand(source.dir)
-            if not ignore_exclude and source.exclude then
+            if force_exclude or not ignore_exclude and source.exclude then
                 Log.message("not cleaning %s: the source is excluded", pkg.name)
             elseif source:dirty() then
                 ignore_dirty = ignore_dirty and 'forced' or source.ignore_dirty
@@ -180,20 +181,21 @@ function Jagen.source.clean(args)
             end
         end
     end
-    
+
     return ok
 end
 
 function Jagen.source.update(args)
     local options = Options:new {
         { 'ignore-dirty,y' },
-        { 'ignore-exclude,x' }
+        { 'ignore-exclude,Y' }
     }
     args = options:parse(args)
     if not args then return false end
 
     local packages, ok = scm_packages(args), true
     local offline = Jagen.flag 'offline'
+    local force_exclude = os.getenv('jagen__force_exclude')
     local ignore_dirty = args['ignore-dirty'] or os.getenv('jagen__ignore_dirty')
     local ignore_exclude = args['ignore-exclude'] or os.getenv('jagen__ignore_exclude')
 
@@ -229,7 +231,7 @@ function Jagen.source.update(args)
                 end
             end
         else
-            if not ignore_exclude and source.exclude then
+            if force_exclude or not ignore_exclude and source.exclude then
                 Log.message("not updating %s: the source is excluded", pkg.name)
             elseif source:dirty() then
                 ignore_dirty = ignore_dirty and 'forced' or source.ignore_dirty
@@ -331,8 +333,9 @@ function Jagen.command.clean(args)
     local options = Options:new {
         { 'help,h' },
         { 'match,m' },
+        { 'exclude,x' },
         { 'ignore-dirty,y' },
-        { 'ignore-exclude,x' }
+        { 'ignore-exclude,Y' }
     }
     args = options:parse(args)
     if not args then return false end
@@ -341,6 +344,7 @@ function Jagen.command.clean(args)
         return Jagen.command['help'] { 'clean' }
     end
 
+    local force_exclude = args['exclude'] or os.getenv('jagen__force_exclude')
     local ignore_dirty = args['ignore-dirty'] or os.getenv('jagen__ignore_dirty')
     local ignore_exclude = args['ignore-exclude'] or os.getenv('jagen__ignore_exclude')
 
@@ -402,6 +406,9 @@ function Jagen.command.clean(args)
         if not found then return false end 
     end
 
+    if force_exclude then
+        append(specs, '--exclude')
+    end
     if ignore_dirty then
         append(specs, '--ignore-dirty')
     end
@@ -556,8 +563,9 @@ function Jagen.command.build(args)
         { 'follow,f' },
         { 'follow-all,F' },
         { 'quiet,q' },
+        { 'exclude,x' },
         { 'ignore-dirty,y' },
-        { 'ignore-exclude,x' }
+        { 'ignore-exclude,Y' }
     }
     args = options:parse(args)
     if not args then return false end
