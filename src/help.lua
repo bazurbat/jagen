@@ -44,6 +44,7 @@ Usage: jagen clean [package[:config]...]
 
 OPTIONS
 
+  -i, --ignored         also remove ignored files
   -x, --exclude         treat all sources as excluded
   -y, --ignore-dirty    ignore dirty status of source directories
   -Y, --ignore-exclude  do not skip excluded packages
@@ -86,6 +87,7 @@ OPTIONS
   -h, --help            print this help message
   -m, --match           print expanded value of target patterns and exit
   -c, --clean           clean package's build directories before the build
+  -C, --clean-ignored   also clean ignored files
   -i, --interactive     enable interactive mode
   -a, --all             continue until everything is up to date
   -n, --no-rebuild      do not rebuild targets which are already up to date

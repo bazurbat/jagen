@@ -295,9 +295,13 @@ function GitSource:dirty()
     return self:command('status --porcelain'):read() ~= nil
 end
 
-function GitSource:clean()
-    return self:command('checkout HEAD -- .'):exec() and
-           self:command('clean -fxd'):exec()
+function GitSource:clean(ignored)
+    local checkout = self:command('checkout HEAD -- .')
+    local clean = self:command('clean -fd')
+    if ignored then
+        clean:append('-x')
+    end
+    return checkout:exec() and clean:exec()
 end
 
 function GitSource:_getspecs()
@@ -442,7 +446,10 @@ end
 -- HgSource
 
 function HgSource:command(...)
-    return Command:new('hg -y -R', quote(assert(self.dir)), ...)
+    -- The --pager=no option requires 'pager' extension to be enabled, we can
+    -- set pager to nothing directly instead which always works.
+    return Command:new('hg -y -R', quote(assert(self.dir)),
+        '--config pager.pager=', ...)
 end
 
 function HgSource:getscmdir()
@@ -465,12 +472,13 @@ function HgSource:dirty()
     return self:command('status'):read() ~= nil
 end
 
-function HgSource:clean()
-    local purge_cmd = self:command('purge --all')
-    local update_cmd = self:command('update --clean')
+function HgSource:clean(ignored)
+    local update = self:command('update --clean')
     local rev = self:getdefaultref()
-    if rev then update_cmd:append('--rev', rev) end
-    return purge_cmd:exec() and update_cmd:exec()
+    if rev then update:append('--rev', rev) end
+    local purge  = self:command('--config', 'extensions.purge=', 'purge')
+    if ignored then purge:append('--all') end
+    return update:exec() and purge:exec()
 end
 
 function HgSource:fetch()

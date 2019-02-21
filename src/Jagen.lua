@@ -141,6 +141,7 @@ end
 
 function Jagen.source.clean(args)
     local options = Options:new {
+        { 'ignored,i' },
         { 'ignore-dirty,y' },
         { 'ignore-exclude,Y' }
     }
@@ -149,11 +150,12 @@ function Jagen.source.clean(args)
 
     local packages, ok = scm_packages(args), true
     local force_exclude = os.getenv('jagen__force_exclude')
+    local clean_ignored = args['ignored'] or os.getenv('jagen__clean_ignored')
     local ignore_dirty = args['ignore-dirty'] or os.getenv('jagen__ignore_dirty')
     local ignore_exclude = args['ignore-exclude'] or os.getenv('jagen__ignore_exclude')
 
-    function clean(source)
-        local ok = source:clean()
+    function clean(source, ignored)
+        local ok = source:clean(ignored)
         if ok then
             assert(Target.from_args(assert(source.name), 'clean'):touch())
         end
@@ -170,14 +172,14 @@ function Jagen.source.clean(args)
                 ignore_dirty = ignore_dirty and 'forced' or source.ignore_dirty
                 if ignore_dirty then
                     Log.message("cleaning %s: ignoring dirty status of '%s' (%s)", pkg.name, dir, tostring(ignore_dirty))
-                    ok = clean(source)
+                    ok = clean(source, clean_ignored)
                 else
                     Log.warning("not cleaning %s: the source directory '%s' has unsaved changes", pkg.name, dir)
                     ok = false
                 end
             else
                 Log.message("cleaning %s: %s", pkg.name, dir)
-                ok = clean(source)
+                ok = clean(source, clean_ignored)
             end
         end
     end
@@ -333,6 +335,7 @@ function Jagen.command.clean(args)
     local options = Options:new {
         { 'help,h' },
         { 'match,m' },
+        { 'ignored,i' },
         { 'exclude,x' },
         { 'ignore-dirty,y' },
         { 'ignore-exclude,Y' }
@@ -345,6 +348,7 @@ function Jagen.command.clean(args)
     end
 
     local force_exclude = args['exclude'] or os.getenv('jagen__force_exclude')
+    local clean_ignored = args['ignored'] or os.getenv('jagen__clean_ignored')
     local ignore_dirty = args['ignore-dirty'] or os.getenv('jagen__ignore_dirty')
     local ignore_exclude = args['ignore-exclude'] or os.getenv('jagen__ignore_exclude')
 
@@ -366,6 +370,7 @@ function Jagen.command.clean(args)
         for name, pkg in iter(packages, filter(function (_, name) return name:match(namep) end)) do
             if not configp then
                 append(specs, string.format('%s:clean', name))
+                found = true
             end
             for this, config in pkg:each_config() do
                 if not configp or config:match(configp) then
@@ -408,6 +413,9 @@ function Jagen.command.clean(args)
 
     if force_exclude then
         append(specs, '--exclude')
+    end
+    if clean_ignored then
+        append(specs, '--clean-ignored')
     end
     if ignore_dirty then
         append(specs, '--ignore-dirty')
@@ -556,6 +564,7 @@ function Jagen.command.build(args)
         { 'help,h' },
         { 'match,m' },
         { 'clean,c' },
+        { 'clean-ignored,C' },
         { 'interactive,i' },
         { 'all,a' },
         { 'no-rebuild,n' },
@@ -579,7 +588,7 @@ function Jagen.command.build(args)
         return false
     end
 
-    local targets, arg_clean = {}, args['clean']
+    local targets, arg_clean = {}, args['clean'] or args['clean-ignored']
 
     for arg in each(args) do
         local found = false
