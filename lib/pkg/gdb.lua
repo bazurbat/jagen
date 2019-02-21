@@ -6,8 +6,10 @@ return {
     build  = {
         type = 'gnu',
         options = {
-            '--build=x86_64-linux-gnu',
-            '--host=x86_64-linux-gnu',
+            -- specify both build and host explicitly here so a user can set
+            -- their desired target in a project
+            '--build=$(jagen_get_system)',
+            '--host=$(jagen_get_system)',
             '--disable-binutils',
             '--disable-etc',
             '--disable-gas',
