@@ -151,5 +151,8 @@ pkg_unpack() {
         git|hg|repo)
             pkg_run _jagen src update "$pkg_name"
             ;;
+        *)
+            die "unknown source type: $src_type"
+            ;;
     esac
 }
