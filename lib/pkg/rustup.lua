@@ -4,7 +4,6 @@ return {
     source = {
         type = 'dist',
         location = 'https://static.rust-lang.org/rustup/dist/$(jagen_get_system)/rustup-init',
-        sha256sum = 'f69dafcca62fe70d7882113e21bb96a2cbdf4fc4636d25337d6de9191bdec8da'
     },
     build = {
         type    = 'executable',
