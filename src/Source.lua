@@ -249,7 +249,12 @@ function GitSource:_update_submodules(...)
 end
 
 function GitSource:command(...)
-    return Command:new('git --no-pager --git-dir=.git -C', quote(assert(self.dir)), ...)
+    local cmd = Command:new('git', '--no-pager --git-dir=.git -C', quote(assert(self.dir)), ...)
+    if not cmd:exists() then
+        Log.error("need 'git' (command not found)")
+        os.exit(1)
+    end
+    return cmd
 end
 
 function GitSource:getrev()
@@ -400,7 +405,11 @@ end
 function GitSource:clone()
     assert(self.location) assert(self.dir)
     -- even for unattended cases the progress is useful to watch in logs
-    local clone_cmd = Command:new('git clone --progress')
+    local clone_cmd = Command:new('git', 'clone --progress')
+    if not clone_cmd:exists() then
+        Log.error("need 'git' (command not found)")
+        return
+    end
     local branch, tag = self:getbranch(), self:gettag()
     if tag or branch then
         clone_cmd:append('--branch', quote(tag or branch))
@@ -448,8 +457,13 @@ end
 function HgSource:command(...)
     -- The --pager=no option requires 'pager' extension to be enabled, we can
     -- set pager to nothing directly instead which always works.
-    return Command:new('hg -y -R', quote(assert(self.dir)),
+    local cmd = Command:new('hg', '-y -R', quote(assert(self.dir)),
         '--config pager.pager=', ...)
+    if not cmd:exists() then
+        Log.error("need 'hg' (command not found)")
+        os.exit(1)
+    end
+    return cmd
 end
 
 function HgSource:getscmdir()
@@ -503,7 +517,11 @@ function HgSource:switch()
 end
 
 function HgSource:clone()
-    local cmd = Command:new('hg clone')
+    local cmd = Command:new('hg', 'clone')
+    if not cmd:exists() then
+        Log.error("need 'hg' (command not found)")
+        return
+    end
     for branch in each(self.branch) do
         cmd:append('--branch', branch)
     end
