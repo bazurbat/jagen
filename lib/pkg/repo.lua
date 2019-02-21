@@ -1,7 +1,4 @@
 return {
-    source = {
-        type     = 'curl',
-        location = 'https://storage.googleapis.com/git-repo-downloads/repo'
-    },
+    source = 'https://storage.googleapis.com/git-repo-downloads/repo',
     { 'install' }
 }
