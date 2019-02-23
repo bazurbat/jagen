@@ -1,7 +1,7 @@
 return {
     source = {
-        location  = 'https://ftp.gnu.org/gnu/gdb/gdb-7.12.1.tar.xz',
-        sha256sum = '4607680b973d3ec92c30ad029f1b7dbde3876869e6b3a117d8a7e90081113186'
+        location  = 'https://ftp.gnu.org/gnu/gdb/gdb-8.2.tar.xz',
+        sha256sum = 'c3a441a29c7c89720b734e5a9c6289c0a06be7e0c76ef538f7bbcef389347c39'
     },
     build  = {
         type = 'gnu',
