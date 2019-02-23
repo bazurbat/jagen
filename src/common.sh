@@ -125,7 +125,7 @@ import() {
 
     while [ $i -gt 0 ]; do
         path="$(eval echo \$$i)/${name}.sh"
-        if [ -f "$path" ]; then
+        if [ "$path" != "$jagen_root_dir/env.sh" -a -f "$path" ]; then
             debug2 "  using $path"
             . "$path" ||
                 die "import $name: error while sourcing '$path'"
