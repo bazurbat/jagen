@@ -690,19 +690,23 @@ function P:check_build_toolchain()
     end
 end
 
+-- TODO: investigate if this should be an error
+-- the source is always defined as of now
 function P:check_usages()
     for this, config in self:each_config(true) do
         for spec in each(this.uses or {}) do
             local use = Target.from_use(spec)
-            local pkg = packages[use.name] assert(pkg)
-            local cfg = use.config or config
-            local build, install = pkg:get('build', cfg), pkg:get('install', cfg)
-            if (not build or build and not build.type) and
-               (not install or install and not install.type) and
-               not pkg.source then
-               print_warning("A package '%s' uses a package '%s' which does not have build, install or source "..
-                   "rules defined. Possible reason could be incorrect package name spelling or missing pkg file.%s", self.name, pkg.name, self:format_at())
-           end
+            local pkg = packages[use.name]
+            if pkg then
+                local cfg = use.config or config
+                local build, install = pkg:get('build', cfg), pkg:get('install', cfg)
+                if (not build or build and not build.type) and
+                   (not install or install and not install.type) and
+                   not pkg.source then
+                    print_warning("A package '%s' uses a package '%s' which does not have build, install or source "..
+                        "rules defined. Possible reason could be incorrect package name spelling or missing pkg file.%s", self.name, pkg.name, self:format_at())
+                end
+            end
         end
     end
 end
