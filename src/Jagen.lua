@@ -496,7 +496,7 @@ function Jagen.command.refresh(args, packages)
 
     local build_file = System.mkpath(Jagen.build_dir, 'build.ninja')
     Ninja.generate(build_file, packages)
-    if Package.has_rust_rules then
+    if Package.rules.has_rust_rules then
         generate_cargo_config(packages)
     end
 

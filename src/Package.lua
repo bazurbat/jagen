@@ -6,29 +6,8 @@ local Command = require 'Command'
 
 local P = {}
 P.__index = P
-P._templates = {}
-P.has_rust_rules = false
-
-local had_errors = false
-local had_warnings = false
-local function print_error(...)
-    Log.error(...)
-    had_errors = true
-end
-local function print_warning(...)
-    Log.warning(...)
-    had_warnings = true
-end
-
-local _define_count = 0
-local _context_count = 0
 
 local lua_package = package
-local packages = {}
-local used_packages = {}
-local all_required_packages = {}
-local required_packages = {}
-local required_specs = {}
 
 local current_context
 local context_stack = {}
@@ -157,17 +136,36 @@ local function find_module(name)
     end
 end
 
-function P.init_rules()
-    P._templates = {}
-    P._variants = {}
-    P.has_rust_rules = false
-    _define_count = 0
-    _context_count = 0
-    packages = {}
-    used_packages = {}
-    all_required_packages = {}
-    required_packages = {}
-    required_specs = {}
+local RuleEngine = {}
+RuleEngine.__index = RuleEngine
+
+function RuleEngine:new()
+    local engine = {
+        packages              = {},
+        _templates            = {},
+        _variants             = {},
+        has_rust_rules        = false,
+        _define_count         = 0,
+        _context_count        = 0,
+        used_packages         = {},
+        all_required_packages = {},
+        required_packages     = {},
+        required_specs        = {},
+        had_errors            = false,
+        had_warnings          = false,
+    }
+    setmetatable(engine, self)
+    return engine
+end
+
+function RuleEngine:print_error(...)
+    Log.error(...)
+    self.had_errors = true
+end
+
+function RuleEngine:print_warning(...)
+    Log.warning(...)
+    self.had_warnings = true
 end
 
 function P:__tostring(sep)
@@ -341,7 +339,7 @@ end
 function P:get_toolchain_build(key, config)
     local toolchain = (self:get('build', config) or self.build).toolchain
     if toolchain then
-        local pkg = packages[toolchain]
+        local pkg = P.rules.packages[toolchain]
         if pkg then
             return pkg:get_build(key, config)
         end
@@ -464,20 +462,20 @@ end
 
 function P:collect_require(spec, context, stage)
     local key = string.format('%s->%s^%s', spec, self.name, context and context:tokey() or '')
-    if not all_required_packages[key] then
+    if not P.rules.all_required_packages[key] then
         local item = { self, spec, context }
-        all_required_packages[key] = item
-        required_packages[key] = item 
+        P.rules.all_required_packages[key] = item
+        P.rules.required_packages[key] = item 
     end
     local key2 = string.format('%s^%s:%s^%s', spec, self.name,
         context.config or '', stage or '')
-    if not required_specs[key2] then
-        required_specs[key2] = { self, spec, context.config, stage }
+    if not P.rules.required_specs[key2] then
+        P.rules.required_specs[key2] = { self, spec, context.config, stage }
     end
 end
 
 function P.collect_variants(rule, context)
-    P._variants[rule.name] = { rule, context }
+    P.rules._variants[rule.name] = { rule, context }
 end
 
 function P:add_required_stage(config)
@@ -505,7 +503,7 @@ function P:add_require_target(spec, config, stage)
     end
     local target = Target.from_args(self.name, stage, config)
     local use = Target.from_use(spec)
-    local req_pkg = packages[use.name] assert(req_pkg)
+    local req_pkg = P.rules.packages[use.name] assert(req_pkg)
     local req_target = req_pkg:add_required_stage(use.config or config)
     self:add_target(target:append(req_target))
 end
@@ -536,7 +534,7 @@ function P:add_patch_dependencies()
         end
     end
     if next(unresolved) then
-        print_warning('package %s requires patches which were not found: %s', self.name, table.concat(unresolved, ', '))
+        P.rules:print_warning('package %s requires patches which were not found: %s', self.name, table.concat(unresolved, ', '))
     end
 end
 
@@ -566,7 +564,7 @@ function P:add_files_dependencies()
         end
     end
     if next(unresolved) then
-        print_warning('could not find supplemental files for %s: %s', self.name, table.concat(unresolved, ', '))
+        P.rules:print_warning('could not find supplemental files for %s: %s', self.name, table.concat(unresolved, ', '))
     end
 end
 
@@ -659,7 +657,7 @@ end
 
 function P:check_build_configs()
     if self.build and self.build.type and table.count(self.configs) == 0 then
-        print_error("the package '%s' requires a build but has no configs defined",
+        P.rules:print_error("the package '%s' requires a build but has no configs defined",
             self.name)
     end
 end
@@ -669,7 +667,7 @@ function P:check_build_insource()
     for this, config in self:each_config() do
         build = this.build
         if build and build.in_source and build.in_source ~= 'multi' and count > 1 then
-            print_warning("the package '%s' builds in source but has multiple configs defined, "..
+            P.rules:print_warning("the package '%s' builds in source but has multiple configs defined, "..
                 "please make sure that its build system supports this and set in_source='multi' "..
                 "property to remove this warning",
                 self.name)
@@ -683,7 +681,7 @@ function P:check_build_toolchain()
     for this, config in self:each_config() do
         build = this.build
         if build and build.type and build.toolchain == nil then
-            print_error("the package '%s' requires '%s' build for "..
+            P.rules:print_error("the package '%s' requires '%s' build for "..
                 "config '%s' but does not have a toolchain set", self.name,
                 build.type, config)
         end
@@ -696,14 +694,14 @@ function P:check_usages()
     for this, config in self:each_config(true) do
         for spec in each(this.uses or {}) do
             local use = Target.from_use(spec)
-            local pkg = packages[use.name]
+            local pkg = P.rules.packages[use.name]
             if pkg then
                 local cfg = use.config or config
                 local build, install = pkg:get('build', cfg), pkg:get('install', cfg)
                 if (not build or build and not build.type) and
                    (not install or install and not install.type) and
                    not pkg.source then
-                    print_warning("A package '%s' uses a package '%s' which does not have build, install or source "..
+                    P.rules:print_warning("A package '%s' uses a package '%s' which does not have build, install or source "..
                         "rules defined. Possible reason could be incorrect package name spelling or missing pkg file.%s", self.name, pkg.name, self:format_at())
                 end
             end
@@ -715,8 +713,8 @@ function P:check_undefined_uses()
     for this, config in self:each_config(true) do
         for spec in each(this.uses or {}) do
             local use = Target.from_use(spec)
-            if not packages[use.name] then
-                print_error("a package '%s' uses undefined package '%s'%s", self.name, use.name, self:format_at())
+            if not P.rules.packages[use.name] then
+                P.rules:print_error("a package '%s' uses undefined package '%s'%s", self.name, use.name, self:format_at())
             end
         end
     end
@@ -765,7 +763,7 @@ function package(rule)
 end
 
 function P.define_package(rule, context)
-    _define_count = _define_count + 1
+    P.rules._define_count = P.rules._define_count + 1
 
     if not context then
         context = Context:new {
@@ -786,10 +784,10 @@ function P.define_package(rule, context)
         context.template = template
     end
 
-    local pkg = packages[rule.name]
+    local pkg = P.rules.packages[rule.name]
     if not pkg then
         pkg = P:create(rule.name)
-        packages[rule.name] = pkg
+        P.rules.packages[rule.name] = pkg
     end
     if context then
         append_uniq(context, pkg.contexts)
@@ -836,11 +834,11 @@ function P.define_package(rule, context)
     local arg_rule = rule
     rule = {}
     for name in each(template) do
-        local template = P._templates[name]
+        local template = P.rules._templates[name]
         if template then
             table.merge(rule, template)
         else
-            print_warning("a package '%s' includes a template '%s' which is not defined\n--> %s", pkg.name, name, tostring(context))
+            P.rules:print_warning("a package '%s' includes a template '%s' which is not defined\n--> %s", pkg.name, name, tostring(context))
         end
     end
     table.merge(rule, arg_rule)
@@ -895,23 +893,23 @@ end
 function P.define_variant(rule, context)
     local use = Target.from_use(rule.extends)
     if rule.name == use.name then
-        print_error("a package '%s' extends itself\n--> %s", rule.name, tostring(context))
+        P.rules:print_error("a package '%s' extends itself\n--> %s", rule.name, tostring(context))
         return
     end
-    if packages[rule.name] then
-        print_error("can not define a variant package '%s', another package with the same name is already defined\n--> %s", rule.name, tostring(context))
+    if P.rules.packages[rule.name] then
+        P.rules:print_error("can not define a variant package '%s', another package with the same name is already defined\n--> %s", rule.name, tostring(context))
         return
     end
-    local pkg = packages[use.name]
+    local pkg = P.rules.packages[use.name]
     if not pkg then
-        print_error("a package '%s' extends '%s' which is not defined\n--> %s", rule.name, use.name, tostring(context))
+        P.rules:print_error("a package '%s' extends '%s' which is not defined\n--> %s", rule.name, use.name, tostring(context))
         return
     end
     if rule.config and not use.config then
         use.config = rule.config
     end
     if use.config and not pkg:has_config(use.config) then
-        print_error("a package '%s' extends '%s:%s' but the package '%s' does not have a config '%s'\n--> %s", rule.name, use.name, use.config, use.name, use.config, tostring(context))
+        P.rules:print_error("a package '%s' extends '%s:%s' but the package '%s' does not have a config '%s'\n--> %s", rule.name, use.name, use.config, use.name, use.config, tostring(context))
         return
     end
     pkg = copy(pkg)
@@ -938,7 +936,7 @@ function P.define_variant(rule, context)
             pkg.configs[use.config] = nil
         end
     end
-    packages[rule.name] = pkg
+    P.rules.packages[rule.name] = pkg
     return P.define_package(rule, context)
 end
 
@@ -946,7 +944,7 @@ function template(rule)
     rule = P:parse(rule)
     local name = rule.name
     rule.name = nil
-    P._templates[name] = rule
+    P.rules._templates[name] = rule
 end
 
 function P:define_use(spec, context)
@@ -965,13 +963,13 @@ function P:define_use(spec, context)
         key = string.format('%s:%s', use.name, context:tokey())
     end
     local fullkey = string.format('%s@%s', key, name)
-    local pkg, seen = used_packages[key], used_packages[fullkey]
+    local pkg, seen = P.rules.used_packages[key], P.rules.used_packages[fullkey]
     if pkg then
         if not seen then append_uniq(context, pkg.contexts) end
     else
         pkg = P.define_package({ name = use.name, config = config }, context)
     end
-    used_packages[key] = pkg used_packages[fullkey] = true
+    P.rules.used_packages[key] = pkg P.rules.used_packages[fullkey] = true
     return pkg
 end
 
@@ -1100,8 +1098,8 @@ function P.process_rules(_packages)
                 end
             end
         end
-        local required = required_packages
-        required_packages = {}
+        local required = P.rules.required_packages
+        P.rules.required_packages = {}
         for key, item in pairs(required) do
             local pkg, spec, context = item[1], item[2], item[3]
             local used = pkg:define_use(spec, context)
@@ -1137,7 +1135,7 @@ end
 
 function P.define_default_config()
     local new_packages = {}
-    for _, pkg in pairs(table.copy(packages)) do
+    for _, pkg in pairs(table.copy(P.rules.packages)) do
         local build = pkg.build
         if build and build.type and not next(pkg.configs) then
             local new_pkg
@@ -1164,7 +1162,7 @@ end
 
 function P.define_rust_packages()
     local new_packages = {}
-    for _, pkg in pairs(packages) do
+    for _, pkg in pairs(P.rules.packages) do
         for this, config in pkg:each_config() do
             local build = this.build
             if build.type == 'rust' then
@@ -1191,7 +1189,7 @@ function P.define_rust_packages()
                 new_packages[name] = rust_toolchain
                 pkg:collect_require(name, Context:new { name = pkg.name, config = config })
                 this.uses = append_uniq(name, this.uses)
-                P.has_rust_rules = true
+                P.rules.has_rust_rules = true
             end
         end
     end
@@ -1202,7 +1200,7 @@ function P.load_rules()
     local def_loader = lua_package.loaders[2]
     lua_package.loaders[2] = find_module
 
-    P.init_rules()
+    P.rules = RuleEngine:new()
 
     local prelude = [[
         local Log    = require 'Log'
@@ -1236,12 +1234,12 @@ function P.load_rules()
 
     push_context({ implicit = true })
 
-    P.process_rules(table.copy(packages))
+    P.process_rules(table.copy(P.rules.packages))
     local new_packages = P.define_default_config()
     P.process_rules(new_packages)
 
     new_packages = {}
-    for name, item in pairs(P._variants) do
+    for name, item in pairs(P.rules._variants) do
         new_packages[name] = P.define_variant(item[1], item[2])
     end
     P.process_rules(new_packages)
@@ -1250,22 +1248,22 @@ function P.load_rules()
 
     repeat
         new_packages = {}
-        for _, pkg in pairs(packages) do
+        for _, pkg in pairs(P.rules.packages) do
             table.assign(new_packages, pkg:process_source())
         end
         P.process_rules(new_packages)
     until not next(new_packages)
 
-    for _, pkg in pairs(packages) do
+    for _, pkg in pairs(P.rules.packages) do
         for target in pkg:each() do
             for input in each(target.inputs) do
                 if input.stage == 'unpack' then
-                    local pkg = packages[input.name]
+                    local pkg = P.rules.packages[input.name]
                     if pkg and pkg:is_scm() then
                         input.stage = 'update'
                     end
                 elseif input.stage == 'update' then
-                    local pkg = packages[input.name]
+                    local pkg = P.rules.packages[input.name]
                     if pkg and not pkg:is_scm() then
                         input.stage = 'unpack'
                     end
@@ -1274,16 +1272,16 @@ function P.load_rules()
         end
     end
 
-    for key, item in pairs(required_specs) do
+    for key, item in pairs(P.rules.required_specs) do
         local pkg, spec, config, stage = item[1], item[2], item[3], item[4]
         pkg:add_require_target(spec, config, stage)
     end
 
-    for _, pkg in pairs(packages) do
+    for _, pkg in pairs(P.rules.packages) do
         for this, config in pkg:each_config(true) do
             for spec in each(this.uses) do
                 local use = Target.from_use(spec)
-                local used = packages[use.name]
+                local used = P.rules.packages[use.name]
                 if used then
                     for this, config in used:each_config(true) do
                         used:add_stage('export', config)
@@ -1295,11 +1293,11 @@ function P.load_rules()
         pkg:export_build_env()
     end
 
-    for _, pkg in pairs(packages) do
-        _context_count = _context_count + #pkg.contexts
+    for _, pkg in pairs(P.rules.packages) do
+        P.rules._context_count = P.rules._context_count + #pkg.contexts
     end
 
-    -- print(string.format('defines: %d, contexts: %d', _define_count, _context_count))
+    -- print(string.format('defines: %d, contexts: %d', P.rules._define_count, P.rules._context_count))
 
     local source_exclude = os.getenv('jagen_source_exclude')
     local function is_scm(pkg)
@@ -1313,7 +1311,7 @@ function P.load_rules()
                 Log.warning("invalid pattern '%s' in jagen_source_exclude list", item)
             end
             local luapat, match, matched = shpat:convert_pattern()
-            for name, pkg in iter(packages, filter(is_scm)) do
+            for name, pkg in iter(P.rules.packages, filter(is_scm)) do
                 match = name:match(luapat)
                 if (match and not invert) or (invert and not match) then
                     matched = true
@@ -1328,7 +1326,7 @@ function P.load_rules()
         end
     end
 
-    for name, pkg in pairs(packages) do
+    for name, pkg in pairs(P.rules.packages) do
         pkg:check_build_configs()
         pkg:check_build_insource()
         pkg:check_build_toolchain()
@@ -1338,7 +1336,7 @@ function P.load_rules()
 
     lua_package.loaders[2] = def_loader
 
-    return packages, not had_errors
+    return P.rules.packages, not P.rules.had_errors
 end
 
 function P:find_files(names)
@@ -1356,7 +1354,7 @@ end
 
 function P.all_configs()
     return coroutine.wrap(function ()
-            for name, pkg in pairs(packages) do
+            for name, pkg in pairs(P.rules.packages) do
                 for this, config in pkg:each_config() do
                     coroutine.yield(this, config, pkg)
                 end
