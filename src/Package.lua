@@ -144,6 +144,134 @@ function RuleEngine:collect_require(pkg, spec, context, stage)
     end
 end
 
+function RuleEngine:define_package(rule, context)
+    P.rules._define_count = P.rules._define_count + 1
+
+    if not context then
+        context = Context:new {
+            name = rule.name,
+            config = rule.config,
+            template = rule.template
+        }
+    end
+
+    local config = rule.config or context.config
+    local template = rule.template or context.template
+    rule.config, rule.template = nil, nil
+
+    if config and config ~= context.config or
+       template and template ~= context.template then
+        context = copy(context)
+        context.config = config
+        context.template = template
+    end
+
+    local pkg = P.rules.packages[rule.name]
+    if not pkg then
+        pkg = P:create(rule.name)
+        P.rules.packages[rule.name] = pkg
+    end
+    if context then
+        append_uniq(context, pkg.contexts)
+    end
+
+    local this = pkg
+    if config then
+        if not pkg.configs[config] then pkg.configs[config] = {} end
+        this = pkg.configs[config]
+        if not getmetatable(this) then
+            this.name, this.config = pkg.name, config
+            if not this.stages then this.stages = {} end
+            if not this._collected_targets then this._collected_targets = {} end
+            if not this.build then this.build = {} end
+            if not this.install then this.install = {} end
+            if not this.export then this.export = {} end
+            setmetatable(this, P)
+            setmetatable(this.build, { __index = pkg.build })
+            setmetatable(this.install, { __index = pkg.install })
+            setmetatable(this.export, { __index = pkg.export })
+            pkg:add_stage('clean', config)
+        end
+    end
+
+    if rule.source and Source:is_known(rule.source.type) then
+        if rule.patches == nil then
+            rule.patches = false
+        end
+    end
+    -- merge source and patches to shared part regardless of rule context
+    if rule.patches ~= nil then
+        if rule.patches == false then
+            pkg.patches = nil
+        else
+            pkg.patches = table.merge(pkg.patches or {}, rule.patches)
+        end
+        rule.patches = nil
+    end
+    if rule.source then
+        pkg.source = table.merge(pkg.source or {}, rule.source)
+        rule.source = nil
+    end
+
+    local arg_rule = rule
+    rule = {}
+    for name in each(template) do
+        local template = P.rules._templates[name]
+        if template then
+            table.merge(rule, template)
+        else
+            P.rules:print_warning("a package '%s' includes a template '%s' which is not defined\n--> %s", pkg.name, name, tostring(context))
+        end
+    end
+    table.merge(rule, arg_rule)
+    table.merge(this, rule)
+
+    if config then
+        local build, install = this.build, this.install
+
+        if config == 'target' and build.target_requires_host then
+            rule.requires = append_uniq(pkg.name..':host', rule.requires)
+        end
+
+        for spec in each(pkg.requires) do
+            P.rules:collect_require(pkg, spec, context)
+        end
+
+        for spec in each(rule.requires) do
+            local context = context
+            if rule.requires.template ~= nil then
+                context = copy(context or {})
+                context.template = rule.requires.template
+            end
+            P.rules:collect_require(pkg, spec, context)
+        end
+
+        -- Add configless stages to every config, then add rule-specific stages.
+        local stages = extend(extend({}, pkg), rule)
+        for stage in each(stages) do
+            local target = this:collect_rule(stage, config)
+            for spec in each(stage.requires) do
+                local context = context
+                if stage.requires.template ~= nil then
+                    context = copy(context or {})
+                    context.template = stage.requires.template
+                end
+                P.rules:collect_require(pkg, spec, context, target.stage)
+            end
+        end
+    end
+
+    -- When custom stages are specified in configless rule add them to generic
+    -- stages.
+    if not config then
+        for stage in each(rule) do
+            pkg:collect_rule(stage)
+        end
+    end
+
+    return pkg
+end
+
 function RuleEngine:define_variant(rule, context)
     local use = Target.from_use(rule.extends)
     if rule.name == use.name then
@@ -191,7 +319,7 @@ function RuleEngine:define_variant(rule, context)
         end
     end
     self.packages[rule.name] = pkg
-    return P.define_package(rule, context)
+    return P.rules:define_package(rule, context)
 end
 
 function RuleEngine:define_variants()
@@ -944,136 +1072,8 @@ function package(rule)
     if rule.extends then
         return P.collect_variants(rule, context)
     else
-        return P.define_package(rule, context)
+        return P.rules:define_package(rule, context)
     end
-end
-
-function P.define_package(rule, context)
-    P.rules._define_count = P.rules._define_count + 1
-
-    if not context then
-        context = Context:new {
-            name = rule.name,
-            config = rule.config,
-            template = rule.template
-        }
-    end
-
-    local config = rule.config or context.config
-    local template = rule.template or context.template
-    rule.config, rule.template = nil, nil
-
-    if config and config ~= context.config or
-       template and template ~= context.template then
-        context = copy(context)
-        context.config = config
-        context.template = template
-    end
-
-    local pkg = P.rules.packages[rule.name]
-    if not pkg then
-        pkg = P:create(rule.name)
-        P.rules.packages[rule.name] = pkg
-    end
-    if context then
-        append_uniq(context, pkg.contexts)
-    end
-
-    local this = pkg
-    if config then
-        if not pkg.configs[config] then pkg.configs[config] = {} end
-        this = pkg.configs[config]
-        if not getmetatable(this) then
-            this.name, this.config = pkg.name, config
-            if not this.stages then this.stages = {} end
-            if not this._collected_targets then this._collected_targets = {} end
-            if not this.build then this.build = {} end
-            if not this.install then this.install = {} end
-            if not this.export then this.export = {} end
-            setmetatable(this, P)
-            setmetatable(this.build, { __index = pkg.build })
-            setmetatable(this.install, { __index = pkg.install })
-            setmetatable(this.export, { __index = pkg.export })
-            pkg:add_stage('clean', config)
-        end
-    end
-
-    if rule.source and Source:is_known(rule.source.type) then
-        if rule.patches == nil then
-            rule.patches = false
-        end
-    end
-    -- merge source and patches to shared part regardless of rule context
-    if rule.patches ~= nil then
-        if rule.patches == false then
-            pkg.patches = nil
-        else
-            pkg.patches = table.merge(pkg.patches or {}, rule.patches)
-        end
-        rule.patches = nil
-    end
-    if rule.source then
-        pkg.source = table.merge(pkg.source or {}, rule.source)
-        rule.source = nil
-    end
-
-    local arg_rule = rule
-    rule = {}
-    for name in each(template) do
-        local template = P.rules._templates[name]
-        if template then
-            table.merge(rule, template)
-        else
-            P.rules:print_warning("a package '%s' includes a template '%s' which is not defined\n--> %s", pkg.name, name, tostring(context))
-        end
-    end
-    table.merge(rule, arg_rule)
-    table.merge(this, rule)
-
-    if config then
-        local build, install = this.build, this.install
-
-        if config == 'target' and build.target_requires_host then
-            rule.requires = append_uniq(pkg.name..':host', rule.requires)
-        end
-
-        for spec in each(pkg.requires) do
-            P.rules:collect_require(pkg, spec, context)
-        end
-
-        for spec in each(rule.requires) do
-            local context = context
-            if rule.requires.template ~= nil then
-                context = copy(context or {})
-                context.template = rule.requires.template
-            end
-            P.rules:collect_require(pkg, spec, context)
-        end
-
-        -- Add configless stages to every config, then add rule-specific stages.
-        local stages = extend(extend({}, pkg), rule)
-        for stage in each(stages) do
-            local target = this:collect_rule(stage, config)
-            for spec in each(stage.requires) do
-                local context = context
-                if stage.requires.template ~= nil then
-                    context = copy(context or {})
-                    context.template = stage.requires.template
-                end
-                P.rules:collect_require(pkg, spec, context, target.stage)
-            end
-        end
-    end
-
-    -- When custom stages are specified in configless rule add them to generic
-    -- stages.
-    if not config then
-        for stage in each(rule) do
-            pkg:collect_rule(stage)
-        end
-    end
-
-    return pkg
 end
 
 function template(rule)
@@ -1103,7 +1103,7 @@ function P:define_use(spec, context)
     if pkg then
         if not seen then append_uniq(context, pkg.contexts) end
     else
-        pkg = P.define_package({ name = use.name, config = config }, context)
+        pkg = P.rules:define_package({ name = use.name, config = config }, context)
     end
     P.rules.used_packages[key] = pkg P.rules.used_packages[fullkey] = true
     return pkg
@@ -1114,7 +1114,7 @@ function P:process_source()
     local source, added = Source:create(self.source, self.name), {}
     if source.type == 'repo' then
         self:add_rule { 'unpack', { 'repo', 'install', 'host' } }
-        local repo = P.define_package { name = 'repo', config = 'host' }
+        local repo = P.rules:define_package { name = 'repo', config = 'host' }
         added.repo = repo
     end
     if source:is_scm() then
@@ -1189,7 +1189,7 @@ function P:process_config(config, this)
     if build.type == 'linux-module' or build.kernel_modules == true or
         install and install.modules then
 
-        local p = P.define_package { name = 'kernel', config = config }
+        local p = P.rules:define_package { name = 'kernel', config = config }
         new_packages[p.name] = p
 
         self:add_rule { 'configure', config,
@@ -1231,7 +1231,7 @@ function P.define_project_package(project_dir)
         build = { type = 'gnu', generate = true }
     end
     if build then
-        P.define_package(P:parse {
+        P.rules:define_package(P:parse {
                 name = name,
                 source = '.',
                 build = build,
@@ -1247,9 +1247,9 @@ function P.define_default_config()
         if build and build.type and not next(pkg.configs) then
             local new_pkg
             if build.type == 'android-gradle' then
-                new_pkg = P.define_package { name = pkg.name, config = 'target' }
+                new_pkg = P.rules:define_package { name = pkg.name, config = 'target' }
             else
-                new_pkg = P.define_package { name = pkg.name, config = 'host' }
+                new_pkg = P.rules:define_package { name = pkg.name, config = 'host' }
             end
             new_packages[new_pkg.name] = new_pkg
         end
@@ -1277,7 +1277,7 @@ function P.define_rust_packages()
                 build.system = build.system or pkg:_derive_rust_target(config)
                 local name = string.format('rust-%s%s', build.rust_toolchain,
                     build.system and '-'..build.system or '')
-                local rust_toolchain = P.define_package {
+                local rust_toolchain = P.rules:define_package {
                     name   = name,
                     config = config,
                     build = {
