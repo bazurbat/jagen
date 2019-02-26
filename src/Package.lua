@@ -195,6 +195,78 @@ function RuleEngine:process_rules()
         end
         self:pass(new_packages)
     until not next(new_packages)
+
+    for _, pkg in pairs(self.packages) do
+        for target in pkg:each() do
+            for input in each(target.inputs) do
+                if input.stage == 'unpack' then
+                    local pkg = self.packages[input.name]
+                    if pkg and pkg:is_scm() then
+                        input.stage = 'update'
+                    end
+                elseif input.stage == 'update' then
+                    local pkg = self.packages[input.name]
+                    if pkg and not pkg:is_scm() then
+                        input.stage = 'unpack'
+                    end
+                end
+            end
+        end
+    end
+
+    for key, item in pairs(self.required_specs) do
+        local pkg, spec, config, stage = item[1], item[2], item[3], item[4]
+        pkg:add_require_target(spec, config, stage)
+    end
+
+    for _, pkg in pairs(self.packages) do
+        for this, config in pkg:each_config(true) do
+            for spec in each(this.uses) do
+                local use = Target.from_use(spec)
+                local used = self.packages[use.name]
+                if used then
+                    for this, config in used:each_config(true) do
+                        used:add_stage('export', config)
+                    end
+                end
+            end
+        end
+        pkg:export_dirs()
+        pkg:export_build_env()
+    end
+
+    for _, pkg in pairs(self.packages) do
+        self._context_count = self._context_count + #pkg.contexts
+    end
+
+    -- print(string.format('defines: %d, contexts: %d', self._define_count, self._context_count))
+
+    local source_exclude = os.getenv('jagen_source_exclude')
+    local function is_scm(pkg)
+        return pkg.source and pkg.source:is_scm()
+    end
+    if source_exclude then
+        for item in string.gmatch(source_exclude, '%S+') do
+            local invert = item:sub(1, 1) == '!'
+            local shpat = invert and item:sub(2) or item
+            if #shpat < 1 then
+                Log.warning("invalid pattern '%s' in jagen_source_exclude list", item)
+            end
+            local luapat, match, matched = shpat:convert_pattern()
+            for name, pkg in iter(P.rules.packages, filter(is_scm)) do
+                match = name:match(luapat)
+                if (match and not invert) or (invert and not match) then
+                    matched = true
+                    if pkg.source then
+                        pkg.source.exclude = true
+                    end
+                end
+            end
+            if not matched then
+                Log.warning("could not find SCM package matching '%s' from jagen_source_exclude list", item)
+            end
+        end
+    end
 end
 
 function RuleEngine:print_error(...)
@@ -1267,79 +1339,6 @@ function P.load_rules()
     push_context({ implicit = true })
 
     P.rules:process_rules()
-
-    for _, pkg in pairs(P.rules.packages) do
-        for target in pkg:each() do
-            for input in each(target.inputs) do
-                if input.stage == 'unpack' then
-                    local pkg = P.rules.packages[input.name]
-                    if pkg and pkg:is_scm() then
-                        input.stage = 'update'
-                    end
-                elseif input.stage == 'update' then
-                    local pkg = P.rules.packages[input.name]
-                    if pkg and not pkg:is_scm() then
-                        input.stage = 'unpack'
-                    end
-                end
-            end
-        end
-    end
-
-    for key, item in pairs(P.rules.required_specs) do
-        local pkg, spec, config, stage = item[1], item[2], item[3], item[4]
-        pkg:add_require_target(spec, config, stage)
-    end
-
-    for _, pkg in pairs(P.rules.packages) do
-        for this, config in pkg:each_config(true) do
-            for spec in each(this.uses) do
-                local use = Target.from_use(spec)
-                local used = P.rules.packages[use.name]
-                if used then
-                    for this, config in used:each_config(true) do
-                        used:add_stage('export', config)
-                    end
-                end
-            end
-        end
-        pkg:export_dirs()
-        pkg:export_build_env()
-    end
-
-    for _, pkg in pairs(P.rules.packages) do
-        P.rules._context_count = P.rules._context_count + #pkg.contexts
-    end
-
-    -- print(string.format('defines: %d, contexts: %d', P.rules._define_count, P.rules._context_count))
-
-    local source_exclude = os.getenv('jagen_source_exclude')
-    local function is_scm(pkg)
-        return pkg.source and pkg.source:is_scm()
-    end
-    if source_exclude then
-        for item in string.gmatch(source_exclude, '%S+') do
-            local invert = item:sub(1, 1) == '!'
-            local shpat = invert and item:sub(2) or item
-            if #shpat < 1 then
-                Log.warning("invalid pattern '%s' in jagen_source_exclude list", item)
-            end
-            local luapat, match, matched = shpat:convert_pattern()
-            for name, pkg in iter(P.rules.packages, filter(is_scm)) do
-                match = name:match(luapat)
-                if (match and not invert) or (invert and not match) then
-                    matched = true
-                    if pkg.source then
-                        pkg.source.exclude = true
-                    end
-                end
-            end
-            if not matched then
-                Log.warning("could not find SCM package matching '%s' from jagen_source_exclude list", item)
-            end
-        end
-    end
-
     P.rules:check()
 
     return P.rules.packages, not P.rules.had_errors
