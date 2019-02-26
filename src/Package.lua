@@ -144,6 +144,56 @@ function RuleEngine:collect_require(pkg, spec, context, stage)
     end
 end
 
+function RuleEngine:define_variant(rule, context)
+    local use = Target.from_use(rule.extends)
+    if rule.name == use.name then
+        self:print_error("a package '%s' extends itself\n--> %s", rule.name, tostring(context))
+        return
+    end
+    if self.packages[rule.name] then
+        self:print_error("can not define a variant package '%s', another package with the same name is already defined\n--> %s", rule.name, tostring(context))
+        return
+    end
+    local pkg = self.packages[use.name]
+    if not pkg then
+        self:print_error("a package '%s' extends '%s' which is not defined\n--> %s", rule.name, use.name, tostring(context))
+        return
+    end
+    if rule.config and not use.config then
+        use.config = rule.config
+    end
+    if use.config and not pkg:has_config(use.config) then
+        self:print_error("a package '%s' extends '%s:%s' but the package '%s' does not have a config '%s'\n--> %s", rule.name, use.name, use.config, use.name, use.config, tostring(context))
+        return
+    end
+    pkg = copy(pkg)
+    pkg.name = rule.name
+    for this, _ in pkg:each_config(true) do
+        for target in each(this.stages) do
+            target.name = rule.name
+            this.stages[target.stage] = target
+        end
+    end
+    if use.config then
+        for config in pairs(pkg.configs) do
+            if config ~= use.config then
+                pkg.configs[config] = nil
+            end
+        end
+        if rule.config and rule.config ~= use.config then
+            local this = pkg.configs[use.config]
+            this.config = rule.config
+            for target in each(this.stages) do
+                target.config = rule.config
+            end
+            pkg.configs[rule.config] = this
+            pkg.configs[use.config] = nil
+        end
+    end
+    self.packages[rule.name] = pkg
+    return P.define_package(rule, context)
+end
+
 function RuleEngine:define_variants()
     local new_packages = {}
     for name, item in pairs(self._variants) do
@@ -1024,56 +1074,6 @@ function P.define_package(rule, context)
     end
 
     return pkg
-end
-
-function P.define_variant(rule, context)
-    local use = Target.from_use(rule.extends)
-    if rule.name == use.name then
-        P.rules:print_error("a package '%s' extends itself\n--> %s", rule.name, tostring(context))
-        return
-    end
-    if P.rules.packages[rule.name] then
-        P.rules:print_error("can not define a variant package '%s', another package with the same name is already defined\n--> %s", rule.name, tostring(context))
-        return
-    end
-    local pkg = P.rules.packages[use.name]
-    if not pkg then
-        P.rules:print_error("a package '%s' extends '%s' which is not defined\n--> %s", rule.name, use.name, tostring(context))
-        return
-    end
-    if rule.config and not use.config then
-        use.config = rule.config
-    end
-    if use.config and not pkg:has_config(use.config) then
-        P.rules:print_error("a package '%s' extends '%s:%s' but the package '%s' does not have a config '%s'\n--> %s", rule.name, use.name, use.config, use.name, use.config, tostring(context))
-        return
-    end
-    pkg = copy(pkg)
-    pkg.name = rule.name
-    for this, _ in pkg:each_config(true) do
-        for target in each(this.stages) do
-            target.name = rule.name
-            this.stages[target.stage] = target
-        end
-    end
-    if use.config then
-        for config in pairs(pkg.configs) do
-            if config ~= use.config then
-                pkg.configs[config] = nil
-            end
-        end
-        if rule.config and rule.config ~= use.config then
-            local this = pkg.configs[use.config]
-            this.config = rule.config
-            for target in each(this.stages) do
-                target.config = rule.config
-            end
-            pkg.configs[rule.config] = this
-            pkg.configs[use.config] = nil
-        end
-    end
-    P.rules.packages[rule.name] = pkg
-    return P.define_package(rule, context)
 end
 
 function template(rule)
