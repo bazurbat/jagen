@@ -318,6 +318,7 @@ function RuleEngine:define_default_config(packages)
             setpkg(out, new)
         end
     end
+    table.assign(self.packages, out)
     return out
 end
 
@@ -376,6 +377,7 @@ function RuleEngine:define_variants()
     for name, item in pairs(self._variants) do
         out[name] = P.define_variant(item[1], item[2])
     end
+    table.assign(self.packages, out)
     return out
 end
 
@@ -422,6 +424,7 @@ function RuleEngine:define_rust_packages(packages)
             end
         end
     end
+    table.assign(self.packages, out)
     return out
 end
 
@@ -588,21 +591,10 @@ function RuleEngine:pass(packages)
 end
 
 function RuleEngine:process_rules()
-    local new
-
     self:pass(table.copy(self.packages))
-
-    new = self:define_default_config(self.packages)
-    table.assign(self.packages, new)
-    self:pass(new)
-
-    new = self:define_variants()
-    table.assign(self.packages, new)
-    self:pass(new)
-
-    new = self:define_rust_packages(self.packages)
-    table.assign(self.packages, new)
-    self:pass(new)
+    self:pass(self:define_default_config(self.packages))
+    self:pass(self:define_variants())
+    self:pass(self:define_rust_packages(self.packages))
 
     local new_packages
     repeat
