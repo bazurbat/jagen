@@ -144,6 +144,59 @@ function RuleEngine:collect_require(pkg, spec, context, stage)
     end
 end
 
+function RuleEngine:define_variants()
+    local new_packages = {}
+    for name, item in pairs(self._variants) do
+        new_packages[name] = P.define_variant(item[1], item[2])
+    end
+    return new_packages
+end
+
+function RuleEngine:pass(packages)
+    while next(packages) do
+        local next_packages = {}
+        for _, pkg in pairs(packages) do
+            for_each(pkg._collected_targets, function(t) pkg:add_target(t) end)
+            for this, config in pkg:each_config() do
+                table.assign(next_packages, pkg:process_config(config, this))
+                for_each(this._collected_targets, function(t) pkg:add_target(t) end)
+                for spec in each(pkg.uses or {}, this.uses or {}) do
+                    local added = pkg:define_use(spec, Context:new { name = pkg.name, config = config })
+                    if added then
+                        next_packages[added.name] = added
+                    end
+                end
+            end
+        end
+        local required = P.rules.required_packages
+        P.rules.required_packages = {}
+        for key, item in pairs(required) do
+            local pkg, spec, context = item[1], item[2], item[3]
+            local used = pkg:define_use(spec, context)
+            if used then
+                next_packages[used.name] = used
+            end
+        end
+        packages = next_packages
+    end
+end
+
+function RuleEngine:process_rules()
+    self:pass(table.copy(self.packages))
+    self:pass(P.define_default_config())
+    self:pass(self:define_variants())
+    self:pass(P.define_rust_packages())
+
+    local new_packages
+    repeat
+        new_packages = {}
+        for _, pkg in pairs(table.copy(self.packages)) do
+            table.assign(new_packages, pkg:process_source())
+        end
+        self:pass(new_packages)
+    until not next(new_packages)
+end
+
 function RuleEngine:print_error(...)
     Log.error(...)
     self.had_errors = true
@@ -1093,35 +1146,6 @@ function P:process_config(config, this)
     return new_packages
 end
 
-function P.process_rules(_packages)
-    while next(_packages) do
-        local new_packages = {}
-        for _, pkg in pairs(_packages) do
-            for_each(pkg._collected_targets, function(t) pkg:add_target(t) end)
-            for this, config in pkg:each_config() do
-                table.assign(new_packages, pkg:process_config(config, this))
-                for_each(this._collected_targets, function(t) pkg:add_target(t) end)
-                for spec in each(pkg.uses or {}, this.uses or {}) do
-                    local added = pkg:define_use(spec, Context:new { name = pkg.name, config = config })
-                    if added then
-                        new_packages[added.name] = added
-                    end
-                end
-            end
-        end
-        local required = P.rules.required_packages
-        P.rules.required_packages = {}
-        for key, item in pairs(required) do
-            local pkg, spec, context = item[1], item[2], item[3]
-            local used = pkg:define_use(spec, context)
-            if used then
-                new_packages[used.name] = used
-            end
-        end
-        _packages = new_packages
-    end
-end
-
 function P.define_project_package(project_dir)
     assert(project_dir)
     local name = project_dir:match('.*/([^/]+)')
@@ -1242,25 +1266,7 @@ function P.load_rules()
 
     push_context({ implicit = true })
 
-    P.process_rules(table.copy(P.rules.packages))
-    local new_packages = P.define_default_config()
-    P.process_rules(new_packages)
-
-    new_packages = {}
-    for name, item in pairs(P.rules._variants) do
-        new_packages[name] = P.define_variant(item[1], item[2])
-    end
-    P.process_rules(new_packages)
-
-    P.process_rules(P.define_rust_packages())
-
-    repeat
-        new_packages = {}
-        for _, pkg in pairs(P.rules.packages) do
-            table.assign(new_packages, pkg:process_source())
-        end
-        P.process_rules(new_packages)
-    until not next(new_packages)
+    P.rules:process_rules()
 
     for _, pkg in pairs(P.rules.packages) do
         for target in pkg:each() do
