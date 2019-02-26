@@ -5,7 +5,9 @@ local Log    = require 'Log'
 local Command = require 'Command'
 
 local function setpkg(table, pkg)
-    table[pkg.name] = pkg
+    if pkg then 
+        table[pkg.name] = pkg
+    end
     return table
 end
 
@@ -366,7 +368,7 @@ function RuleEngine:define_variant(rule, context)
         end
     end
     self.packages[rule.name] = pkg
-    return P.rules:define_package(rule, context)
+    return self:define_package(rule, context)
 end
 
 function RuleEngine:define_variants()
@@ -423,13 +425,144 @@ function RuleEngine:define_rust_packages(packages)
     return out
 end
 
+function RuleEngine:process_config(pkg, config, this)
+    local new_packages = {}
+    local build, install = this.build, this.install
+
+    if build.type == 'android-gradle' then
+        build.in_source = true
+        pkg.source = pkg.source or {}
+        if pkg.source.ignore_dirty == nil then
+            pkg.source.ignore_dirty = false
+        end
+        if build.toolchain == nil then
+            build.toolchain = 'android-sdk-tools:host'
+        end
+        if build.profile == nil then
+            build.profile = 'debug'
+        end
+        if build.clean == nil then
+            build.clean = '$pkg_build_dir/app/build'
+        end
+    end
+
+    if build.type then
+        build.toolchain = pkg:gettoolchain(config)
+    end
+
+    local toolchain = build.toolchain
+    if toolchain then
+        self:collect_require(pkg, toolchain, Context:new { name = pkg.name, config = config })
+        this.uses = append_uniq(toolchain, this.uses)
+    end
+
+    if not build.dir then
+        if build.in_source then
+            build.dir = '$pkg_source_dir'
+        else
+            build.dir = System.mkpath('${pkg_work_dir:?}', config)
+        end
+    end
+
+    if build.in_source and pkg.source.ignore_dirty ~= false then
+        if Source:is_known(pkg.source.type) then
+            pkg.source.ignore_dirty = 'in_source'
+        end
+    end
+
+    if build.type == 'gnu' then
+        local generate, autoreconf = build.generate, build.autoreconf
+        if generate == nil and autoreconf then
+            generate = 'autoreconf'
+        end
+        if generate then
+            pkg.build.generate = generate
+            pkg:add_rule { 'generate' }
+        end
+        if rawget(build, 'generate') then
+            rawset(build, 'generate', nil)
+        end
+    end
+
+    if build.type == 'linux-module' or build.kernel_modules == true or
+        install and install.modules then
+
+        local p = self:define_package { name = 'kernel', config = config }
+        new_packages[p.name] = p
+
+        pkg:add_rule { 'configure', config,
+            { 'kernel', 'configure', config }
+        }
+        pkg:add_rule { 'compile', config,
+            { 'kernel', 'compile', config }
+        }
+        pkg:add_rule { 'install', config,
+            { 'kernel', 'install', config }
+        }
+    end
+
+    if build.type then
+        pkg:add_stage('configure', config)
+        pkg:add_stage('compile', config)
+    end
+
+    if install and install.type == nil and build and build.type then
+        install.type = build.type
+    end
+    if install and install.type and install.type ~= false then
+        pkg:add_stage('install', config)
+    end
+
+    return new_packages
+end
+
+function RuleEngine:process_source(pkg)
+    if getmetatable(pkg.source) then return end
+    local source, added = Source:create(pkg.source, pkg.name), {}
+    if source.type == 'repo' then
+        pkg:add_rule { 'unpack', { 'repo', 'install', 'host' } }
+        local repo = self:define_package { name = 'repo', config = 'host' }
+        added.repo = repo
+    end
+    if source:is_scm() then
+        if pkg.patches then
+            source.ignore_dirty = 'patches'
+        end
+        pkg.stages.unpack.stage = 'update'
+    end
+    pkg.source = source
+    return added
+end
+
+function RuleEngine:define_project_package(project_dir)
+    assert(project_dir)
+    local name = project_dir:match('.*/([^/]+)')
+    if not name then return end
+    local exists, mkpath, build = System.file_exists, System.mkpath
+    if exists(mkpath(project_dir, 'CMakeLists.txt')) then
+        build = { type = 'cmake' }
+    elseif exists(mkpath(project_dir, 'configure')) then
+        build = { type = 'gnu' }
+    elseif exists(mkpath(project_dir, 'autogen.sh')) then
+        build = { type = 'gnu', generate = true }
+    end
+    if build then
+        return P.rules:define_package(P:parse {
+                name = name,
+                source = '.',
+                build = build,
+                install = false
+            })
+    end
+end
+
 function RuleEngine:pass(packages)
     while next(packages) do
         local next_packages = {}
         for _, pkg in pairs(packages) do
             for_each(pkg._collected_targets, function(t) pkg:add_target(t) end)
             for this, config in pkg:each_config() do
-                table.assign(next_packages, pkg:process_config(config, this))
+                table.assign(next_packages, self:process_config(pkg, config, this))
                 for_each(this._collected_targets, function(t) pkg:add_target(t) end)
                 for spec in each(pkg.uses or {}, this.uses or {}) do
                     local added = self:define_use(spec, Context:new { name = pkg.name, config = config })
@@ -475,7 +608,7 @@ function RuleEngine:process_rules()
     repeat
         new_packages = {}
         for _, pkg in pairs(table.copy(self.packages)) do
-            table.assign(new_packages, pkg:process_source())
+            table.assign(new_packages, self:process_source(pkg))
         end
         self:pass(new_packages)
     until not next(new_packages)
@@ -1191,137 +1324,6 @@ function template(rule)
     P.rules._templates[name] = rule
 end
 
-function P:process_source()
-    if getmetatable(self.source) then return end
-    local source, added = Source:create(self.source, self.name), {}
-    if source.type == 'repo' then
-        self:add_rule { 'unpack', { 'repo', 'install', 'host' } }
-        local repo = P.rules:define_package { name = 'repo', config = 'host' }
-        added.repo = repo
-    end
-    if source:is_scm() then
-        if self.patches then
-            source.ignore_dirty = 'patches'
-        end
-        self.stages.unpack.stage = 'update'
-    end
-    self.source = source
-    return added
-end
-
-function P:process_config(config, this)
-    local new_packages = {}
-    local build, install = this.build, this.install
-
-    if build.type == 'android-gradle' then
-        build.in_source = true
-        self.source = self.source or {}
-        if self.source.ignore_dirty == nil then
-            self.source.ignore_dirty = false
-        end
-        if build.toolchain == nil then
-            build.toolchain = 'android-sdk-tools:host'
-        end
-        if build.profile == nil then
-            build.profile = 'debug'
-        end
-        if build.clean == nil then
-            build.clean = '$pkg_build_dir/app/build'
-        end
-    end
-
-    if build.type then
-        build.toolchain = self:gettoolchain(config)
-    end
-
-    local toolchain = build.toolchain
-    if toolchain then
-        P.rules:collect_require(self, toolchain, Context:new { name = self.name, config = config })
-        this.uses = append_uniq(toolchain, this.uses)
-    end
-
-    if not build.dir then
-        if build.in_source then
-            build.dir = '$pkg_source_dir'
-        else
-            build.dir = System.mkpath('${pkg_work_dir:?}', config)
-        end
-    end
-
-    if build.in_source and self.source.ignore_dirty ~= false then
-        if Source:is_known(self.source.type) then
-            self.source.ignore_dirty = 'in_source'
-        end
-    end
-
-    if build.type == 'gnu' then
-        local generate, autoreconf = build.generate, build.autoreconf
-        if generate == nil and autoreconf then
-            generate = 'autoreconf'
-        end
-        if generate then
-            self.build.generate = generate
-            self:add_rule { 'generate' }
-        end
-        if rawget(build, 'generate') then
-            rawset(build, 'generate', nil)
-        end
-    end
-
-    if build.type == 'linux-module' or build.kernel_modules == true or
-        install and install.modules then
-
-        local p = P.rules:define_package { name = 'kernel', config = config }
-        new_packages[p.name] = p
-
-        self:add_rule { 'configure', config,
-            { 'kernel', 'configure', config }
-        }
-        self:add_rule { 'compile', config,
-            { 'kernel', 'compile', config }
-        }
-        self:add_rule { 'install', config,
-            { 'kernel', 'install', config }
-        }
-    end
-
-    if build.type then
-        self:add_stage('configure', config)
-        self:add_stage('compile', config)
-    end
-
-    if install and install.type == nil and build and build.type then
-        install.type = build.type
-    end
-    if install and install.type and install.type ~= false then
-        self:add_stage('install', config)
-    end
-
-    return new_packages
-end
-
-function P.define_project_package(project_dir)
-    assert(project_dir)
-    local name = project_dir:match('.*/([^/]+)')
-    if not name then return end
-    local exists, mkpath, build = System.file_exists, System.mkpath
-    if exists(mkpath(project_dir, 'CMakeLists.txt')) then
-        build = { type = 'cmake' }
-    elseif exists(mkpath(project_dir, 'configure')) then
-        build = { type = 'gnu' }
-    elseif exists(mkpath(project_dir, 'autogen.sh')) then
-        build = { type = 'gnu', generate = true }
-    end
-    if build then
-        P.rules:define_package(P:parse {
-                name = name,
-                source = '.',
-                build = build,
-                install = false
-            })
-    end
-end
-
 function P.load_rules()
     P.rules = RuleEngine:new()
 
@@ -1346,7 +1348,7 @@ function P.load_rules()
 
     local project_dir = os.getenv('jagen_project_dir')
     if project_dir then
-        P.define_project_package(project_dir)
+        setpkg(P.rules.packages, P.rules:define_project_package(project_dir))
         local filename = System.mkpath(project_dir, '.jagen-rules.lua')
         local file = io.open(filename, 'rb')
         if file then
@@ -1354,8 +1356,6 @@ function P.load_rules()
             file:close()
         end
     end
-
-    push_context({ implicit = true })
 
     P.rules:process_rules()
     P.rules:check()
