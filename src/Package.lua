@@ -108,35 +108,6 @@ local function pop_context()
     return o
 end
 
-local find_module = (function ()
-    local package = package
-    return function (name)
-        assert(name)
-        local names, common_name = {}, name:match('([%w%p]+)~.*')
-        if common_name then
-            append(names, string.format('pkg/%s/%s', name, common_name))
-            append(names, string.format('pkg/%s', name))
-            append(names, string.format('pkg/%s/%s', common_name, common_name))
-            append(names, string.format('pkg/%s', common_name))
-        else
-            append(names, string.format('pkg/%s/%s', name, name))
-            append(names, string.format('pkg/%s', name))
-        end
-
-        for path in string.gmatch(package.path, '[^;]+') do
-            for name in each(names) do
-                local filename = string.gsub(path, '%?', name)
-                local file = io.open(filename, 'rb')
-                if file then
-                    local module = assert(loadstring(assert(file:read('*a')), filename))
-                    file:close()
-                    return module, filename
-                end
-            end
-        end
-    end
-end)()
-
 local RuleEngine = {}
 RuleEngine.__index = RuleEngine
 
@@ -168,6 +139,110 @@ function RuleEngine:print_warning(...)
     Log.warning(...)
     self.had_warnings = true
 end
+
+function RuleEngine:check_build_configs(pkg)
+    if pkg.build and pkg.build.type and table.count(pkg.configs) == 0 then
+        self:print_error("the package '%s' requires a build but has no configs defined",
+            pkg.name)
+    end
+end
+
+function RuleEngine:check_build_insource(pkg)
+    local count, build = table.count(pkg.configs)
+    for this, config in pkg:each_config() do
+        build = this.build
+        if build and build.in_source and build.in_source ~= 'multi' and count > 1 then
+            self:print_warning("the package '%s' builds in source but has multiple configs defined, "..
+                "please make sure that its build system supports this and set in_source='multi' "..
+                "property to remove this warning",
+                pkg.name)
+            break
+        end
+    end
+end
+
+function RuleEngine:check_build_toolchain(pkg)
+    local build
+    for this, config in pkg:each_config() do
+        build = this.build
+        if build and build.type and build.toolchain == nil then
+            self:print_error("the package '%s' requires '%s' build for "..
+                "config '%s' but does not have a toolchain set", pkg.name,
+                build.type, config)
+        end
+    end
+end
+
+function RuleEngine:check_undefined_uses(pkg)
+    for this, config in pkg:each_config(true) do
+        for spec in each(this.uses or {}) do
+            local use = Target.from_use(spec)
+            if not self.packages[use.name] then
+                self:print_error("a package '%s' uses undefined package '%s'%s", pkg.name, use.name, pkg:format_at())
+            end
+        end
+    end
+end
+
+-- TODO: investigate if this should be an error
+-- the source is always defined as of now
+function RuleEngine:check_usages(pkg)
+    for this, config in pkg:each_config(true) do
+        for spec in each(this.uses or {}) do
+            local use = Target.from_use(spec)
+            local pkg = self.packages[use.name]
+            if pkg then
+                local cfg = use.config or config
+                local build, install = pkg:get('build', cfg), pkg:get('install', cfg)
+                if (not build or build and not build.type) and
+                   (not install or install and not install.type) and
+                   not pkg.source then
+                    self:print_warning("A package '%s' uses a package '%s' which does not have build, install or source "..
+                        "rules defined. Possible reason could be incorrect package name spelling or missing pkg file.%s", pkg.name, pkg.name, pkg:format_at())
+                end
+            end
+        end
+    end
+end
+
+function RuleEngine:check()
+    for name, pkg in pairs(self.packages) do
+        self:check_build_configs(pkg)
+        self:check_build_insource(pkg)
+        self:check_build_toolchain(pkg)
+        self:check_undefined_uses(pkg)
+        self:check_usages(pkg)
+    end
+end
+
+local find_module = (function ()
+    local package = package
+    return function (name)
+        assert(name)
+        local names, common_name = {}, name:match('([%w%p]+)~.*')
+        if common_name then
+            append(names, string.format('pkg/%s/%s', name, common_name))
+            append(names, string.format('pkg/%s', name))
+            append(names, string.format('pkg/%s/%s', common_name, common_name))
+            append(names, string.format('pkg/%s', common_name))
+        else
+            append(names, string.format('pkg/%s/%s', name, name))
+            append(names, string.format('pkg/%s', name))
+        end
+
+        for path in string.gmatch(package.path, '[^;]+') do
+            for name in each(names) do
+                local filename = string.gsub(path, '%?', name)
+                local file = io.open(filename, 'rb')
+                if file then
+                    local module = assert(loadstring(assert(file:read('*a')), filename))
+                    file:close()
+                    return module, filename
+                end
+            end
+        end
+    end
+end)()
 
 function P:__tostring(sep)
     local c = {}
@@ -652,71 +727,6 @@ function P:export_dirs()
         end
         if export.dir == nil then
             export.dir = source.dir
-        end
-    end
-end
-
-function P:check_build_configs()
-    if self.build and self.build.type and table.count(self.configs) == 0 then
-        P.rules:print_error("the package '%s' requires a build but has no configs defined",
-            self.name)
-    end
-end
-
-function P:check_build_insource()
-    local count, build = table.count(self.configs)
-    for this, config in self:each_config() do
-        build = this.build
-        if build and build.in_source and build.in_source ~= 'multi' and count > 1 then
-            P.rules:print_warning("the package '%s' builds in source but has multiple configs defined, "..
-                "please make sure that its build system supports this and set in_source='multi' "..
-                "property to remove this warning",
-                self.name)
-            break
-        end
-    end
-end
-
-function P:check_build_toolchain()
-    local build
-    for this, config in self:each_config() do
-        build = this.build
-        if build and build.type and build.toolchain == nil then
-            P.rules:print_error("the package '%s' requires '%s' build for "..
-                "config '%s' but does not have a toolchain set", self.name,
-                build.type, config)
-        end
-    end
-end
-
--- TODO: investigate if this should be an error
--- the source is always defined as of now
-function P:check_usages()
-    for this, config in self:each_config(true) do
-        for spec in each(this.uses or {}) do
-            local use = Target.from_use(spec)
-            local pkg = P.rules.packages[use.name]
-            if pkg then
-                local cfg = use.config or config
-                local build, install = pkg:get('build', cfg), pkg:get('install', cfg)
-                if (not build or build and not build.type) and
-                   (not install or install and not install.type) and
-                   not pkg.source then
-                    P.rules:print_warning("A package '%s' uses a package '%s' which does not have build, install or source "..
-                        "rules defined. Possible reason could be incorrect package name spelling or missing pkg file.%s", self.name, pkg.name, self:format_at())
-                end
-            end
-        end
-    end
-end
-
-function P:check_undefined_uses()
-    for this, config in self:each_config(true) do
-        for spec in each(this.uses or {}) do
-            local use = Target.from_use(spec)
-            if not P.rules.packages[use.name] then
-                P.rules:print_error("a package '%s' uses undefined package '%s'%s", self.name, use.name, self:format_at())
-            end
         end
     end
 end
@@ -1324,13 +1334,7 @@ function P.load_rules()
         end
     end
 
-    for name, pkg in pairs(P.rules.packages) do
-        pkg:check_build_configs()
-        pkg:check_build_insource()
-        pkg:check_build_toolchain()
-        pkg:check_usages()
-        pkg:check_undefined_uses()
-    end
+    P.rules:check()
 
     return P.rules.packages, not P.rules.had_errors
 end
