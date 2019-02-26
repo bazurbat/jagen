@@ -272,6 +272,32 @@ function RuleEngine:define_package(rule, context)
     return pkg
 end
 
+function RuleEngine:define_use(spec, context)
+    local name, config = context.name, context.config
+    local use = Target.from_use(spec)
+    if use.name == name and use.config == config then
+        Log.warning('a package specification %s is recursive in the context: %s', spec, tostring(context))
+        return
+    end
+    local key
+    if use.config and use.config ~= config then
+        key = string.format('%s:%s', use.name, use.config)
+        context = Context:new { name = name, config = config }
+        config = use.config
+    else
+        key = string.format('%s:%s', use.name, context:tokey())
+    end
+    local fullkey = string.format('%s@%s', key, name)
+    local pkg, seen = self.used_packages[key], self.used_packages[fullkey]
+    if pkg then
+        if not seen then append_uniq(context, pkg.contexts) end
+    else
+        pkg = self:define_package({ name = use.name, config = config }, context)
+    end
+    self.used_packages[key] = pkg self.used_packages[fullkey] = true
+    return pkg
+end
+
 function RuleEngine:define_variant(rule, context)
     local use = Target.from_use(rule.extends)
     if rule.name == use.name then
@@ -339,7 +365,7 @@ function RuleEngine:pass(packages)
                 table.assign(next_packages, pkg:process_config(config, this))
                 for_each(this._collected_targets, function(t) pkg:add_target(t) end)
                 for spec in each(pkg.uses or {}, this.uses or {}) do
-                    local added = pkg:define_use(spec, Context:new { name = pkg.name, config = config })
+                    local added = self:define_use(spec, Context:new { name = pkg.name, config = config })
                     if added then
                         next_packages[added.name] = added
                     end
@@ -350,7 +376,7 @@ function RuleEngine:pass(packages)
         P.rules.required_packages = {}
         for key, item in pairs(required) do
             local pkg, spec, context = item[1], item[2], item[3]
-            local used = pkg:define_use(spec, context)
+            local used = self:define_use(spec, context)
             if used then
                 next_packages[used.name] = used
             end
@@ -1081,32 +1107,6 @@ function template(rule)
     local name = rule.name
     rule.name = nil
     P.rules._templates[name] = rule
-end
-
-function P:define_use(spec, context)
-    local name, config = context.name, context.config
-    local use = Target.from_use(spec)
-    if use.name == name and use.config == config then
-        Log.warning('a package specification %s is recursive in the context: %s', spec, tostring(context))
-        return
-    end
-    local key
-    if use.config and use.config ~= config then
-        key = string.format('%s:%s', use.name, use.config)
-        context = Context:new { name = name, config = config }
-        config = use.config
-    else
-        key = string.format('%s:%s', use.name, context:tokey())
-    end
-    local fullkey = string.format('%s@%s', key, name)
-    local pkg, seen = P.rules.used_packages[key], P.rules.used_packages[fullkey]
-    if pkg then
-        if not seen then append_uniq(context, pkg.contexts) end
-    else
-        pkg = P.rules:define_package({ name = use.name, config = config }, context)
-    end
-    P.rules.used_packages[key] = pkg P.rules.used_packages[fullkey] = true
-    return pkg
 end
 
 function P:process_source()
