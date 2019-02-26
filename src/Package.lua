@@ -4,6 +4,11 @@ local Source = require 'Source'
 local Log    = require 'Log'
 local Command = require 'Command'
 
+local function setpkg(table, pkg)
+    table[pkg.name] = pkg
+    return table
+end
+
 local P = {}
 P.__index = P
 
@@ -169,7 +174,6 @@ function RuleEngine:define_package(rule, context)
     local pkg = P.rules.packages[rule.name]
     if not pkg then
         pkg = P:create(rule.name)
-        P.rules.packages[rule.name] = pkg
     end
     if context then
         append_uniq(context, pkg.contexts)
@@ -298,6 +302,23 @@ function RuleEngine:define_use(spec, context)
     return pkg
 end
 
+function RuleEngine:define_default_config(packages)
+    local out = {}
+    for _, pkg in pairs(packages) do
+        local build = pkg.build
+        if build and build.type and not next(pkg.configs) then
+            local new
+            if build.type == 'android-gradle' then
+                new = self:define_package { name = pkg.name, config = 'target' }
+            else
+                new = self:define_package { name = pkg.name, config = 'host' }
+            end
+            setpkg(out, new)
+        end
+    end
+    return out
+end
+
 function RuleEngine:define_variant(rule, context)
     local use = Target.from_use(rule.extends)
     if rule.name == use.name then
@@ -349,11 +370,57 @@ function RuleEngine:define_variant(rule, context)
 end
 
 function RuleEngine:define_variants()
-    local new_packages = {}
+    local out = {}
     for name, item in pairs(self._variants) do
-        new_packages[name] = P.define_variant(item[1], item[2])
+        out[name] = P.define_variant(item[1], item[2])
     end
-    return new_packages
+    return out
+end
+
+function P:_derive_rust_target(config)
+    local system = self:get_toolchain_build('system', config)
+    if not system then return end
+    local triple = system:split('-')
+    if #triple == 3 and triple[2] == 'linux' and not triple[3]:match('^android') then
+        table.insert(triple, 2, 'unknown')
+    end
+    return table.concat(triple, '-')
+end
+
+function RuleEngine:define_rust_packages(packages)
+    local out = {}
+    for _, pkg in pairs(packages) do
+        for this, config in pkg:each_config() do
+            local build = this.build
+            if build.type == 'rust' then
+                build.rust_toolchain = build.rust_toolchain or 'stable'
+                build.system = build.system or pkg:_derive_rust_target(config)
+                local name = string.format('rust-%s%s', build.rust_toolchain,
+                    build.system and '-'..build.system or '')
+                local rust_toolchain = self:define_package {
+                    name   = name,
+                    config = config,
+                    build = {
+                        type      = 'rust-toolchain',
+                        toolchain = 'rustup:host',
+                        name      = build.rust_toolchain,
+                        system    = build.system
+                    },
+                    export = {
+                        env = {
+                            RUSTUP_HOME = '$rustup_env_RUSTUP_HOME',
+                            CARGO_HOME = '$rustup_env_CARGO_HOME'
+                        }
+                    }
+                }
+                out[name] = rust_toolchain
+                self:collect_require(pkg, name, Context:new { name = pkg.name, config = config })
+                this.uses = append_uniq(name, this.uses)
+                self.has_rust_rules = true
+            end
+        end
+    end
+    return out
 end
 
 function RuleEngine:pass(packages)
@@ -367,6 +434,7 @@ function RuleEngine:pass(packages)
                 for spec in each(pkg.uses or {}, this.uses or {}) do
                     local added = self:define_use(spec, Context:new { name = pkg.name, config = config })
                     if added then
+                        setpkg(self.packages, added)
                         next_packages[added.name] = added
                     end
                 end
@@ -378,6 +446,7 @@ function RuleEngine:pass(packages)
             local pkg, spec, context = item[1], item[2], item[3]
             local used = self:define_use(spec, context)
             if used then
+                setpkg(self.packages, used)
                 next_packages[used.name] = used
             end
         end
@@ -386,10 +455,21 @@ function RuleEngine:pass(packages)
 end
 
 function RuleEngine:process_rules()
+    local new
+
     self:pass(table.copy(self.packages))
-    self:pass(P.define_default_config())
-    self:pass(self:define_variants())
-    self:pass(P.define_rust_packages())
+
+    new = self:define_default_config(self.packages)
+    table.assign(self.packages, new)
+    self:pass(new)
+
+    new = self:define_variants()
+    table.assign(self.packages, new)
+    self:pass(new)
+
+    new = self:define_rust_packages(self.packages)
+    table.assign(self.packages, new)
+    self:pass(new)
 
     local new_packages
     repeat
@@ -1098,7 +1178,9 @@ function package(rule)
     if rule.extends then
         return P.collect_variants(rule, context)
     else
-        return P.rules:define_package(rule, context)
+        local pkg = P.rules:define_package(rule, context)
+        setpkg(P.rules.packages, pkg)
+        return pkg
     end
 end
 
@@ -1238,69 +1320,6 @@ function P.define_project_package(project_dir)
                 install = false
             })
     end
-end
-
-function P.define_default_config()
-    local new_packages = {}
-    for _, pkg in pairs(table.copy(P.rules.packages)) do
-        local build = pkg.build
-        if build and build.type and not next(pkg.configs) then
-            local new_pkg
-            if build.type == 'android-gradle' then
-                new_pkg = P.rules:define_package { name = pkg.name, config = 'target' }
-            else
-                new_pkg = P.rules:define_package { name = pkg.name, config = 'host' }
-            end
-            new_packages[new_pkg.name] = new_pkg
-        end
-    end
-    return new_packages
-end
-
-function P:_derive_rust_target(config)
-    local system = self:get_toolchain_build('system', config)
-    if not system then return end
-    local triple = system:split('-')
-    if #triple == 3 and triple[2] == 'linux' and not triple[3]:match('^android') then
-        table.insert(triple, 2, 'unknown')
-    end
-    return table.concat(triple, '-')
-end
-
-function P.define_rust_packages()
-    local new_packages = {}
-    for _, pkg in pairs(P.rules.packages) do
-        for this, config in pkg:each_config() do
-            local build = this.build
-            if build.type == 'rust' then
-                build.rust_toolchain = build.rust_toolchain or 'stable'
-                build.system = build.system or pkg:_derive_rust_target(config)
-                local name = string.format('rust-%s%s', build.rust_toolchain,
-                    build.system and '-'..build.system or '')
-                local rust_toolchain = P.rules:define_package {
-                    name   = name,
-                    config = config,
-                    build = {
-                        type      = 'rust-toolchain',
-                        toolchain = 'rustup:host',
-                        name      = build.rust_toolchain,
-                        system    = build.system
-                    },
-                    export = {
-                        env = {
-                            RUSTUP_HOME = '$rustup_env_RUSTUP_HOME',
-                            CARGO_HOME = '$rustup_env_CARGO_HOME'
-                        }
-                    }
-                }
-                new_packages[name] = rust_toolchain
-                P.rules:collect_require(pkg, name, Context:new { name = pkg.name, config = config })
-                this.uses = append_uniq(name, this.uses)
-                P.rules.has_rust_rules = true
-            end
-        end
-    end
-    return new_packages
 end
 
 function P.load_rules()
