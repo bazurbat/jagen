@@ -130,6 +130,20 @@ function RuleEngine:new()
     return engine
 end
 
+function RuleEngine:collect_require(pkg, spec, context, stage)
+    local key = string.format('%s->%s^%s', spec, pkg.name, context and context:tokey() or '')
+    if not self.all_required_packages[key] then
+        local item = { pkg, spec, context }
+        self.all_required_packages[key] = item
+        self.required_packages[key] = item 
+    end
+    local key2 = string.format('%s^%s:%s^%s', spec, pkg.name,
+        context.config or '', stage or '')
+    if not self.required_specs[key2] then
+        self.required_specs[key2] = { pkg, spec, context.config, stage }
+    end
+end
+
 function RuleEngine:print_error(...)
     Log.error(...)
     self.had_errors = true
@@ -536,20 +550,6 @@ function P:collect_rule(rule, config)
     return target
 end
 
-function P:collect_require(spec, context, stage)
-    local key = string.format('%s->%s^%s', spec, self.name, context and context:tokey() or '')
-    if not P.rules.all_required_packages[key] then
-        local item = { self, spec, context }
-        P.rules.all_required_packages[key] = item
-        P.rules.required_packages[key] = item 
-    end
-    local key2 = string.format('%s^%s:%s^%s', spec, self.name,
-        context.config or '', stage or '')
-    if not P.rules.required_specs[key2] then
-        P.rules.required_specs[key2] = { self, spec, context.config, stage }
-    end
-end
-
 function P.collect_variants(rule, context)
     P.rules._variants[rule.name] = { rule, context }
 end
@@ -863,7 +863,7 @@ function P.define_package(rule, context)
         end
 
         for spec in each(pkg.requires) do
-            pkg:collect_require(spec, context)
+            P.rules:collect_require(pkg, spec, context)
         end
 
         for spec in each(rule.requires) do
@@ -872,7 +872,7 @@ function P.define_package(rule, context)
                 context = copy(context or {})
                 context.template = rule.requires.template
             end
-            pkg:collect_require(spec, context)
+            P.rules:collect_require(pkg, spec, context)
         end
 
         -- Add configless stages to every config, then add rule-specific stages.
@@ -885,7 +885,7 @@ function P.define_package(rule, context)
                     context = copy(context or {})
                     context.template = stage.requires.template
                 end
-                pkg:collect_require(spec, context, target.stage)
+                P.rules:collect_require(pkg, spec, context, target.stage)
             end
         end
     end
@@ -1029,7 +1029,7 @@ function P:process_config(config, this)
 
     local toolchain = build.toolchain
     if toolchain then
-        self:collect_require(toolchain, Context:new { name = self.name, config = config })
+        P.rules:collect_require(self, toolchain, Context:new { name = self.name, config = config })
         this.uses = append_uniq(toolchain, this.uses)
     end
 
@@ -1198,7 +1198,7 @@ function P.define_rust_packages()
                     }
                 }
                 new_packages[name] = rust_toolchain
-                pkg:collect_require(name, Context:new { name = pkg.name, config = config })
+                P.rules:collect_require(pkg, name, Context:new { name = pkg.name, config = config })
                 this.uses = append_uniq(name, this.uses)
                 P.rules.has_rust_rules = true
             end
