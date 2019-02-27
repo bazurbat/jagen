@@ -1364,8 +1364,4 @@ function P:find_files(names)
     end
 end
 
-function P:get_work_dir(config)
-    return self:get('work_dir', config)
-end
-
 return P
