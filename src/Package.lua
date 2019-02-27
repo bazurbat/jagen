@@ -1368,14 +1368,4 @@ function P:get_work_dir(config)
     return self:get('work_dir', config)
 end
 
-function P.all_configs()
-    return coroutine.wrap(function ()
-            for name, pkg in pairs(P.rules.packages) do
-                for this, config in pkg:each_config() do
-                    coroutine.yield(this, config, pkg)
-                end
-            end
-        end)
-end
-
 return P

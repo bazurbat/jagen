@@ -439,14 +439,16 @@ end
 
 local function generate_cargo_config(packages)
     local targets, lines = {}, {}
-    for this, config, pkg in Package.all_configs() do
-        local build = this.build
-        if build.type == 'rust' then
-            local system = pkg:get_build('system', config)
-            local cc = pkg:get_build('cc', config) or pkg:get_toolchain_build('cc', config) or 'gcc'
-            local toolchain_system = pkg:get_toolchain_build('system', config)
-            if system and cc and toolchain_system then
-                targets[system] = string.format('%s-%s', toolchain_system, cc)
+    for name, pkg in pairs(packages) do
+        for this, config in pkg:each_config() do
+            local build = this.build
+            if build.type == 'rust' then
+                local system = pkg:get_build('system', config)
+                local cc = pkg:get_build('cc', config) or pkg:get_toolchain_build('cc', config) or 'gcc'
+                local toolchain_system = pkg:get_toolchain_build('system', config)
+                if system and cc and toolchain_system then
+                    targets[system] = string.format('%s-%s', toolchain_system, cc)
+                end
             end
         end
     end
