@@ -8,7 +8,6 @@ order:
 * clean
 * update/unpack
 * patch
-* generate
 * clean:config
 * configure:config
 * compile:config
@@ -16,7 +15,7 @@ order:
 
 Those stages can be subdivided to "common" and "config-specific". Each package has at least the
 following common stages: "clean", "update" (for SCM type sources) or "unpack" (for other sources)
-and "patch". The "generate" stage is defined only if "generate" property is set for the build.
+and "patch".
 
 If some build type is set (`build.type` is not `nil`) and there are some configs defined for the
 package then "configure" and "compile" stages are added. Additionally, `install.type` is set from
@@ -32,9 +31,6 @@ not exists. The "unpack" stage unpacks the distribution archive to the `$pkg_wor
 
 The "patch" stages applies patches and copies supplementary files if defined or can be overridden
 to perform custom steps to prepare the package for the build.
-
-The "generate" stage regenerates the build system. For "gnu" build type it runs `./autogen.sh` or
-autoreconf command depending on the value of the "generate".
 
 The "configure" stage runs `configure` for "gnu" build type or CMake for "cmake" build type passing
 it the defined build options.

@@ -34,9 +34,6 @@ jagen_stage_update() {
 jagen_stage_patch() {
     pkg_patch
     pkg_patch_copy_files
-}
-
-jagen_stage_generate() {
     pkg_generate
 }
 

@@ -562,10 +562,10 @@ files = { { 'filename1' } }
   `$pkg_config` is set. Exported automatically.
 
 - **build.generate** (`pkg_build_generate`) — Indicates that the package's build system needs to be
-  regenerated before running configure. Causes a 'generate' stage to be added before a 'configure'
-  stage. Relevant only for the gnu build type. If set to `true` value or a string "autogen" the
-  'generate' stage will try `./autogen.sh` script if found in the source directory and `autoreconf`
-  command otherwise. If set to an "autoreconf" string value it will run the `autoreconf` command.
+  regenerated before running configure. Relevant only for the "gnu" build type. If set to `true` or
+  a string "autogen" the `./autogen.sh` script will be ran at the end of the 'patch' stage if found
+  in the source directory and `autoreconf` command otherwise. If set to a string "autoreconf" the
+  `autoreconf` command will be tried skipping `autogen.sh` script even if it exists.
 
 - **build.generator** (`pkg_build_generator`) — If the package build type is
   'cmake' sets its CMake generator.

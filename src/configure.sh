@@ -1,31 +1,5 @@
 #!/bin/sh
 
-pkg__generate_autogen() {
-    message "generating GNU build system for $pkg_name using autogen.sh"
-    pkg_run sh ./autogen.sh
-}
-
-pkg__generate_autoreconf() {
-    message "generating GNU build system for $pkg_name using autoreconf"
-    pkg_run autoreconf -vif
-}
-
-pkg_generate() {
-    [ "$pkg_source_dir" ] || return 0
-    pkg_run cd "$pkg_source_dir"
-    case $pkg_build_generate in
-        autogen|yes)
-            if [ -f ./autogen.sh ]; then
-                pkg__generate_autogen
-            else
-                pkg__generate_autoreconf
-            fi ;;
-        autoreconf)
-            pkg__generate_autoreconf
-            ;;
-    esac
-}
-
 pkg_configure() {
     [ "$pkg_source_dir" ] || return 0
 

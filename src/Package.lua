@@ -480,7 +480,6 @@ function RuleEngine:process_config(pkg, config, this)
         end
         if generate then
             pkg.build.generate = generate
-            pkg:add_rule { 'generate' }
         end
         if rawget(build, 'generate') then
             rawset(build, 'generate', nil)
@@ -1050,7 +1049,7 @@ function P:gettoolchain(config)
 end
 
 function P:add_target(target)
-    local shared = { unpack = true, patch  = true, generate = true }
+    local shared = { unpack = true, patch  = true }
     local name = target.stage
     if name == 'update' then name = 'unpack' end
     local config = not shared[name] and target.config
