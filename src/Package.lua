@@ -515,6 +515,13 @@ function RuleEngine:process_config(pkg, config, this)
         pkg:add_stage('install', config)
     end
 
+    if pkg.spawn or build.spawn or install.spawn then
+        local spawn = self:define_package { name = 'spawn' } 
+        new_packages[spawn.name] = spawn
+        self.packages[spawn.name] = spawn
+        pkg.stages[1]:append_uses(Target.from_args('spawn:update'))
+    end
+
     return new_packages
 end
 
@@ -896,8 +903,24 @@ function P:parse(rule)
         end
     end
 
+    local function parse_spawn(rule)
+        local spawn = rule['spawn']
+        if not spawn then return end
+        if type(spawn) == 'string' then
+            spawn = { name = spawn }
+            rule.spawn = spawn
+        end
+    end
+
     parse_section('build')
     parse_section('install')
+    parse_spawn(rule)
+    if rule.build then
+        parse_spawn(rule.build)
+    end
+    if rule.install then
+        parse_spawn(rule.install)
+    end
 
     if rule.build and rule.build.system and rule.build.arch == nil then
         rule.build.arch = string.match(rule.build.system, '^(%w+)-?')
