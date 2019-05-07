@@ -202,6 +202,10 @@ local function format_stage(target, pkg)
         end
     end
 
+    for use in each(target.uses) do
+        append_uniq(tostring(use), uses)
+    end
+
     return format_build {
         rule    = 'stage',
         uses    = uses,

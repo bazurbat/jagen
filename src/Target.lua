@@ -130,6 +130,11 @@ function Target:append(input)
     return self
 end
 
+function Target:append_uses(input)
+    self.uses = append_uniq(input, self.uses)
+    return self
+end
+
 function Target:touch()
     return Command:new('cd "$jagen_build_dir" && touch', quote(self)):exec()
 end
