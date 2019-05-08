@@ -37,7 +37,7 @@ and [Yocto](https://www.yoctoproject.org).
 To initialize a new build root pipe Jagen's init script into the shell:
 
 ```
-curl -fsS https://git.io/fhyEM | sh -s -- https://github.com/bazurbat/jagen-start
+curl -fsSL https://git.io/fhyEM | sh -s -- https://github.com/bazurbat/jagen-start
 ```
 
 It will create a `jagen-root` directory with the [tutorial
