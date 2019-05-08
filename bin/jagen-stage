@@ -83,6 +83,21 @@ if [ "$pkg_config" ]; then
     pkg_uses="$pkg_uses $(eval echo \${pkg__${pkg_config}__uses})"
 fi
 
+if [ -z "$jagen_recursive" ]; then
+    if [ "$pkg_config" ]; then
+        if [ "$pkg_stage" = 'install' ] && [ "$pkg_install_spawn_name" ]; then
+            pkg__spawn "$pkg_install_spawn_name"
+            return
+        elif [ "$pkg_build_spawn_name" ]; then
+            pkg__spawn "$pkg_build_spawn_name"
+            return
+        fi
+    elif [ "$pkg_spawn_name" ]; then
+        pkg__spawn "$pkg_spawn_name"
+        return
+    fi
+fi
+
 # filter out the toolchain from pkg_uses
 new_uses=
 for spec in $pkg_uses; do
