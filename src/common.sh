@@ -260,6 +260,7 @@ jagen__resolve_layer() {
             done ;;
     esac
     cd "$path" 2>&- && pwd -P
+    return 0
 }
 
 # Tries to resolve all entries in $jagen_layers and prints the
