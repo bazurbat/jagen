@@ -88,6 +88,19 @@ path_is_url() {
     return 1
 }
 
+path_is_absolute() {
+    [ "$1" != "${1#/}" ]
+}
+
+path_level() {
+    local IFS path="$1"
+    if [ "$path" = / ]; then echo 0; return; fi
+    path=${path#/}
+    IFS=/
+    set -- $path
+    echo $#
+}
+
 real_path() {
     if [ "${1-}" ]; then
         (cd "$1" && pwd -P)
@@ -217,7 +230,7 @@ on_exit() {
 }
 
 main() {
-    local layer path wd="$(real_path)" stamp_file
+    local layer path wd="$(real_path)" stamp_file i
     parse_command_line "$@"
 
     jagen_dir=$(dirname "$0")
@@ -279,6 +292,12 @@ main() {
             path=${layer##*/} path=${path%.git} path="./layer/$path"
             git_clone "$layer" "$path" ${jagen_layer_branch-}
             layer="$path"
+        elif ! path_is_absolute "$layer"; then
+            i=$(path_level "${jagen_root_dir#$wd}")
+            while [ $i -gt 0 ]; do
+                layer="../$layer"
+                i=$((i-1))
+            done
         fi
         jagen_layers="${jagen_layers-}$layer
 "
@@ -313,7 +332,7 @@ $jagen_layers"
     # delete if the later refresh fails
     trap - INT EXIT
 
-    . ./env.sh || exit
+    . ./env.sh
     (
         IFS="$FS"
         jagen $jagen_args
