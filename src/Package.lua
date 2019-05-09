@@ -5,7 +5,7 @@ local Log    = require 'Log'
 local Command = require 'Command'
 
 local function setpkg(table, pkg)
-    if pkg then 
+    if pkg then
         table[pkg.name] = pkg
     end
     return table
@@ -142,7 +142,7 @@ function RuleEngine:collect_require(pkg, spec, context, stage)
     if not self.all_required_packages[key] then
         local item = { pkg, spec, context }
         self.all_required_packages[key] = item
-        self.required_packages[key] = item 
+        self.required_packages[key] = item
     end
     local key2 = string.format('%s^%s:%s^%s', spec, pkg.name,
         context.config or '', stage or '')
@@ -516,9 +516,7 @@ function RuleEngine:process_config(pkg, config, this)
     end
 
     if pkg.spawn or build.spawn or install.spawn then
-        local spawn = self:define_package { name = 'spawn' } 
-        new_packages[spawn.name] = spawn
-        self.packages[spawn.name] = spawn
+        pkg.uses = append_uniq('spawn:host', pkg.uses)
         pkg.stages[1]:append_uses(Target.from_args('spawn:update'))
     end
 

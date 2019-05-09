@@ -222,5 +222,5 @@ export jagen_recursive=1 jagen__stage_verbose=$jagen__stage_verbose
 . "$jagen_root_dir/env.sh" && jagen-stage $pkg_name $pkg_stage $pkg_config
 EOF
 )
-    spawn $A "$name" -- sh -c "$cmd"
+    ${spawn_dir:?}/spawn $A "$name" -- sh -c "$cmd"
 }
