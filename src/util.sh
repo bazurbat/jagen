@@ -212,7 +212,7 @@ pkg_is_release_with_debug() {
 pkg__spawn() {
     local name="$1"
     local IFS="$jagen_S" S="$jagen_S" A=
-    local layer_dirs="$(jagen__resolve_layers)" dir cmd
+    local layer_dirs="$(jagen__resolve_layers)" dir cmd spawn
     A="--bind-dir${S}${jagen_root_dir}${S}--bind-dir${S}${jagen_dir}"
     for dir in $layer_dirs; do
         A="$A$S--bind-dir$S$dir"
@@ -222,5 +222,10 @@ export jagen_recursive=1 jagen__stage_verbose=$jagen__stage_verbose
 . "$jagen_root_dir/env.sh" && jagen-stage $pkg_name $pkg_stage $pkg_config
 EOF
 )
-    ${spawn_dir:?}/spawn $A "$name" -- sh -c "$cmd"
+    if [ "$(command -v spawn-"$name")" ]; then
+        spawn="spawn-$name"
+    else
+        spawn="${spawn_dir:?}/spawn"
+    fi
+    "$spawn" $A "$name" -- sh -c "$cmd"
 }
