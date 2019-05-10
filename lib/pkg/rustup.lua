@@ -11,7 +11,7 @@ return {
         options = {
             '-y',
             '--no-modify-path',
-            '--default-host', 'none',
+            '--default-host', '$pkg_build_system',
             '--default-toolchain', 'none'
         },
         toolchain = false
