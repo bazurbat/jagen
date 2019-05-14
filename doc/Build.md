@@ -11,7 +11,6 @@ Option               | Description
 -h, --help           | print this help message
 -m, --match          | print expanded value of target patterns and exit
 -c, --clean          | clean package's build directories before the build
--i, --interactive    | build targets in interactive mode
 -a, --all            | continue until everything is up to date
 -n, --no-rebuild     | do not rebuild targets which are already up to date
 -p, --progress       | print the output of build targets after completion
@@ -29,11 +28,6 @@ The specified patterns are expanded and matching targets are rebuilt. Use the
 Use the '--clean' option to remove the package's build directories before the
 start. It also causes the 'configure' stage of the affected packages to become
 out of date.
-
-Use the '--interactive' option to allow build tools to detect the terminal and
-show colored messages. This mode ignores target dependencies and does not
-capture command output. Run build without '-i' to bring all targets up to date
-before using this option.
 
 Use the '--all' option to build everything out of date in the current project in
 addition to the specified targets.

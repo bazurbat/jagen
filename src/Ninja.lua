@@ -202,6 +202,16 @@ local function format_stage(target, pkg)
         end
     end
 
+    -- FIXME: Moving target to another poll will allow others to run
+    -- simulateously in the background which will break android-gradle and
+    -- rust-toolchan targets. The only fix I see for now is to move all others
+    -- to the console poll as well if some of them are but this requires some
+    -- rethinging of the generator. I consider those corner cases not very
+    -- likely during the normal usage. Added a ToDo.
+    if target.interactive then
+        vars.pool = 'console'
+    end
+
     for use in each(target.uses) do
         append_uniq(tostring(use), uses)
     end

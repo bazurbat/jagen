@@ -23,10 +23,14 @@ Jagen =
     flags = os.getenv('jagen_flags'),
 
     build_dir = assert(os.getenv('jagen_build_dir')),
+
+    has_console = os.getenv('jagen__has_console')
 }
 
 Jagen.cmd = System.mkpath(Jagen.dir, 'src', 'cmd.sh')
 Jagen.pager = os.getenv('jagen_pager') or os.getenv('PAGER') or 'less'
+Jagen.build_file = System.mkpath(Jagen.build_dir, 'build.ninja')
+Jagen.build_targets_file = System.mkpath(Jagen.build_dir, '.build-targets')
 
 function Jagen.flag(f)
     for w in string.gmatch(Jagen.flags, "[_%w]+") do
@@ -496,8 +500,28 @@ function Jagen.command.refresh(args, packages)
         end
     end
 
-    local build_file = System.mkpath(Jagen.build_dir, 'build.ninja')
-    Ninja.generate(build_file, packages)
+    do
+        local file = io.open(Jagen.build_targets_file, 'r')
+        if file then
+            for line in file:lines() do
+                local target = Target:from_arg(line)
+                for name, pkg in pairs(packages) do
+                    if name == pkg.name then
+                        for stage in pkg:each() do
+                            if stage == target then
+                                stage.interactive = true
+                            end
+                        end
+                    end
+                end
+            end
+            file:close()
+        else
+            io.open(Jagen.build_targets_file, 'w'):close()
+        end
+    end
+
+    Ninja.generate(Jagen.build_file, packages)
     if Package.rules.has_rust_rules then
         generate_cargo_config(packages)
     end
@@ -561,13 +585,51 @@ function Jagen.command.refresh(args, packages)
     return ok
 end
 
+local function write_targets(targets, args)
+    local is_interactive = Jagen.has_console and not (args['progress'] or args['follow'] or args['follow-all'])
+    local curr_list, saved_list, is_eq = {}, {}, true
+
+    if is_interactive then
+        for target in pairs(targets) do
+            append(curr_list, target)
+        end
+        sort(curr_list)
+    end
+
+    local file = io.open(Jagen.build_targets_file)
+    if file then
+        for line in file:lines() do
+            append(saved_list, line)
+        end
+        file:close()
+    end
+
+    if #curr_list ~= #saved_list then
+        is_eq = false
+    else
+        for i = 1, #curr_list do
+            if curr_list[i] ~= saved_list[i] then
+                is_eq = false
+                break
+            end
+        end
+    end
+
+    if not is_eq then
+        local file = assert(io.open(Jagen.build_targets_file, 'w'))
+        for target in each(curr_list) do
+            file:write(target, '\n')
+        end
+        file:close()
+    end
+end
+
 function Jagen.command.build(args)
     local options = Options:new {
         { 'help,h' },
         { 'match,m' },
         { 'clean,c' },
         { 'clean-ignored,C' },
-        { 'interactive,i' },
         { 'all,a' },
         { 'no-rebuild,n' },
         { 'progress,p' },
@@ -633,22 +695,15 @@ function Jagen.command.build(args)
         return false
     end
 
+    write_targets(targets, args)
+
     local args_path = System.mkpath(Jagen.build_dir, '.build-args')
     local args_file = assert(io.open(args_path, 'w'))
     if args._args then
         args_file:write(table.concat(args._args, '\n'))
     end
     args_file:close()
-    local ok
-    if args['interactive'] then
-        for key in pairs(targets) do
-            local a = key:split(':')
-            ok = Command:newf('jagen-stage -i %s %s %s', a[1] or "''", a[2] or "''", a[3] or "''"):exec()
-            if not ok then return ok end
-        end
-    else
-        ok = Command:new(quote(Jagen.cmd), 'build', tostring(args), unpack(table.keys(targets))):exec()
-    end
+    local ok = Command:new(quote(Jagen.cmd), 'build', tostring(args), unpack(table.keys(targets))):exec()
     io.open(args_path, 'w'):close()
     return ok
 end

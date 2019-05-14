@@ -34,7 +34,7 @@ _jagen_complete() {
     local src_update_opt="$ignore_opt"
     local src_each_opt='--type'
     local src_types='git hg repo'
-    local build_opt="-m --match -c --clean -i --interactive -a --all -n --no-rebuild -p --progress -f --follow -F --follow-all -q --quiet -x --exclude $ignore_opt"
+    local build_opt="-m --match -c --clean -a --all -n --no-rebuild -p --progress -f --follow -F --follow-all -q --quiet -x --exclude $ignore_opt"
     local list_packages_opt='--depth -d --all -a'
 
     _get_comp_words_by_ref -n : cur prev

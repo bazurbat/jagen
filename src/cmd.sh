@@ -55,6 +55,8 @@ cmd_build() {
         shift
     done
 
+    export jagen__stage_targets="$targets"
+
     cd "$jagen_build_dir" || return
 
     : > "$build_log" || return
@@ -164,6 +166,7 @@ cmd_find_for_refresh() {
         -name Session.vim \
     ')' -prune -o -print
     echo "$jagen_root_dir"
+    echo "$jagen_build_dir/.build-targets"
     echo_if_exists "$jagen_root_dir/config.sh"
     echo_if_exists "$jagen_root_dir/env.sh"
     echo_if_exists "$jagen_root_dir/jagen"
