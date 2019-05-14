@@ -136,8 +136,9 @@ SYNOPSIS
   of the ones specified as build command arguments and all others not currently
   up to date if used in combination with '--all' option.
 
-  The '--quiet' option disables printing of the command outputs to the terminal.
-  The output is still saved to logs.
+  With the '--quiet' option the output from commands is collected to logs but
+  not displayed on the console during the execution unless the stage finished
+  with an error.
 
   Arguments after '--' will be passed literally to the underlying build tool.
   The handling depends on the build tool in question but be aware of the case

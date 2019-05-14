@@ -415,6 +415,7 @@ function Jagen.command.clean(args)
         if not found then return false end 
     end
 
+    append(specs, '--quiet')
     if force_exclude then
         append(specs, '--exclude')
     end
@@ -586,7 +587,7 @@ function Jagen.command.refresh(args, packages)
 end
 
 local function write_targets(targets, args)
-    local is_interactive = Jagen.has_console and not (args['progress'] or args['follow'] or args['follow-all'])
+    local is_interactive = Jagen.has_console and not args['quiet'] and not (args['progress'] or args['follow'] or args['follow-all'])
     local curr_list, saved_list, is_eq = {}, {}, true
 
     if is_interactive then

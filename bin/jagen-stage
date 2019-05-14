@@ -27,7 +27,7 @@ _on_exit() {
 
     pkg__download_cleanup
 
-    if [ -z "$jagen__stage_quiet" -a -z "$jagen__stage_verbose" ]; then
+    if [ -z "$jagen__stage_verbose" ]; then
         if [ "$jagen__last_error" != 0 ] && ! in_list "$pkg__log_file" $jagen__cmd_logs; then
             # In the case when the output is buffered by ninja and the command
             # was interrupted the output will be discarded and cat will not
@@ -52,7 +52,7 @@ if [ "$jagen__stage_verbose" ]; then
     tee <"$pkg__pipe" -a "$pkg__log_file" &
     exec >"$pkg__pipe" 2>&1
 else
-    if [ -z "$jagen__has_console" ] ||
+    if [ "$jagen__stage_quiet" ] || [ -z "$jagen__has_console" ] ||
         ! in_list "$pkg_name:$pkg_stage${pkg_config:+:$pkg_config}" $jagen__stage_targets
     then
         exec >>"$pkg__log_file" 2>&1
