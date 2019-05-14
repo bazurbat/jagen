@@ -591,8 +591,10 @@ local function write_targets(targets, args)
     local curr_list, saved_list, is_eq = {}, {}, true
 
     if is_interactive then
-        for target in pairs(targets) do
-            append(curr_list, target)
+        for target, explicit in pairs(targets) do
+            if explicit then
+                append(curr_list, target)
+            end
         end
         sort(curr_list)
     end
@@ -664,15 +666,20 @@ function Jagen.command.build(args)
                     if arg_clean or target.stage ~= 'clean' then
                         targets[tostring(target)] = true found = true
                     end
-                else
-                    local stage = target:to_stage()
-                    if stage:match(stagep) then
-                        if target.stage ~= 'clean' or stagep:match('^%^clean%$$') or stagep:match('^%^clean%%%:') then
-                            targets[tostring(target)] = true found = true
+                elseif target:to_stage():match(stagep) then
+                    if arg_clean or target.stage ~= 'clean' or stagep:match('^%^clean%$$') or stagep:match('^%^clean%%%:') then
+                        targets[tostring(target)] = true found = true
+                    end
+                end
+            end
+            if arg_clean and stagep then
+                for target in pkg:each() do
+                    if target:to_stage():match(stagep) then
+                        local key = tostring(Target.from_args(target.name, 'clean', target.config))
+                        if not targets[key] then
+                            targets[key] = false
                         end
-                        if arg_clean then
-                            targets[tostring(Target.from_args(name, 'clean', target.config))] = true found = true
-                        end
+                        found = true
                     end
                 end
             end
@@ -685,8 +692,9 @@ function Jagen.command.build(args)
     if args['match'] then
         local keys = table.keys(targets)
         table.sort(keys)
-        for target in each(keys) do
-            print(target)
+        for key in each(keys) do
+            local explicit = targets[key]
+            print(string.format('%s%s', key, not explicit and ' *' or ''))
         end
         return true
     end
