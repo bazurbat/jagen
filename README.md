@@ -54,15 +54,87 @@ where it left off until everything is built.
 
 ## Package Rules
 
-To see the list of available packages in the project and where they are defined use the `list
-packages` command:
+Jagen generates a build system based on a set of rules describing project's packages. Rules are
+collected from `rules.lua` files which are found across project's layers if any. To make
+project-specific adjustments create `rules.lua` in the project's root directory, e.g.
+`jagen-root/rules.lua` from the example above.
 
-```
-./jagen-root/jagen list packages
+The simples rule has the form:
+
+```lua
+package { 'mypackage' }
 ```
 
-All rules for the "Getting Started" project are contained in the
-`jagen-root/layer/jagen-start/rules.lua` file. It looks like this:
+Which defines an empty package named "mypackage". To enable Jagen's source management facilities you
+need specify the source location of the package by setting the `source` property, for example:
+
+```lua
+package { 'mypackage',
+    source = 'https://github.com/nanomsg/nanomsg.git'
+}
+```
+
+Run the `jagen source update mypackage` command and find the nanomsg sources in the `src/mypackage`
+subdirectory of the build root. So, to use Jagen as a workspace manager it is enough to define a few
+packages this way and issue `jagen source update` command periodically to update them. If no other
+source properties are set Jagen will clone the default branch ("master" most of the time in the case
+of Git). Perhaps more common case especially for dependent repositories is a need to clone a
+specific tag. This can be done by setting the `tag` property of the source:
+
+```lua
+package { 'nanomsg',
+    source = { 'https://github.com/nanomsg/nanomsg.git',
+        tag = '1.1.4'
+    }
+}
+```
+
+or, alternatively, using non-shorthand syntax:
+
+```lua
+package { 'nanomsg',
+    source = {
+        location = 'https://github.com/nanomsg/nanomsg.git',
+        tag = '1.1.4'
+    }
+}
+```
+
+When a tag is set Jagen will not update the source after the initial clone because tags are not
+supposed to change upstream. You can also set a specific revision in a similar manner:
+
+```lua
+package { 'nanomsg',
+    source = {
+        location = 'https://github.com/nanomsg/nanomsg.git',
+        rev = 'ef4123ff70c74b47b66ef066ecf88d1ed3750dc3'
+    }
+}
+```
+
+Note that you need to specify a full hash of the commit. This is also true for Mercurial sources
+because revision numbers are repository-specific.
+
+Instead of fixing the source to a single revision you can set a branch:
+
+```lua
+package { 'nanomsg',
+    source = {
+        location = 'https://github.com/nanomsg/nanomsg.git',
+        branch = 'ws'
+    }
+}
+```
+
+This way the `jagen source update` command will try to bring the specified branch up to date. This
+form is useful for tracking upstream development.
+
+### Building
+
+In addition to source management Jagen includes extensive facilities to orchestrate building of
+software. Its role is to prepare an environment, build dependencies and call package's own build
+system with the correct parameters. To enable the build support you need to specify the type of the
+build system of the package, like so:
 
 ```lua
 package { 'nanomsg',
@@ -71,7 +143,50 @@ package { 'nanomsg',
         tag = '1.1.4'
     },
     build = 'cmake'
+}
+```
 
+Run `jagen build nanomsg` command to build it. By default building the package also implies that it
+needs to be installed to be found by dependent packages. Given the rule above the `nanomsg` will be
+installed in the `host` subdirectory of the build root.
+
+Package dependencies can be specified with `requires` property:
+
+```lua
+package { 'nanomsg',
+    source = {
+        location = 'https://github.com/nanomsg/nanomsg.git',
+        tag = '1.1.4'
+    },
+    build = 'cmake'
+}
+
+package { 'googletest',
+    source = {
+        location = 'https://github.com/google/googletest.git',
+        branch = 'v1.8.x'
+    },
+    build = 'cmake'
+}
+
+package { 'hello-nanomsg',
+    source = 'https://github.com/bazurbat/hello-nanomsg.git',
+    build = 'cmake',
+    requires = { 'nanomsg', 'googletest' }
+}
+```
+
+Just run `jagen build`. Jagen will clone/update sources and build everything in order as needed.
+
+For reference, here are full rule file for "Getting Started" project:
+
+```lua
+package { 'nanomsg',
+    source = {
+        location = 'https://github.com/nanomsg/nanomsg.git',
+        tag = '1.1.4'
+    },
+    build = 'cmake'
 }
 
 package { 'googletest',
