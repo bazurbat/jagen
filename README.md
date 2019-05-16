@@ -34,23 +34,123 @@ and [Yocto](https://www.yoctoproject.org).
 
 ## Getting Started
 
-To initialize a new build root pipe Jagen's init script into the shell:
+A separate directory containing source code, build artifacts, downloaded distribution archives as
+well as Jagen's own related auxiliary files (such as build logs) is called a "workspace", a "root
+directory" or a "build root" interchangeably. Build roots can consist of multiple layers describing
+a project's components and environment which are merged together to form a complete build system.
+
+To initialize a new workspace for an existing project using Jagen which has its layers already
+prepared pipe Jagen's init script into the shell passing layers paths or URLs as arguments:
+
+```
+curl -fsSL https://git.io/fhyEM | sh -s -- [OPTIONS...] [URLs...]
+```
+
+For example, to create a workspace preconfigured with the [tutorial
+layer](https://github.com/bazurbat/jagen-start) located at https://github.com/bazurbat/jagen-start
+use the command:
 
 ```
 curl -fsSL https://git.io/fhyEM | sh -s -- https://github.com/bazurbat/jagen-start
 ```
 
-It will create a `jagen-root` directory with the [tutorial
-layer](https://github.com/bazurbat/jagen-start) preconfigured. You can immediately build it using
-the command:
+This will create a directory named `jagen-root`, clone Jagen's and tutorial layer's repositories
+inside it and generate the build system. You can immediately build it:
 
 ```
 ./jagen-root/jagen build
 ```
 
-Done. Find the results in the `jagen-root/host` directory. If some stage failed its output will be
-displayed on the console. Fix the problem and execute the build command again. It will continue from
-where it left off until everything is built.
+During the build Jagen will take care of downloading/cloning/updating sources and running packages
+configure/compile/install stages in order as needed until everything is done. Find the results in
+the `jagen-root/host` directory.
+
+To create the workspace with a different name instead of `jagen-root` pass the `-d` option to
+`init`:
+
+```
+curl -fsSL https://git.io/fhyEM | sh -s -- -d myproject https://github.com/bazurbat/jagen-start
+```
+
+For reference and a motivational example for new potential users here is the full contents of a
+definition file from the tutorial layer:
+
+```lua
+package { 'nanomsg',
+    source = {
+        location = 'https://github.com/nanomsg/nanomsg.git',
+        tag = '1.1.4'
+    },
+    build = 'cmake'
+}
+
+package { 'googletest',
+    source = {
+        location = 'https://github.com/google/googletest.git',
+        branch = 'v1.8.x'
+    },
+    build = 'cmake'
+}
+
+package { 'hello-nanomsg',
+    source = 'https://github.com/bazurbat/hello-nanomsg.git',
+    build = 'cmake',
+    requires = { 'nanomsg', 'googletest' }
+}
+
+package { 'sqlite',
+    source = {
+        location = 'https://www.sqlite.org/2018/sqlite-autoconf-3250200.tar.gz',
+        sha1sum = 'aedfbdc14eb700099434d6a743135743cff47393'
+    },
+    build = {
+        type = 'gnu',
+        options = {
+            '--disable-editline',
+            '--disable-threadsafe',
+            '--disable-dynamic-extensions',
+            '--disable-fts4',
+            '--disable-fts5',
+            '--disable-json1',
+            '--disable-rtree',
+            '--disable-static-shell'
+        }
+    }
+}
+
+package { 'hello-sqlite',
+    source = 'https://github.com/bazurbat/hello-sqlite.git',
+    build = 'cmake',
+    requires = 'sqlite'
+}
+```
+
+Hopefully it is easy to figure out what those rules are describing. To give it a try initialize a
+new empty workspace and save the code above in a `rules.lua` file inside the workspace directory or
+just download it directly from GitHub:
+
+```
+curl -fsSL https://git.io/fhyEM | sh -s -- -d jagen-test
+cd jagen-test
+curl -fsSL https://raw.githubusercontent.com/bazurbat/jagen-start/master/rules.lua > rules.lua
+./jagen build
+```
+
+Modify the rules as you see fit and rebuild the packages by passing their names to the build
+command, for example `nanomsg`:
+
+```
+./jagen build nanomsg
+```
+
+This will also update its repository if needed, if you are changing the source code instead and just
+want run configure/compile/install stages use the form:
+
+```
+./jagen build nanomsg::
+```
+
+Read further for more information about rules format and building software with Jagen.
 
 ## Package Rules
 
@@ -177,58 +277,6 @@ package { 'hello-nanomsg',
 ```
 
 Just run `jagen build`. Jagen will clone/update sources and build everything in order as needed.
-
-For reference, here are full rule file for "Getting Started" project:
-
-```lua
-package { 'nanomsg',
-    source = {
-        location = 'https://github.com/nanomsg/nanomsg.git',
-        tag = '1.1.4'
-    },
-    build = 'cmake'
-}
-
-package { 'googletest',
-    source = {
-        location = 'https://github.com/google/googletest.git',
-        branch = 'v1.8.x'
-    },
-    build = 'cmake'
-}
-
-package { 'hello-nanomsg',
-    source = 'https://github.com/bazurbat/hello-nanomsg.git',
-    build = 'cmake',
-    requires = { 'nanomsg', 'googletest' }
-}
-
-package { 'sqlite',
-    source = {
-        location = 'https://www.sqlite.org/2018/sqlite-autoconf-3250200.tar.gz',
-        sha1sum = 'aedfbdc14eb700099434d6a743135743cff47393'
-    },
-    build = {
-        type = 'gnu',
-        options = {
-            '--disable-editline',
-            '--disable-threadsafe',
-            '--disable-dynamic-extensions',
-            '--disable-fts4',
-            '--disable-fts5',
-            '--disable-json1',
-            '--disable-rtree',
-            '--disable-static-shell'
-        }
-    }
-}
-
-package { 'hello-sqlite',
-    source = 'https://github.com/bazurbat/hello-sqlite.git',
-    build = 'cmake',
-    requires = 'sqlite'
-}
-```
 
 ## Reference
 
