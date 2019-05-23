@@ -657,6 +657,15 @@ function Jagen.command.build(args)
 
     local targets, arg_clean = {}, args['clean'] or args['clean-ignored']
 
+    if #args == 0 then
+        if not (args['progress'] or args['follow'] or args['follow-all']) then
+            args['quiet'] = true
+        end
+        for name in pairs(packages) do
+            append(args, name)
+        end
+    end
+
     for arg in each(args) do
         local found = false
         local namep, stagep = unpack(map(string.to_pattern, arg:split(':', 1)))
