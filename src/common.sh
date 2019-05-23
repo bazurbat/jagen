@@ -526,9 +526,19 @@ jagen_get_system() {
 case $(uname) in
     Darwin)
         jagen_esed() { sed -E "$@"; }
+        jagen_get_file_size() {
+            local size=
+            size=$(stat -f'%z' "${1:?}" 2>/dev/null)
+            [ $? = 0 ] && echo "$size" || echo 0
+        }
         ;;
     *)
         jagen_esed() { sed -r "$@"; }
+        jagen_get_file_size() {
+            local size=
+            size=$(stat -c'%s' "${1:?}" 2>/dev/null)
+            [ $? = 0 ] && echo "$size" || echo 0
+        }
         ;;
 esac
 
@@ -538,4 +548,17 @@ jagen_is_same_dir() {
     dir1=$([ "$dir1" ] && cd "$dir1" 2>&- && pwd -P)
     dir2=$([ "$dir2" ] && cd "$dir2" 2>&- && pwd -P)
     test "$dir1" -a "$dir2" -a "$dir1" = "$dir2"
+}
+
+jagen_get_file_checksum() {
+    local prog="${1:?}sum" file="${2:?}" out=
+    if [ -z "$(command -v "$prog")" ]; then
+        warning "$prog is not found in PATH, can not calculate a checksum for $file"
+        return 2
+    fi
+    out=$("$prog" "$file")
+    if [ $? = 0 ]; then
+        echo "$out" | awk '{print $1}'
+    fi
+    return 1
 }

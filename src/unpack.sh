@@ -47,9 +47,33 @@ pkg__uri_is_local() {
     [ "${1:?}" != "${1#file://}" ]
 }
 
+pkg__unpack_tag_filename() {
+    echo "$pkg_work_dir/unpacked"
+}
+
+pkg__get_unpack_tag() {
+    local file="${1:?}" checksum="${2-}" size=
+    if [ -z "$checksum" ]; then
+        size=$(jagen_get_file_size "$file")
+    fi
+    echo $(basename "$file"):${checksum:-$size}
+}
+
+pkg__read_unpack_tag() {
+    local filename=$(pkg__unpack_tag_filename)
+    if [ -f "$filename" ]; then
+        cat "$filename"
+    fi
+}
+
+pkg__write_unpack_tag() {
+    echo "$(pkg__get_unpack_tag "${1:?}" "$2")" > "$(pkg__unpack_tag_filename)"
+}
+
 pkg__unpack_dist() {
     local src_path="${1:?}" dest_dir="${2:?}" dist_type=
     local dist_path="${jagen_dist_dir:?}/${pkg_source_filename:?}"
+    local source_checksum= checksum=
 
     if ! [ -f "$dist_path" ]; then
         if [ "$pkg_source_type" = "dist:gdrive" ] || pkg__path_is_uri "$src_path"; then
@@ -63,36 +87,32 @@ pkg__unpack_dist() {
         fi
     fi
 
-    dist_type=$(file -b --mime-type "$dist_path")
-
     if [ "$pkg_source_sha256sum" ]; then
-        if [ "$(command -v sha256sum)" ]; then
-            echo "$pkg_source_sha256sum $dist_path" | sha256sum -c - ||
-                die "failed to verify sha256sum of $dist_path"
-        else
-            warning "sha256sum is not found in PATH, can not verify $pkg_name"
-        fi
+        source_checksum="$pkg_source_sha256sum"
+        checksum=$(jagen_get_file_checksum sha256 "$dist_path")
     elif [ "$pkg_source_sha1sum" ]; then
-        if [ "$(command -v sha1sum)" ]; then
-            echo "$pkg_source_sha1sum $dist_path" | sha1sum -c - ||
-                die "failed to verify sha1sum of $dist_path"
-        else
-            warning "sha1sum is not found in PATH, can not verify $pkg_name"
-        fi
+        source_checksum="$pkg_source_sha1sum"
+        checksum=$(jagen_get_file_checksum sha1 "$dist_path")
     elif [ "$pkg_source_md5sum" ]; then
-        if [ "$(command -v md5sum)" ]; then
-            echo "$pkg_source_md5sum $dist_path" | md5sum -c - ||
-                die "failed to verify md5sum of $dist_path"
-        else
-            warning "md5sum is not found in PATH, can not verify $pkg_name"
-        fi
+        source_checksum="$pkg_source_md5sum"
+        checksum=$(jagen_get_file_checksum md5 "$dist_path")
     fi
 
-    [ -f "$dist_path" ] ||
-        die "could not find $dist_path for unpacking"
+    if [ "$source_checksum" != "$checksum" ]; then
+        die "checksum verification failed for $dist_path: expected '$source_checksum', actual '$checksum'"
+    fi
+
+    if ! is_function jagen_stage_apply_patches &&
+        [ "$(pkg__get_unpack_tag "$dist_path" $checksum)" = "$(pkg__read_unpack_tag)" ]; then
+        message "Already unpacked $dist_path"
+        # return 0
+    fi
 
     [ -d "$dest_dir" ] || pkg_run mkdir -p "$dest_dir"
     pkg_run cd "$dest_dir"
+
+    dist_type=$(file -b --mime-type "$dist_path")
+    [ $? = 0 ] || die "failed to find file type of '$dist_path'"
 
     case $dist_type in
         application/x-sharedlib)
@@ -107,6 +127,8 @@ pkg__unpack_dist() {
         *.tar|*.tar.*|*.tgz|*.tbz2|*.txz)
             pkg_run tar -xf "$dist_path" ;;
     esac
+
+    pkg__write_unpack_tag "$dist_path" $checksum
 }
 
 pkg_clean() {
