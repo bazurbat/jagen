@@ -515,7 +515,7 @@ function RuleEngine:process_config(pkg, config, this)
         pkg:add_stage('install', config)
     end
 
-    if pkg.spawn or build.spawn or install.spawn then
+    if pkg.spawn or (build and build.spawn) or (install and install.spawn) then
         pkg.uses = append_uniq('spawn:host', pkg.uses)
         pkg.stages[1]:append_uses(Target.from_args('spawn:update'))
     end
