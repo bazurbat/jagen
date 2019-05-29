@@ -30,6 +30,7 @@ Jagen =
 Jagen.cmd = System.mkpath(Jagen.dir, 'src', 'cmd.sh')
 Jagen.pager = os.getenv('jagen_pager') or os.getenv('PAGER') or 'less'
 Jagen.build_file = System.mkpath(Jagen.build_dir, 'build.ninja')
+Jagen.build_auto_packages_file = System.mkpath(Jagen.build_dir, '.auto-packages')
 Jagen.build_targets_file = System.mkpath(Jagen.build_dir, '.build-targets')
 
 function Jagen.flag(f)
@@ -412,7 +413,7 @@ function Jagen.command.clean(args)
             return false
         end
     else
-        if not found then return false end 
+        if not found then return false end
     end
 
     append(specs, '--quiet')
@@ -440,6 +441,8 @@ local function prepare_root()
         'jagen_log_dir',
     }
     assert(System.mkdir(table.unpack(System.getenv(create_dirs))))
+    System.create_file(Jagen.build_auto_packages_file)
+    System.create_file(Jagen.build_targets_file)
 end
 
 local function generate_cargo_config(packages)
@@ -468,6 +471,26 @@ local function generate_cargo_config(packages)
     file:close()
 end
 
+local function write_auto_packages(targets)
+    table.sort(targets)
+    local file = assert(io.open(Jagen.build_auto_packages_file, 'w'))
+    for target in each(targets) do
+        file:write(tostring(target), '\n')
+    end
+    file:close()
+end
+
+local function read_auto_packages()
+    local targets = {}
+    local file = io.open(Jagen.build_auto_packages_file, 'r')
+    if file then
+        for line in file:lines() do
+            append(targets, Target.from_use(line))
+        end
+        file:close()
+    end
+    return targets
+end
 
 function Jagen.command.refresh(args, packages)
     if help_requested(args) then
@@ -478,7 +501,7 @@ function Jagen.command.refresh(args, packages)
 
     local packages, ok = packages, true
     if not packages then
-        packages, ok = Package.load_rules()
+        packages, ok = Package.load_rules(read_auto_packages())
     end
     local Script = require 'Script'
     local include_dir = assert(os.getenv('jagen_include_dir'))
@@ -517,8 +540,6 @@ function Jagen.command.refresh(args, packages)
                 end
             end
             file:close()
-        else
-            io.open(Jagen.build_targets_file, 'w'):close()
         end
     end
 
@@ -649,10 +670,21 @@ function Jagen.command.build(args)
         return Jagen.command['help'] { 'build' }
     end
 
-    local packages, ok = Package.load_rules()
+    local auto_pkgs = {}
+    for arg in each(args) do
+        local target = Target:from_arg(arg)
+        target.config = target.config or 'host'
+        append_uniq(target, auto_pkgs)
+    end
+
+    local packages, ok, new_auto_pkgs = Package.load_rules(auto_pkgs)
     if not ok then
         Log.error('aborting the build due to rule errors')
         return false
+    end
+
+    for target in each(new_auto_pkgs) do
+        Log.message("package '%s' defined automatically from arguments", tostring(target))
     end
 
     local targets, arg_clean = {}, args['clean'] or args['clean-ignored']
@@ -711,6 +743,10 @@ function Jagen.command.build(args)
     -- some targets were specified but none matched, consider this an error
     if #args > 0 and not next(targets) then
         return false
+    end
+
+    if not table.iequal(read_auto_packages(), new_auto_pkgs) then
+        write_auto_packages(new_auto_pkgs)
     end
 
     write_targets(targets, args)

@@ -175,7 +175,8 @@ function RuleEngine:define_package(rule, context)
 
     local pkg = P.rules.packages[rule.name]
     if not pkg then
-        pkg = P:create(rule.name)
+        pkg = P:create(rule.name, rule._library_only)
+        if not pkg then return end
     end
     if context then
         append_uniq(context, pkg.contexts)
@@ -1285,7 +1286,9 @@ function P:export_dirs()
     end
 end
 
-function P:create(name)
+function P:create(name, library_only)
+    local module, filename = find_module(name)
+    if not module and library_only then return end
     local pkg = {
         name = name,
         stages = {},
@@ -1301,7 +1304,6 @@ function P:create(name)
     pkg:add_stage('clean')
     pkg:add_stage('unpack')
     pkg:add_stage('patch')
-    local module, filename = find_module(name)
     if module then
         table.merge(pkg, P:new(assert(module())))
     end
@@ -1336,8 +1338,9 @@ function template(rule)
     P.rules._templates[name] = rule
 end
 
-function P.load_rules()
+function P.load_rules(auto_pkgs)
     P.rules = RuleEngine:new()
+    local packages = P.rules.packages
 
     local prelude = [[
         local Log    = require 'Log'
@@ -1369,10 +1372,21 @@ function P.load_rules()
         end
     end
 
+    local new_auto_pkgs = {}
+    for target in each(auto_pkgs) do
+        local pkg = packages[target.name]
+        if not pkg or not pkg:has_config(target.config) then
+            local rule = { name = target.name, config = target.config,
+                           _library_only = true }
+            setpkg(packages, P.rules:define_package(rule))
+            append_uniq(target, new_auto_pkgs)
+        end
+    end
+
     P.rules:process_rules()
     P.rules:check()
 
-    return P.rules.packages, not P.rules.had_errors
+    return P.rules.packages, not P.rules.had_errors, new_auto_pkgs
 end
 
 function P:find_files(names)

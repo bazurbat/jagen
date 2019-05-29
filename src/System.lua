@@ -74,6 +74,12 @@ function P.rmrf(...)
     return true
 end
 
+function P.create_file(path)
+    if not io.open(path) then
+        assert(io.open(path, 'w')):close()
+    end
+end
+
 function P.mkdir(...)
     return P.exec('mkdir -p %s', P.quote(...))
 end

@@ -92,6 +92,12 @@ function Target:to_stage()
     end
 end
 
+function Target:__lt(other)
+    return self.name   < other.name   and
+           self.stage  < other.stage  and
+           self.config < other.config
+end
+
 function Target:__eq(other)
     return self.name   == other.name   and
            self.stage  == other.stage  and

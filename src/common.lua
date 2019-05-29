@@ -381,6 +381,18 @@ function table.tolist(t)
     return list
 end
 
+function table.iequal(a, b)
+    if #a ~= #b then
+        return false
+    end
+    for i = 1, #a do
+        if a[i] ~= b[i] then
+            return false
+        end
+    end
+    return true
+end
+
 function table.iclean(t)
     if not t then return end
     for i, _ in ipairs(t) do
