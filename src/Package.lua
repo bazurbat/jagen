@@ -1378,8 +1378,11 @@ function P.load_rules(auto_pkgs)
         if not pkg or not pkg:has_config(target.config) then
             local rule = { name = target.name, config = target.config,
                            _library_only = true }
-            setpkg(packages, P.rules:define_package(rule))
-            append_uniq(target, new_auto_pkgs)
+            pkg = P.rules:define_package(rule)
+            if pkg then
+                setpkg(packages, pkg)
+                append_uniq(target, new_auto_pkgs)
+            end
         end
     end
 

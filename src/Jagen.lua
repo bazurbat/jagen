@@ -684,7 +684,8 @@ function Jagen.command.build(args)
     end
 
     for target in each(new_auto_pkgs) do
-        Log.message("package '%s' defined automatically from arguments", tostring(target))
+        Log.message("package '%s%s' defined automatically from arguments",
+            target.name, target.config and ':'..target.config or '')
     end
 
     local targets, arg_clean = {}, args['clean'] or args['clean-ignored']
