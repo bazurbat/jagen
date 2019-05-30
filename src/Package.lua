@@ -173,8 +173,10 @@ function RuleEngine:define_package(rule, context)
         context.template = template
     end
 
+    local first_pass = false
     local pkg = P.rules.packages[rule.name]
     if not pkg then
+        first_pass = true
         pkg = P:create(rule.name, rule._library_only)
         if not pkg then return end
     end
@@ -198,6 +200,9 @@ function RuleEngine:define_package(rule, context)
             setmetatable(this.install, { __index = pkg.install })
             setmetatable(this.export, { __index = pkg.export })
             pkg:add_stage('clean', config)
+        end
+        if not first_pass then
+            this._library_only = nil
         end
     end
 
@@ -1372,22 +1377,27 @@ function P.load_rules(auto_pkgs)
         end
     end
 
-    local new_auto_pkgs = {}
     for target in each(auto_pkgs) do
         local pkg = packages[target.name]
         if not pkg or not pkg:has_config(target.config) then
             local rule = { name = target.name, config = target.config,
                            _library_only = true }
-            pkg = P.rules:define_package(rule)
-            if pkg then
-                setpkg(packages, pkg)
-                append_uniq(target, new_auto_pkgs)
-            end
+            setpkg(packages, P.rules:define_package(rule))
         end
     end
 
     P.rules:process_rules()
     P.rules:check()
+
+    local new_auto_pkgs = {}
+    for name, pkg in pairs(packages) do
+        for this, config in pkg:each_config() do
+            if this._library_only then
+                local target = Target.from_args(pkg.name, nil, config)
+                append_uniq(target, new_auto_pkgs)
+            end
+        end
+    end
 
     return P.rules.packages, not P.rules.had_errors, new_auto_pkgs
 end
