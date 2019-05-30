@@ -88,15 +88,7 @@ local function format_inputs(inputs)
 end
 
 local function format_refresh(files, packages)
-    local include_dir = System.expand(os.getenv('jagen_include_dir'))
     local outputs = { 'build.ninja' }
-    local function append_includes(pkg)
-        append(outputs, System.mkpath(include_dir, string.format('%s.sh', pkg.name)))
-        for name, config in pairs(pkg.configs) do
-            append(outputs, System.mkpath(include_dir, string.format('%s:%s.sh', pkg.name, name)))
-        end
-    end
-    for pkg in each(packages) do append_includes(pkg) end
     return format('build %s: refresh%s\n%s%s', format_outputs(outputs), format_inputs(files),
         indent(4), binding('description', 'refresh'))
 end
@@ -255,6 +247,13 @@ function P.generate(out_file, rules)
     }
 
     local for_refresh = Jagen:find_for_refresh()
+    local include_dir = System.expand(os.getenv('jagen_include_dir'))
+    for pkg in each(sorted_rules) do
+        append(for_refresh, System.mkpath(include_dir, string.format('%s.sh', pkg.name)))
+        for name, config in pairs(pkg.configs) do
+            append(for_refresh, System.mkpath(include_dir, string.format('%s:%s.sh', pkg.name, name)))
+        end
+    end
     append(lines, format_refresh(for_refresh, sorted_rules))
     append(lines, format_phony(for_refresh))
 
