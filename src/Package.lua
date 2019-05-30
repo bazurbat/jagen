@@ -1050,6 +1050,14 @@ function P:each_config(with_shared)
         end)
 end
 
+function P:find_target(pattern)
+    for target in self:each() do
+        if target:match(pattern) then
+            return target
+        end
+    end
+end
+
 function P:gettoolchain(config)
     local host_toolchain = 'system-native:host'
     local target_toolchain = os.getenv('jagen_target_toolchain')

@@ -354,6 +354,23 @@ function string.convert_pattern(s)
     return s
 end
 
+function string.to_stage_pattern(s)
+    s = s or ''
+    if s == '' then s = '*' end
+    if s == ':' then s = '*:*' end
+    s = string.gsub(s, '^:', '*:')
+    s = string.gsub(s, ':$', ':*')
+    s = string.escape_pattern(s)
+    s = string.gsub(s, '%%%*%%%*', '[^%%c%%s]*')
+    s = string.gsub(s, '%%%*', '[^:%%c%%s]*')
+    s = string.gsub(s, '%%%?', '[^%%c%%s]')
+    return s
+end
+
+function string.to_line_pattern(s)
+    return string.format('^%s$', string.to_stage_pattern(s))
+end
+
 function string.to_pattern(s)
     if s == '' then s = '*' end
     if s == ':' then s = '*:*' end

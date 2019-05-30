@@ -141,6 +141,10 @@ function Target:append_uses(input)
     return self
 end
 
+function Target:match(pattern)
+    return string.match(tostring(self), pattern)
+end
+
 function Target:touch()
     return Command:new('cd "$jagen_build_dir" && touch', quote(self)):exec()
 end

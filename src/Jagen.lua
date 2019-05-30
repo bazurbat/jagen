@@ -369,20 +369,25 @@ function Jagen.command.clean(args)
         append(args, '*')
     end
 
-    local specs, found = {}
+    local specs = {}
+    local function add_matching(pkg, pattern)
+        local target = pkg:find_target(pattern)
+        if target then
+            append(specs, tostring(target))
+            return true
+        end
+    end
     for arg in each(args) do
-        local namep, configp = unpack(map(string.to_pattern, arg:split(':', 1)))
-        for name, pkg in iter(packages, filter(function (_, name) return name:match(namep) end)) do
-            if not configp then
-                append(specs, string.format('%s:clean', name))
-                found = true
+        local split, pname, pconf = arg:split(':', 1)
+        pname = string.to_line_pattern(split[1])
+        if split[2] then
+            pconf = string.to_stage_pattern(split[2])..'$'
+        end
+        for name, pkg in iter(packages, filter(function (_, name) return name:match(pname) end)) do
+            if not pconf then
+                found = add_matching(pkg, string.format('%s:clean', name))
             end
-            for this, config in pkg:each_config() do
-                if not configp or config:match(configp) then
-                    append(specs, string.format('%s:clean:%s', name, config))
-                    found = true
-                end
-            end
+            found = add_matching(pkg, string.format('%s:clean:%s', name, pconf or string.to_stage_pattern('*'))) or found
         end
         if not found then
             Log.warning('could not find targets matching: %s', arg)
