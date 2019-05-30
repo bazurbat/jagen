@@ -421,7 +421,7 @@ function Jagen.command.clean(args)
         if not found then return false end
     end
 
-    append(specs, '--quiet')
+    append(specs, '--quiet', '--no-auto')
     if force_exclude then
         append(specs, '--exclude')
     end
@@ -667,7 +667,8 @@ function Jagen.command.build(args)
         { 'quiet,q' },
         { 'exclude,x' },
         { 'ignore-dirty,y' },
-        { 'ignore-exclude,Y' }
+        { 'ignore-exclude,Y' },
+        { 'no-auto' }
     }
     args = options:parse(args)
     if not args then return false end
@@ -676,10 +677,12 @@ function Jagen.command.build(args)
     end
 
     local auto_pkgs = {}
-    for arg in each(args) do
-        local target = Target:from_arg(arg)
-        target.config = target.config or 'host'
-        append_uniq(target, auto_pkgs)
+    if not args['no-auto'] then
+        for arg in each(args) do
+            local target = Target:from_arg(arg)
+            target.config = target.config or 'host'
+            append_uniq(target, auto_pkgs)
+        end
     end
 
     local packages, ok, new_auto_pkgs = Package.load_rules(auto_pkgs)
