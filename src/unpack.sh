@@ -104,8 +104,8 @@ pkg__unpack_dist() {
 
     if ! is_function jagen_stage_apply_patches &&
         [ "$(pkg__get_unpack_tag "$dist_path" $checksum)" = "$(pkg__read_unpack_tag)" ]; then
-        message "Already unpacked $dist_path"
-        # return 0
+        message "already unpacked $dist_path"
+        return 0
     fi
 
     [ -d "$dest_dir" ] || pkg_run mkdir -p "$dest_dir"
