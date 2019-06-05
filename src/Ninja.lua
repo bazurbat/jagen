@@ -180,29 +180,7 @@ local function format_stage(target, pkg)
         uses = target.order_only or {}
     end
 
-    if target.stage == 'compile' then
-        local build = pkg:get('build', target.config)
-        if build and build.type == 'android-gradle' then
-            vars.pool = 'gradle_android'
-        end
-    end
-
-    if target.stage == 'install' then
-        local build = pkg:get('build', target.config)
-        if build and build.type == 'rust-toolchain' then
-            vars.pool = 'rust_toolchain'
-        end
-    end
-
-    -- FIXME: Moving target to another poll will allow others to run
-    -- simulateously in the background which will break android-gradle and
-    -- rust-toolchan targets. The only fix I see for now is to move all others
-    -- to the console poll as well if some of them are but this requires some
-    -- rethinging of the generator. I consider those corner cases not very
-    -- likely during the normal usage. Added a ToDo.
-    if target.interactive then
-        vars.pool = 'console'
-    end
+    vars.pool = target.pool
 
     for use in each(target.uses) do
         append_uniq(tostring(use), uses)
@@ -225,6 +203,53 @@ local function format_package(name, pkg)
     return join(lines)
 end
 
+local function assign_pools(packages)
+    local function is_android_gradle(target, pkg)
+        if target.stage == 'compile' then
+            local build = pkg:get('build', target.config)
+            return build and build.type == 'android-gradle'
+        end
+    end
+    local function is_rust_toolchain(target, pkg)
+        if target.stage == 'install' then
+            local build = pkg:get('build', target.config)
+            return build and build.type == 'rust-toolchain'
+        end
+    end
+    local function is_interactive(target)
+        return target.interactive
+    end
+    local function assign_interactive(targets)
+        if table.find(targets, is_interactive) then
+            for target in each(targets) do
+                target.interactive = true
+            end
+        end
+    end
+    local gradle_stages, rust_stages = {}, {}
+    for name, pkg in pairs(packages) do
+        for target, this in pkg:each() do
+            if is_android_gradle(target, pkg) then
+                append(gradle_stages, target)
+                target.pool = 'gradle_android'
+            end
+            if is_rust_toolchain(target, pkg) then
+                append(rust_stages, target)
+                target.pool = 'rust_toolchain'
+            end
+        end
+    end
+    assign_interactive(gradle_stages)
+    assign_interactive(rust_stages)
+    for name, pkg in pairs(packages) do
+        for target, this in pkg:each() do
+            if is_interactive(target) then
+                target.pool = 'console'
+            end
+        end
+    end
+end
+
 function P.generate(out_file, rules)
     packages = rules
     local file = assert(io.open(out_file, 'w'))
@@ -232,6 +257,8 @@ function P.generate(out_file, rules)
         function (a, b)
             return a.name < b.name
         end)
+
+    assign_pools(rules)
 
     local lines = {
         binding('ninja_required_version', '1.1'),
