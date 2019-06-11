@@ -162,6 +162,7 @@ function RuleEngine:define_package(rule, context)
         }
     end
 
+    local out_target
     local config = rule.config or context.config
     local template = rule.template or context.template
     rule.config, rule.template = nil, nil
@@ -173,16 +174,16 @@ function RuleEngine:define_package(rule, context)
         context.template = template
     end
 
-    local first_pass = false
     local pkg = P.rules.packages[rule.name]
     if not pkg then
-        first_pass = true
         pkg = P:create(rule.name, rule._library_only)
         if not pkg then return end
     end
     if context then
         append_uniq(context, pkg.contexts)
     end
+
+    out_target = Target.from_args(pkg.name, nil, config)
 
     local this = pkg
     if config then
@@ -200,9 +201,6 @@ function RuleEngine:define_package(rule, context)
             setmetatable(this.install, { __index = pkg.install })
             setmetatable(this.export, { __index = pkg.export })
             pkg:add_stage('clean', config)
-        end
-        if not first_pass then
-            this._library_only = nil
         end
     end
 
@@ -281,7 +279,7 @@ function RuleEngine:define_package(rule, context)
         end
     end
 
-    return pkg
+    return pkg, out_target
 end
 
 function RuleEngine:define_use(spec, context)
@@ -326,6 +324,24 @@ function RuleEngine:define_default_config(packages)
     end
     table.assign(self.packages, out)
     return out
+end
+
+function RuleEngine:define_auto_packages(arg_packages)
+    local out_packages, out_targets = {}, {}
+    for target in each(arg_packages) do
+        local pkg = self.packages[target.name]
+        if not pkg or not pkg:has_config(target.config) then
+            local rule = { name = target.name, config = target.config,
+                           _library_only = true }
+            local pkg, target = self:define_package(rule)
+            if pkg then
+                setpkg(out_packages, pkg)
+                append_uniq(target, out_targets)
+            end
+        end
+    end
+    table.assign(self.packages, out_packages)
+    return out_packages, out_targets
 end
 
 function RuleEngine:define_variant(rule, context)
@@ -600,9 +616,12 @@ function RuleEngine:pass(packages)
     end
 end
 
-function RuleEngine:process_rules()
+function RuleEngine:process_rules(arg_packages)
     self:pass(table.copy(self.packages))
     self:pass(self:define_default_config(self.packages))
+    local auto_packages, auto_targets = self:define_auto_packages(arg_packages)
+    self:pass(auto_packages)
+    self:pass(self:define_default_config(auto_packages))
     self:pass(self:define_variants())
     self:pass(self:define_rust_packages(self.packages))
 
@@ -686,6 +705,8 @@ function RuleEngine:process_rules()
             end
         end
     end
+
+    return auto_targets
 end
 
 function RuleEngine:print_error(...)
@@ -969,7 +990,11 @@ function P:new(rule)
 end
 
 function P:has_config(name)
-    return self.configs and self.configs[name]
+    if name == nil then
+        return true
+    else
+        return self.configs and self.configs[name]
+    end
 end
 
 function P:get(key, config)
@@ -1351,7 +1376,7 @@ function template(rule)
     P.rules._templates[name] = rule
 end
 
-function P.load_rules(auto_pkgs)
+function P.load_rules(arg_packages)
     P.rules = RuleEngine:new()
     local packages = P.rules.packages
 
@@ -1385,29 +1410,10 @@ function P.load_rules(auto_pkgs)
         end
     end
 
-    for target in each(auto_pkgs) do
-        local pkg = packages[target.name]
-        if not pkg or not pkg:has_config(target.config) then
-            local rule = { name = target.name, config = target.config,
-                           _library_only = true }
-            setpkg(packages, P.rules:define_package(rule))
-        end
-    end
-
-    P.rules:process_rules()
+    local auto_packages = P.rules:process_rules(arg_packages)
     P.rules:check()
 
-    local new_auto_pkgs = {}
-    for name, pkg in pairs(packages) do
-        for this, config in pkg:each_config() do
-            if this._library_only then
-                local target = Target.from_args(pkg.name, nil, config)
-                append_uniq(target, new_auto_pkgs)
-            end
-        end
-    end
-
-    return P.rules.packages, not P.rules.had_errors, new_auto_pkgs
+    return P.rules.packages, not P.rules.had_errors, auto_packages
 end
 
 function P:find_files(names)

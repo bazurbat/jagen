@@ -676,16 +676,14 @@ function Jagen.command.build(args)
         return Jagen.command['help'] { 'build' }
     end
 
-    local auto_pkgs = {}
+    local arg_packages = {}
     if not args['no-auto'] then
         for arg in each(args) do
-            local target = Target:from_arg(arg)
-            target.config = target.config or 'host'
-            append_uniq(target, auto_pkgs)
+            append_uniq(Target:from_arg(arg), arg_packages)
         end
     end
 
-    local packages, ok, new_auto_pkgs = Package.load_rules(auto_pkgs)
+    local packages, ok, new_auto_pkgs = Package.load_rules(arg_packages)
     if not ok then
         Log.error('aborting the build due to rule errors')
         return false
@@ -705,7 +703,7 @@ function Jagen.command.build(args)
             append(args, name)
         end
     end
-
+    
     for arg in each(args) do
         local found = false
         local namep, stagep = unpack(map(string.to_pattern, arg:split(':', 1)))
