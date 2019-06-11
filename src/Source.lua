@@ -109,16 +109,6 @@ function Source:create(source, name)
         source.dir = nil
     end
 
-    if source.branch ~= nil and type(source.branch) ~= 'table' then
-        source.branch = { source.branch }
-    end
-    if source.tag ~= nil and type(source.tag) ~= 'table' then
-        source.tag = { source.tag }
-    end
-    if source.bookmark ~= nil and type(source.bookmark) ~= 'table' then
-        source.bookmark = { source.bookmark }
-    end
-
     if source.location then
         if not source.filename then
             source.filename = source.location:match('^.*/(.+)$') or source.location
@@ -249,22 +239,7 @@ function GitSource:_update_submodules(...)
 end
 
 function GitSource:command(...)
-    local cmd = Command:new('git', '--no-pager --git-dir=.git -C', quote(assert(self.dir)), ...)
-    if not cmd:exists() then
-        Log.error("need 'git' (command not found)")
-        os.exit(1)
-    end
-    return cmd
-end
-
-function GitSource:getrev()
-    if self.rev then
-        return string.format('refs/%s', self.rev)
-    end
-end
-
-function GitSource:getdefaultref()
-    return self:getrev() or self:gettag() or self:getbranch()
+    return Command:new('git', '--no-pager --git-dir=.git -C', quote(assert(self.dir)), ...)
 end
 
 function GitSource:getscmdir()
@@ -309,81 +284,71 @@ function GitSource:clean(ignored)
     return checkout:exec() and clean:exec()
 end
 
-function GitSource:_getspecs()
-    local fmt, specs = string.format, {}
-    if self.rev then
-        append(specs, fmt('+%s:refs/%s', self.rev, self.rev))
+function GitSource:_sync_config(spec)
+    if spec then
+        local key = string.format('remote.%s.fetch', assert(self.origin))
+        return self:command('config --replace-all', quote(key), spec):exec()
+    else
+        return true
     end
-    for tag in each(self.tag) do
-        if tag then
-            append(specs, fmt('+refs/tags/%s:refs/tags/%s', tag, tag))
-        end
-    end
-    if self.origin then
-        for branch in each(self.branch) do
-            if branch then
-                append(specs, fmt('+refs/heads/%s:refs/remotes/%s/%s', branch, self.origin, branch))
-            end
-        end
-    end
-    return specs
-end
-
-function GitSource:_sync_config()
-    if not self.origin then return true end
-    local fmt, commands, specs = string.format, {}, self:_getspecs()
-    if not next(specs) then return true end
-    local key = fmt('remote.%s.fetch', self.origin)
-    if self:command('config', '--get', quote(key)):read() then
-        append(commands, self:command('config', '--unset-all', quote(key)))
-    end
-    for spec in each(specs) do
-        append(commands, self:command('config', '--add', quote(key), quote(spec)))
-    end
-    for command in each(commands) do
-        if not command:exec() then return end
-    end
-    return true
 end
 
 function GitSource:fetch()
+    local fmt = string.format
     local function have_remotes()
         return self:command('config --get-regexp "^remote\\."'):read() ~= nil
     end
     local function is_shallow()
         return System.file_exists(System.mkpath(assert(self.dir), '.git', 'shallow'))
     end
-    -- this is probably a locally initialized repo which was not pushed yet
-    if not have_remotes() then return true end
+    if not have_remotes() then
+        -- this is probably a locally initialized repo which was not pushed yet
+        return true
+    end
     if self.origin and self.location then
         local set_url = self:command('remote', 'set-url', quote(self.origin), quote(self.location))
         if not set_url:exec() then return end
     end
-    local fetch = self:command('fetch')
+    local fetch, spec = self:command('fetch')
     if not self.shallow and is_shallow() then
         fetch:append('--unshallow')
     end
     if self.origin then
         fetch:append(quote(self.origin))
-        for spec in each(self:_getspecs()) do
+        if self.rev then
+            spec = fmt('+%s:refs/rev/%s', self.rev, self.rev)
+        end
+        if not spec and self.tag then
+            spec = fmt('+refs/tags/%s:refs/tags/%s', self.tag, self.tag)
+        end
+        if not spec and self.branch then
+            spec = fmt('+refs/heads/%s:refs/remotes/%s/%s', self.branch, self.origin, self.branch)
+        end
+        if spec then
             fetch:append(quote(spec))
         end
     end
     self._did_fetch = true
-    return fetch:exec() and self:_update_submodules() and self:_sync_config()
+    return fetch:exec() and self:_sync_config(spec) and self:_update_submodules()
 end
 
 function GitSource:switch()
-    local ref = self:getdefaultref()
-    if ref then
-        local cmd = self:command('checkout -q', quote(ref), '--')
+    local branch = self.branch
+    if self.tag then
+        branch = self.tag
+    end
+    if self.rev then
+        branch = string.format('rev/%s', self.rev)
+    end
+    if branch then
+        local cmd = self:command('checkout -q', quote(branch), '--')
         if not cmd:exec() then return end
     end
     local function on_branch()
         return self:command('symbolic-ref -q HEAD'):read() ~= nil
     end
     if on_branch() then
-        local branch, remoteref = self:getbranch()
+        local remoteref
         if not branch and self._did_fetch then
             remoteref = 'FETCH_HEAD'
         elseif branch and self.origin then
@@ -406,13 +371,9 @@ function GitSource:clone()
     assert(self.location) assert(self.dir)
     -- even for unattended cases the progress is useful to watch in logs
     local clone_cmd = Command:new('git', 'clone --progress')
-    if not clone_cmd:exists() then
-        Log.error("need 'git' (command not found)")
-        return
-    end
-    local branch, tag = self:getbranch(), self:gettag()
-    if tag or branch then
-        clone_cmd:append('--branch', quote(tag or branch))
+    local branch = self.tag or self.branch
+    if branch then
+        clone_cmd:append('--branch', quote(branch))
     end
     if self.shallow then
         local smart = false
