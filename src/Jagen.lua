@@ -1,7 +1,7 @@
 require 'common'
 
 local System  = require 'System'
-local Package = require 'Package'
+local Rules   = require 'Rules'
 local Target  = require 'Target'
 local Source  = require 'Source'
 local Log     = require 'Log'
@@ -71,7 +71,7 @@ end
 -- src
 
 local function scm_packages(patterns)
-    local packages = Package.load_rules()
+    local packages = Rules:load()
     local o = {}
 
     if patterns and #patterns > 0 then
@@ -357,8 +357,8 @@ function Jagen.command.clean(args)
     local ignore_dirty = args['ignore-dirty'] or os.getenv('jagen__ignore_dirty')
     local ignore_exclude = args['ignore-exclude'] or os.getenv('jagen__ignore_exclude')
 
-    local packages, ok = Package.load_rules()
-    if not ok then
+    local packages = Rules:load()
+    if Rules:validate() then
         Log.error('aborting clean due to rule errors')
         return false
     end
@@ -506,7 +506,7 @@ function Jagen.command.refresh(args, packages)
 
     local packages, ok = packages, true
     if not packages then
-        packages, ok = Package.load_rules(read_auto_packages())
+        packages = Rules:load(read_auto_packages())
     end
     local Script = require 'Script'
     local include_dir = assert(os.getenv('jagen_include_dir'))
@@ -549,7 +549,7 @@ function Jagen.command.refresh(args, packages)
     end
 
     Ninja.generate(Jagen.build_file, packages)
-    if Package.rules.has_rust_rules then
+    if Rules:have_rust() then
         generate_cargo_config(packages)
     end
 
@@ -609,7 +609,7 @@ function Jagen.command.refresh(args, packages)
     targets_file:close()
     layers_file:close()
 
-    return ok
+    return Rules:validate()
 end
 
 local function write_targets(targets, args)
@@ -683,14 +683,13 @@ function Jagen.command.build(args)
         end
     end
 
-    local packages, ok, new_auto_pkgs = Package.load_rules(arg_packages)
-    if not ok then
-        Log.error('aborting the build due to rule errors')
-        return false
-    end
-
+    local packages, new_auto_pkgs = Rules:load(arg_packages)
     for target in each(new_auto_pkgs) do
         Log.message("package '%s' defined automatically from arguments", tostring(target))
+    end
+    if not Rules:validate() then
+        Log.error('aborting the build due to rule errors')
+        return false
     end
 
     local targets, arg_clean = {}, args['clean'] or args['clean-ignored']
@@ -703,7 +702,7 @@ function Jagen.command.build(args)
             append(args, name)
         end
     end
-    
+
     for arg in each(args) do
         local found = false
         local namep, stagep = unpack(map(string.to_pattern, arg:split(':', 1)))
@@ -819,7 +818,7 @@ function Jagen.command.list(args)
 
     local depth, show_all = args['depth'], args['all']
 
-    local packages = Package.load_rules()
+    local packages = Rules:load()
     local pkg_list, name_max = {}, 0
     for name, pkg in pairs(packages) do
         if #name > name_max then name_max = #name end

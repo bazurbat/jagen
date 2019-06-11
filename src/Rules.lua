@@ -1376,7 +1376,7 @@ function template(rule)
     P.rules._templates[name] = rule
 end
 
-function P.load_rules(arg_packages)
+function P:load(arg_packages)
     P.rules = RuleEngine:new()
     local packages = P.rules.packages
 
@@ -1411,9 +1411,17 @@ function P.load_rules(arg_packages)
     end
 
     local auto_packages = P.rules:process_rules(arg_packages)
-    P.rules:check()
 
-    return P.rules.packages, not P.rules.had_errors, auto_packages
+    return P.rules.packages, auto_packages
+end
+
+function P:validate()
+    P.rules:check()
+    return not self.rules.had_errors
+end
+
+function P:have_rust()
+    return self.rules.has_rust_rules
 end
 
 function P:find_files(names)
