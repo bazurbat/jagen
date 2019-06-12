@@ -148,24 +148,8 @@ function Source:clean_disabled()
     end
 end
 
-function Source:getbranch()
-    return self.branch and self.branch[#self.branch]
-end
-
-function Source:gettag()
-    return self.tag and self.tag[#self.tag]
-end
-
-function Source:getbookmark()
-    return self.bookmark and self.bookmark[#self.bookmark]
-end
-
 function Source:getrev()
-    return self.rev
-end
-
-function Source:getdefaultref()
-    return self:getrev() or self:gettag() or self:getbookmark() or self:getbranch()
+    return self.rev or self.bookmark or self.tag or self.branch
 end
 
 function Source:getscmdir()
@@ -418,21 +402,15 @@ end
 function HgSource:command(...)
     -- The --pager=no option requires 'pager' extension to be enabled, we can
     -- set pager to nothing directly instead which always works.
-    local cmd = Command:new('hg', '-y -R', quote(assert(self.dir)),
-        '--config pager.pager=', ...)
-    if not cmd:exists() then
-        Log.error("need 'hg' (command not found)")
-        os.exit(1)
-    end
-    return cmd
+    return Command:new('hg', '-y -R', quote(assert(self.dir)), '--config pager.pager=', ...)
 end
 
 function HgSource:getscmdir()
-    return System.mkpath(self.dir, '.hg')
+    return System.mkpath(assert(self.dir), '.hg')
 end
 
 function HgSource:head()
-    return self:command('id -i'):read()
+    return self:command('id -i 2>/dev/null'):read()
 end
 
 function HgSource:head_name()
@@ -444,13 +422,13 @@ function HgSource:head_name()
 end
 
 function HgSource:dirty()
-    return self:command('status'):read() ~= nil
+    return self:command('status 2>/dev/null'):read() ~= nil
 end
 
 function HgSource:clean(ignored)
     local update = self:command('update --clean')
-    local rev = self:getdefaultref()
-    if rev then update:append('--rev', rev) end
+    local rev = self:getrev()
+    if rev then update:append('--rev', quote(rev)) end
     local purge  = self:command('--config', 'extensions.purge=', 'purge')
     if ignored then purge:append('--all') end
     return update:exec() and purge:exec()
@@ -458,39 +436,34 @@ end
 
 function HgSource:fetch()
     local cmd = self:command('pull')
-    for branch in each(self.branch) do
-        cmd:append('--branch', branch)
-    end
-    for bookmark in each(self.bookmark) do
-        cmd:append('--bookmark', bookmark)
-    end
-    for tag in each(append(self.tag, self.rev)) do
-        cmd:append('--rev', tag)
+    if self.rev then
+        cmd:append('--rev', quote(self.rev))
+    elseif self.bookmark or self.tag then
+        cmd:append('--bookmark', quote(self.bookmark or self.tag))
+    elseif self.branch then
+        cmd:append('--branch', quote(self.branch))
     end
     return cmd:exec()
 end
 
 function HgSource:switch()
     local cmd = self:command('update --check')
-    local rev = self:getdefaultref()
-    if rev then cmd:append('--rev', rev) end
+    local rev = self:getrev()
+    if rev then cmd:append('--rev', quote(rev)) end
     return cmd:exec()
 end
 
 function HgSource:clone()
+    assert(self.location) assert(self.dir)
     local cmd = Command:new('hg', 'clone')
-    if not cmd:exists() then
-        Log.error("need 'hg' (command not found)")
-        return
+    local rev = self.rev or self.bookmark or self.tag
+    if rev then
+        cmd:append('--rev', quote(rev))
+    elseif self.branch then
+        cmd:append('--branch', quote(self.branch))
     end
-    for branch in each(self.branch) do
-        cmd:append('--branch', branch)
-    end
-    for rev in each(extend(self.bookmark, self.tag)) do
-        cmd:append('--rev', rev)
-    end
-    cmd:append(quote(assert(self.location)))
-    cmd:append(quote(assert(self.dir)))
+    cmd:append(quote(self.location))
+    cmd:append(quote(self.dir))
     return cmd:exec()
 end
 
@@ -515,7 +488,7 @@ function RepoSource:manifest_rev()
 end
 
 function RepoSource:reinit()
-    local rev, manifest_rev = assert(self:getdefaultref()), self:manifest_rev()
+    local rev, manifest_rev = assert(self:getrev()), self:manifest_rev()
     if rev ~= manifest_rev then
         -- pipe to cat to inhibit prompting a user on a terminal
         return self:command('init -b', quote(rev), '| cat'):exec()
@@ -554,7 +527,7 @@ function RepoSource:clone()
     -- depth to save disk space and let the Repo tool deal with it
     return Command:new('mkdir', '-p', quote(assert(self.dir))):exec() and
            self:command('init', '-u', quote(assert(self.location)),
-                                '-b', quote(assert(self:getdefaultref()))
+                                '-b', quote(assert(self:getrev()))
                                 '--depth', 1):exec()
 end
 
