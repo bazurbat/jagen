@@ -231,10 +231,14 @@ function Jagen.source.update(args)
                 Log.warning("not cloning %s: offline mode", pkg.name)
                 ok = false
             else
-                Log.message('cloning %s from %s', pkg.name, source.location)
-                if not source:clone() then
-                    Log.warning('failed to clone %s from %s to %s', pkg.name, source.location, dir)
-                    ok = false
+                if not source.location then
+                    Log.message("not cloning %s: the source location is not specified", pkg.name)
+                else
+                    Log.message('cloning %s from %s', pkg.name, source.location)
+                    if not source:clone() then
+                        Log.warning('failed to clone %s from %s to %s', pkg.name, source.location, dir)
+                        ok = false
+                    end
                 end
             end
         else
