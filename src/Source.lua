@@ -2,6 +2,8 @@ local Command = require 'Command'
 local System = require 'System'
 local Log    = require 'Log'
 
+local fmt = string.format
+
 local Source = {}
 
 function Source:new(o)
@@ -73,7 +75,7 @@ end
 function Source:_basename(filename)
     local match
     for _, ext in ipairs { '%.tar%.%w+', '%.[^.]+' } do
-        match = filename:match(string.format('^(.+)%s$', ext))
+        match = filename:match(fmt('^(.+)%s$', ext))
         if match then return match end
     end
     return filename
@@ -231,7 +233,7 @@ function GitSource:getscmdir()
 end
 
 function GitSource:head()
-    return self:command('rev-parse HEAD'):read()
+    return self:command('rev-parse HEAD 2>/dev/null'):read()
 end
 
 function GitSource:head_name()
@@ -249,14 +251,14 @@ function GitSource:head_name()
         ref = ref:gsub(', , ', ', ')
         ref = ref:gsub(', $', '')
         if #ref > 0 then
-            return string.format('%s, %s', rev, ref)
+            return fmt('%s, %s', rev, ref)
         end
     end
     return rev
 end
 
 function GitSource:dirty()
-    return self:command('status --porcelain'):read() ~= nil
+    return self:command('status --porcelain 2>/dev/null'):read() ~= nil
 end
 
 function GitSource:clean(ignored)
@@ -268,61 +270,56 @@ function GitSource:clean(ignored)
     return checkout:exec() and clean:exec()
 end
 
-function GitSource:_sync_config(spec)
-    if spec then
-        local key = string.format('remote.%s.fetch', assert(self.origin))
-        return self:command('config --replace-all', quote(key), spec):exec()
-    else
-        return true
+function GitSource:_sync_config()
+    if not self.origin then return true end
+    if self.location then
+        local cmd = self:command('remote', 'set-url', quote(self.origin), quote(self.location))
+        if not cmd:exec() then return end
     end
+    local spec
+    if self.rev then
+        spec = fmt('+%s:refs/rev/%s', self.rev, self.rev)
+    elseif self.tag then
+        spec = fmt('+refs/tags/%s:refs/tags/%s', self.tag, self.tag)
+    elseif self.branch then
+        spec = fmt('+refs/heads/%s:refs/remotes/%s/%s', self.branch, self.origin, self.branch)
+    end
+    if not spec then return true end
+    return self:command('config --replace-all',
+        quote(fmt('remote.%s.fetch', self.origin)), quote(spec)):exec()
 end
 
 function GitSource:fetch()
-    local fmt = string.format
-    local function have_remotes()
-        return self:command('config --get-regexp "^remote\\."'):read() ~= nil
+    local function have_remote_origin()
+        if self.origin then
+            return self:command(fmt('config --get-regexp "^remote\\.%s"', self.origin)):read() ~= nil
+        end
     end
     local function is_shallow()
         return System.file_exists(System.mkpath(assert(self.dir), '.git', 'shallow'))
     end
-    if not have_remotes() then
+    if not have_remote_origin() then
         -- this is probably a locally initialized repo which was not pushed yet
         return true
     end
-    if self.origin and self.location then
-        local set_url = self:command('remote', 'set-url', quote(self.origin), quote(self.location))
-        if not set_url:exec() then return end
-    end
-    local fetch, spec = self:command('fetch')
+    if not self:_sync_config() then return end
+    local cmd = self:command('fetch')
     if not self.shallow and is_shallow() then
-        fetch:append('--unshallow')
+        cmd:append('--unshallow')
     end
     if self.origin then
-        fetch:append(quote(self.origin))
-        if self.rev then
-            spec = fmt('+%s:refs/rev/%s', self.rev, self.rev)
-        end
-        if not spec and self.tag then
-            spec = fmt('+refs/tags/%s:refs/tags/%s', self.tag, self.tag)
-        end
-        if not spec and self.branch then
-            spec = fmt('+refs/heads/%s:refs/remotes/%s/%s', self.branch, self.origin, self.branch)
-        end
-        if spec then
-            fetch:append(quote(spec))
-        end
+        cmd:append(quote(self.origin))
     end
     self._did_fetch = true
-    return fetch:exec() and self:_sync_config(spec) and self:_update_submodules()
+    return cmd:exec() and self:_update_submodules()
 end
 
 function GitSource:switch()
     local branch = self.branch
-    if self.tag then
-        branch = self.tag
-    end
     if self.rev then
-        branch = string.format('rev/%s', self.rev)
+        branch = fmt('rev/%s', self.rev)
+    elseif self.tag then
+        branch = self.tag
     end
     if branch then
         local cmd = self:command('checkout -q', quote(branch), '--')
@@ -336,7 +333,7 @@ function GitSource:switch()
         if not branch and self._did_fetch then
             remoteref = 'FETCH_HEAD'
         elseif branch and self.origin then
-            remoteref = string.format('refs/remotes/%s/%s', self.origin, branch)
+            remoteref = fmt('refs/remotes/%s/%s', self.origin, branch)
         end
         if remoteref then
             local cmd
@@ -417,7 +414,7 @@ function HgSource:head_name()
     local id = self:command('id -i'):read()
     local refs = self:command('id -nbB'):read()
     if id and refs then
-        return string.format('%s, %s', id, refs)
+        return fmt('%s, %s', id, refs)
     end
 end
 
@@ -483,7 +480,7 @@ function RepoSource:manifest_rev()
     if line:match('^Manifest branch: ') then
         return assert(line:match('^.*/(.+)$') or line)
     else
-        error(string.format('unexpected repo info format: %s', line))
+        error(fmt('unexpected repo info format: %s', line))
     end
 end
 
