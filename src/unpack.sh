@@ -162,20 +162,17 @@ pkg_clean() {
 
 pkg_unpack() {
     local IFS; unset IFS
-    set -- $pkg_source
-    local src_type="$1"
-    local src_path="$2"
 
-    case $src_type in
+    case $pkg_source_type in
         dist|dist:*)
-            pkg__unpack_dist "$src_path" "$pkg_work_dir"
+            pkg__unpack_dist "$pkg_source_location" "$pkg_work_dir"
             ;;
         git|hg|repo)
             pkg_run _jagen src update "$pkg_name"
             ;;
         dir|'') ;;
         *)
-            die "unknown source type: $src_type"
+            die "unknown source type: $pkg_source_type"
             ;;
     esac
 }
