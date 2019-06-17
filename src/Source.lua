@@ -273,8 +273,11 @@ end
 function GitSource:_sync_config()
     if not self.origin then return true end
     if self.location then
-        local cmd = self:command('remote', 'set-url', quote(self.origin), quote(self.location))
-        if not cmd:exec() then return end
+        local url = self:command('remote get-url', quote(self.origin)):read()
+        if url ~= self.location then
+            local cmd = self:command('remote', 'set-url', quote(self.origin), quote(self.location))
+            if not cmd:exec() then return end
+        end
     end
     local spec
     if self.rev then
@@ -285,8 +288,16 @@ function GitSource:_sync_config()
         spec = fmt('+refs/heads/%s:refs/remotes/%s/%s', self.branch, self.origin, self.branch)
     end
     if not spec then return true end
-    return self:command('config --replace-all',
-        quote(fmt('remote.%s.fetch', self.origin)), quote(spec)):exec()
+    local cspec = self:command(fmt('config --get-all "remote.%s.fetch"', self.origin)):read('*a')
+    if cspec then
+        cspec = cspec:trim()
+    end
+    if cspec ~= spec then
+        return self:command('config --replace-all',
+            quote(fmt('remote.%s.fetch', self.origin)), quote(spec)):exec()
+    else
+        return true
+    end
 end
 
 function GitSource:fetch()
