@@ -4,19 +4,40 @@
 
 Jagen is an utility tool that saves software engineers time. It combines selected features of
 workspace and package managers to automate common day-to-day development and integration tasks such
-as setting up the environment, downloading distribution archives, managing patches, keeping
-dependent source repositories up to date and rebuilding parts of the project as needed.
+as setting up the environment, downloading distribution archives and toolchains, managing patches,
+keeping source repositories up to date and rebuilding parts of the project as needed.
 
-It is mostly intended as a very lightweight alternative to
+It is designed to be a very lightweight alternative to
 [Repo](https://source.android.com/setup/develop/repo)/[GClient](https://www.chromium.org/developers/how-tos/depottools)
 and [Yocto](https://www.yoctoproject.org).
+
+## Introduction
+
+- [Features](#features)
+- [Getting Started](#getting-started)
+- [Package Rules](#package-rules)
+- [Building](#building)
+
+## Reference
+
+- [Initialization](doc/Init.md)
+- [Build](doc/Build.md)
+- [Clean](doc/Clean.md)
+- [Update](doc/Update.md)
+- [List Information](doc/List.md)
+- [Managing Sources](doc/Source.md)
+- [Filesystem images](doc/Image.md)
+- [Rust Support](doc/Rust.md)
+- [Rules](doc/Rules.md)
+- [Build System](doc/BuildSystem.md)
+- [Bash completions](doc/Completions.md)
 
 ## Features
 
 - Simple declarative rules to define packages.
 - Initialize a build root using a single command (fast onboarding).
-- Build or rebuild any stage of any package taking dependencies into the account.
-- Reproduce the same environment on CI and development machines.
+- Reproduce the same environment on CI and development systems.
+- Build or rebuild any stage of any package respecting dependencies.
 - Complex projects can consist of layers (similar to OE/Yocto but much more straightforward).
 - Out of the box support for common build systems: CMake, Autotools, Android Gradle. In many cases
   can handle packages using bare Make as well without additional configuration.
@@ -46,7 +67,7 @@ prepared pipe Jagen's init script into the shell passing layers paths or URLs as
 curl -fsSL https://git.io/fhyEM | sh -s -- [OPTIONS...] [URLs...]
 ```
 
-For example, to create a workspace preconfigured with the [tutorial
+For example, to create a workspace preconfigured with a [tutorial
 layer](https://github.com/bazurbat/jagen-start) located at https://github.com/bazurbat/jagen-start
 use the command:
 
@@ -54,26 +75,75 @@ use the command:
 curl -fsSL https://git.io/fhyEM | sh -s -- https://github.com/bazurbat/jagen-start
 ```
 
-This will create a directory named `jagen-root`, clone Jagen's and tutorial layer's repositories
-inside it and generate the build system. You can immediately build it:
+This will create a directory named `jagen-root` in the current working directory, clone Jagen's and
+tutorial layer's repositories inside it and generate the build system. You can immediately build it
+using the command:
 
 ```
 ./jagen-root/jagen build
 ```
 
-During the build Jagen will take care of downloading/cloning/updating sources and running packages
-configure/compile/install stages in order as needed until everything is done. Find the results in
-the `jagen-root/host` directory.
+During the build Jagen will download/clone sources and run packages configure/compile/install stages
+in order as needed until everything is done. You can find the results in a `jagen-root/host`
+directory which can be considered a "staging" directory for packages build using the system's native
+toolchain.
 
-To create the workspace with a different name instead of `jagen-root` pass the `-d` option to
-`init`:
+To create a workspace with a different name instead of `jagen-root` pass the `-d` option to the
+`init` script:
 
 ```
 curl -fsSL https://git.io/fhyEM | sh -s -- -d myproject https://github.com/bazurbat/jagen-start
 ```
 
-For reference and a motivational example for new potential users here is the full contents of a
-definition file from the tutorial layer:
+The workspaces created this way are self-contained by default, i.e. each has it's own copy of Jagen,
+environment setup scripts, source code, staging directories, downloaded distributions cache, etc. It
+is possible to customize this setup to have any of those directories outside of the build root if
+needed.
+
+To change the list of layers, flags or directories for an already existing workspace you can edit
+`config.sh` file inside its root or run the `init` script again with the appropriate arguments. The
+`init` script will refuse to initialize an existing non-empty directory, so it is required to pass
+an additional `-f` argument in this case. To run the same `init` script which was used to create the
+workspace you can run the local copy instead of piping it from GitHub:
+
+```
+cd myproject
+./.jagen/init -f [OPTIONS...]
+```
+
+This form initializes the current working directory as a workspace. An existing `config.sh` file if
+found is saved as `config.sh.bak`.
+
+To create a new empty workspace without any predefined packages omit the layer URL when running the
+`init`:
+
+```
+curl -fsSL https://git.io/fhyEM | sh -s -- -d jagen-test
+```
+
+To download rules from the tutorial layer for experiments:
+
+```
+cd jagen-test
+curl -fsSL https://raw.githubusercontent.com/bazurbat/jagen-start/master/rules.lua > rules.lua
+```
+
+Edit the resulting `rules.lua` file as needed and run or rerun the
+
+```
+./jagen build
+```
+
+command to bring the build root up to date.
+
+## Package Rules
+
+Jagen generates a build system based on a set of rules describing project's packages. Rules are
+collected from `rules.lua` files which are found across project's layers if any. To make
+project-specific adjustments create a `rules.lua` file in the project's root directory, e.g.
+`jagen-root/rules.lua` from the example above.
+
+For an example, here is the contents of the `rules.lua` from the tutorial layer:
 
 ```lua
 package { 'nanomsg',
@@ -125,41 +195,7 @@ package { 'hello-sqlite',
 }
 ```
 
-Hopefully it is easy to figure out what those rules are describing. To give it a try initialize a
-new empty workspace and save the code above in a `rules.lua` file inside the workspace directory or
-just download it directly from GitHub:
-
-```
-curl -fsSL https://git.io/fhyEM | sh -s -- -d jagen-test
-cd jagen-test
-curl -fsSL https://raw.githubusercontent.com/bazurbat/jagen-start/master/rules.lua > rules.lua
-./jagen build
-```
-
-Modify the rules as you see fit and rebuild the packages by passing their names to the build
-command, for example `nanomsg`:
-
-```
-./jagen build nanomsg
-```
-
-This will also update its repository if needed, if you are changing the source code instead and just
-want run configure/compile/install stages use the form:
-
-```
-./jagen build nanomsg::
-```
-
-Read further for more information about rules format and building software with Jagen.
-
-## Package Rules
-
-Jagen generates a build system based on a set of rules describing project's packages. Rules are
-collected from `rules.lua` files which are found across project's layers if any. To make
-project-specific adjustments create `rules.lua` in the project's root directory, e.g.
-`jagen-root/rules.lua` from the example above.
-
-The simples rule has the form:
+The simplest rule has the form:
 
 ```lua
 package { 'mypackage' }
@@ -277,19 +313,3 @@ package { 'hello-nanomsg',
 ```
 
 Just run `jagen build`. Jagen will clone/update sources and build everything in order as needed.
-
-## Reference
-
-- [Initialization](doc/Init.md)
-- [Build](doc/Build.md)
-- [Clean](doc/Clean.md)
-- [Update](doc/Update.md)
-- [List Information](doc/List.md)
-- [Managing Sources](doc/Source.md)
-- [Filesystem images](doc/Image.md)
-- [Rust Support](doc/Rust.md)
-- [Rules](doc/Rules.md)
-- [Build System](doc/BuildSystem.md)
-- [Bash completions](doc/Completions.md)
-
-There is also work in progress [User Guide](doc/UserGuide.md).
