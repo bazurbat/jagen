@@ -279,13 +279,22 @@ function GitSource:_sync_config()
             if not cmd:exec() then return end
         end
     end
-    local spec
-    if self.rev then
-        spec = fmt('+%s:refs/rev/%s', self.rev, self.rev)
-    elseif self.tag then
+    local spec = fmt('+refs/heads/*:refs/remotes/%s/*', self.origin)
+    if self.tag then
         spec = fmt('+refs/tags/%s:refs/tags/%s', self.tag, self.tag)
     elseif self.branch then
         spec = fmt('+refs/heads/%s:refs/remotes/%s/%s', self.branch, self.origin, self.branch)
+    elseif self.shallow then
+        local prefix = fmt('refs/remotes/%s/', self.origin)
+        local head = self:command('symbolic-ref -q', quote(prefix..'HEAD')):read()
+        if head then
+            local name = string.match(head, prefix..'(.*)')
+            if name then
+                spec = fmt('+refs/heads/%s:refs/remotes/%s/%s', name, self.origin, name)
+            end
+        end
+    else
+        spec = fmt('+refs/heads/*:refs/remotes/%s/*', self.origin)
     end
     if not spec then return true end
     local cspec = self:command(fmt('config --get-all "remote.%s.fetch"', self.origin)):read('*a')
@@ -328,7 +337,7 @@ end
 function GitSource:switch()
     local branch = self.branch
     if self.rev then
-        branch = fmt('rev/%s', self.rev)
+        branch = self.rev
     elseif self.tag then
         branch = self.tag
     end
