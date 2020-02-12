@@ -204,6 +204,19 @@ function each(...)
     return iter
 end
 
+function all_of(list, pred)
+    for item in each(list) do
+        if not pred(item) then return end
+    end
+    return true
+end
+
+function any_of(list, pred)
+    for item in each(list) do
+        if pred(item) then return true end
+    end
+end
+
 function pmap(func, list)
     local new_list = {}
     for key, val in pairs(list) do

@@ -54,6 +54,13 @@ function Command:lines()
     end
 end
 
+function Command:match(pattern)
+    for line in self:lines() do
+        local m = line:match(pattern)
+        if m then return m end
+    end
+end
+
 function Command:aslist()
     local pipe = self:popen()
     local list = aslist(pipe:lines())

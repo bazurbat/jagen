@@ -206,6 +206,10 @@ function GitSource:new(o)
     return o
 end
 
+function GitSource:_is_shallow()
+    return System.file_exists(System.mkpath(assert(self.dir), '.git', 'shallow'))
+end
+
 function GitSource:_needs_submodules()
     if self.exclude_submodules then
         return false
@@ -271,67 +275,82 @@ function GitSource:clean(ignored)
 end
 
 function GitSource:_sync_config()
-    if not self.origin then return true end
+    local origin = self.origin
+    if not origin then return true end
+
     if self.location then
-        local url = self:command('remote get-url', quote(self.origin)):read()
+        local url = self:command('remote get-url', quote(origin)):read()
         if url ~= self.location then
-            local cmd = self:command('remote', 'set-url', quote(self.origin), quote(self.location))
+            local cmd = self:command('remote set-url', quote(origin), quote(self.location))
             if not cmd:exec() then return end
         end
     end
-    local spec = fmt('+refs/heads/*:refs/remotes/%s/*', self.origin)
+
+    local spec = fmt('+refs/heads/*:refs/remotes/%s/*', origin)
     if self.tag then
         spec = fmt('+refs/tags/%s:refs/tags/%s', self.tag, self.tag)
     elseif self.branch then
-        spec = fmt('+refs/heads/%s:refs/remotes/%s/%s', self.branch, self.origin, self.branch)
+        spec = fmt('+refs/heads/%s:refs/remotes/%s/%s', self.branch, origin, self.branch)
     elseif self.shallow then
-        local prefix = fmt('refs/remotes/%s/', self.origin)
-        local head = self:command('symbolic-ref -q', quote(prefix..'HEAD')):read()
+        local remote_head = self:command('remote show', quote(origin))
+                                :match('^%s*HEAD branch: (%w+)$')
+        local prefix = fmt('refs/remotes/%s/', origin)
+        local local_head = self:command('symbolic-ref -q', quote(prefix..'HEAD'))
+                               :match('^'..prefix..'(%w+)')
+        local head = remote_head or local_head
         if head then
-            local name = string.match(head, prefix..'(.*)')
-            if name then
-                spec = fmt('+refs/heads/%s:refs/remotes/%s/%s', name, self.origin, name)
-            end
+            spec = fmt('+refs/heads/%s:refs/remotes/%s/%s', head, origin, head)
         end
-    else
-        spec = fmt('+refs/heads/*:refs/remotes/%s/*', self.origin)
+        self._fetch_remote_head = remote_head
+        self._fetch_local_head = local_head
     end
-    if not spec then return true end
-    local cspec = self:command(fmt('config --get-all "remote.%s.fetch"', self.origin)):read('*a')
-    if cspec then
-        cspec = cspec:trim()
+
+    local key = fmt('remote.%s.fetch', origin)
+    local val = self:command('config --get-all', quote(key)):read('*a'):trim()
+    if val ~= spec then
+        local cmd = self:command('config --replace-all', quote(key), quote(spec))
+        if not cmd:exec() then return end
     end
-    if cspec ~= spec then
-        return self:command('config --replace-all',
-            quote(fmt('remote.%s.fetch', self.origin)), quote(spec)):exec()
-    else
-        return true
-    end
+
+    return true
 end
 
 function GitSource:fetch()
-    local function have_remote_origin()
-        if self.origin then
-            return self:command(fmt('config --get-regexp "^remote\\.%s"', self.origin)):read() ~= nil
-        end
-    end
-    local function is_shallow()
-        return System.file_exists(System.mkpath(assert(self.dir), '.git', 'shallow'))
-    end
-    if not have_remote_origin() then
-        -- this is probably a locally initialized repo which was not pushed yet
+    if not self:command('remote'):read() then -- local repo without remotes
         return true
     end
+
+    if self.origin then
+        local key = fmt('remote.%s.url', self.origin)
+        local url = self:command('config --get', quote(key)):read()
+        if not url then
+            Log.error("could not find the specified remote '%s' in Git config of the package '%s'",
+                self.origin, self.name)
+            return false
+        end
+    end
+
     if not self:_sync_config() then return end
-    local cmd = self:command('fetch')
-    if not self.shallow and is_shallow() then
-        cmd:append('--unshallow')
+
+    local fetch_cmd = self:command('fetch')
+    if not self.shallow and self:_is_shallow() then
+        fetch_cmd:append('--unshallow')
     end
     if self.origin then
-        cmd:append(quote(self.origin))
+        fetch_cmd:append(quote(self.origin))
     end
+
+    local fetch_ok = fetch_cmd:exec()
     self._did_fetch = true
-    return cmd:exec() and self:_update_submodules()
+
+    if fetch_ok and self.origin then
+        local rem, lcl = self._fetch_remote_head, self._fetch_local_head
+        if rem and rem ~= lcl then
+            self:command('remote set-head', quote(self.origin), '--auto'):exec()
+        end
+    end
+
+    return fetch_ok and self:_update_submodules()
 end
 
 function GitSource:switch()
