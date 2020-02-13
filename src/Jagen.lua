@@ -42,11 +42,26 @@ function Jagen.flag(f)
     return false
 end
 
+function Jagen:find_in_path(pathname)
+    Log.debug2('find_in_path: %s', pathname)
+    local tried_paths = {}
+    for dir in each(Jagen:path()) do
+        local path = System.mkpath(dir, pathname)
+        append(tried_paths, path)
+        local file = io.open(path)
+        if file then
+            file:close()
+            return path, tried_paths
+        end
+    end
+    return nil, tried_paths
+end
+
 function Jagen:path()
     if self._path then return self._path end
     local path = {}
-    for dir in Command:new(quote(Jagen.cmd), 'get_path'):read('*a'):gmatch('[^\t\n]+') do
-        append(path, dir)
+    for item in string.gmatch(os.getenv('jagen_path') or '', '[^\t\n]+') do
+        append(path, item)
     end
     self._path = path
     return path

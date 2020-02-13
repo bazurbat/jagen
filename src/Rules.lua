@@ -1180,18 +1180,12 @@ end
 function P:add_patch_dependencies()
     if not self.patches or not next(self.patches) then return end
 
-    local function patch_names(pkg)
-        local names = {}
-        for item in each(pkg.patches) do
-            append(names, string.format('%s', item[1]))
-        end
-        return names
-    end
-
     local stage = self.stages['unpack']
-    local names, unresolved = patch_names(self), {}
-    for i, path in ipairs(self:find_files(names)) do
-        if path ~= names[i] then
+
+    for i, item in ipairs(self.patches) do
+        local filename = item[1]
+        local path, tried = self:find_file(filename)
+        if path then
             stage.inputs = append_uniq(path, stage.inputs)
             -- Adding patch files to arguments modifies the command line which
             -- is needed for Ninja to notice the changes in the list itself and
@@ -1199,41 +1193,39 @@ function P:add_patch_dependencies()
             stage.arg = append_uniq(path, stage.arg)
             self.patches[i][3] = path
         else
-            append(unresolved, path)
+            local indent = string.rep(' ', 8)
+            P.rules:print_error(
+                "package %s requires a patch file '%s' which was not found\n"..
+                "    Attempted lookup in the following paths:\n"..
+                indent.."%s",
+                self.name, filename, table.concat(tried, '\n'..indent))
         end
-    end
-    if next(unresolved) then
-        P.rules:print_warning('package %s requires patches which were not found: %s', self.name, table.concat(unresolved, ', '))
     end
 end
 
 function P:add_files_dependencies()
     if not self.files or not next(self.files) then return end
 
-    local function getnames()
-        local o = {}
-        for item in each(self.files) do
-            append(o, string.format('%s', item[1]))
-        end
-        return o
-    end
-
     local stage = self.stages['patch']
-    local names, unresolved = getnames(), {}
-    for i, path in ipairs(self:find_files(names)) do
-        if path ~= names[i] then
+
+    for i, item in ipairs(self.files) do
+        local filename = item[1]
+        local path, tried = self:find_file(filename)
+        if path then
             stage.inputs = append_uniq(path, stage.inputs)
-            -- Adding patch files to arguments modifies the command line which
-            -- is needed for Ninja to notice the changes in the list itself and
+            -- Adding files to arguments modifies the command line which is
+            -- needed for Ninja to notice the changes in the list itself and
             -- rerun the command.
             stage.arg = append_uniq(path, stage.arg)
             self.files[i]._src_path = path
         else
-            append(unresolved, path)
+            local indent = string.rep(' ', 8)
+            P.rules:print_error(
+                "package %s requires a supplementary file '%s' which was not found\n"..
+                "    Attempted lookup in the following paths:\n"..
+                indent.."%s",
+                self.name, filename, table.concat(tried, '\n'..indent))
         end
-    end
-    if next(unresolved) then
-        P.rules:print_warning('could not find supplemental files for %s: %s', self.name, table.concat(unresolved, ', '))
     end
 end
 
@@ -1424,13 +1416,21 @@ function P:have_rust()
     return self.rules.has_rust_rules
 end
 
-function P:find_files(names)
-    if not names then return end
-    if next(names) then
-        return Command:new(quote(Jagen.cmd), 'find_files', quote(self.name), quote(unpack(names))):aslist()
-    else
-        return {}
+function P:find_file(filename)
+    local path, tried_paths = nil, {}
+    local function find(dir, filename)
+        local path, list = Jagen:find_in_path(System.mkpath('pkg', dir, filename))
+        table.iextend(tried_paths, list)
+        return path
     end
+    path = find(self.name, filename)
+    if not path then
+        local basename = self.name:match('^[^~]+') -- with ~suffix stripped
+        if self.name ~= basename then
+            path = find(basename, filename)
+        end
+    end
+    return path, tried_paths
 end
 
 return P

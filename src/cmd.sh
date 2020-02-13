@@ -129,23 +129,6 @@ cmd_find_in_path() {
     printf '%s' "$result"
 }
 
-cmd_find_files() {
-    local name="$1" prefix="${1%~*}" rv= arg path; shift
-    set -- "$@"
-    . "${jagen_dir:?}/src/common.sh" || return
-    for arg; do
-        if [ "$prefix" = "$name" ]; then
-            path=$(find_in_path "pkg/$name/$arg")
-        else
-            path=$(find_in_path "pkg/$name/$arg" "pkg/$prefix/$arg")
-        fi
-        [ "$path" ] || path="$arg"
-        rv="$rv$jagen_S$path"
-    done
-    rv=${rv#$jagen_S}
-    printf '%s' "$rv"
-}
-
 echo_if_exists() {
     if [ -f "$1" ]; then
         echo "$1"
@@ -188,9 +171,6 @@ case $mode in
         ;;
     image)
         cmd_image "$@"
-        ;;
-    find_files)
-        cmd_find_files "$@"
         ;;
     find_for_refresh)
         cmd_find_for_refresh "$@"
