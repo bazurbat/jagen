@@ -196,7 +196,8 @@ _jagen() {
     if [ -t 1 ]; then
         export jagen__has_console=1
     fi
-    "$jagen_lua" "${jagen_dir:?}/src/Jagen.lua" "$@"
+    LUA_PATH="$jagen_dir/src/?.lua" \
+        "$jagen_lua" "${jagen_dir:?}/src/Jagen.lua" "$@"
 }
 
 to_lower() {
@@ -292,18 +293,16 @@ jagen__get_path() {
     return $rv
 }
 
-# Sets '$jagen_path' and '$LUA_PATH' for the current project.
+# Sets '$jagen_path' for the current project.
 jagen__set_path() {
     local item paths IFS="$jagen_S"
 
     paths=$(jagen__get_path) || return
 
     export jagen_path=
-    export LUA_PATH="$jagen_dir/src/?.lua;;"
 
     for item in $paths; do
         jagen_path="${item}${jagen_FS}${jagen_path}"
-        LUA_PATH="$item/?.lua;$LUA_PATH"
     done
 }
 
