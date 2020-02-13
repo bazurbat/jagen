@@ -809,9 +809,9 @@ local find_module = (function ()
             append(names, string.format('pkg/%s', name))
         end
 
-        for path in string.gmatch(package.path, '[^;]+') do
+        for path in each(Jagen:path()) do
             for name in each(names) do
-                local filename = string.gsub(path, '%?', name)
+                local filename = System.mkpath(path, name..'.lua')
                 local file = io.open(filename, 'rb')
                 if file then
                     local module = assert(loadstring(assert(file:read('*a')), filename))
