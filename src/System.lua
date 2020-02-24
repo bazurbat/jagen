@@ -85,7 +85,9 @@ function P.mkdir(...)
 end
 
 function P.exists(path)
-    return P.exec('test -e "%s"', path)
+    local file, err = io.open(path)
+    if file then file:close() end
+    return not err
 end
 
 function P.file_exists(path)
