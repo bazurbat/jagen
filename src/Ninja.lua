@@ -6,6 +6,21 @@ local format = string.format
 local concat = table.concat
 
 local packages = {}
+local ninja = {
+    supports_console_pool = true
+}
+
+local function check_ninja_features()
+    local version = os.getenv('jagen_ninja_version')
+    if not version then return end
+    local major, minor = version:match('(%d+)%.(%d+)%.%d+')
+    major, minor = tonumber(major), tonumber(minor)
+    if major and minor then
+        if major == 1 and minor < 5 then
+            ninja.supports_console_pool = false
+        end
+    end
+end
 
 local function indent(n)
     return string.rep(' ', n or 4)
@@ -241,16 +256,20 @@ local function assign_pools(packages)
     end
     assign_interactive(gradle_stages)
     assign_interactive(rust_stages)
-    for name, pkg in pairs(packages) do
-        for target, this in pkg:each() do
-            if is_interactive(target) then
-                target.pool = 'console'
+    if ninja.supports_console_pool then
+        for name, pkg in pairs(packages) do
+            for target, this in pkg:each() do
+                if is_interactive(target) then
+                    target.pool = 'console'
+                end
             end
         end
     end
 end
 
 function P.generate(out_file, rules)
+    check_ninja_features()
+
     packages = rules
     local file = assert(io.open(out_file, 'w'))
     local sorted_rules = sort(table.tolist(rules),
