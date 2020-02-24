@@ -377,7 +377,7 @@ function Jagen.command.clean(args)
     local ignore_exclude = args['ignore-exclude'] or os.getenv('jagen__ignore_exclude')
 
     local packages = Rules:load()
-    if Rules:validate() then
+    if not Rules:validate() then
         Log.error('aborting clean due to rule errors')
         return false
     end
