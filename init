@@ -1,58 +1,40 @@
 #!/bin/sh
 
-set -eu
+set -ef
 
 jagen_url="https://github.com/bazurbat/jagen.git"
 env_file="env.sh"
 config_file="config.sh"
 runner_script="jagen"
-FS="$(printf '\t')"
+NL=$(printf '\n!'); NL=${NL%!}
 
 show_usage() {
     cat <<EOF
-Usage: init [OPTIONS...] [--] [ARGS...]
+jagen-init
 
-  Initializes current directory as a Jagen project.
+  Initialize a directory as a Jagen build root
 
-SYNOPSIS:
+USAGE
 
-  The script should be run from the directory which you want to initialize as
-  the project reaching out by a relative path to the checked out Jagen sources
-  or piped to shell. It creates 'config.sh', 'env.sh' and 'jagen' files in the
-  current directory.
+  curl -fsSL https://git.io/fhyEM | sh
+  curl -fsSL https://git.io/fhyEM | sh -s -- [OPTIONS...] [URLs...]
 
-  The generated 'config.sh' contains parameters from the 'init' command line
-  (layers, flags) and other global settings. Edit it manually to adjust the
-  parameters or global environment. It is sourced every time the build system
-  runs. 
-  
-  For interactive work source the generated 'env.sh' to initialize current
-  Shell environment for this project from now on. This will put 'jagen' command
-  in PATH and allow Bash to autocomplete its commands and the project's
-  targets. Note that mixing the environments from different projects will
-  likely produce unexpected results.
+  ../<jagen_dir>/init [OPTIONS...] [--] [ARGS...]
 
-  Use the 'jagen' script inside the project directory to run Jagen commands for
-  this project from outside without modifying the environment. This could be
-  useful to activate the build from IDEs and such.
+DESCRIPTION
 
-OPTIONS:
+  The script sets up the current working directory to act as a Jagen workspace
+  which groups together related source code, downloaded archives, configuration
+  and generated artifacts. When piped to shell it will clone the Jagen source
+  repository on its own or it can be run locally by reaching out with a
+  relative path to an already checked out Jagen source repository.
+
+OPTIONS
 
   -h, --help     show this usage information
-  -d, --dir      initialize the specified directory
+  -d, --dir      initialize the specified directory instead of the current
   -a, --flag     add the flag to jagen_flags
-  -f, --force    force to initialize non-empty directory
-  -p, --project  initialize the current directory in project mode
   -L             add the directory to jagen_layer_path
-
-  The following flags are reserved by the core:
-  
-    ccache  -- activate the usage of 'ccache' for all toolchain commands
-    offline -- causes all operations requiring the network to fail
-
-  Reinitializing an existing project is possible with '--force' but note that
-  it will regenerate the 'config.sh'. The previous is saved as 'config.sh.bak'.
-  Copy your old settings from it manually if necessary.
 
 EOF
 }
@@ -62,7 +44,7 @@ say() {
 }
 
 die() {
-    say "$*" >&2
+    say "error: $*" >&2
     exit 1
 }
 
@@ -73,7 +55,7 @@ need_cmd() {
 }
 
 git_clone() {
-    local url="${1}" dir="${2}" branch="${3-}"
+    local url="$1" dir="$2" branch="$3"
     if ! [ -d "$dir" ]; then
         need_cmd git
         git clone --depth 1 ${branch:+--branch $branch} -- "$url" "$dir"
@@ -88,21 +70,52 @@ path_is_url() {
     return 1
 }
 
-path_is_absolute() {
-    [ "$1" != "${1#/}" ]
+path_depth() {
+    local IFS=/ depth=0 item
+    for item in $1; do
+        case $item in
+            '') ;;
+             *) depth=$((depth+1)) ;;
+        esac
+    done
+    echo $depth
 }
 
-path_level() {
-    local IFS path="$1"
-    if [ "$path" = / ]; then echo 0; return; fi
-    path=${path#/}
-    IFS=/
-    set -- $path
-    echo $#
+common_dirname() {
+    local IFS=/ result= item
+    for item in $1; do
+        if [ "${2#$result$item/}" != "$2" ]; then
+            result=$result$item/
+        elif [ "${2#$result$item}" != "$2" ]; then
+            result=$result$item
+        else
+            break
+        fi
+    done
+    result=${result%/}
+    echo "$result"
+}
+
+relative_path() {
+    local prefix suffix result level
+    prefix=$(common_dirname "$1" "$2")
+    result=${1#$prefix} result=${result#/} result=${result%/}
+    suffix=${2#$prefix}
+    level=$(path_depth "$suffix")
+    # echo relative_path\($1, $2\): \<$prefix\> \<$suffix\> \[$level\] \<$result\>
+    if [ $level = 0 ]; then
+        result="./${result}"
+    else
+        while [ $level -gt 0 ]; do
+            result="../$result"
+            level=$((level-1))
+        done
+    fi
+    echo $result
 }
 
 real_path() {
-    if [ "${1-}" ]; then
+    if [ "$1" ]; then
         (cd "$1" && pwd -P)
     else
         pwd -P
@@ -110,60 +123,55 @@ real_path() {
 }
 
 parse_command_line() {
-    local eoa=
-
     while [ $# -gt 0 ]; do
-        if [ "$eoa" ]; then
-            jagen_args="${jagen_args-}${FS}${1}"
-        else
-            case $1 in
-            --) eoa=1 ;;
-            -h|--help)
-                show_usage; exit 0 ;;
-            -d|--dir)
-                jagen_root_dir="$2"; shift ;;
-            -p|--project)
-                init_project=1 ;;
-            -a|--flag)
-                jagen_flags="${jagen_flags-} $2"; shift ;;
-            -j|--jagen-branch)
-                jagen_branch="$2"; shift ;;
-            -b|--branch)
-                jagen_layer_branch="$2"; shift ;;
-            -f|--force)
-                use_force=1 ;;
-            -L)
-                jagen_layer_path="${jagen_layer_path-} $2"; shift ;;
-            -*)
-                die "invalid option: $1" ;;
-             *) init_jagen_layers="${init_jagen_layers-} $1" ;;
-            esac
-        fi
+        case $1 in
+        --) eoa=1 ;;
+        -h|--help)
+            show_usage; exit 0 ;;
+        -d|--dir)
+            jagen_root_dir="$2"; shift ;;
+        -p|--project)
+            say "the option --project (-p) is not used anymore and is deprecated; the mode is now determined automatically" ;;
+        -a|--flag)
+            jagen_flags="$jagen_flags $2"; shift ;;
+        -j|--jagen-branch)
+            jagen_branch="$2"; shift ;;
+        -b|--branch)
+            jagen_layer_branch="$2"; shift ;;
+        -f|--force)
+            say "the option --force (-f) is not used anymore and is deprecated; it is now effectively always enabled" ;;
+        -L)
+            init_layer_path="${init_layer_path}${NL}${2}"; shift ;;
+        -*)
+            die "invalid option: $1" ;;
+         *) init_layers="${init_layers}${NL}${1}" ;;
+        esac
         shift
     done
 
-    jagen_args=${jagen_args+${jagen_args#$FS}}
-    jagen_flags=${jagen_flags+${jagen_flags# }}
-    jagen_layer_path=${jagen_layer_path+${jagen_layer_path# }}
-    init_jagen_layers=${init_jagen_layers+${init_jagen_layers# }}
+    jagen_flags=${jagen_flags# }
+    init_layer_path=${init_layer_path#$NL}
+    init_layers=${init_layers#$NL}
 }
 
 write_env() {
     cat >"$env_file" <<EOF
 #!/bin/sh
 
-jagen_dir=$jagen_dir
-jagen_root_dir=$jagen_root_dir
-export jagen_dir jagen_root_dir
+jagen_dir='$jagen_dir'
+jagen_root_dir='$jagen_root_dir'
+jagen_ninja_version='$jagen_ninja_version'
+export jagen_dir jagen_root_dir jagen_ninja_version
 
 . "\$jagen_dir/env.sh"; sts=\$?
-if [ \$sts != 0 ]; then
+if [ "\$sts" != 0 ]; then
     echo "Error: failed to load jagen environment"
     return \$sts
 fi
 
 add_PATH "\$jagen_dir/bin"
 add_PATH "\$jagen_root_dir/bin"
+
 EOF
 }
 
@@ -180,165 +188,173 @@ EOF
 
 write_config() {
     cat >"$config_file" <<EOF
-# jagen_dir         - refers to the jagen source directory
-# jagen_root_dir - refers to the current project directory
-
+# jagen_dir      - refers to the source directory of the Jagen itself.
+# jagen_root_dir - refers to the current project directory.
 EOF
-    if [ "${jagen_layer_path-}" ]; then
+    if [ "$jagen_layers" ]; then
         cat >>"$config_file" <<EOF
-# A list of directories to search for unqualified layers.
-jagen_layer_path="${jagen_layer_path-}"
 
+# A newline-separated list of directories containing layers for this project.
+jagen_layers="$jagen_layers"
 EOF
     fi
-    cat >>"$config_file" <<EOF
-# A list of directories containing layers used by this project.
-# The list items should be newline (\\n) or tab (\\t) separated because normal
-# spaces (including the indentation) are assumed to be the part of the pathname.
-jagen_layers="${jagen_layers-}"
+    if [ "$jagen_layer_path" ]; then
+        cat >>"$config_file" <<EOF
 
-# Space separated list of optional features.
-#   ccache  - wrap compilation commands with ccache
-#   offline - skip network operations
-jagen_flags="${jagen_flags-}"
-
-# A directory for downloaded distribution files.
-jagen_dist_dir="${jagen_dist_dir-\$jagen_root_dir/dist}"
-
-# A directory for package sources.
-jagen_src_dir="${jagen_src_dir-\$jagen_root_dir/src}"
-
-# Space separated list of package names excluded from cleaning and updating.
-jagen_source_exclude="${jagen_source_exclude-}"
-
-# The default build profile: release|debug|release_with_debug
-jagen_build_profile="${jagen_build_profile-release}"
+# A newline-separated list of directories to search for unqualified layers.
+jagen_layer_path="$jagen_layer_path"
 EOF
-if [ "${jagen_project_dir-}" ]; then
-    cat >>"$config_file" <<EOF
+    fi
+    if [ "$jagen_project_dir" ]; then
+        cat >>"$config_file" <<EOF
 
 # A directory of the project associated with this root.
 jagen_project_dir="$jagen_project_dir"
 EOF
-fi
-}
-
-on_exit() {
-    if [ "${init_created_root_dir-}" ]; then
-        rm -rf "$jagen_root_dir"
     fi
+    cat >>"$config_file" <<EOF
+
+# A directory for downloaded distribution files.
+jagen_dist_dir="${jagen_dist_dir-\$jagen_root_dir/dist}"
+
+# A directory for packages sources.
+jagen_src_dir="${jagen_src_dir-\$jagen_root_dir/src}"
+
+# A space-separated list of optional features:
+#   ccache  - wrap compilation commands with ccache
+#   offline - skip network operations
+jagen_flags="$jagen_flags"
+
+# A space-separated list of package names excluded from cleaning and updating.
+jagen_source_exclude="$jagen_source_exclude"
+
+# The default build profile: release|debug|release_with_debug
+jagen_build_profile="${jagen_build_profile-release}"
+EOF
 }
 
 main() {
-    local layer path wd="$(real_path)" stamp_file i
-    parse_command_line "$@"
+    local layer path item
 
     jagen_dir=$(dirname "$0")
+
+    parse_command_line "$@"
+
     if [ "$jagen_dir" = . ]; then
-        if [ -t 0 ]; then
-            # init can not work inside Jagen repository
+        if ! [ -t 0 ]; then # we are being piped to shell
+            jagen_dir=".jagen"
+        else # init can not work inside Jagen repository
             show_usage; exit 0
         fi
-        # we are being piped to shell
-        jagen_dir=".jagen"
     else
         jagen_dir=$(real_path "$jagen_dir")
     fi
 
     if ! [ -t 1 ]; then # the output is not connected to a terminal
+        say "running non-interactively"
         export GIT_TERMINAL_PROMPT=0
         export GIT_SSH_COMMAND="ssh -o BatchMode=yes"
     fi
 
-    [ -f ".jagen-rules.lua" ] && init_project=1
-
-    if [ "${init_project-}" ]; then
-        jagen_project_dir=$wd
-        use_force=1
+    if [ "$init_layer_path" ]; then
+        for item in $init_layer_path; do
+            [ -d "$item" ] ||
+                die "the specified layer path directory '$item' does not exist"
+        done
+    else
+        for layer in $init_layers; do
+            case $layer in
+                /*|./*|../*) ;;
+                *) layer="./$layer" ;;
+            esac
+            jagen_layers="${jagen_layers}${NL}${layer}"
+        done
+        init_layers=$jagen_layers
+        jagen_layers=
     fi
 
-    if [ "${init_project-}" ] || ! [ -t 0 ]; then
-        # default root dir if piped or in project mode
-        : "${jagen_root_dir:=jagen-root}"
+    for layer in $init_layers; do
+        case $layer in
+            /*|./*|../*) [ -d "$layer" ] ||
+                die "the specified layer directory '$layer' does not exist" ;;
+        esac
+    done
+
+    if [ -f "jagen-rules.lua" ] ||
+       ! [ -f "jagen" -o -f "env.sh" -o -f "config.sh" ] &&
+       [ "$(ls)" ]
+    then
+        init_project=1
+        : ${jagen_root_dir:=jagen-root}
     fi
 
-    # Just do nothing on SIGINT because many shells (except Bash) do not call
-    # EXIT handler when exiting due to a signal. External commands (such as
-    # Git) will still receive SIGINT on CTRL-C.
-    trap : INT
-    trap on_exit EXIT
-
-    if [ "${jagen_root_dir-}" ]; then
+    if [ "$jagen_root_dir" ]; then
         if ! [ -d "$jagen_root_dir" ]; then
+            say "creating a directory '$jagen_root_dir'"
             mkdir -p "$jagen_root_dir"
             init_created_root_dir=1
         fi
-        cd "$jagen_root_dir"
-    fi
-    jagen_root_dir=$(real_path)
-    stamp_file="$jagen_root_dir/.init.stamp"
-
-    if [ -z "${use_force-}" -a ! -f "$stamp_file" -a "$(echo *)" != '*' ]; then
-        die "not initializing non-empty '$jagen_root_dir' directory without force"
     fi
 
-    touch "$stamp_file"
+    jagen_root_dir=$(real_path "$jagen_root_dir")
 
-    git_clone "$jagen_url" "$jagen_dir" ${jagen_branch-}
+    if [ "$init_project" ]; then
+        jagen_project_dir=$(relative_path "$(real_path)" "$jagen_root_dir")
+    fi
+
+    for layer in $init_layers; do
+        case $layer in
+            /*) layer=$(real_path "$layer") ;;
+            ./*|../*)
+                layer=$(relative_path "$(real_path "$layer")" "$jagen_root_dir") ;;
+        esac
+        jagen_layers="${jagen_layers}${NL}${layer}"
+    done
+    init_layers=$jagen_layers
+    jagen_layers=
+
+    for item in $init_layer_path; do
+        case $item in
+            /*) item=$(real_path "$item") ;;
+             *) item=$(relative_path "$(real_path "$item")" "$jagen_root_dir") ;;
+        esac
+        jagen_layer_path="${jagen_layer_path}${NL}${item}"
+    done
+    jagen_layer_path=${jagen_layer_path:+${jagen_layer_path}${NL}}
+
+    cd "$jagen_root_dir"
+
+    git_clone "$jagen_url" "$jagen_dir" $jagen_branch
     jagen_dir=$(real_path "$jagen_dir")
 
-    for layer in ${init_jagen_layers-}; do
+    for layer in $init_layers; do
         if path_is_url "$layer"; then
             path=${layer##*/} path=${path%.git} path="./layer/$path"
-            git_clone "$layer" "$path" ${jagen_layer_branch-}
+            git_clone "$layer" "$path" $jagen_layer_branch
             layer="$path"
-        elif ! path_is_absolute "$layer"; then
-            i=$(path_level "${jagen_root_dir#$wd}")
-            while [ $i -gt 0 ]; do
-                layer="../$layer"
-                i=$((i-1))
-            done
         fi
-        jagen_layers="${jagen_layers-}$layer
-"
+        jagen_layers="${jagen_layers}${NL}${layer}"
     done
-    if [ "${jagen_layers-}" ]; then
-        jagen_layers="
-$jagen_layers"
+    jagen_layers=${jagen_layers:+${jagen_layers}${NL}}
+
+    if [ "$jagen_project_dir" ]; then
+        say "initializing '$jagen_root_dir' as a workspace for a project in '$(real_path "$jagen_project_dir")'"
+    else
+        say "initializing '$jagen_root_dir' as a workspace"
     fi
 
-    if [ "${jagen_flags#*-ccache}" != "$jagen_flags" ]; then
-        jagen_flags=$(echo "$jagen_flags" | sed 's/ \?-ccache \?/ /')
-    elif [ "${jagen_flags#*ccache}" = "$jagen_flags" ] &&
-         [ "$(command -v ccache 2>/dev/null)" ]; then
-        jagen_flags="$jagen_flags ccache"
-    fi
-    jagen_flags=${jagen_flags# }
-    jagen_flags=${jagen_flags% }
+    jagen_ninja_version=$(ninja --version)
 
     write_env
     write_runner
     if [ -f "$config_file" ]; then
-        say "backing up the existing config as ${config_file}.bak"
+        say "backing up an existing config as '${config_file}.bak'"
         cp -f "$config_file" "${config_file}.bak"
     fi
     write_config "$config_file"
 
-    if [ -z "${jagen_args-}" ]; then
-        jagen_args='refresh'
-    fi
-
-    # at this point we consider the root successfully created and not try to
-    # delete if the later refresh fails
-    trap - INT EXIT
-
     . ./env.sh
-    (
-        IFS="$FS"
-        jagen $jagen_args
-    )
-
-    rm "$stamp_file"
+    jagen refresh
 }
 
 main "$@"
