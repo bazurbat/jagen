@@ -130,6 +130,8 @@ parse_command_line() {
             show_usage; exit 0 ;;
         -d|--dir)
             jagen_root_dir="$2"; shift ;;
+        --skip-config)
+            init_skip_config=1 ;;
         -p|--project)
             say "the option --project (-p) is not used anymore and is deprecated; the mode is now determined automatically" ;;
         -a|--flag)
@@ -347,11 +349,13 @@ main() {
 
     write_env
     write_runner
-    if [ -f "$config_file" ]; then
-        say "backing up an existing config as '${config_file}.bak'"
-        cp -f "$config_file" "${config_file}.bak"
+    if [ -z "$init_skip_config" ]; then
+        if [ -f "$config_file" ]; then
+            say "backing up an existing config as '${config_file}.bak'"
+            cp -f "$config_file" "${config_file}.bak"
+        fi
+        write_config "$config_file"
     fi
-    write_config "$config_file"
 
     . ./env.sh
     jagen refresh
