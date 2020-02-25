@@ -395,6 +395,11 @@ function GitSource:clone()
     if branch then
         clone_cmd:append('--branch', quote(branch))
     end
+    if self.rev then
+        -- the later checkout will fail if non-head revision is specified
+        -- because shallow clone will not have it
+        self.shallow = false
+    end
     if self.shallow then
         local smart = false
         -- try to detect if the server is "smart"
