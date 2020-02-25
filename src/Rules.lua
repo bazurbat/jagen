@@ -310,17 +310,19 @@ end
 
 function RuleEngine:define_default_config(packages)
     local out = {}
-    for _, pkg in pairs(packages) do
-        local build = pkg.build
-        if build and build.type and not next(pkg.configs) then
-            local new
-            if build.type == 'android-gradle' then
-                new = self:define_package { name = pkg.name, config = 'target' }
-            else
-                new = self:define_package { name = pkg.name, config = 'host' }
-            end
-            setpkg(out, new)
+    local function without_configs(pkg)
+        return not next(pkg.configs)
+    end
+    for _, pkg in iter(packages, filter(without_configs)) do
+        local build = pkg.build and pkg.build.type
+        local install = pkg.install and pkg.install.type
+        local new
+        if build == 'android-gradle' then
+            new = self:define_package { name = pkg.name, config = 'target' }
+        elseif build or install then
+            new = self:define_package { name = pkg.name, config = 'host' }
         end
+        setpkg(out, new)
     end
     table.assign(self.packages, out)
     return out
