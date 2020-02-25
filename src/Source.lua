@@ -282,7 +282,7 @@ function GitSource:_sync_config()
         local url = self:command('remote get-url', quote(origin)):read()
         if url ~= self.location then
             local cmd = self:command('remote set-url', quote(origin), quote(self.location))
-            if not cmd:exec() then return end
+            if not cmd:exec() then return false end
         end
     end
 
@@ -309,7 +309,7 @@ function GitSource:_sync_config()
     local val = self:command('config --get-all', quote(key)):read('*a'):trim()
     if val ~= spec then
         local cmd = self:command('config --replace-all', quote(key), quote(spec))
-        if not cmd:exec() then return end
+        if not cmd:exec() then return false end
     end
 
     return true
@@ -330,7 +330,7 @@ function GitSource:fetch()
         end
     end
 
-    if not self:_sync_config() then return end
+    if not self:_sync_config() then return false end
 
     local fetch_cmd = self:command('fetch')
     if not self.shallow and self:_is_shallow() then
@@ -362,7 +362,7 @@ function GitSource:switch()
     end
     if branch then
         local cmd = self:command('checkout -q', quote(branch), '--')
-        if not cmd:exec() then return end
+        if not cmd:exec() then return false end
     end
     local function on_branch()
         return self:command('symbolic-ref -q HEAD'):read() ~= nil
@@ -381,7 +381,7 @@ function GitSource:switch()
             else
                 cmd = self:command('merge --ff-only', quote(remoteref))
             end
-            if not cmd:exec() then return end
+            if not cmd:exec() then return false end
         end
     end
     return self:_update_submodules('--no-fetch')
@@ -409,7 +409,7 @@ function GitSource:clone()
             command:append(quote(url))
             if not command:exists() then
                 Log.error("need 'curl' (command not found)")
-                return
+                return false
             end
             if command:read('*a'):match(pattern) then
                 smart = true
