@@ -696,11 +696,11 @@ function Jagen.command.build(args)
     end
 
     local arg_packages = {}
-    if not args['no-auto'] then
-        for arg in each(args) do
-            append_uniq(Target:from_arg(arg), arg_packages)
-        end
-    end
+    -- if not args['no-auto'] then
+    --     for arg in each(args) do
+    --         append_uniq(Target:from_arg(arg), arg_packages)
+    --     end
+    -- end
 
     local packages, new_auto_pkgs = Rules:load(arg_packages)
     for target in each(new_auto_pkgs) do
