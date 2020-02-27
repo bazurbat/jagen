@@ -358,6 +358,10 @@ function string.escape_pattern(p)
     return string.gsub(p, '%p', '%%%0')
 end
 
+function string.is_pattern(s)
+    return s and (s:find('*', 1, true) or s:find('?', 1, true)) and true or false
+end
+
 function string.convert_pattern(s)
     if s == '' then s = '*' end
     s = string.escape_pattern(s)

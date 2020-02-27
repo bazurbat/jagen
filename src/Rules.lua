@@ -328,24 +328,6 @@ function RuleEngine:define_default_config(packages)
     return out
 end
 
-function RuleEngine:define_auto_packages(arg_packages)
-    local out_packages, out_targets = {}, {}
-    for target in each(arg_packages) do
-        local pkg = self.packages[target.name]
-        if not pkg or not pkg:has_config(target.config) then
-            local rule = { name = target.name, config = target.config,
-                           _library_only = true }
-            local pkg, target = self:define_package(rule)
-            if pkg then
-                setpkg(out_packages, pkg)
-                append_uniq(target, out_targets)
-            end
-        end
-    end
-    table.assign(self.packages, out_packages)
-    return out_packages, out_targets
-end
-
 function RuleEngine:define_variant(rule, context)
     local use = Target.from_use(rule.extends)
     if rule.name == use.name then
@@ -618,12 +600,9 @@ function RuleEngine:pass(packages)
     end
 end
 
-function RuleEngine:process_rules(arg_packages)
+function RuleEngine:process_rules()
     self:pass(table.copy(self.packages))
     self:pass(self:define_default_config(self.packages))
-    local auto_packages, auto_targets = self:define_auto_packages(arg_packages)
-    self:pass(auto_packages)
-    self:pass(self:define_default_config(auto_packages))
     self:pass(self:define_variants())
     self:pass(self:define_rust_packages(self.packages))
 
@@ -707,8 +686,6 @@ function RuleEngine:process_rules(arg_packages)
             end
         end
     end
-
-    return auto_targets
 end
 
 function RuleEngine:print_error(...)
@@ -1370,7 +1347,7 @@ function template(rule)
     P.rules._templates[name] = rule
 end
 
-function P:load(arg_packages)
+function P:load()
     P.rules = RuleEngine:new()
     local packages = P.rules.packages
 
@@ -1404,9 +1381,20 @@ function P:load(arg_packages)
         end
     end
 
-    local auto_packages = P.rules:process_rules(arg_packages)
+    P.rules:process_rules()
 
     return P.rules.packages, auto_packages
+end
+
+function P:define_package_from_arg(arg)
+    local target = Target:from_arg(arg)
+    local rule = {
+        name = target.name,
+        config = target.config,
+        _library_only = true
+    }
+    local pkg = self.rules:define_package(rule)
+    return pkg
 end
 
 function P:validate()

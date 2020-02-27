@@ -695,17 +695,7 @@ function Jagen.command.build(args)
         return Jagen.command['help'] { 'build' }
     end
 
-    local arg_packages = {}
-    -- if not args['no-auto'] then
-    --     for arg in each(args) do
-    --         append_uniq(Target:from_arg(arg), arg_packages)
-    --     end
-    -- end
-
-    local packages, new_auto_pkgs = Rules:load(arg_packages)
-    for target in each(new_auto_pkgs) do
-        Log.message("package '%s' defined automatically from arguments", tostring(target))
-    end
+    local packages = Rules:load()
     if not Rules:validate() then
         Log.error('aborting the build due to rule errors')
         return false
@@ -722,6 +712,7 @@ function Jagen.command.build(args)
         end
     end
 
+    local not_found_args = {}
     for arg in each(args) do
         local found = false
         local namep, stagep = unpack(map(string.to_pattern, arg:split(':', 1)))
@@ -750,8 +741,12 @@ function Jagen.command.build(args)
             end
         end
         if not found then
-            Log.warning('could not find targets matching: %s', arg)
+            append(not_found_args, arg)
         end
+    end
+
+    for arg in each(not_found_args) do
+        Log.warning('could not find targets matching: %s', arg)
     end
 
     if args['match'] then
@@ -769,9 +764,9 @@ function Jagen.command.build(args)
         return false
     end
 
-    if not table.iequal(read_auto_packages(), new_auto_pkgs) then
-        write_auto_packages(new_auto_pkgs)
-    end
+    -- if not table.iequal(read_auto_packages(), new_auto_pkgs) then
+    --     write_auto_packages(new_auto_pkgs)
+    -- end
 
     write_targets(targets, args)
 
