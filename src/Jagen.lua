@@ -476,8 +476,10 @@ local function generate_cargo_config(packages)
             local build = this.build
             if build.type == 'rust' then
                 local system = pkg:get_build('system', config)
-                local cc = pkg:get_build('cc', config) or pkg:get_toolchain_build('cc', config) or 'gcc'
-                local toolchain_system = pkg:get_toolchain_build('system', config)
+                local cc = pkg:get_build('cc', config)
+                    or pkg:get_toolchain_build('cc', config, packages)
+                    or 'gcc'
+                local toolchain_system = pkg:get_toolchain_build('system', config, packages)
                 if system and cc and toolchain_system then
                     targets[system] = string.format('%s-%s', toolchain_system, cc)
                 end
@@ -537,9 +539,9 @@ function Jagen.command.refresh(args, packages)
            :append('-delete'):exec()
 
     for _, pkg in pairs(packages) do
-        pkg:add_patch_dependencies()
-        pkg:add_files_dependencies()
-        pkg:add_ordering_dependencies()
+        Rules:add_patch_dependencies(pkg)
+        Rules:add_files_dependencies(pkg)
+        Rules:add_ordering_dependencies(pkg)
         Script:generate(pkg, include_dir)
 
         for stage in pkg:each() do

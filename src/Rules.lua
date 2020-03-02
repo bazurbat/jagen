@@ -3,6 +3,7 @@ local Target = require 'Target'
 local Source = require 'Source'
 local Log    = require 'Log'
 local Command = require 'Command'
+local Package = require 'Package'
 
 local function setpkg(table, pkg)
     if pkg then
@@ -120,6 +121,7 @@ RuleEngine.__index = RuleEngine
 
 function RuleEngine:new()
     local engine = {
+        _rules = {},
         packages              = {},
         _templates            = {},
         _variants             = {},
@@ -152,7 +154,7 @@ function RuleEngine:collect_require(pkg, spec, context, stage)
 end
 
 function RuleEngine:define_package(rule, context)
-    P.rules._define_count = P.rules._define_count + 1
+    self._define_count = self._define_count + 1
 
     if not context then
         context = Context:new {
@@ -174,10 +176,13 @@ function RuleEngine:define_package(rule, context)
         context.template = template
     end
 
-    local pkg = P.rules.packages[rule.name]
+    local pkg = self.packages[rule.name]
     if not pkg then
-        pkg = P:create(rule.name, rule._library_only)
-        if not pkg then return end
+        pkg = Package:create(rule.name)
+        local module = Package:from_library(rule.name)
+        if module then
+            table.merge(pkg, Package:new(assert(module())))
+        end
     end
     if context then
         append_uniq(context, pkg.contexts)
@@ -196,7 +201,7 @@ function RuleEngine:define_package(rule, context)
             if not this.build then this.build = {} end
             if not this.install then this.install = {} end
             if not this.export then this.export = {} end
-            setmetatable(this, P)
+            setmetatable(this, Package)
             setmetatable(this.build, { __index = pkg.build })
             setmetatable(this.install, { __index = pkg.install })
             setmetatable(this.export, { __index = pkg.export })
@@ -226,11 +231,11 @@ function RuleEngine:define_package(rule, context)
     local arg_rule = rule
     rule = {}
     for name in each(template) do
-        local template = P.rules._templates[name]
+        local template = self._templates[name]
         if template then
             table.merge(rule, template)
         else
-            P.rules:print_warning("a package '%s' includes a template '%s' which is not defined\n--> %s", pkg.name, name, tostring(context))
+            self:print_warning("a package '%s' includes a template '%s' which is not defined\n--> %s", pkg.name, name, tostring(context))
         end
     end
     table.merge(rule, arg_rule)
@@ -244,7 +249,7 @@ function RuleEngine:define_package(rule, context)
         end
 
         for spec in each(pkg.requires) do
-            P.rules:collect_require(pkg, spec, context)
+            self:collect_require(pkg, spec, context)
         end
 
         for spec in each(rule.requires) do
@@ -253,20 +258,20 @@ function RuleEngine:define_package(rule, context)
                 context = copy(context or {})
                 context.template = rule.requires.template
             end
-            P.rules:collect_require(pkg, spec, context)
+            self:collect_require(pkg, spec, context)
         end
 
         -- Add configless stages to every config, then add rule-specific stages.
         local stages = extend(extend({}, pkg), rule)
         for stage in each(stages) do
-            local target = this:collect_rule(stage, config)
+            local target = this:collect_stage(stage, config)
             for spec in each(stage.requires) do
                 local context = context
                 if stage.requires.template ~= nil then
                     context = copy(context or {})
                     context.template = stage.requires.template
                 end
-                P.rules:collect_require(pkg, spec, context, target.stage)
+                self:collect_require(pkg, spec, context, target.stage)
             end
         end
     end
@@ -275,7 +280,7 @@ function RuleEngine:define_package(rule, context)
     -- stages.
     if not config then
         for stage in each(rule) do
-            pkg:collect_rule(stage)
+            pkg:collect_stage(stage)
         end
     end
 
@@ -387,8 +392,8 @@ function RuleEngine:define_variants()
     return out
 end
 
-function P:_derive_rust_target(config)
-    local system = self:get_toolchain_build('system', config)
+function RuleEngine:_derive_rust_target(pkg, config)
+    local system = pkg:get_toolchain_build('system', config, self.packages)
     if not system then return end
     local triple = system:split('-')
     if #triple == 3 and triple[2] == 'linux' and not triple[3]:match('^android') then
@@ -404,7 +409,7 @@ function RuleEngine:define_rust_packages(packages)
             local build = this.build
             if build.type == 'rust' then
                 build.rust_toolchain = build.rust_toolchain or 'stable'
-                build.system = build.system or pkg:_derive_rust_target(config)
+                build.system = build.system or self:_derive_rust_target(pkg, config)
                 local name = string.format('rust-%s%s', build.rust_toolchain,
                     build.system and '-'..build.system or '')
                 local rust_toolchain = self:define_package {
@@ -560,7 +565,7 @@ function RuleEngine:define_project_package(project_dir)
         build = { type = 'gnu', generate = true }
     end
     if build then
-        return P.rules:define_package(P:parse {
+        return self:define_package(Package:parse {
                 name = name,
                 source = '.',
                 build = build,
@@ -586,8 +591,8 @@ function RuleEngine:pass(packages)
                 end
             end
         end
-        local required = P.rules.required_packages
-        P.rules.required_packages = {}
+        local required = self.required_packages
+        self.required_packages = {}
         for key, item in pairs(required) do
             local pkg, spec, context = item[1], item[2], item[3]
             local used = self:define_use(spec, context)
@@ -635,7 +640,7 @@ function RuleEngine:process_rules()
 
     for key, item in pairs(self.required_specs) do
         local pkg, spec, config, stage = item[1], item[2], item[3], item[4]
-        pkg:add_require_target(spec, config, stage)
+        self:add_require_target(pkg, spec, config, stage)
     end
 
     for _, pkg in pairs(self.packages) do
@@ -650,8 +655,8 @@ function RuleEngine:process_rules()
                 end
             end
         end
-        pkg:export_dirs()
-        pkg:export_build_env()
+        P.export_dirs(pkg)
+        P.export_build_env(pkg)
     end
 
     for _, pkg in pairs(self.packages) do
@@ -672,7 +677,7 @@ function RuleEngine:process_rules()
                 Log.warning("invalid pattern '%s' in jagen_source_exclude list", item)
             end
             local luapat, match, matched = shpat:convert_pattern()
-            for name, pkg in iter(P.rules.packages, filter(is_scm)) do
+            for name, pkg in iter(self.packages, filter(is_scm)) do
                 match = name:match(luapat)
                 if (match and not invert) or (invert and not match) then
                     matched = true
@@ -736,7 +741,7 @@ function RuleEngine:check_undefined_uses(pkg)
         for spec in each(this.uses or {}) do
             local use = Target.from_use(spec)
             if not self.packages[use.name] then
-                self:print_error("a package '%s' uses undefined package '%s'%s", pkg.name, use.name, pkg:format_at())
+                self:print_error("a package '%s' uses undefined package '%s'%s", pkg.name, use.name, P:format_at(pkg))
             end
         end
     end
@@ -756,7 +761,7 @@ function RuleEngine:check_usages(pkg)
                    (not install or install and not install.type) and
                    not pkg.source then
                     self:print_warning("A package '%s' uses a package '%s' which does not have build, install or source "..
-                        "rules defined. Possible reason could be incorrect package name spelling or missing pkg file.%s", pkg.name, pkg.name, pkg:format_at())
+                        "rules defined. Possible reason could be incorrect package name spelling or missing pkg file.%s", pkg.name, pkg.name, P:format_at(pkg))
                 end
             end
         end
@@ -773,48 +778,12 @@ function RuleEngine:check()
     end
 end
 
-local find_module = (function ()
-    local package = package
-    return function (name)
-        assert(name)
-        local names, common_name = {}, name:match('([%w%p]+)~.*')
-        if common_name then
-            append(names, string.format('pkg/%s/%s', name, common_name))
-            append(names, string.format('pkg/%s', name))
-            append(names, string.format('pkg/%s/%s', common_name, common_name))
-            append(names, string.format('pkg/%s', common_name))
-        else
-            append(names, string.format('pkg/%s/%s', name, name))
-            append(names, string.format('pkg/%s', name))
-        end
-
-        for path in each(Jagen:path()) do
-            for name in each(names) do
-                local filename = System.mkpath(path, name..'.lua')
-                local file = io.open(filename, 'rb')
-                if file then
-                    local module = assert(loadstring(assert(file:read('*a')), filename))
-                    file:close()
-                    return module, filename
-                end
-            end
-        end
-    end
-end)()
-
-function P:__tostring(sep)
-    local c = {}
-    if self.name then table.insert(c, self.name) end
-    if self.config then table.insert(c, self.config) end
-    return table.concat(c, sep or ':')
-end
-
-function P:format_contexts(start_col, start_1col)
+function P:format_contexts(pkg, start_col, start_1col)
     start_col = start_col or 0
     start_1col = start_1col or start_col
     local lines = {}
-    for i = 1, #self.contexts do
-        local context, level = self.contexts[i], 0
+    for i = 1, #pkg.contexts do
+        local context, level = pkg.contexts[i], 0
         while context do
             local contextstr = tostring(context)
             if #contextstr > 0 then
@@ -832,315 +801,13 @@ function P:format_contexts(start_col, start_1col)
     end
 end
 
-function P:format_last_context()
-    return tostring(self.contexts[#self.contexts]) or '<unknown>'
+function P:format_at(pkg)
+    return string.format('\n----\n at: %s\n', self:format_contexts(pkg, 5, 0))
 end
 
-function P:format_at()
-    return string.format('\n----\n at: %s\n', self:format_contexts(5, 0))
-end
-
-function P:parse(rule)
-    if type(rule) == 'string' then
-        rule = { name = rule }
-    elseif type(rule) == 'table' then
-        if type(rule[1]) == 'string' then
-            rule.name = rule[1]
-            table.remove(rule, 1)
-        end
-        if type(rule[1]) == 'string' then
-            rule.config = rule[1]
-            table.remove(rule, 1)
-        end
-    else
-        error("invalid rule type")
-    end
-
-    rule.source = Source:parse(rule.source)
-
-    if type(rule.patches) == 'table' then
-        local patches = rule.patches
-        for i = 1, #patches do
-            local item = patches[i]
-            if type(item) == 'string' then
-                patches[i] = { item, 1 }
-            elseif type(item) == 'table' then
-                if not item[2] then
-                    item[2] = 1
-                end
-            end
-        end
-    end
-
-    if type(rule.files) == 'string' then
-        rule.files = { rule.files }
-    end
-    if type(rule.files) == 'table' then
-        local files = rule.files
-        for i = 1, #files do
-            local item = files[i]
-            if type(item) == 'string' then
-                files[i] = { item }
-            elseif type(item) == 'table' then
-                if not item.path and item.dir then
-                    item.path = item.dir..'/'..item[1]
-                end
-            end
-        end
-    end
-
-    local function parse_section(name)
-        if rule[name] ~= nil then
-            if type(rule[name]) ~= 'table' then
-                rule[name] = { type = rule[name] }
-            end
-            local field = rule[name]
-            if type(field[1]) == 'string' then
-                if field.type == nil then
-                    field.type = field[1]
-                end
-                table.remove(field, 1)
-            end
-            if type(field.type) == 'string' then
-                field.type = field.type:tocanon()
-            end
-        end
-    end
-
-    local function parse_spawn(rule)
-        local spawn = rule['spawn']
-        if not spawn then return end
-        if type(spawn) == 'string' then
-            spawn = { name = spawn }
-            rule.spawn = spawn
-        end
-    end
-
-    parse_section('build')
-    parse_section('install')
-    parse_spawn(rule)
-    if rule.build then
-        parse_spawn(rule.build)
-    end
-    if rule.install then
-        parse_spawn(rule.install)
-    end
-
-    if rule.build and rule.build.system and rule.build.arch == nil then
-        rule.build.arch = string.match(rule.build.system, '^(%w+)-?')
-    end
-
-    if rule.build and rule.build.clean ~= nil then
-        local clean = rule.build.clean
-        if type(clean) ~= 'table' then
-            rule.build.clean = { clean }
-        end
-    end
-
-    if type(rule.template) == 'string' then
-        rule.template = { rule.template }
-    end
-    if rule.requires then
-        if type(rule.requires.template) == 'string' then
-            rule.requires.template = { rule.requires.template }
-        end
-    end
-    for stage in each(rule) do
-        if stage.requires and type(stage.requires.template) == 'string' then
-            stage.requires.template = { stage.requires.template }
-        end
-    end
-
-    if type(rule.requires) == 'string' then
-        rule.requires = { rule.requires }
-    end
-
-    if type(rule.uses) == 'string' then
-        rule.uses = { rule.uses }
-    end
-
-    return rule
-end
-
-function P:new(rule)
-    rule = P:parse(rule)
-    setmetatable(rule, self)
-    return rule
-end
-
-function P:has_config(name)
-    if name == nil then
-        return true
-    else
-        return self.configs and self.configs[name]
-    end
-end
-
-function P:get(key, config)
-    if config then
-        if self.configs and self.configs[config] then
-            return self.configs[config][key]
-        end
-    else
-        return self[key]
-    end
-end
-
-function P:get_build(key, config)
-    return (self:get('build', config) or self.build)[key]
-end
-
-function P:get_toolchain_build(key, config)
-    local toolchain = (self:get('build', config) or self.build).toolchain
-    if toolchain then
-        local pkg = P.rules.packages[toolchain]
-        if pkg then
-            return pkg:get_build(key, config)
-        end
-    end
-end
-
-function P:set(key, value, config)
-    if config then
-        self.configs = self.configs or {}
-        self.configs[config] = self.configs[config] or {}
-        self.configs[config][key] = value
-    else
-        self[key] = value
-    end
-    return value
-end
-
-function P:is_scm()
-    return self.source and Source:is_known(self.source.type)
-end
-
-function P:each()
-    return coroutine.wrap(function ()
-            if self.stages then
-                for target in each(self.stages) do
-                    coroutine.yield(target, self)
-                end
-            end
-            if self.configs then
-                local configs = {}
-                for config, this in pairs(self.configs) do
-                    table.insert(configs, this)
-                end
-                table.sort(configs, function (a, b)
-                        return (a.config or '') < (b.config or '')
-                    end)
-                for this in each(configs) do
-                    if this.stages then
-                        for target in each(this.stages) do
-                            coroutine.yield(target, this)
-                        end
-                    end
-                end
-            end
-        end)
-end
-
-function P:each_config(with_shared)
-    return coroutine.wrap(function ()
-            if with_shared then
-                coroutine.yield(self)
-            end
-            if self.configs then
-                for config, this in pairs(self.configs) do
-                    coroutine.yield(this, config)
-                end
-            end
-        end)
-end
-
-function P:find_target(pattern)
-    for target in self:each() do
-        if target:match(pattern) then
-            return target
-        end
-    end
-end
-
-function P:gettoolchain(config)
-    local host_toolchain = 'system-native:host'
-    local target_toolchain = os.getenv('jagen_target_toolchain')
-    if target_toolchain and #target_toolchain == 0 then
-        target_toolchain = nil
-    end
-    local build, toolchain = self:get('build', config)
-    if build then
-        if build.toolchain ~= nil then
-            toolchain = build.toolchain
-        elseif build.type then
-            if config == 'host' and host_toolchain and
-                self.name ~= host_toolchain
-            then
-                toolchain = host_toolchain
-            elseif config == 'target' and target_toolchain and
-                self.name ~= target_toolchain
-            then
-                toolchain = target_toolchain
-            end
-        end
-    end
-    return toolchain
-end
-
-function P:add_target(target)
-    local shared = { unpack = true, patch  = true }
-    local name = target.stage
-    if name == 'update' then name = 'unpack' end
-    local config = not shared[name] and target.config
-    local stages = self:get('stages', config)
-    if not stages then
-        stages = self:set('stages', {}, config)
-    end
-    local existing = stages[name]
-    if existing then
-        existing:add_inputs(target)
-    else
-        target.name = self.name -- for the case of adopting from other pkg
-        existing = target
-        stages[name] = target
-        table.insert(stages, target)
-    end
-    return existing
-end
-
-function P:add_stage(name, config)
-    return self:add_target(Target.from_args(self.name, name, config))
-end
-
-function P:add_rule(rule, config)
-    return self:add_target(Target:parse(rule, self.name, config))
-end
-
-function P:collect_rule(rule, config)
-    local target = Target:parse(rule, self.name, config)
-    table.insert(self._collected_targets, target)
-    return target
-end
-
-function P.collect_variants(rule, context)
-    P.rules._variants[rule.name] = { rule, context }
-end
-
-function P:add_required_stage(config)
-    local build, install, name = self:get('build', config), self:get('install', config)
-    if install and install.type then
-        name = 'install'
-    elseif build and build.type then
-        name = 'compile'
-    else
-        name = 'install'
-    end
-    return self:add_stage(name, config)
-end
-
-function P:add_require_target(spec, config, stage)
+function RuleEngine:add_require_target(pkg, spec, config, stage)
     if not stage then
-        local build, install = self:get('build', config), self:get('install', config)
+        local build, install = pkg:get('build', config), pkg:get('install', config)
         if build and build.type then
             stage = 'configure'
         elseif install and install.type then
@@ -1149,69 +816,69 @@ function P:add_require_target(spec, config, stage)
             stage = 'install'
         end
     end
-    local target = Target.from_args(self.name, stage, config)
+    local target = Target.from_args(pkg.name, stage, config)
     local use = Target.from_use(spec)
-    local req_pkg = P.rules.packages[use.name] assert(req_pkg)
+    local req_pkg = self.packages[use.name] assert(req_pkg)
     local req_target = req_pkg:add_required_stage(use.config or config)
-    self:add_target(target:append(req_target))
+    pkg:add_target(target:append(req_target))
 end
 
-function P:add_patch_dependencies()
-    if not self.patches or not next(self.patches) then return end
+function P:add_patch_dependencies(pkg)
+    if not pkg.patches or not next(pkg.patches) then return end
 
-    local stage = self.stages['unpack']
+    local stage = pkg.stages['unpack']
 
-    for i, item in ipairs(self.patches) do
+    for i, item in ipairs(pkg.patches) do
         local filename = item[1]
-        local path, tried = self:find_file(filename)
+        local path, tried = P.find_file(pkg, filename)
         if path then
             stage.inputs = append_uniq(path, stage.inputs)
             -- Adding patch files to arguments modifies the command line which
             -- is needed for Ninja to notice the changes in the list itself and
             -- rerun the command.
             stage.arg = append_uniq(path, stage.arg)
-            self.patches[i][3] = path
+            pkg.patches[i][3] = path
         else
             local indent = string.rep(' ', 8)
             P.rules:print_error(
                 "package %s requires a patch file '%s' which was not found\n"..
                 "    Attempted lookup in the following paths:\n"..
                 indent.."%s",
-                self.name, filename, table.concat(tried, '\n'..indent))
+                pkg.name, filename, table.concat(tried, '\n'..indent))
         end
     end
 end
 
-function P:add_files_dependencies()
-    if not self.files or not next(self.files) then return end
+function P:add_files_dependencies(pkg)
+    if not pkg.files or not next(pkg.files) then return end
 
-    local stage = self.stages['patch']
+    local stage = pkg.stages['patch']
 
-    for i, item in ipairs(self.files) do
+    for i, item in ipairs(pkg.files) do
         local filename = item[1]
-        local path, tried = self:find_file(filename)
+        local path, tried = P.find_file(pkg, filename)
         if path then
             stage.inputs = append_uniq(path, stage.inputs)
             -- Adding files to arguments modifies the command line which is
             -- needed for Ninja to notice the changes in the list itself and
             -- rerun the command.
             stage.arg = append_uniq(path, stage.arg)
-            self.files[i]._src_path = path
+            pkg.files[i]._src_path = path
         else
             local indent = string.rep(' ', 8)
             P.rules:print_error(
                 "package %s requires a supplementary file '%s' which was not found\n"..
                 "    Attempted lookup in the following paths:\n"..
                 indent.."%s",
-                self.name, filename, table.concat(tried, '\n'..indent))
+                pkg.name, filename, table.concat(tried, '\n'..indent))
         end
     end
 end
 
-function P:add_ordering_dependencies()
+function P:add_ordering_dependencies(pkg)
     local prev, prev_clean, prev_cclean, common
 
-    for curr in self:each() do
+    for curr in pkg:each() do
         if curr.stage == 'clean' then
             if prev_clean then
                 curr.order_only = append(curr.order_only, prev_clean)
@@ -1246,28 +913,28 @@ function P:add_ordering_dependencies()
     end
 end
 
-function P:export_build_env()
+function P.export_build_env(pkg)
     local keys = { 'cc', 'cxx', 'arch', 'system', 'cpu',
                    'cflags', 'cxxflags', 'ldflags' }
-    for this, config in self:each_config(true) do
+    for this, config in pkg:each_config(true) do
         local build = this.build
         if rawget(build, 'cxxflags') == nil and rawget(build, 'cflags') ~= nil then
             build.cxxflags = build.cflags
         end
     end
-    for this, config in self:each_config() do
+    for this, config in pkg:each_config() do
         local build, export = this.build, this.export
         if build and export then
             for key in each(keys) do
                 if rawget(export, key) == nil then
-                    export[key] = rawget(build, key) or rawget(self.build, key)
+                    export[key] = rawget(build, key) or rawget(pkg.build, key)
                 end
             end
         end
     end
 end
 
-function P:export_dirs()
+function P.export_dirs(pkg)
     local function export_build_dir(this, config)
         local export = this.export
         local build = this.build
@@ -1279,11 +946,11 @@ function P:export_dirs()
             end
         end
     end
-    export_build_dir(self)
-    for this, config in self:each_config() do
+    export_build_dir(pkg)
+    for this, config in pkg:each_config() do
         export_build_dir(this, config)
     end
-    local export, source = self.export, self.source
+    local export, source = pkg.export, pkg.source
     if source then
         export.source = export.source or {}
         if export.source.dir == nil then
@@ -1295,32 +962,8 @@ function P:export_dirs()
     end
 end
 
-function P:create(name, library_only)
-    local module, filename = find_module(name)
-    if not module and library_only then return end
-    local pkg = {
-        name = name,
-        stages = {},
-        configs = {},
-        source = {},
-        build = {},
-        install = {},
-        export = {},
-        contexts = {},
-        _collected_targets = {},
-    }
-    setmetatable(pkg, self)
-    pkg:add_stage('clean')
-    pkg:add_stage('unpack')
-    pkg:add_stage('patch')
-    if module then
-        table.merge(pkg, P:new(assert(module())))
-    end
-    return pkg
-end
-
 function package(rule)
-    rule = P:parse(rule)
+    rule = Package:parse(rule)
     local level, info = 2
     local context = Context:new { name = rule.name, config = rule.config, template = rule.template }
     repeat
@@ -1332,16 +975,14 @@ function package(rule)
         context.line = info.currentline
     end
     if rule.extends then
-        return P.collect_variants(rule, context)
+        P.rules._variants[rule.name] = { rule, context }
     else
-        local pkg = P.rules:define_package(rule, context)
-        setpkg(P.rules.packages, pkg)
-        return pkg
+        table.insert(P.rules._rules, { rule, context })
     end
 end
 
 function template(rule)
-    rule = P:parse(rule)
+    rule = Package:parse(rule)
     local name = rule.name
     rule.name = nil
     P.rules._templates[name] = rule
@@ -1369,6 +1010,11 @@ function P:load()
         try_load_rules(dir)
     end
     try_load_rules(System.mkpath(Jagen.root_dir))
+
+    for entry in each(P.rules._rules) do
+        local pkg = P.rules:define_package(entry[1], entry[2])
+        P.rules.packages[pkg.name] = pkg
+    end
 
     local project_dir = os.getenv('jagen_project_dir')
     if project_dir then
@@ -1406,17 +1052,17 @@ function P:have_rust()
     return self.rules.has_rust_rules
 end
 
-function P:find_file(filename)
+function P.find_file(pkg, filename)
     local path, tried_paths = nil, {}
     local function find(dir, filename)
         local path, list = Jagen:find_in_path(System.mkpath('pkg', dir, filename))
         table.iextend(tried_paths, list)
         return path
     end
-    path = find(self.name, filename)
+    path = find(pkg.name, filename)
     if not path then
-        local basename = self.name:match('^[^~]+') -- with ~suffix stripped
-        if self.name ~= basename then
+        local basename = pkg.name:match('^[^~]+') -- with ~suffix stripped
+        if pkg.name ~= basename then
             path = find(basename, filename)
         end
     end
