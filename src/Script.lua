@@ -43,6 +43,7 @@ local function write_common(w, pkg)
         'source',
         'stages',
         'uses',
+        '_pkg',
         '_collected_targets',
     }
     local function custom_keys(_, key)

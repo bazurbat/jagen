@@ -321,6 +321,10 @@ function P:add_stage(name, config)
 end
 
 function P:add_target(target)
+    -- always use the whole package as an instance instead of a config subset
+    if self.config then
+        self = self._pkg
+    end
     local shared = { unpack = true, patch  = true }
     local name = target.stage
     if name == 'update' then name = 'unpack' end
@@ -351,12 +355,6 @@ function P:add_required_stage(config)
         name = 'install'
     end
     return self:add_stage(name, config)
-end
-
-function P:collect_stage(rule, config)
-    local target = Target:parse(rule, self.name, config)
-    table.insert(self._collected_targets, target)
-    return target
 end
 
 return P

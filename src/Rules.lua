@@ -195,6 +195,7 @@ function RuleEngine:define_package(rule, context)
         if not pkg.configs[config] then pkg.configs[config] = {} end
         this = pkg.configs[config]
         if not getmetatable(this) then
+            this._pkg = pkg
             this.name, this.config = pkg.name, config
             if not this.stages then this.stages = {} end
             if not this._collected_targets then this._collected_targets = {} end
@@ -264,7 +265,8 @@ function RuleEngine:define_package(rule, context)
         -- Add configless stages to every config, then add rule-specific stages.
         local stages = extend(extend({}, pkg), rule)
         for stage in each(stages) do
-            local target = this:collect_stage(stage, config)
+            local target = Target:parse(stage, pkg.name, config)
+            append(this._collected_targets, target)
             for spec in each(stage.requires) do
                 local context = context
                 if stage.requires.template ~= nil then
@@ -274,13 +276,9 @@ function RuleEngine:define_package(rule, context)
                 self:collect_require(pkg, spec, context, target.stage)
             end
         end
-    end
-
-    -- When custom stages are specified in configless rule add them to generic
-    -- stages.
-    if not config then
+    else
         for stage in each(rule) do
-            pkg:collect_stage(stage)
+            append(pkg._collected_targets, Target:parse(stage, pkg.name))
         end
     end
 
@@ -574,14 +572,21 @@ function RuleEngine:define_project_package(project_dir)
     end
 end
 
+function RuleEngine:process_collected_targets(pkg)
+    for target in each(pkg._collected_targets) do
+        pkg:add_target(target)
+    end
+    pkg._collected_targets = {}
+end
+
 function RuleEngine:pass(packages)
     while next(packages) do
         local next_packages = {}
         for _, pkg in pairs(packages) do
-            for_each(pkg._collected_targets, function(t) pkg:add_target(t) end)
+            self:process_collected_targets(pkg)
             for this, config in pkg:each_config() do
                 table.assign(next_packages, self:process_config(pkg, config, this))
-                for_each(this._collected_targets, function(t) pkg:add_target(t) end)
+                self:process_collected_targets(this)
                 for spec in each(pkg.uses or {}, this.uses or {}) do
                     local added = self:define_use(spec, Context:new { name = pkg.name, config = config })
                     if added then
