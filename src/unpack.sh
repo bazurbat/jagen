@@ -98,9 +98,13 @@ pkg__unpack_dist() {
         checksum=$(jagen_get_file_checksum md5 "$dist_path")
     fi
 
-    if [ "$source_checksum" != "$checksum" ]; then
-        die "checksum verification failed for $dist_path: expected '$source_checksum', actual '$checksum'"
-    fi
+    case $? in
+        0) if [ "$source_checksum" != "$checksum" ]; then
+               die "checksum verification failed for $dist_path: expected '$source_checksum', actual '$checksum'"
+           fi ;;
+        1) die "checksum verification failed for $dist_path" ;;
+        2) ;; # maybe make this depend on flag
+    esac
 
     if ! is_function jagen_stage_apply_patches &&
         [ "$(pkg__get_unpack_tag "$dist_path" $checksum)" = "$(pkg__read_unpack_tag)" ]; then

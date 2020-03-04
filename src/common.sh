@@ -556,8 +556,5 @@ jagen_get_file_checksum() {
         return 2
     fi
     out=$("$prog" "$file")
-    if [ $? = 0 ]; then
-        echo "$out" | awk '{print $1}'
-    fi
-    return 1
+    [ $? = 0 ] && echo "$out" | awk '{print $1}'
 }
