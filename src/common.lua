@@ -628,7 +628,9 @@ function pretty(value, level)
         else
             local keys = {}
             for k, _ in pairs(value) do
-                if type(k) ~= 'number' then insert(keys, k) end
+                if k ~= '_pkg' then -- need to get rid of backref in pkg config
+                    if type(k) ~= 'number' then insert(keys, k) end
+                end
             end
             table.sort(keys)
             add('{')

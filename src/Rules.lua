@@ -139,6 +139,16 @@ function RuleEngine:new()
     return engine
 end
 
+function RuleEngine:each_config(packages)
+    return coroutine.wrap(function ()
+        for _, pkg in pairs(packages) do
+            for this, config in pkg:each_config() do
+                coroutine.yield(this, config)
+            end
+        end
+    end)
+end
+
 function RuleEngine:collect_require(pkg, spec, context, stage)
     local key = string.format('%s->%s^%s', spec, pkg.name, context and context:tokey() or '')
     if not self.all_required_packages[key] then
@@ -390,50 +400,63 @@ function RuleEngine:define_variants()
     return out
 end
 
-function RuleEngine:_derive_rust_target(pkg, config)
-    local system = pkg:get_toolchain_build('system', config, self.packages)
+function RuleEngine:get_rust_system_from_toolchain(build, config, packages)
+    if not build.toolchain then return end
+    local target = Target.from_use(build.toolchain)
+    local toolchain = packages[target.name]
+    if not toolchain then return end
+    local system = toolchain:get_build('system', config)
     if not system then return end
-    local triple = system:split('-')
-    if #triple == 3 and triple[2] == 'linux' and not triple[3]:match('^android') then
-        table.insert(triple, 2, 'unknown')
+    local cpu, kernel, abi = unpack(system:split('-'))
+    if cpu and kernel and abi and kernel == 'linux' and
+            (abi:match('^gnu') or abi:match('^musl')) then
+        return string.format('%s-unknown-%s-%s', cpu, kernel, abi)
+    else
+        return system
     end
-    return table.concat(triple, '-')
 end
 
 function RuleEngine:define_rust_packages(packages)
     local out = {}
-    for _, pkg in pairs(packages) do
-        for this, config in pkg:each_config() do
-            local build = this.build
-            if build.type == 'rust' then
-                build.rust_toolchain = build.rust_toolchain or 'stable'
-                build.system = build.system or self:_derive_rust_target(pkg, config)
-                local name = string.format('rust-%s%s', build.rust_toolchain,
-                    build.system and '-'..build.system or '')
-                local rust_toolchain = self:define_package {
-                    name   = name,
-                    config = config,
-                    build = {
-                        type      = 'rust-toolchain',
-                        toolchain = 'rustup:host',
-                        name      = build.rust_toolchain,
-                        system    = build.system
-                    },
-                    export = {
-                        env = {
-                            RUSTUP_HOME = '$rustup_env_RUSTUP_HOME',
-                            CARGO_HOME = '$rustup_env_CARGO_HOME'
-                        }
+    local function rust_build(pkg)
+        return pkg.build.type == 'rust'
+    end
+    for this in vfilter(rust_build)(self:each_config(packages)) do
+        local build = this.build
+        if not build.rust_toolchain then
+            build.rust_toolchain = 'stable'
+        end
+        if not build.system then
+            build.system = self:get_rust_system_from_toolchain(build, this.config, packages)
+        end
+        if build.rust_toolchain ~= 'system' then
+            local name = string.format('rust-%s%s', build.rust_toolchain,
+                build.system and '-'..build.system or '')
+            local rust_toolchain = self:define_package {
+                name   = name,
+                config = config,
+                build = {
+                    type      = 'rust-toolchain',
+                    toolchain = 'rustup:host',
+                    name      = build.rust_toolchain,
+                    system    = build.system
+                },
+                export = {
+                    env = {
+                        RUSTUP_HOME = '$rustup_env_RUSTUP_HOME',
+                        CARGO_HOME = '$rustup_env_CARGO_HOME'
                     }
                 }
-                out[name] = rust_toolchain
-                self:collect_require(pkg, name, Context:new { name = pkg.name, config = config })
-                this.uses = append_uniq(name, this.uses)
-                self.has_rust_rules = true
-            end
+            }
+            out[name] = rust_toolchain
+            self:collect_require(this._pkg, name, Context:new { name = this.name, config = this.config })
+            this.uses = append_uniq(name, this.uses)
+            self.has_rust_rules = true
         end
     end
+
     table.assign(self.packages, out)
+
     return out
 end
 
