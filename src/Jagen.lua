@@ -888,7 +888,7 @@ function Jagen.command.list(args)
     end
 
     for _, pkg in ipairs(pkg_list) do
-        io.write(pkg.name, pkg:format_contexts(start_col, start_col - #pkg.name), '\n')
+        io.write(pkg.name, Rules:format_contexts(pkg, start_col, start_col - #pkg.name), '\n')
     end
 
     return true
