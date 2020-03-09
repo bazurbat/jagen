@@ -796,6 +796,8 @@ function Jagen.command.build(args)
     return ok
 end
 
+Jagen.command['rebuild'] = Jagen.command.build
+Jagen.command['re'] = Jagen.command.build
 Jagen.command['do'] = Jagen.command.build
 
 function Jagen.command.source(args)

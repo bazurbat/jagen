@@ -27,7 +27,7 @@ _jagen_complete() {
 
     local help_opt='-h --help'
     local ignore_opt='-y --ignore-dirty -Y --ignore_exclude'
-    local top_cmds='help clean refresh build do source src list update'
+    local top_cmds='help clean refresh build rebuild do re source src list update'
     local clean_opt="-m --match -x --exclude $ignore_opt"
     local src_cmds='dirty status clean update delete each'
     local src_clean_opt="$ignore_opt"
