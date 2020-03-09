@@ -714,36 +714,49 @@ function Jagen.command.build(args)
         end
     end
 
+    local function match(s, p)
+        return not s and not p or
+               p and #p == 0 or
+               s and p and s:match(p)
+    end
+
     local not_found_args = {}
     for arg in each(args) do
         local found = false
-        local namep, stagep = unpack(map(string.to_pattern, arg:split(':', 1)))
-        for name, pkg in iter(packages, filter(function (_, name) return name:match(namep) end)) do
-            for target in pkg:each() do
-                if not stagep then
-                    if arg_clean or target.stage ~= 'clean' then
-                        targets[tostring(target)] = true found = true
-                    end
-                elseif target:to_stage():match(stagep) then
-                    if arg_clean or target.stage ~= 'clean' or stagep:match('^%^clean%$$') or stagep:match('^%^clean%%%:') then
-                        targets[tostring(target)] = true found = true
-                    end
-                end
-            end
-            if arg_clean and stagep then
-                for target in pkg:each() do
-                    if target:to_stage():match(stagep) then
-                        local key = tostring(Target.from_args(target.name, 'clean', target.config))
-                        if not targets[key] then
-                            targets[key] = false
-                        end
-                        found = true
-                    end
-                end
-            end
+        local parts = arg:split(':')
+        local arg_stage = parts[2]
+        local name_pat, stage_pat, config_pat = unpack(map(string.to_pattern, parts))
+
+        local function by_name(pkg)
+            return match(pkg.name, name_pat)
         end
-        if not found then
-            append(not_found_args, arg)
+        local function add(target)
+            targets[tostring(target)] = true found = true
+        end
+
+        for name, pkg in filter(by_name)(pairs(packages)) do
+            for target in pkg:each() do
+                if arg_stage then
+                    if target.stage == 'clean' then
+                        if (arg_clean or arg_stage == 'clean') and match(target.config, config_pat) then
+                            add(target)
+                        end
+                    elseif match(target.stage, stage_pat) and match(target.config, config_pat) then
+                        add(target)
+                    end
+                else
+                    if target.stage == 'clean' then
+                        if arg_clean then
+                            add(target)
+                        end
+                    else
+                        add(target)
+                    end
+                end
+            end
+            if not found then
+                append(not_found_args, arg)
+            end
         end
     end
 
