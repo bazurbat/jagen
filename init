@@ -133,7 +133,7 @@ parse_command_line() {
         --skip-config)
             init_skip_config=1 ;;
         -p|--project)
-            say "the option --project (-p) is not used anymore and is deprecated; the mode is now determined automatically" ;;
+            init_project=1 ;;
         -a|--flag)
             jagen_flags="$jagen_flags $2"; shift ;;
         -j|--jagen-branch)
@@ -236,7 +236,7 @@ EOF
 }
 
 main() {
-    local layer path item
+    local layer path item op_name
 
     jagen_dir=$(dirname "$0")
 
@@ -282,11 +282,7 @@ main() {
         esac
     done
 
-    if [ -f "jagen-rules.lua" ] ||
-       ! [ -f "jagen" -o -f "env.sh" -o -f "config.sh" ] &&
-       [ "$(ls)" ]
-    then
-        init_project=1
+    if [ "$init_project" ]; then
         : ${jagen_root_dir:=jagen-root}
     fi
 
@@ -294,7 +290,6 @@ main() {
         if ! [ -d "$jagen_root_dir" ]; then
             say "creating a directory '$jagen_root_dir'"
             mkdir -p "$jagen_root_dir"
-            init_created_root_dir=1
         fi
     fi
 
@@ -339,10 +334,16 @@ main() {
     done
     jagen_layers=${jagen_layers:+${jagen_layers}${NL}}
 
-    if [ "$jagen_project_dir" ]; then
-        say "initializing '$jagen_root_dir' as a workspace for a project in '$(real_path "$jagen_project_dir")'"
+    if [ -f "$env_file" -a -f "$config_file" ]; then
+        op_name='reinitializing'
     else
-        say "initializing '$jagen_root_dir' as a workspace"
+        op_name='initializing'
+    fi
+
+    if [ "$jagen_project_dir" ]; then
+        say "$op_name '$jagen_root_dir' as a workspace for a project in '$(real_path "$jagen_project_dir")'"
+    else
+        say "$op_name '$jagen_root_dir' as a workspace"
     fi
 
     jagen_ninja_version=$(ninja --version)
@@ -351,7 +352,7 @@ main() {
     write_runner
     if [ -z "$init_skip_config" ]; then
         if [ -f "$config_file" ]; then
-            say "backing up an existing config as '${config_file}.bak'"
+            say "backing up an existing ${config_file} as ${config_file}.bak"
             cp -f "$config_file" "${config_file}.bak"
         fi
         write_config "$config_file"
