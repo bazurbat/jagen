@@ -54,7 +54,7 @@ _jagen_complete() {
             ;;
         refresh)
             COMPREPLY=($(compgen -W "$help_opt" -- "$cur")) ;;
-        build|do)
+        build|do|rebuild|re)
             COMPREPLY=($(compgen -W "$help_opt $build_opt $(cat "$names_file") $(cat "$targets_file")" -- "$cur")) ;;
         src|source)
             if [[ "$prev" == "source" ]] || [[ "$prev" == "src" ]]; then
