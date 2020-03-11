@@ -56,81 +56,70 @@ and [Yocto](https://www.yoctoproject.org).
 
 ## Getting Started
 
-A separate directory containing source code, build artifacts, downloaded distribution archives, as
-well as Jagen's own related auxiliary files (such as build logs), is called a "workspace",  a "root
-directory" or a "build root" interchangeably. Build roots can consist of multiple layers describing
-a project's components and environment which are merged together to form a complete build system.
+A directory which groups related source code, distribution archives, build artifacts and other
+auxiliary files, is called a "workspace", a "root directory" or a "build root" interchangeably.
+Build roots can consist of multiple layers defining a project's environment and components which are
+merged together according to rules to form a complete build system.
 
-To initialize a new workspace for an existing project using Jagen which has its layers already
-prepared pipe Jagen's init script into the shell passing layers paths or URLs as arguments:
+To start using Jagen create a directory for the workspace and make it current:
 
 ```
-curl -fsSL https://git.io/fhyEM | sh -s -- [OPTIONS...] [URLs...]
+mkdir jagen-root && cd jagen-root
 ```
 
-For example, to create a workspace preconfigured with a [tutorial
-layer](https://github.com/bazurbat/jagen-start) located at https://github.com/bazurbat/jagen-start
-use the command:
+Initialize this directory by piping Jagen's init script into the shell:
+
+```
+curl -fsSL https://git.io/fhyEM | sh
+```
+
+Create a `rules.lua` file and add your rules there. Use the generated `./jagen` script to run the
+build system.
+
+If you already have some layers prepared pass their URLs to the shell after the `--`. For example,
+to create a workspace preconfigured with a [tutorial layer](https://github.com/bazurbat/jagen-start)
+located at https://github.com/bazurbat/jagen-start use the command:
 
 ```
 curl -fsSL https://git.io/fhyEM | sh -s -- https://github.com/bazurbat/jagen-start
 ```
 
-This will create a directory named `jagen-root` in the current working directory, clone Jagen's and
-the tutorial layer's repositories inside it and generate the build system. You can immediately build
-it using the command:
+See a list of defined packages:
 
 ```
-./jagen-root/jagen build
+./jagen list packages
+```
+
+Run the build system:
+
+```
+./jagen build
 ```
 
 During the build, Jagen will download/clone sources and run packages configure/compile/install
-stages in order as needed until everything is done. You can find the results in a `jagen-root/host`
-directory which can be considered a "staging" directory for packages build using the system's native
+stages in order as needed until everything is done. You can find the results in a `host`
+subdirectory which is used as a default staging directory for packages using the system's native
 toolchain.
 
-To create a workspace with a different name instead of `jagen-root` pass the `-d` option to the
-`init` script:
+To modify the list of layers or flags or refresh the generated environment for an existing workspace
+run the `init` script again with the appropriate arguments inside the workspace's directory. To
+guard against unexpected changes to the script in the master branch rerun it from the local copy
+which was cloned during the workspace creation:
 
 ```
-curl -fsSL https://git.io/fhyEM | sh -s -- -d myproject https://github.com/bazurbat/jagen-start
+./.jagen/init [OPTIONS...]
 ```
 
-The workspaces created this way are self-contained by default, i.e. each has its own copy of Jagen,
-environment setup scripts, source code, staging directories, downloaded distributions cache, etc. It
-is possible to customize this setup to have any of those directories outside of the build root if
-needed.
-
-To change the list of layers, flags or directories for an already existing workspace you can edit
-the `config.sh` file inside its root or run the `init` script again with the appropriate arguments.
-The `init` script will refuse to initialize an existing non-empty directory, so it is required to
-pass an additional `-f` argument in this case. To run the same `init` script which was used to
-create the workspace you can run the local copy instead of piping it from GitHub:
-
-```
-cd myproject
-./.jagen/init -f [OPTIONS...]
-```
-
-This form initializes the current working directory as a workspace. An existing `config.sh` file if
-found is saved as `config.sh.bak`.
-
-To create a new empty workspace without any predefined packages omit the layer URL when running the
-`init`:
-
-```
-curl -fsSL https://git.io/fhyEM | sh -s -- -d jagen-test
-```
+For more complex configuration changes than just setting flags or layers edit the `config.sh` file
+manually. Do not rerun the `init` script in this case because it generates the default `config.sh`.
 
 To download rules from the tutorial layer for experiments:
 
 ```
-cd jagen-test
 curl -fsSL https://raw.githubusercontent.com/bazurbat/jagen-start/master/rules.lua > rules.lua
 ```
 
-Edit the resulting `rules.lua` file as needed and run or rerun the `./jagen build` command to bring
-the build root up to date.
+Edit the `rules.lua` file and rerun the `./jagen build` command to bring the workspace up to date.
 
 ## Package Rules
 
