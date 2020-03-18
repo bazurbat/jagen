@@ -59,12 +59,12 @@ jagen_stage_export() {
     local outfile="$(pkg__export_fname "$pkg_name" "$pkg_config")"
     if [ "$pkg_config" ]; then
         prefix="pkg__${pkg_config}__export"
-        content="${name}_install_dir='$pkg_install_dir'"
+        content="export ${name}_install_dir='$pkg_install_dir'"
     else
         prefix="pkg_export"
     fi
     for key in $(set | jagen_esed -n "s/^${prefix}_([[:alnum:]_]+)=.*/\1/p"); do
-        content="${content}${jagen_S}${name}_${key}='$(eval echo \"\$${prefix}_${key}\")'"
+        content="${content}${jagen_S}export ${name}_${key}='$(eval echo \"\$${prefix}_${key}\")'"
     done
     content=${content#$jagen_S}
     echo "$content" > "$outfile"
