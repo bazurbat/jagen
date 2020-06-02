@@ -48,6 +48,7 @@ pkg__curl() {
 
 pkg_run_patch() {
     local num="${1:?}" filename="${2:?}"
+    message "applying patch '$filename' ($num)"
     pkg_run patch -p"$num" -i "$filename"
 }
 
