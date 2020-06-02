@@ -123,7 +123,7 @@ pkg__unpack_dist() {
             pkg_run chmod +x "$dist_path"
             return ;;
         */zip)
-            pkg_run unzip "$dist_path"
+            pkg_run unzip -o "$dist_path"
             return ;;
     esac
 
