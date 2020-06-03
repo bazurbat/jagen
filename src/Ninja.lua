@@ -45,6 +45,17 @@ local function escape(s)
     return s
 end
 
+local function nonempty(list)
+    local out = {}
+    for i = 1, #list do
+        local item = list[i]
+        if item and item ~= '' then
+            table.insert(out, item)
+        end
+    end
+    return out
+end
+
 local function join(list)
     return concat(list)
 end
@@ -287,9 +298,7 @@ function P.generate(out_file, rules)
         format_rule('stage', join {
                 separated(Jagen.shell), 'jagen-stage $args'
             }),
-        format_rule('refresh', join {
-                Jagen.shell, System.expand('$jagen_root_dir/jagen')..' refresh'
-            })
+        format_rule('refresh', join_space(nonempty { Jagen.shell, System.expand('$jagen_root_dir/jagen'), 'refresh' }))
     }
 
     local for_refresh = Jagen:find_for_refresh()
