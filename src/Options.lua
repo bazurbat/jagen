@@ -64,7 +64,7 @@ local function result_tostring(self)
         table.insert(lines, value)
     end
     for k, v in pairs(self) do
-        if v == true then
+        if type(v) == 'table' then
             append(string.format('--%s', k))
         end
     end
@@ -126,7 +126,10 @@ function P:parse(args)
                 return read_value(n+1, opt)
             end
         else
-            result[name] = true
+            if not result[name] then
+                result[name] = {}
+            end
+            result[name].long = true
         end
         return read_nth(n+1)
     end
@@ -153,7 +156,10 @@ function P:parse(args)
                 return read_value(n+1, opt)
             end
         else
-            result[opt.long] = true
+            if not result[opt.long] then
+                result[opt.long] = {}
+            end
+            result[opt.long].short = true
             return read_optstring(n, rest)
         end
     end
