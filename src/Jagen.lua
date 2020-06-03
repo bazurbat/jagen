@@ -343,15 +343,29 @@ local function help_requested(args)
         (args[1] == '-h' or string.match(args[1], '^%--help$'))
 end
 
-function Jagen.command.help(args)
-    section = args[1] or 'usage'
+function Jagen.command.help(args, short)
+    topic = args[1] or 'usage'
     local help = require 'help'
-
-    if help[section] then
-        io.write(help[section])
-    else
-        Log.error('no such help section: %s', section)
+    local section = help[topic]
+    if not section then
+        Log.error('no such help topic: %s', topic)
         return 2
+    elseif type(section) == 'table' then
+        if section['usage'] then
+            io.write(section['usage'])
+        end
+        if section['synopsis'] then
+            if short then
+                io.write(string.format([[
+  Use the command 'jagen help %s' or '--help' argument for more information.
+
+]], topic))
+            else
+                io.write(section['synopsis'])
+            end
+        end
+    elseif type(section) == 'string' then
+        io.write(section)
     end
 end
 
@@ -694,7 +708,7 @@ function Jagen.command.build(args)
     args = options:parse(args)
     if not args then return false end
     if args['help'] then
-        return Jagen.command['help'] { 'build' }
+        return Jagen.command['help']({ 'build' }, args['help'].short)
     end
 
     local packages = Rules:load()

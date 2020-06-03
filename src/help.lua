@@ -77,7 +77,8 @@ Usage: jagen refresh
 
 ]]
 
-local build = [[
+local build = {
+    usage = [[
 Usage: jagen build [OPTION...] [PATTERN...] [--] [TOOL OPTIONS...]
 
   Builds or rebuilds the specified targets.
@@ -101,6 +102,7 @@ OPTIONS
 
   Use the command 'jagen help targets' for information about targets.
 
+]], synopsis = [[
 SYNOPSIS
 
   The specified patterns are expanded and matching targets are rebuilt. Use the
@@ -146,6 +148,7 @@ SYNOPSIS
   their build commands which might have surprising results.
 
 ]]
+}
 
 local targets = [[
 
