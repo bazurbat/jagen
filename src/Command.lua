@@ -28,11 +28,11 @@ end
 
 function Command:exec()
     local cmdstr = tostring(self) Log.debug1(cmdstr:escape_format())
-    local ok = os.execute(cmdstr)
+    local ok, how, status = os.execute(assert(cmdstr))
     if type(ok) == 'number' then
-        return ok == 0 -- Lua 5.1
+        return ok == 0      -- Lua 5.1
     else
-        return ok      -- Lua 5.2
+        return status == 0  -- Lua 5.2
     end
 end
 
