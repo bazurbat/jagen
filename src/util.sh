@@ -47,9 +47,28 @@ pkg__curl() {
 }
 
 pkg_run_patch() {
-    local num="${1:?}" filename="${2:?}"
+    local num="${1:?}" filename="${2:?}" out sts
     message "applying patch '$filename' ($num)"
-    pkg_run patch -p"$num" -i "$filename"
+    debug1 patch -r- -N -p"$num" -i "$filename"
+    out=$(LC_LANG=C patch -r- -N -p"$num" -i "$filename"); sts=$?
+    # print the captured output to make it visible in the logs
+    echo "$out"
+    if [ $sts = 1 ]; then
+        # When patch encounters errors it exits with status 1. But we do not
+        # want to count the case when there were no other problems except
+        # skipping already applied chunks as an error to allow running patch
+        # stages more than once. This not always works though.
+        echo "$out" | awk -vRS='patching ' -vFS='\n' '!/^$/ && ( \
+            $1 !~ /^file / ||
+            $2 != "Reversed (or previously applied) patch detected!  Skipping patch." ||
+            $3 !~ /^[[:digit:]]+ out of [[:digit:]]+ hunks? ignored$/) \
+                { exit 3 }'
+        sts=$?
+    fi
+    jagen__last_error=$sts
+    if [ "$jagen__last_error" != 0 ]; then
+        $pkg_run_on_error
+    fi
 }
 
 pkg_strip_root() {
