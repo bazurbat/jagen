@@ -8,55 +8,69 @@ pkg_args="$@"
 
 . "${jagen_dir:?}/src/stages.sh" || exit
 
-pkg__stamp_name="${pkg_name}:${pkg_stage}${pkg_config:+:${pkg_config}}"
-pkg__stamp_file="${jagen_build_dir:?}/${pkg__stamp_name}"
-pkg__log_file="${jagen_log_dir:?}/${pkg__stamp_name}.log"
+pkg__target="${pkg_name}:${pkg_stage}${pkg_config:+:${pkg_config}}"
+pkg__stamp_file="${jagen_build_dir:?}/${pkg__target}"
+pkg__log_file="${jagen_log_dir:?}/${pkg__target}.log"
+pkg__stdout=3
+pkg__stderr=4
 
-exec 3>&1
+# the source fd can only be a literal number
+exec 3>&1 4>&2
 : >"$pkg__log_file"
 
-_on_exit() {
-    # The tee is not running at this point and writing to pipe causes silent
-    # failure after a few attempts and the current shell will just exit without
-    # finishing the cleanup. We need to redirect the rest of the cleanup output
-    # back to a log file to avoid this.
-    if [ "$pkg__pipe" ]; then
-        exec >>"$pkg__log_file" 2>&1
-        pkg__rm "$pkg__pipe"
-    fi
+pkg__on_exit() {
+    # dash calls an exit handler before an int handler with the status 130 when
+    # errexit is active, just ignore this
+    [ $1 = EXIT -a $2 = 130 ] && return
+    # do not allow a recursive call which can happen in dash and ash if the
+    # handler is too slow and a user is too quick pressing CTRL-C multiple times
+    trap '' INT
+    # make sure we are in a known state, do not interrupt the handler on error
+    set +e
+
+    local err=$2
 
     pkg__download_cleanup
 
-    if [ -z "$jagen__stage_verbose" ]; then
-        if [ "$jagen__last_error" != 0 ] && ! in_list "$pkg__log_file" $jagen__cmd_logs; then
-            # In the case when the output is buffered by ninja and the command
-            # was interrupted the output will be discarded and cat will not
-            # print anything. This is actually what we want in this case.
-            cat "$pkg__log_file" 1>&3
-        fi
+    # the int handler is called with the status 130 except in dash with errexit
+    # where it is called with 0 after the first command of an exit handler
+    if [ $err != 0 -a $err != 130 ]; then
+        printf "${pkg__target}\t${pkg__log_file}\n" >>"$jagen__cmd_failed_targets_file"
     fi
-    [ $jagen__last_error = 0 ] || exit $jagen__last_error
+
+    if [ -s "$pkg__log_file" ]; then
+        printf "\\034" >>"$pkg__log_file"
+    fi
+
+    if [ $1 = INT ]; then
+       # exit indicating an interrupt to a parent shell, Bash in particular
+       # requires this to distiguish an error exit from a user interrupt
+       trap INT && kill -INT $$
+    fi
+
+    # when the shell is in fact dash and the INT trap was activated due to an
+    # errexit condition, we will still reach here despite the kill above
 }
 
-# Do not allow to interrupt the stage. Commands running through pkg_run will
-# still receive SIGINT and expected to exit with non zero status (usually 130)
-# which pkg_run will recognise and call exit by itself.
-trap : INT
-trap _on_exit EXIT
+# we need to trap both INT and EXIT to have an opportunity to workaround the
+# discrepancies of signal handling between different shells
+trap 'pkg__on_exit INT $?' INT
+trap 'pkg__on_exit EXIT $?' EXIT
 
-if [ "$jagen__stage_verbose" ]; then
-    pkg__pipe=$(mktemp -u /tmp/jagen.XXXXXXXX)
-    mkfifo "$pkg__pipe" || exit 1
-    # no need to save a pid and kill tee manually because it finishes when
-    # the current shell closes the pipe on exit
-    tee <"$pkg__pipe" -a "$pkg__log_file" &
-    exec >"$pkg__pipe" 2>&1
-else
-    if [ "$jagen__stage_quiet" ] || [ -z "$jagen__has_console" ] ||
-        ! in_list "$pkg_name:$pkg_stage${pkg_config:+:$pkg_config}" $jagen__stage_targets
-    then
-        exec >>"$pkg__log_file" 2>&1
-    fi
+if [ "$jagen__cmd_verbose" ]
+then
+    pkg__pipe=$(mktemp -u /tmp/jagen.XXXXXXXX) || exit
+    mkfifo "$pkg__pipe" || exit
+    # tee will exit by itself when this process will close all fds associated
+    # with the pipe, this will happen on exit automatically
+    tee <"$pkg__pipe" -a "$pkg__log_file" || exit &
+    exec >"$pkg__pipe" 2>&1 || exit
+    # unlink a filesystem object, the pipe will exist as long as open fds
+    rm -f "$pkg__pipe" || exit
+elif [ "$jagen__cmd_quiet" ] || ! [ "$jagen__has_console" ] ||
+    ! in_list "$pkg__target" $jagen_cmd_targets
+then
+    exec >>"$pkg__log_file" 2>&1 || exit
 fi
 
 cd "$jagen_build_dir" || exit
@@ -158,7 +172,7 @@ for name in $(set | jagen_esed -n 's/^pkg_env_([[:alnum:]_]+)=.*/\1/p'); do
 done; unset name
 
 # expand single-quoted pkg_* and collected variables
-eval "$(jagen__expand "$(set | grep -e '^pkg_' $pkg__expand_names)")"
+eval "$(jagen__expand "$(set | egrep '^pkg_\w+=' $pkg__expand_names)")"
 
 unset pkg__expand_names
 
@@ -184,14 +198,14 @@ if [ -z "$jagen_recursive" ]; then
     if [ "$pkg_config" ]; then
         if [ "$pkg_stage" = 'install' ] && [ "$pkg_install_spawn_name" ]; then
             pkg__spawn "$pkg_install_spawn_name"
-            return
+            exit
         elif [ "$pkg_build_spawn_name" ]; then
             pkg__spawn "$pkg_build_spawn_name"
-            return
+            exit
         fi
     elif [ "$pkg_spawn_name" ]; then
         pkg__spawn "$pkg_spawn_name"
-        return
+        exit
     fi
 fi
 
@@ -221,21 +235,24 @@ case $pkg_stage in
         ;;
 esac
 
-run_stage() {
-    local stage pkg
-    stage=$(echo "$1" | sed 's/-/_/')
-    pkg="$pkg_name${pkg_config:+ ($pkg_config)}"
+pkg__try_stages="jagen_pkg_${pkg_stage} jagen_stage_${pkg_stage}"
+if [ "$pkg_config" ]; then
+    pkg__try_stages="\
+jagen_pkg_${pkg_stage}_${pkg_config} \
+jagen_stage_${pkg_stage}_${pkg_config} \
+$pkg__try_stages"
+fi
+pkg__try_stages=$(echo "$pkg__try_stages" | sed 's/-/_/g')
 
-    if is_function "$stage"; then
-        eval "$stage" $pkg_args || exit
-    else
-        return 2
+for pkg__current_stage in $pkg__try_stages; do
+    if is_function "$pkg__current_stage"; then
+        # this command should remain unchecked for errexit to be able to
+        # interrupt the function as expected
+        eval "$pkg__current_stage" $pkg_args; pkg__err=$?
+        # an error status always causes an exit regardless of errexit
+        [ $pkg__err = 0 ] || exit $pkg__err
+        break
     fi
-}
-
-run_stage "jagen_pkg_${pkg_stage}_${pkg_config}" ||
-run_stage "jagen_stage_${pkg_stage}_${pkg_config}" ||
-run_stage "jagen_pkg_${pkg_stage}" ||
-run_stage "jagen_stage_${pkg_stage}"
+done
 
 touch "$pkg__stamp_file"

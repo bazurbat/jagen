@@ -1,9 +1,9 @@
 #!/bin/sh
 
+EOF=$(printf \\034)
 S=$(printf '\t')
 
 mode=''
-tail_pid=
 
 die() {
     unset IFS
@@ -11,9 +11,15 @@ die() {
     exit 1
 }
 
-is_wsl() {
-    grep -q Microsoft /proc/version 2>&-
+join() {
+    local sep="$1";
+    printf -- "%s" "$2"
+    shift 2
+    if [ $# -gt 0 ]; then
+        printf -- "${sep}%s" "$@"
+    fi
 }
+
 
 assert_ninja_found() {
     if [ -z "$(command -v ninja)" ]; then
@@ -22,17 +28,12 @@ Ninja (https://ninja-build.org) to run the build system."
     fi
 }
 
-cleanup() {
-    if [ "$tail_pid" ]; then
-        kill "$tail_pid"
-        tail_pid=
-    fi
-}
-
 cmd_build() {
-    local IFS="$(printf '\n\t')"
-    local build_all no_rebuild follow_selected follow_all show_all is_quiet
-    local targets log logs sts build_log="${jagen_log_dir:?}/build.log"
+    local IFS="$S"
+    local build_all no_rebuild follow_selected follow_all print_all is_quiet
+    local targets log logs err tries follow_pid pipe
+    local build_log="${jagen_log_dir:?}/build.log"
+    local outfile="${jagen_log_dir:?}/output.txt"
 
     assert_ninja_found
 
@@ -40,9 +41,9 @@ cmd_build() {
         case $1 in
             --all) build_all=1 ;;
             --no-rebuild) no_rebuild=1 ;;
-            --progress) show_all=1 ;;
             --follow) follow_selected=1 ;;
             --follow-all) follow_all=1 ;;
+            --progress) print_all=1 ;;
             --quiet) is_quiet=1 ;;
             --exclude) export jagen__force_exclude=1 ;;
             --clean-ignored) export jagen__clean_ignored=1 ;;
@@ -54,58 +55,120 @@ cmd_build() {
         esac
         shift
     done
+    targets=${targets#$S}; logs=${logs#$S}
 
-    export jagen__stage_targets="$targets"
+    export jagen_cmd_targets="$targets"
+    export jagen__cmd_failed_targets_file="$jagen_build_dir/.build-failed-targets"
 
     cd "$jagen_build_dir" || return
 
+    : > "$jagen__cmd_failed_targets_file" || return
     : > "$build_log" || return
     for log in $logs; do
         : > "$log" || return
     done
 
-    [ "$build_all" ] && targets=
-
-    if [ -z "$no_rebuild" ]; then
-        rm -f $targets || return
+    if [ "$build_all" ]; then
+        targets=
     fi
 
-    trap 'exit 2' INT
-    trap cleanup EXIT
+    if [ -z "$no_rebuild" ]; then
+        rm -f $targets
+    fi
 
-    if [ "$is_quiet" -o "$follow_all" ]; then
-        export jagen__stage_quiet=1
-    elif [ "$show_all" ]; then
-        export jagen__stage_verbose=1
+    # do nothing on CTRL-C, Ninja will still receive it and exit by itself with
+    # an appropriate status, we will proceed with the specific handling
+    trap : INT
+
+    if [ "$is_quiet" -o "$follow_selected" -o "$follow_all" ]; then
+        export jagen__cmd_quiet=1
+    elif [ "$print_all" ]; then
+        export jagen__cmd_verbose=1
     fi
 
     if [ ! "$is_quiet" ]; then
+        if [ "$follow_selected" -o "$follow_all" ]; then
+            pipe=$(mktemp -u) && mkfifo "$pipe" || return
+            # tee exits by itself when pipe closes after we kill tail
+            tee "$outfile" <"$pipe" &
+        fi
         if [ "$follow_selected" ]; then
-            tail -qFc0 "$build_log" $logs 2>/dev/null &
-            tail_pid=$!
-            export jagen__cmd_logs="$logs"
+            tail -qFc0 "$build_log" $logs >"$pipe" 2>/dev/null &
+            follow_pid=$!
         elif [ "$follow_all" ]; then
-            tail -qFc0 "$jagen_log_dir"/*.log 2>/dev/null &
-            tail_pid=$!
+            tail -qFc0 "$jagen_log_dir"/*.log >"$pipe" 2>/dev/null &
+            follow_pid=$!
+        fi
+        if [ "$pipe" ]; then
+            rm "$pipe"
         fi
     fi
 
-    if [ "$tail_pid" ]; then
-        # redirecting the output to the build log is needed to let tail buffer
-        # it because otherwise when ninja writes to the console at the same
-        # time as tail the lines often mix with each other
-        ninja $targets >"$build_log" 2>&1; sts=$?
-        if is_wsl; then
-            # the console on Windows is really slow
-            sleep 0.5
-        else
-            sleep 0.1
+    if [ "$follow_pid" ]; then
+        # capture Ninja messages to a file to pass it through tail, otherwise
+        # it writes to the console in parallel and mangles the output
+        ninja $targets > "$build_log" 2>&1; err=$?
+
+        # Ninja returns 2 when interrupted and discards a buffered output, we
+        # assume the user wants the command line immediately, so no wait
+        if [ $err != 2 ]; then
+            # in the case when the final message is from Ninja we need to
+            # ensure its log file ends with the EOF marker too, otherwise the
+            # following loop will wait for nothing
+            printf $EOF >> "$build_log"
+
+            # when monitoring multiple files a write can end with the EOF
+            # marker at the exact moment of the check while there is still more
+            # data pending; we consider a probability of this negligibly small
+            tries=30 # 3 seconds
+            until [ "$(tail -c1 "$outfile")" = $EOF ]; do
+                tries=$((tries-1)); [ $tries = 0 ] && break
+                sleep 0.1
+            done
+        fi
+
+        kill $follow_pid
+        # waiting with redirecting stderr here allows to get rid of a
+        # "Terminated: ..." message from Bash
+        wait $follow_pid 2>/dev/null
+
+        # this could happen if the terminal is very slow (WSL?), just in case
+        # notify the user that the output is not complete
+        if [ "$tries" = 0 ]; then
+            printf '\n%s\n' "-- jagen: timed out while waiting for the console to flush, output truncated, see logs for the rest"
         fi
     else
-        ninja $targets; sts=$?
+        ninja $targets; err=$?
     fi
 
-    return $sts
+    if [ -s "$jagen__cmd_failed_targets_file" ]; then
+        local targets= num= limit=1000
+        while read target log; do
+            targets="${targets}${S}${target}"
+            num=$(cat "$log" | wc -l)
+            if [ $num -gt 0 ]; then
+                printf -- '\n-- jagen: failed target: %s\n' "$target"
+                if [ $num -lt $limit ]; then
+                    printf -- '-- %s\n' "$log"
+                    cat "$log"
+                elif [ $num -ge $limit ]; then
+                    printf -- '-- the last %d lines of %s\n' $limit "$log"
+                    # +1 because it counts a EOF marker as a line
+                    tail -n $((limit+1)) "$log"
+                fi
+                printf -- '-- EOF %s\n' "$log"
+            fi
+        done < "$jagen__cmd_failed_targets_file"
+        targets=${targets#$S}
+        set -- $targets
+        if [ $# = 1 ]; then
+            printf -- '\n-- jagen: build stopped: target failed: %s\n' "$targets"
+        elif [ $# -gt 1 ]; then
+            printf -- '\n-- jagen: build stopped: %s targets failed: %s\n' "$#" "$(join ', ' $targets)"
+        fi
+    fi
+
+    return $err
 }
 
 cmd_image() {

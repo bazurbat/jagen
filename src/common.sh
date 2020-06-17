@@ -558,3 +558,7 @@ jagen_get_file_checksum() {
     out=$("$prog" "$file")
     [ $? = 0 ] && echo "$out" | awk '{print $1}'
 }
+
+jagen_system_is_wsl() {
+    grep -q Microsoft /proc/version 2>&-
+}
