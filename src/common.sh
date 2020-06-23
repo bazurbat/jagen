@@ -2,6 +2,22 @@
 
 jagen__last_error=0
 
+jagen_sh_word_split_begin() {
+    if [ "${ZSH_VERSION-}" ]; then
+        case $- in
+            *y*) ;;
+              *) setopt sh_word_split
+                 jagen__field_split='+y' ;;
+        esac
+    fi
+}
+
+jagen_sh_word_split_end() {
+    if [ "${ZSH_VERSION-}" -a "${jagen__field_split-}" ]; then
+        set "$jagen__field_split"
+    fi
+}
+
 message() {
     printf "(I) %s\n" "$*"
 }
@@ -150,14 +166,16 @@ in_list() {
 }
 
 list_remove() {
-    local S="${1:?}" value="${2:?}"; shift 2
-    local result=
-    local IFS="$S"
+    local S V I R=
+    S=${IFS%${IFS#?}} # get the first char only
+    V=${1:?}; shift
+    jagen_sh_word_split_begin
     set -- $@
-    for item; do
-        [ "$item" = "$value" ] || result="$result$S$item"
+    jagen_sh_word_split_end
+    for I; do
+        [ "$I" = "$V" ] || R="$R$S$I"
     done
-    echo "${result#$S}"
+    echo "${R#$S}"
 }
 
 real_path() {
@@ -181,14 +199,14 @@ in_flags() {
 
 add_PATH() {
     : ${1:?}
-    PATH="$1":$(list_remove : "$1" $PATH)
-    PATH="${PATH%:}"
+    PATH=${1}:$(IFS=: list_remove "$1" "$PATH")
+    PATH=${PATH%:}
 }
 
 add_LD_LIBRARY_PATH() {
     : ${1:?}
-    LD_LIBRARY_PATH="$1":$(list_remove : "$1" ${LD_LIBRARY_PATH-})
-    LD_LIBRARY_PATH="${LD_LIBRARY_PATH%:}"
+    LD_LIBRARY_PATH=${1}:$(IFS=: list_remove "$1" "${LD_LIBRARY_PATH-}")
+    LD_LIBRARY_PATH=${LD_LIBRARY_PATH%:}
 }
 
 _jagen() {

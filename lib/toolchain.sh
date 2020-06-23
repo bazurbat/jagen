@@ -61,7 +61,7 @@ toolchain_get_lib_dir() {
 toolchain_generate_wrappers() {
     local src_dir="${1:?}" prefix="$2" dest_dir="${jagen_bin_dir:?}"
     local IFS="$jagen_IFS" S="$jagen_S"
-    local PATH="$(list_remove : "$dest_dir" $PATH)"
+    local PATH="$(IFS=: list_remove "$dest_dir" "$PATH")"
     local item item2 paths dest
 
     [ -d "$dest_dir" ] || \

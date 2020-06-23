@@ -1,12 +1,5 @@
 #!/bin/sh
 
-# We are trying to carefully handle the field splitting according to POSIX
-# behaviour, zsh by default do not split on whitespace which interferes with
-# that.
-if [ "${ZSH_VERSION-}" ]; then
-    setopt shwordsplit
-fi
-
 jagen_S="$(printf '\n!')"; jagen_S=${jagen_S%!}
 jagen_FS="$(printf '\t')"
 jagen_IFS="$(printf '\n\t')"
