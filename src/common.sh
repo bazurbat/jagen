@@ -1,7 +1,5 @@
 #!/bin/sh
 
-jagen__last_error=0
-
 jagen_sh_word_split_begin() {
     if [ "${ZSH_VERSION-}" ]; then
         case $- in
@@ -56,7 +54,6 @@ die() {
     else
         error "$*"
     fi
-    jagen__last_error=$ret
     exit $ret
 }
 

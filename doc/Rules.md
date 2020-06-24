@@ -826,7 +826,7 @@ install = value
 
 - **pkg_name** — the package name of the currently executing stage
 
-- **pkg_run_on_error** — error hook
+- **pkg_run_on_error** — an error hook; obsolete, not used anymore
 
 - **pkg_source** (`source.type source.location`) — concatenated type and
   location into a single variable for the historical reasons (in the past there

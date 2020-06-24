@@ -1,7 +1,5 @@
 #!/bin/sh
 
-: ${pkg_run_on_error:=exit}
-
 pkg__get_jobs() {
     printf "%s" "${pkg_build_jobs:-${jagen_jobs:-$(jagen_nproc)}}"
 }
@@ -25,10 +23,7 @@ pkg_run() {
     esac
 
     debug1 $cmd "$*"
-    $cmd "$@"; jagen__last_error=$?
-    if [ "$jagen__last_error" != 0 ]; then
-        $pkg_run_on_error
-    fi
+    $cmd "$@" || exit
 }
 
 pkg__rm() {
@@ -47,13 +42,13 @@ pkg__curl() {
 }
 
 pkg_run_patch() {
-    local num="${1:?}" filename="${2:?}" out sts
+    local num="${1:?}" filename="${2:?}" out err
     message "applying patch '$filename' ($num)"
     debug1 patch -r- -N -p"$num" -i "$filename"
-    out=$(LC_LANG=C patch -r- -N -p"$num" -i "$filename"); sts=$?
+    out=$(LC_LANG=C patch -r- -N -p"$num" -i "$filename"); err=$?
     # print the captured output to make it visible in the logs
     echo "$out"
-    if [ $sts = 1 ]; then
+    if [ $err = 1 ]; then
         # When patch encounters errors it exits with status 1. But we do not
         # want to count the case when there were no other problems except
         # skipping already applied chunks as an error to allow running patch
@@ -62,13 +57,9 @@ pkg_run_patch() {
             $1 !~ /^file / ||
             $2 != "Reversed (or previously applied) patch detected!  Skipping patch." ||
             $3 !~ /^[[:digit:]]+ out of [[:digit:]]+ hunks? ignored$/) \
-                { exit 3 }'
-        sts=$?
+                { exit 3 }'; err=$?
     fi
-    jagen__last_error=$sts
-    if [ "$jagen__last_error" != 0 ]; then
-        $pkg_run_on_error
-    fi
+    [ $err = 0 ] || exit $err
 }
 
 pkg_strip_root() {
