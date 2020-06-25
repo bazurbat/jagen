@@ -1,5 +1,7 @@
 #!/bin/sh
 
+. "$jagen_dir/src/cprint.sh"
+
 EOF=$(printf \\034)
 S=$(printf '\t')
 
@@ -34,6 +36,7 @@ cmd_build() {
     local targets log logs err tries follow_pid pipe
     local build_log="${jagen_log_dir:?}/build.log"
     local outfile="${jagen_log_dir:?}/output.txt"
+    local c='c'; [ -t 1 ] || c='cs'
 
     assert_ninja_found
 
@@ -135,7 +138,11 @@ cmd_build() {
         # this could happen if the terminal is very slow (WSL?), just in case
         # notify the user that the output is not complete
         if [ "$tries" = 0 ]; then
-            printf '\n%s\n' "-- jagen: timed out while waiting for the console to flush, output truncated, see logs for the rest"
+            # even after tail is killed the console might be still flushing and
+            # the warning will be scrolled up out of the screen, a small delay
+            # might help with that
+            sleep 0.25
+            ${c}println "\n{@}{brown}--{~} jagen: timed out while waiting for the console to flush, the output might be truncated"
         fi
     else
         ninja $targets; err=$?
@@ -147,24 +154,24 @@ cmd_build() {
             targets="${targets}${S}${target}"
             num=$(cat "$log" | wc -l)
             if [ $num -gt 0 ]; then
-                printf -- '\n-- jagen: failed target: %s\n' "$target"
+                ${c}println "\n{@}{red}--{~} jagen: {@}{red}failed target:{~} {@}$target"
                 if [ $num -lt $limit ]; then
-                    printf -- '-- %s\n' "$log"
+                    ${c}println "{@}--{~} $log"
                     cat "$log"
                 elif [ $num -ge $limit ]; then
-                    printf -- '-- the last %d lines of %s\n' $limit "$log"
+                    ${c}println "{@}--{~} the last $limit lines of $log"
                     # +1 because it counts a EOF marker as a line
                     tail -n $((limit+1)) "$log"
                 fi
-                printf -- '-- EOF %s\n' "$log"
+                ${c}println "{@}--{~} EOF $log"
             fi
         done < "$jagen__cmd_failed_targets_file"
         targets=${targets#$S}
         set -- $targets
         if [ $# = 1 ]; then
-            printf -- '\n-- jagen: build stopped: target failed: %s\n' "$targets"
+            ${c}println "\n{@}{red}--{~} jagen: build stopped: {@}{red}target failed:{~} {@}$targets"
         elif [ $# -gt 1 ]; then
-            printf -- '\n-- jagen: build stopped: %s targets failed: %s\n' "$#" "$(join ', ' $targets)"
+            ${c}println "\n{@}{red}--{~} jagen: build stopped: {@}{red}$# targets failed:{~} {@}$(join '{~}, {@}' $targets){~}"
         fi
     fi
 
