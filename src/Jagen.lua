@@ -422,7 +422,7 @@ function Jagen.command.clean(args)
             end
             found = add_matching(pkg, string.format('%s:clean:%s', name, pconf or string.to_stage_pattern('*'))) or found
         end
-        if not found then
+        if not found and not (clean_all and arg == '*') then
             Log.warning('could not find targets matching: %s', arg)
         end
     end
