@@ -577,3 +577,10 @@ jagen_get_file_checksum() {
 jagen_system_is_wsl() {
     grep -q Microsoft /proc/version 2>&-
 }
+
+jagen__uname() {
+    if [ -z "${jagen__uname_cache-}" ]; then
+        jagen__uname_cache=$(uname)
+    fi
+    echo "$jagen__uname_cache"
+}
