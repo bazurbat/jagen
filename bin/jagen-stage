@@ -88,7 +88,7 @@ if [ "$pkg_config" ]; then
     include "$jagen_include_dir/$(pkg__fname "$pkg_name" "$pkg_config")" || exit
     # assign "pkg__<config>__export_*" to "pkg_export_*"
     prefix="pkg__${pkg_config}__export"
-    for key in $(set | jagen_esed -n "s/^${prefix}_([[:alnum:]_]+)=.*/\1/p"); do
+    for key in $(set | sed -E -n "s/^${prefix}_([[:alnum:]_]+)=.*/\1/p"); do
         eval "pkg_export_${key}=\$${prefix}_${key}" || exit
     done; unset prefix key
     # append config-specific uses
@@ -113,7 +113,7 @@ if [ "$pkg_stage" != clean ]; then
         fi
         # assign "<name>_env_*" to "pkg_env_*" if unset
         name=$(jagen_name_to_id "${spec%:*}")
-        for key in $(set | jagen_esed -n "s/^${name}_env_([[:alnum:]_]+)=.*/\1/p"); do
+        for key in $(set | sed -E -n "s/^${name}_env_([[:alnum:]_]+)=.*/\1/p"); do
             eval ": \${pkg_env_${key}=\$${name}_env_${key}}" || exit
         done; unset name key
     done; unset spec
@@ -122,7 +122,7 @@ fi
 pkg__assign_alias() {
     local IFS='='; set -- $1; unset IFS
     local key alias_to="$1" alias_from="$2"
-    for key in $(set | jagen_esed -n "s/^${alias_from}_([[:alnum:]_]+)=.*/\1/p"); do
+    for key in $(set | sed -E -n "s/^${alias_from}_([[:alnum:]_]+)=.*/\1/p"); do
         eval "${alias_to}_${key}=\$${alias_from}_${key}" || return
     done
 }
@@ -139,15 +139,15 @@ if [ "$pkg_stage" != clean ] && [ "$pkg_build_toolchain" ]; then
     fi
     name="$(jagen_name_to_id "${pkg_build_toolchain%:*}")"
     # assign "<toolchain name>_*" to "toolchain_*"
-    for key in $(set | jagen_esed -n "s/^${name}_([[:alnum:]_]+)=.*/\1/p"); do
+    for key in $(set | sed -E -n "s/^${name}_([[:alnum:]_]+)=.*/\1/p"); do
         eval "toolchain_${key}=\$${name}_${key}" || exit
     done; unset name key
     # assign "toolchain_env_*" to "pkg_env_*" if unset
-    for key in $(set | jagen_esed -n "s/^toolchain_env_([[:alnum:]_]+)=.*/\1/p"); do
+    for key in $(set | sed -E -n "s/^toolchain_env_([[:alnum:]_]+)=.*/\1/p"); do
         eval ": \${pkg_env_${key}=\$toolchain_env_${key}}" || exit
     done; unset prefix key
     # assign "toolchain_*" except dirs and flags to "pkg_build_*" if unset
-    for key in $(set | jagen_esed -n '/^toolchain_(dir|source_dir|env|cflags|cxxflags|ldflags)/! s/^toolchain_([[:alnum:]_]+)=.*/\1/p'); do
+    for key in $(set | sed -E -n '/^toolchain_(dir|source_dir|env|cflags|cxxflags|ldflags)/! s/^toolchain_([[:alnum:]_]+)=.*/\1/p'); do
         eval ": \${pkg_build_${key}=\$toolchain_${key}}" || exit
     done; unset key
     use_env cflags
@@ -166,7 +166,7 @@ pkg_install_dir="$pkg_install_root$pkg_install_prefix"
 : ${pkg_build_cmake_module_path=$jagen_cmake_module_path}
 
 # set pkg_env_* in the environment, collecting names for later expand
-for name in $(set | jagen_esed -n 's/^pkg_env_([[:alnum:]_]+)=.*/\1/p'); do
+for name in $(set | sed -E -n 's/^pkg_env_([[:alnum:]_]+)=.*/\1/p'); do
     eval "export $name=\"\$pkg_env_$name\"" || exit
     pkg__expand_names="${pkg__expand_names} -e $name"
 done; unset name

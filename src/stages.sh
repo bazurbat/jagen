@@ -63,7 +63,7 @@ jagen_stage_export() {
     else
         prefix="pkg_export"
     fi
-    for key in $(set | jagen_esed -n "s/^${prefix}_([[:alnum:]_]+)=.*/\1/p"); do
+    for key in $(set | sed -E -n "s/^${prefix}_([[:alnum:]_]+)=.*/\1/p"); do
         content="${content}${jagen_S}export ${name}_${key}='$(eval echo \"\$${prefix}_${key}\")'"
     done
     content=${content#$jagen_S}

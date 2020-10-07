@@ -539,7 +539,6 @@ jagen_get_system() {
 
 case $(uname) in
     Darwin)
-        jagen_esed() { sed -E "$@"; }
         jagen_get_file_size() {
             local size=
             size=$(stat -f'%z' "${1:?}" 2>/dev/null)
@@ -547,7 +546,6 @@ case $(uname) in
         }
         ;;
     *)
-        jagen_esed() { sed -r "$@"; }
         jagen_get_file_size() {
             local size=
             size=$(stat -c'%s' "${1:?}" 2>/dev/null)
