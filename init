@@ -150,10 +150,7 @@ EOF
 write_runner() {
     cat >"$runner_script" <<'EOF'
 #!/bin/sh
-jagen_root_dir=$(cd "$(dirname "$0")" && pwd -P)
-. "$jagen_root_dir/env.sh"; sts=$?
-[ $sts = 0 ] || exit $sts
-_jagen "$@"
+. "$(dirname "$0")/env.sh" && _jagen "$@"
 EOF
     chmod +x "$runner_script"
 }
