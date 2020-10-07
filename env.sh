@@ -57,12 +57,7 @@ if [ "${jagen_private_dir-}" ]; then
     add_PATH "$jagen_private_dir/bin"
 fi
 
-# call once to cache the value
-jagen__uname >/dev/null
-
 # export all jagen_* variables
-jagen__env_globals=$([ "$(jagen__uname)" = Darwin ] && LC_ALL=C
-    set | sed -n 's/^\(jagen_[[:alnum:]][[:alnum:]_]*\)=.*/\1/p')
-for var in $jagen__env_globals; do
+for var in $(set | LC_ALL=C sed -n 's/^\(jagen_[[:alnum:]][[:alnum:]_]*\)=.*/\1/p'); do
     export "$var"
-done; unset var jagen__env_globals
+done; unset var
