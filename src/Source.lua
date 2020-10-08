@@ -306,7 +306,7 @@ function GitSource:_sync_config()
     end
 
     local key = fmt('remote.%s.fetch', origin)
-    local val = self:command('config --get-all', quote(key)):read('*a'):trim()
+    local val = self:command('config --local --get-all', quote(key)):read('*a'):trim()
     if val ~= spec then
         local cmd = self:command('config --replace-all', quote(key), quote(spec))
         if not cmd:exec() then return false end
