@@ -279,8 +279,8 @@ function GitSource:_sync_config()
     if not origin then return true end
 
     if self.location then
-        local url = self:command('remote get-url', quote(origin)):read()
-        if url ~= self.location then
+        local url = self:command('config --local --get', quote('remote.'..origin..'.url')):read()
+        if url and url ~= self.location then
             local cmd = self:command('remote set-url', quote(origin), quote(self.location))
             if not cmd:exec() then return false end
         end
@@ -322,7 +322,7 @@ function GitSource:fetch()
 
     if self.origin then
         local key = fmt('remote.%s.url', self.origin)
-        local url = self:command('config --get', quote(key)):read()
+        local url = self:command('config --local --get', quote(key)):read()
         if not url then
             Log.error("could not find the specified remote '%s' in Git config of the package '%s'",
                 self.origin, self.name)
