@@ -64,7 +64,9 @@ local function result_tostring(self)
         table.insert(lines, value)
     end
     for k, v in pairs(self) do
-        if type(v) == 'table' then
+        if v == true or (type(v) == 'table' and
+                            (v.short == true or v.long == true))
+        then
             append(string.format('--%s', k))
         end
     end
