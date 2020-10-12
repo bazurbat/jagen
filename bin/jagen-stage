@@ -172,7 +172,7 @@ for name in $(set | sed -E -n 's/^pkg_env_([[:alnum:]_]+)=.*/\1/p'); do
 done; unset name
 
 # expand single-quoted pkg_* and collected variables
-eval "$(jagen__expand "$(set | egrep '^pkg_\w+=' $pkg__expand_names)")"
+eval "$(jagen__expand "$(set | egrep -e '^pkg_\w+=' $pkg__expand_names)")"
 
 unset pkg__expand_names
 
