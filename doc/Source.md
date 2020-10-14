@@ -75,7 +75,7 @@ source` command.
 jagen source <command> [PACKAGES...]
 ```
 
-The optional `PACKAGES` argument should be a list of SCM packages defined in the current
+An optional `PACKAGES` argument should be a list of SCM packages defined in the current
 environment. If nothing is specified then the command will be applied to all SCM packages.
 
 Command | Description
@@ -89,20 +89,39 @@ each    | Execute Shell command inside each source directory
 
 The `status` command prints SCM packages status in human readable form.
 
-The `update` command fetches the latest sources from upstream and tries to merge them. It does
-nothing if there are modifications in the working directory (dirty returns true); commit, stash or
-clean changes before issuing the 'update' command in this case.
+The `update` command fetches the latest sources from upstream and tries to merge them. It
+does nothing if there are modifications in the working directory (dirty returns true);
+commit, stash or clean changes before issuing the 'update' command in this case.
 
-The 'clean' command resets modifications to the HEAD state and deletes all extra files in packages
-source directories.
+The `delete` command deletes packages source directories.
 
-The 'delete' command deletes packages source directories.
-
-The 'dirty' command exits with 0 (true) status if any of the specified packages source directories
-have changes. It exits with 1 (false) status if all sources are clean. Intended for usage by shell
-scripts.
+The `dirty` command exits with 0 (true) status if any of the specified packages source
+directories have changes. It exits with 1 (false) status if all sources are clean.
+Intended for usage by shell scripts.
 
 It is possible to use `src` as an alternative command name instead of `source`.
+
+## clean
+
+Resets the modifications to the HEAD state and deletes all extra files in the packages
+source directory.
+
+Long           | Short | Description
+---------------|-------|------------
+ignore-dirty   | y     | force cleanup of dirty source directories
+ignore-exclude | Y     | force cleanup of the sources which are excluded
+ignored        | i     | additionally delete files ignored by VCS when ignoring exclude
+
+The command will skip directories which have modified or untracked files (dirty) unless
+the `--ignore-dirty` option is specified. It will also skip the sources which are excluded
+via `jagen_source_exclude` setting or have `source.exclude` property set unless the
+`--ignore-exclude` option is specified. One of these options does not imply the other. To
+force a cleanup of a source which is excluded and dirty both should be specified at the
+same time.
+
+Files ignored by VCS are also deleted for normal sources but for the excluded sources only
+a default cleanup is performed. To really delete all files when ignoring exclude specify
+`--ignored` option in addition to the `--ignore-exclude`.
 
 ## each
 

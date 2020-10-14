@@ -168,38 +168,76 @@ function Jagen.source.clean(args)
     args = options:parse(args)
     if not args then return false end
 
-    local packages, ok = scm_packages(args), true
-    local force_exclude = os.getenv('jagen__force_exclude')
-    local clean_ignored = args['ignored'] or os.getenv('jagen__clean_ignored')
-    local ignore_dirty = args['ignore-dirty'] or os.getenv('jagen__ignore_dirty')
+    local packages, ok   = scm_packages(args), true
+    local force_exclude  = os.getenv('jagen__force_exclude')
+    local clean_ignored  = args['ignored']        or os.getenv('jagen__clean_ignored')
+    local ignore_dirty   = args['ignore-dirty']   or os.getenv('jagen__ignore_dirty')
     local ignore_exclude = args['ignore-exclude'] or os.getenv('jagen__ignore_exclude')
-
-    function clean(source, ignored)
-        local ok = source:clean(ignored)
-        if ok then
-            assert(Target.from_args(assert(source.name), 'clean'):touch())
-        end
-        return ok
-    end
 
     for pkg in each(packages) do
         local source = pkg.source
-        if source:exists() then
-            local dir = System.expand(source.dir)
-            if force_exclude or not ignore_exclude and source.exclude then
-                Log.message("not cleaning %s: the source is excluded", pkg.name)
-            elseif source:dirty() then
-                ignore_dirty = ignore_dirty and 'forced' or source.ignore_dirty
+        local dir = System.expand(source.dir)
+        local willclean, reason, comment
+        if force_exclude or not ignore_exclude and source.exclude then
+            reason = "the source is excluded"
+            if force_exclude then
+                comment = 'forced by the command argument'
+            end
+        elseif source:exists() then
+            if source:dirty() then
                 if ignore_dirty then
-                    Log.message("cleaning %s: ignoring dirty status of '%s' (%s)", pkg.name, dir, tostring(ignore_dirty))
-                    ok = clean(source, clean_ignored)
+                    comment = 'forced by the command argument'
+                end
+                ignore_dirty = ignore_dirty or source.ignore_dirty
+                if ignore_dirty then
+                    willclean = true
+                    reason = 'a dirty status is ignored'
+                    if type(ignore_dirty) == 'string' then
+                        comment = ignore_dirty
+                    end
                 else
-                    Log.warning("not cleaning %s: the source directory '%s' has unsaved changes", pkg.name, dir)
-                    ok = false
+                    reason = "the source directory has unsaved changes (dirty)"
                 end
             else
-                Log.message("cleaning %s: %s", pkg.name, dir)
-                ok = clean(source, clean_ignored)
+                willclean = true
+                if source.exclude then
+                    reason = 'an exclude is ignored'
+                    if ignore_exclude then
+                        comment = 'forced by the command argument'
+                    end
+                end
+            end
+        else
+            reason = 'the source directory does not exist'
+        end
+
+        if not source.exclude and not force_exclude then
+            clean_ignored = true
+        end
+
+        local message = 'cleaning'
+        if willclean then
+            if clean_ignored then
+                message = 'completely '..message
+            end
+        else
+            message = 'not '..message
+        end
+        message = message..' '..dir
+        if reason then
+            message = message..': '..reason
+        end
+        if comment then
+            message = message..' ('..comment..')'
+        end
+
+        Log.message(message)
+
+        if willclean then
+            if source:clean(clean_ignored) then
+                assert(Target.from_args(assert(source.name), 'clean'):touch())
+            else
+                ok = false
             end
         end
     end
