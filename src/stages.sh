@@ -8,6 +8,8 @@ export GIT_SSH_COMMAND="ssh -o BatchMode=yes"
 export GIT_TERMINAL_PROMPT=0
 # Never install the translations.
 export LINGUAS=""
+# Do not allow to run tools with an interactive graphical UI
+unset DISPLAY
 
 jagen_build_args_file="${jagen_build_dir:?}/.build-args"
 
