@@ -5,14 +5,23 @@ pkg_configure() {
 
     local IFS="$jagen_IFS" S="$jagen_FS" A= MA="$(cat "${jagen_build_args_file:?}" 2>&-)"
     local toolchain_file="$pkg_build_dir/toolchain.cmake"
+    local cc_prefix= cxx_prefix=
+
+    # Prepend default toolchain prefix only if pathnames do not contain '/'.
+    if [ "${pkg_build_cc#*/}" = "$pkg_build_cc" ]; then
+        cc_prefix="$pkg_toolchain_prefix"
+    fi
+    if [ "${pkg_build_cxx#*/}" = "$pkg_build_cxx" ]; then
+        cxx_prefix="$pkg_toolchain_prefix"
+    fi
 
     case $pkg_build_type in
         gnu)
             if [ "$pkg_build_cc" ]; then
-                export CC="${pkg_toolchain_prefix}${pkg_build_cc}"
+                export CC="${cc_prefix}${pkg_build_cc}"
             fi
             if [ "$pkg_build_cxx" ]; then
-                export CXX="${pkg_toolchain_prefix}${pkg_build_cxx}"
+                export CXX="${cxx_prefix}${pkg_build_cxx}"
             fi
 
             if [ "$pkg_install_root" ]; then
@@ -66,8 +75,8 @@ pkg_configure() {
 
             A="$A$S-DCMAKE_TOOLCHAIN_FILE=$toolchain_file"
             cat >"$toolchain_file" <<EOF
-set(CMAKE_C_COMPILER "${pkg_toolchain_prefix}${pkg_build_cc:-gcc}")
-set(CMAKE_CXX_COMPILER "${pkg_toolchain_prefix}${pkg_build_cxx:-g++}")
+set(CMAKE_C_COMPILER "${cc_prefix}${pkg_build_cc:-gcc}")
+set(CMAKE_CXX_COMPILER "${cxx_prefix}${pkg_build_cxx:-g++}")
 EOF
             if [ "$pkg_config" = "target" ]; then
                 cat >>"$toolchain_file" <<EOF
