@@ -165,16 +165,26 @@ pkg_install_dir="$pkg_install_root$pkg_install_prefix"
 : ${pkg_build_generator=${jagen_cmake_generator:-Ninja}}
 : ${pkg_build_cmake_module_path=$jagen_cmake_module_path}
 
-# set pkg_env_* in the environment, collecting names for later expand
+# set pkg_env_* in the environment collecting names for delayed expansions
 for name in $(set | sed -E -n 's/^pkg_env_([[:alnum:]_]+)=.*/\1/p'); do
-    eval "export $name=\"\$pkg_env_$name\"" || exit
-    pkg__expand_names="${pkg__expand_names} -e $name"
+    # an existing non-empty global variable
+    if [ "$(eval echo \$$name)" ]; then
+        pkg__env_globals="${pkg__env_globals}${jagen_FS}${name}"
+    else
+        pkg__env_locals="${pkg__env_locals} -e ${name}"
+        eval "export $name=\"\$pkg_env_$name\"" || exit
+    fi
 done; unset name
 
-# expand single-quoted pkg_* and collected variables
-eval "$(jagen__expand "$(set | egrep -e '^pkg_\w+=' $pkg__expand_names)")"
+# expand single-quoted pkg_* and the collected local names
+eval "$(jagen__expand "$(set | grep -E -e '^pkg_[[:alpha:]][[:alnum:]_]+=' $pkg__env_locals)")"
 
-unset pkg__expand_names
+# assign the collected global names from the fully-expanded local env
+for name in $pkg__env_globals; do
+    eval "$name=\$pkg_env_$name"
+done; unset name
+
+unset pkg__env_locals pkg__env_globals
 
 # config-specific adjustment of pkg env
 if [ "$pkg_config" ]; then
