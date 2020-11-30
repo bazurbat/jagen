@@ -77,6 +77,8 @@ cd "$jagen_build_dir" || exit
 
 pkg_work_dir="${jagen_build_dir:?}/$pkg_name"
 
+use_env init_stage
+
 # override global env and set initial values for pkg env
 if [ "$pkg_config" ]; then
     import "config/$pkg_config"

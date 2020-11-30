@@ -4,8 +4,10 @@ pkg_configure() {
     [ "$pkg_source_dir" ] || return 0
 
     local IFS="$jagen_IFS" S="$jagen_FS" A= MA="$(cat "${jagen_build_args_file:?}" 2>&-)"
+    local build_profile=$(pkg_get_build_profile)
+    local cc_prefix= cxx_prefix= gnu_default_cflags= 
     local toolchain_file="$pkg_build_dir/toolchain.cmake"
-    local cc_prefix= cxx_prefix=
+    local cmake_config=RELEASE
 
     # Prepend default toolchain prefix only if pathnames do not contain '/'.
     if [ "${pkg_build_cc#*/}" = "$pkg_build_cc" ]; then
@@ -24,6 +26,23 @@ pkg_configure() {
                 export CXX="${cxx_prefix}${pkg_build_cxx}"
             fi
 
+            # Jagen sets C(XX)FLAGS in the environment. This will override
+            # Autoconf's default '-g -O2' even if the values ended up empty.
+            # We expicitly add some of the defaults back as appropriate.
+
+            case $build_profile in
+                release)
+                    gnu_default_cflags='-O2' ;;
+                debug)
+                    gnu_default_cflags='-g' ;;
+                release_with_debug)
+                    gnu_default_cflags='-g -O1' ;;
+            esac
+
+            CFLAGS="${CFLAGS:+$CFLAGS }${pkg_build_cflags:-$gnu_default_cflags}"
+            CXXFLAGS="${CXXFLAGS:+$CXXFLAGS }${pkg_build_cxxflags:-$gnu_default_cflags}"
+            LDFLAGS="${LDFLAGS:+$LDFLAGS }${pkg_build_ldflags}"
+
             if [ "$pkg_install_root" ]; then
                 LDFLAGS="$LDFLAGS -Wl,-rpath-link=$pkg_install_dir/lib"
             fi
@@ -32,14 +51,6 @@ pkg_configure() {
                 CFLAGS="$CFLAGS -I$pkg_install_dir/include"
                 LDFLAGS="$LDFLAGS -L$pkg_install_dir/lib"
             fi
-
-            if pkg_is_debug; then
-                CFLAGS="$CFLAGS -g -O0"
-            elif pkg_is_release_with_debug; then
-                CFLAGS="$CFLAGS -g"
-            fi
-
-            export CFLAGS LDFLAGS
 
             pkg_run "${pkg_build_configure_file:-$pkg_source_dir/configure}" $A \
                 ${pkg_build_system:+--host="$pkg_build_system"} \
@@ -73,20 +84,23 @@ pkg_configure() {
                 A="$A$S-DCMAKE_MODULE_PATH=$pkg_build_cmake_module_path"
             fi
 
-            A="$A$S-DCMAKE_TOOLCHAIN_FILE=$toolchain_file"
-            cat >"$toolchain_file" <<EOF
-set(CMAKE_C_COMPILER "${cc_prefix}${pkg_build_cc:-gcc}")
-set(CMAKE_CXX_COMPILER "${cxx_prefix}${pkg_build_cxx:-g++}")
-EOF
-            if [ "$pkg_config" = "target" ]; then
-                cat >>"$toolchain_file" <<EOF
-set(CMAKE_SYSTEM_NAME "Linux")
-set(CMAKE_FIND_ROOT_PATH "$pkg_install_dir")
-EOF
-            fi
-
             if [ "$pkg_build_cmake_toolchain_file" ]; then
                 A="$A$S-DCMAKE_TOOLCHAIN_FILE=$pkg_build_cmake_toolchain_file"
+            else
+                A="$A$S-DCMAKE_TOOLCHAIN_FILE=$toolchain_file"
+                : >"$toolchain_file"
+                echo "set(CMAKE_C_COMPILER \"${cc_prefix}${pkg_build_cc:-gcc}\")" >> "$toolchain_file"
+                echo "set(CMAKE_CXX_COMPILER \"${cxx_prefix}${pkg_build_cxx:-g++}\")" >> "$toolchain_file"
+                if [ "$pkg_config" = "target" ]; then
+                    echo "set(CMAKE_SYSTEM_NAME \"Linux\")" >>"$toolchain_file"
+                    if [ "$pkg_config" = "target" ]; then
+                        A="$A$S-DCMAKE_FIND_ROOT_PATH='$pkg_install_dir'"
+                        A="$A$S-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY"
+                        A="$A$S-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY"
+                        A="$A$S-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY"
+                        A="$A$S-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER"
+                    fi
+                fi
             fi
 
             # This can be imported from a toolchain, the placement here is
@@ -97,17 +111,24 @@ EOF
                 done
             fi
 
-            if pkg_is_debug; then
-                # assuming that global defaults are for 'release' config
-                unset CFLAGS CXXFLAGS
-                A="$A$S-DCMAKE_C_FLAGS="
-                A="$A$S-DCMAKE_CXX_FLAGS="
-            fi
+            case $build_profile in
+                release)
+                    cmake_config=RELEASE ;;
+                debug)
+                    cmake_config=DEBUG ;;
+                release_with_debug)
+                    cmake_config=RELWITHDEBINFO ;;
+            esac
 
-            # Remove CMake's defaults which are appended to the generic flags
-            # and override our environment.
-            A="$A$S-DCMAKE_C_FLAGS_RELEASE="
-            A="$A$S-DCMAKE_CXX_FLAGS_RELEASE="
+            if [ "$pkg_build_cflags" ]; then
+                A="$A$S-DCMAKE_C_FLAGS_${cmake_config}='$pkg_build_cflags'"
+            fi
+            if [ "$pkg_build_cxxflags" ]; then
+                A="$A$S-DCMAKE_CXX_FLAGS_${cmake_config}='$pkg_build_cxxflags'"
+            fi
+            if [ "$pkg_build_ldflags" ]; then
+                A="$A$S-DCMAKE_EXE_LINKER_FLAGS_${cmake_config}='$pkg_build_ldflags'"
+            fi
 
             if $(jagen__versions ge "$(jagen__get_cmake_version)" 3.1); then
                 A="$A$S-DCMAKE_EXPORT_NO_PACKAGE_REGISTRY=YES"
@@ -120,6 +141,7 @@ EOF
             fi
 
             pkg_run "${pkg_build_cmake_executable:?}" -G"$pkg_build_generator" \
+                --no-warn-unused-cli \
                 -DCMAKE_BUILD_TYPE="$(pkg_cmake_build_type)" \
                 -DCMAKE_INSTALL_PREFIX="$pkg_install_prefix" \
                 $A $jagen_cmake_options $pkg_build_options "$@" $MA "$pkg_source_dir"

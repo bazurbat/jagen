@@ -9,10 +9,6 @@ fi
 
 pkg_build_cmake_toolchain_file=$jagen_cmake_toolchain_file
 
-export CFLAGS="-O2"
-export CXXFLAGS="$CFLAGS"
-export LDFLAGS=""
-
 export PKG_CONFIG_SYSROOT_DIR="$pkg_install_root"
 export PKG_CONFIG_LIBDIR="$pkg_install_root/lib/pkgconfig"
 export PKG_CONFIG_PATH="$pkg_install_root/usr/lib/pkgconfig"
