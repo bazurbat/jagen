@@ -142,7 +142,7 @@ cmd_build() {
             # the warning will be scrolled up out of the screen, a small delay
             # might help with that
             sleep 0.25
-            ${c}println "\n{@}{brown}--{~} jagen: timed out while waiting for the console to flush, the output might be truncated"
+            ${c}println "\n{*yellow*}--{~} jagen: timed out while waiting for the console to flush, the output might be truncated"
         fi
     else
         ninja $targets; err=$?
@@ -154,24 +154,24 @@ cmd_build() {
             targets="${targets}${S}${target}"
             num=$(cat "$log" | wc -l)
             if [ $num -gt 0 ]; then
-                ${c}println "\n{@}{red}--{~} jagen: {@}{red}failed target:{~} {@}$target"
+                ${c}println "\n{*red*}--{~} jagen: {*red*}failed target{~}: {*white*}$target"
                 if [ $num -lt $limit ]; then
-                    ${c}println "{@}--{~} $log"
+                    ${c}println "{*white*}--{~} $log"
                     cat "$log"
                 elif [ $num -ge $limit ]; then
-                    ${c}println "{@}--{~} the last $limit lines of $log"
+                    ${c}println "{*white*}--{~} the last $limit lines of $log"
                     # +1 because it counts a EOF marker as a line
                     tail -n $((limit+1)) "$log"
                 fi
-                ${c}println "{@}--{~} EOF $log"
+                ${c}println "{*white*}--{~} EOF $log"
             fi
         done < "$jagen__cmd_failed_targets_file"
         targets=${targets#$S}
         set -- $targets
         if [ $# = 1 ]; then
-            ${c}println "\n{@}{red}--{~} jagen: build stopped: {@}{red}target failed:{~} {@}$targets"
+            ${c}println "\n{*red*}--{~} jagen: build stopped: {*red*}target failed:{~} {*white*}$targets"
         elif [ $# -gt 1 ]; then
-            ${c}println "\n{@}{red}--{~} jagen: build stopped: {@}{red}$# targets failed:{~} {@}$(join '{~}, {@}' $targets){~}"
+            ${c}println "\n{*red*}--{~} jagen: build stopped: {*red*}$# targets failed:{~} {*white*}$(join '{~}, {*white*}' $targets){~}"
         fi
     fi
 
