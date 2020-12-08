@@ -1,6 +1,6 @@
 #!/bin/sh
 
-pkg_install_prefix=/
+pkg_install_prefix=
 pkg_install_root=$jagen_target_dir
 
 if [ "${jagen_target_cmake_module_path+!}" ]; then
