@@ -6,7 +6,7 @@ pkg_configure() {
     local IFS="$jagen_IFS" S="$jagen_FS" A= MA="$(cat "${jagen_build_args_file:?}" 2>&-)"
     local build_profile=$(pkg_get_build_profile)
     local build_cpu="${pkg_build_cpu:-$pkg_build_arch}"
-    local cc_prefix= cxx_prefix= gnu_default_cflags= 
+    local cc_prefix= cxx_prefix=
     local toolchain_file="$pkg_build_dir/toolchain.cmake"
     local cmake_config=RELEASE
 
@@ -26,23 +26,6 @@ pkg_configure() {
             if [ "$pkg_build_cxx" ]; then
                 export CXX="${cxx_prefix}${pkg_build_cxx}"
             fi
-
-            # Jagen sets C(XX)FLAGS in the environment. This will override
-            # Autoconf's default '-g -O2' even if the values ended up empty.
-            # We expicitly add some of the defaults back as appropriate.
-
-            case $build_profile in
-                release)
-                    gnu_default_cflags='-O2' ;;
-                debug)
-                    gnu_default_cflags='-g' ;;
-                release_with_debug)
-                    gnu_default_cflags='-g -O1' ;;
-            esac
-
-            CFLAGS="${CFLAGS:+$CFLAGS }${pkg_build_cflags:-$gnu_default_cflags}"
-            CXXFLAGS="${CXXFLAGS:+$CXXFLAGS }${pkg_build_cxxflags:-$gnu_default_cflags}"
-            LDFLAGS="${LDFLAGS:+$LDFLAGS }${pkg_build_ldflags}"
 
             if [ "$pkg_install_root" ]; then
                 LDFLAGS="$LDFLAGS -Wl,-rpath-link=$pkg_install_dir/lib"
