@@ -5,6 +5,7 @@ pkg_configure() {
 
     local IFS="$jagen_IFS" S="$jagen_FS" A= MA="$(cat "${jagen_build_args_file:?}" 2>&-)"
     local build_profile=$(pkg_get_build_profile)
+    local build_cpu="${pkg_build_cpu:-$pkg_build_arch}"
     local cc_prefix= cxx_prefix= gnu_default_cflags= 
     local toolchain_file="$pkg_build_dir/toolchain.cmake"
     local cmake_config=RELEASE
@@ -93,6 +94,9 @@ pkg_configure() {
                 echo "set(CMAKE_CXX_COMPILER \"${cxx_prefix}${pkg_build_cxx:-g++}\")" >> "$toolchain_file"
                 if [ "$pkg_config" = "target" ]; then
                     echo "set(CMAKE_SYSTEM_NAME \"Linux\")" >>"$toolchain_file"
+                    if [ "$build_cpu" ]; then
+                        echo "set(CMAKE_SYSTEM_PROCESSOR \"$build_cpu\")" >>"$toolchain_file"
+                    fi
                     if [ "$pkg_config" = "target" ]; then
                         A="$A$S-DCMAKE_FIND_ROOT_PATH='$pkg_install_dir'"
                         A="$A$S-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY"
