@@ -5,37 +5,11 @@ pkg_configure() {
 
     local IFS="$jagen_IFS" S="$jagen_FS" A= MA="$(cat "${jagen_build_args_file:?}" 2>&-)"
     local build_profile=$(pkg_get_build_profile)
-    local build_cpu="${pkg_build_cpu:-$pkg_build_arch}"
-    local cc_prefix= cxx_prefix=
     local toolchain_file="$pkg_build_dir/toolchain.cmake"
     local cmake_config=RELEASE
 
-    # Prepend default toolchain prefix only if pathnames do not contain '/'.
-    if [ "${pkg_build_cc#*/}" = "$pkg_build_cc" ]; then
-        cc_prefix="$pkg_toolchain_prefix"
-    fi
-    if [ "${pkg_build_cxx#*/}" = "$pkg_build_cxx" ]; then
-        cxx_prefix="$pkg_toolchain_prefix"
-    fi
-
     case $pkg_build_type in
         gnu)
-            if [ "$pkg_build_cc" ]; then
-                export CC="${cc_prefix}${pkg_build_cc}"
-            fi
-            if [ "$pkg_build_cxx" ]; then
-                export CXX="${cxx_prefix}${pkg_build_cxx}"
-            fi
-
-            if [ "$pkg_install_root" ]; then
-                LDFLAGS="$LDFLAGS -Wl,-rpath-link=$pkg_install_dir/lib"
-            fi
-
-            if [ "$pkg_build_configure_needs_install_dir" ]; then
-                CFLAGS="$CFLAGS -I$pkg_install_dir/include"
-                LDFLAGS="$LDFLAGS -L$pkg_install_dir/lib"
-            fi
-
             pkg_run "${pkg_build_configure_file:-$pkg_source_dir/configure}" $A \
                 ${pkg_build_system:+--host="$pkg_build_system"} \
                 --prefix="$pkg_install_prefix" \
@@ -53,7 +27,7 @@ pkg_configure() {
             # 'right' thing and you might end up with a mixed bag of libraries
             # some having RPATH and some not.
 
-            if [ -x ./libtool ]; then
+            if [ -x "./libtool" ]; then
                 pkg_run sed -i 's|\(hardcode_into_libs\)=yes|\1=no|g' \
                     "./libtool"
             fi
@@ -73,12 +47,10 @@ pkg_configure() {
             else
                 A="$A$S-DCMAKE_TOOLCHAIN_FILE=$toolchain_file"
                 : >"$toolchain_file"
-                echo "set(CMAKE_C_COMPILER \"${cc_prefix}${pkg_build_cc:-gcc}\")" >> "$toolchain_file"
-                echo "set(CMAKE_CXX_COMPILER \"${cxx_prefix}${pkg_build_cxx:-g++}\")" >> "$toolchain_file"
                 if [ "$pkg_config" = "target" ]; then
                     echo "set(CMAKE_SYSTEM_NAME \"Linux\")" >>"$toolchain_file"
-                    if [ "$build_cpu" ]; then
-                        echo "set(CMAKE_SYSTEM_PROCESSOR \"$build_cpu\")" >>"$toolchain_file"
+                    if [ "$pkg_build_arch" ]; then
+                        echo "set(CMAKE_SYSTEM_PROCESSOR \"$pkg_build_arch\")" >>"$toolchain_file"
                     fi
                     if [ "$pkg_config" = "target" ]; then
                         A="$A$S-DCMAKE_FIND_ROOT_PATH='$pkg_install_dir'"

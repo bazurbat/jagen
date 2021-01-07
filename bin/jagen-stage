@@ -1,4 +1,5 @@
 #!/bin/sh
+#shellcheck disable=2154,2155
 
 pkg_name="${1:?}"
 pkg_stage="${2:?}"
@@ -77,8 +78,6 @@ cd "$jagen_build_dir" || exit
 
 pkg_work_dir="${jagen_build_dir:?}/$pkg_name"
 
-use_env init_stage
-
 # override global env and set initial values for pkg env
 if [ "$pkg_config" ]; then
     import "config/$pkg_config"
@@ -148,8 +147,8 @@ if [ "$pkg_stage" != clean ] && [ "$pkg_build_toolchain" ]; then
     for key in $(set | sed -E -n "s/^toolchain_env_([[:alnum:]_]+)=.*/\1/p"); do
         eval ": \${pkg_env_${key}=\$toolchain_env_${key}}" || exit
     done; unset prefix key
-    # assign "toolchain_*" except dirs and flags to "pkg_build_*" if unset
-    for key in $(set | sed -E -n '/^toolchain_(dir|source_dir|env|cflags|cxxflags|ldflags)/! s/^toolchain_([[:alnum:]_]+)=.*/\1/p'); do
+    # assign "toolchain_(arch|cpu|system)" to "pkg_build_*" if unset
+    for key in arch cpu system; do
         eval ": \${pkg_build_${key}=\$toolchain_${key}}" || exit
     done; unset key
 fi
@@ -159,7 +158,7 @@ if [ "${pkg_build_system}" ]; then
 fi
 
 # useful pkg-specific variables for scripts
-pkg_install_dir="$pkg_install_root$pkg_install_prefix"
+pkg_install_dir="${pkg_install_root}${pkg_install_prefix}"
 
 # defaults
 : ${pkg_build_cmake_executable=${jagen_cmake_executable:-cmake}}
@@ -187,27 +186,14 @@ done; unset name
 
 unset pkg__env_locals pkg__env_globals
 
+if [ "$pkg_build_toolchain" ]; then
+    use_env toolchain
+fi
+
 # config-specific adjustment of pkg env
 if [ "$pkg_config" ]; then
     use_env "$pkg_config"
 fi
-
-if [ "$pkg_stage" != 'clean' ]; then
-    use_env cflags
-fi
-
-# crutches
-if [ "$pkg_build_toolchain" ]; then
-    if [ "$pkg_build_set_toolchain" ]; then
-        use_env set_toolchain
-    fi
-    if [ "$pkg_build_unset_cflags" ]; then
-        use_env unset_cflags
-    fi
-fi
-
-# remove excessive whitespace from command lines, helps diffing build logs
-jagen__trim CFLAGS CXXFLAGS LDFLAGS
 
 if [ -z "$jagen_recursive" ]; then
     if [ "$pkg_config" ]; then

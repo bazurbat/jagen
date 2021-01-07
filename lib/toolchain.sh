@@ -1,39 +1,5 @@
 #!/bin/sh
-
-toolchain_programs='
-addr2line
-ar
-as
-c++
-c++filt
-clang
-clang++
-cpp
-g++
-gcc
-gccbug
-gcov
-gdb
-gprof
-ld
-nm
-objcopy
-objdump
-ranlib
-readelf
-size
-strings
-strip
-'
-
-toolchain_sysroot_programs='
-c++
-clang
-clang++
-cpp
-g++
-gcc
-'
+#shellcheck disable=2154,2155
 
 toolchain_cc() {
     printf "${1:-${CC:-${pkg_build_system:+${pkg_build_system}-}gcc}}"
@@ -58,68 +24,75 @@ toolchain_get_lib_dir() {
     toolchain_find_path libstdc++.a "$@"
 }
 
-toolchain_generate_wrappers() {
-    local src_dir="${1:?}" prefix="$2" dest_dir="${jagen_bin_dir:?}"
-    local IFS="$jagen_IFS" S="$jagen_S"
-    local PATH="$(IFS=: list_remove "$dest_dir" "$PATH")"
-    local item item2 paths dest
+toolchain_match() {
+    local path="${1:?}" list_file="${2:?}"
+    local name filename=${path##*/}
+    while IFS= read -r name; do
+        case $filename in
+            ${pkg_toolchain_prefix}${name}-*|${pkg_toolchain_prefix}${name})
+                return 0 ;;
+        esac
+    done <"$list_file"
+    return 1
+}
 
-    [ -d "$dest_dir" ] || \
-        die "toolchain_generate_wrappers: the dest dir '$dest_dir' does not exist"
+toolchain_wrap() {
+    local dest_dir="${1:?}" path="${2:?}" varname="$3"
+    local cmd="$path" filename="${path##*/}"
+    local wrapper="${dest_dir}/${filename}"
+    if [ "$varname" ]; then
+        message "${wrapper#$jagen_root_dir/} -> ${path#$jagen_root_dir/}"
+        case $varname in
+            cflags|cxxflags)
+                # compiler is often called as a linker, so it needs ldflags too
+                cmd="$cmd \$jagen_pkg__$varname \$jagen_pkg__ldflags" ;;
+            *)
+                cmd="$cmd \$jagen_pkg__$varname" ;;
+        esac
+        echo "exec \$jagen_ccache $cmd \"\$@\""  >"$wrapper" || return
+        chmod +x "$wrapper" || return
+    else
+        ln -sf "$path" "$wrapper" || return
+    fi
+}
+
+toolchain_generate_wrappers() {
+    local src_dir="${1:?}" dest_dir="${jagen_bin_dir}/${pkg_name}"
+    local PATH="$(IFS=: list_remove "$dest_dir" "$PATH")"
+    local IFS="$jagen_S" path pathnames
+    local c_names=$(find_in_path toolchain/c_compiler_names)
+    local cxx_names=$(find_in_path toolchain/cxx_compiler_names)
+    local linker_names=$(find_in_path toolchain/linker_names)
+
     [ -d "$src_dir" ] || \
         die "toolchain_generate_wrappers: the src dir '$src_dir' does not exist"
 
-    if [ "$prefix" ]; then
-        paths=$(find "$src_dir/bin" "$src_dir" -maxdepth 1 -type f -name "${prefix}*")
-        [ "$paths" ] || die "Failed to find any files matching ${prefix}* in $src_dir, \
-no toolchain wrappers will be generated. Please verify that the specified toolchain build \
-system and source directory are correct."
+    if [ "$pkg_toolchain_prefix" ]; then
+        pathnames=$(find "$src_dir/bin" "$src_dir" -maxdepth 1 \
+                         -type f -executable -name "${pkg_toolchain_prefix}*")
+        [ "$pathnames" ] || die "Failed to find any ${pkg_toolchain_prefix}* toolchain executables in $src_dir"
     else
-        for item in $toolchain_programs; do
-            item=$(command -v "$item")
-            if [ "$item" ]; then
-                paths="${paths}${S}${item}"
+        for path in $(cat "$c_names" "$cxx_names" "$linker_names"); do
+            path=$(command -v "$path")
+            if [ "$path" ]; then
+                pathnames="${pathnames}${jagen_S}${path}"
             fi
         done
     fi
 
-    for item in $paths; do
-        dest="${dest_dir}/${item##*/}"
-        cat >"$dest" <<EOF || return
-exec \$jagen_ccache "$item" "\$@"
-EOF
-        if [ "$pkg_install_sysroot" ]; then
-            for item2 in $toolchain_sysroot_programs; do
-                if [ "${dest}" != "${dest%$item2}" ]; then
-                    cat >"$dest" <<EOF || return
-exec \$jagen_ccache "$item" --sysroot="$pkg_install_sysroot" "\$@"
-EOF
-                    break
-                fi
-            done
-        fi
-        chmod +x "$dest" || return
-    done
-}
+    pkg_run mkdir -p "$dest_dir"
 
-toolchain_create_alias() {
-    local source="${1:?}"
-    local target="${2:?}"
-    local from="$(basename "$target")"
-    local to="$(basename "$source")"
-    local name
-
-    [ "$source" = "$target" ] && return
-
-    cd $(dirname "$target")
-
-    for name in ${toolchain_programs:?}; do
-        if [ -x "$from$name" ]; then
-            ln -snfr $from$name $to$name
+    for path in $pathnames; do
+        if toolchain_match "$path" "$c_names"; then
+            toolchain_wrap "$dest_dir" "$path" cflags
+        elif toolchain_match "$path" "$cxx_names"; then
+            toolchain_wrap "$dest_dir" "$path" cxxflags
+        elif toolchain_match "$path" "$linker_names"; then
+            toolchain_wrap "$dest_dir" "$path" ldflags
+        else
+            toolchain_wrap "$dest_dir" "$path"
         fi
     done
-
-    cd "$OLDPWD"
 }
 
 toolchain_install_runtime() {

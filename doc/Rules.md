@@ -274,7 +274,6 @@ can be used in custom scripts or as the part of another property value.
         generate   = true, -- or 'autogen' or 'autoconf'
         generator  = 'Ninja',
         configure_file = 'path',
-        configure_needs_install_dir = true,
 
         options = { 'option1', 'option2', ... },
         kernel_modules = true,
@@ -546,10 +545,7 @@ files = { { 'filename1' } }
   `configure` script (`$pkg_source_dir/configure`).
 
 - **build.configure_needs_install_dir** (`pkg_build_configure_needs_install_dir`) —
-  if set, specifies that the `configure` requires libraries and include
-  directories from the package install directory to find dependencies;
-  effectively this setting adds `-I$pkg_install_dir/include` to `CFLAGS` and
-  `-L$pkg_install_dir/lib` to `LDFLAGS`.
+  _Deprecated_. An alias for **build.with_install_dir**.
 
 - **build.cpu** — Specifies the target machine CPU. Assigned from toolchain if
   unset. Exported automatically.
@@ -618,11 +614,26 @@ files = { { 'filename1' } }
 - **build.type** (`pkg_build_type`) — The type of the package build system.
   Supported values are: gnu, cmake, kbuild, make, linux-kernel, linux-module.
 
-- **build.unset_cflags** (`pkg_build_clean_cflags`) — If set to `true`, causes
-  the CFLAGS, CXXFLAGS and LDFLAGS variables to be unset overriding
-  config-specific and user environment. Some "SDK-type" packages are very
-  sensitive to compiler settings and using this option might be necessary for
-  them to build correctly or as a safety measure.
+- **build.unset_cflags** (`pkg_build_clean_cflags`) — _Deprecated_. An alias
+  for **build.without_toolchain_cflags**.
+
+- **build.with_install_dir** (`pkg_build_with_install_dir`) — If set,
+  explicitly adds `-I${pkg_install_dir}/include` and `-L${pkg_install_dir}/lib`
+  options to every toolchain invocation command when building this package.
+
+  Some configure scripts try to link libraries by name (-lfoo) when probing
+  dependencies and fail to find the libraries in the staging directory if no
+  such library is installed on the host system or produce incorrect results by
+  finding a different version. This option can be used to force such packages
+  to look in the staging directory first.
+
+- **build.without_toolchain_cflags** (`pkg_build_without_toolchain_cflags`) —
+  If set to `true` causes the c/cxx/ld flags provided by a toolchain to not be
+  added to every corresponding tool command line.
+
+  Some (usually proprietary SDKs) packages are very sensitive to compiler
+  settings and break in mysterious ways if compiled with anything different
+  from their own hardcoded defaults. This option is useful for such cases.
 
 The rules of the form:
 ```
@@ -656,11 +667,6 @@ build = value
 - **install.prefix** (`pkg_install_prefix`) — Install prefix.
 
 - **install.root** (`pkg_install_root`) — Install root.
-
-- **install.sysroot** — Sets the value of the `--sysroot` argument added to the generated toolchain
-  wrappers. Applicable only to the packages with install type 'toolchain'. Some pre-built vendor
-  toolchains have it hardcoded to something strange and require passing the argument explicitly on
-  the compiler command line.
 
 - **install.type** (`pkg_install_type`) — Specifies the installation type of
   the package. If not set defaults to the value of `build.type`. An additional
@@ -753,13 +759,6 @@ install = value
 
 - **pkg_build_configure_file** (`build.configure_file`) — the path to the
   configure file; default: `$pkg_source_dir/configure`
-
-- **pkg_build_configure_needs_install_dir**
-  (`build.configure_needs_install_dir`) — if set, specifies that the
-  `configure` requires libraries and include directories from the package
-  install directory to find dependencies; effectively this setting adds
-  `-I$pkg_install_dir/include` to `CFLAGS` and `-L$pkg_install_dir/lib` to
-  `LDFLAGS`.
 
 - **pkg_build_dir** (`build.dir`) — the location of the package build directory
 

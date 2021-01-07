@@ -47,9 +47,7 @@ pkg_install() {
             ;;
         toolchain)
             require toolchain
-            toolchain_generate_wrappers    \
-                "${pkg_source_dir:?}"      \
-                "${pkg_toolchain_prefix}"
+            toolchain_generate_wrappers "${pkg_source_dir:?}"
             ;;
         rust-toolchain)
             if ! rustup toolchain list | grep -q "^${pkg_build_name:?}"; then
@@ -68,9 +66,7 @@ pkg_install() {
             ;;
         android-standalone-toolchain)
             require toolchain
-            toolchain_generate_wrappers    \
-                "${pkg_build_dir:?}"       \
-                "${pkg_toolchain_prefix}"
+            toolchain_generate_wrappers "${pkg_build_dir:?}"
             ;;
     esac
 
