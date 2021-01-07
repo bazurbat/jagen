@@ -15,7 +15,7 @@ case $(pkg_get_build_profile) in
         pkg__default_cflags='-g -O1' ;;
 esac
 
-case ${pkg_build_type:?} in
+case ${pkg_build_type-} in
     cmake)
         # CMake has its own built-in defaults
         ;;

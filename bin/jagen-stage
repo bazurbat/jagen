@@ -192,7 +192,9 @@ if [ "$pkg_config" ]; then
     use_env "$pkg_config"
 fi
 
-use_env cflags
+if [ "$pkg_stage" != 'clean' ]; then
+    use_env cflags
+fi
 
 # crutches
 if [ "$pkg_build_toolchain" ]; then
