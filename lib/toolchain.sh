@@ -49,6 +49,9 @@ toolchain_wrap() {
             *)
                 cmd="$cmd \$jagen_pkg__$varname" ;;
         esac
+        # if the wrapper is a symlink echo will overwrite the original
+        # executable in the toolchain unless we remove the link first
+        rm -f "$wrapper" || return
         echo "exec \$jagen_ccache $cmd \"\$@\""  >"$wrapper" || return
         chmod +x "$wrapper" || return
     else
@@ -61,6 +64,7 @@ toolchain_generate_wrappers() {
     local PATH="$(IFS=: list_remove "$dest_dir" "$PATH")"
     local IFS="$jagen_S" path pathnames
     local c_names=$(find_in_path toolchain/c_compiler_names)
+    local cpp_names=$(find_in_path toolchain/cpp_names)
     local cxx_names=$(find_in_path toolchain/cxx_compiler_names)
     local linker_names=$(find_in_path toolchain/linker_names)
 
@@ -70,15 +74,15 @@ toolchain_generate_wrappers() {
     if [ "$pkg_toolchain_prefix" ]; then
         # this is a very common layout
         pathnames=$(find "$src_dir/bin" -maxdepth 1 -type f -executable \
-                         -name "${pkg_toolchain_prefix}*")
+                         -name "${pkg_toolchain_prefix}*" 2>/dev/null)
         # something not common, try to a deep search
         if [ -z "$pathnames" ]; then
             pathnames=$(find "$src_dir" -maxdepth 10 -type f -executable \
-                             -path '*/bin/*' -name "${pkg_toolchain_prefix}*")
+                             -path '*/bin/*' -name "${pkg_toolchain_prefix}*" 2>/dev/null)
         fi
         [ "$pathnames" ] || die "Failed to find any ${pkg_toolchain_prefix}* toolchain executables in $src_dir"
     else
-        for path in $(cat "$c_names" "$cxx_names" "$linker_names"); do
+        for path in $(cat "$c_names" "$cpp_names" "$cxx_names" "$linker_names"); do
             path=$(command -v "$path")
             if [ "$path" ]; then
                 pathnames="${pathnames}${jagen_S}${path}"
@@ -90,6 +94,8 @@ toolchain_generate_wrappers() {
 
     for path in $pathnames; do
         if toolchain_match "$path" "$c_names"; then
+            toolchain_wrap "$dest_dir" "$path" cflags
+        elif toolchain_match "$path" "$cpp_names"; then
             toolchain_wrap "$dest_dir" "$path" cflags
         elif toolchain_match "$path" "$cxx_names"; then
             toolchain_wrap "$dest_dir" "$path" cxxflags

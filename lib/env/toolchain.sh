@@ -14,12 +14,12 @@ pkg__get_toolchain() {
 # CMake honors CC and CXX too but not LD. It uses the compiler for linking.
 export  CC=$(pkg__get_toolchain cc  gcc)
 export CXX=$(pkg__get_toolchain cxx g++)
+export CPP=$(pkg__get_toolchain cpp cpp)
 export  LD=$(pkg__get_toolchain ld  ld )
 
 # Some of those are not very standard but relatively common.
 export AR="${pkg_toolchain_prefix}ar"
 export AS="${pkg_toolchain_prefix}as"
-export CPP="${pkg_toolchain_prefix}cpp"
 export NM="${pkg_toolchain_prefix}nm"
 export OBJCOPY="${pkg_toolchain_prefix}objcopy"
 export OBJDUMP="${pkg_toolchain_prefix}objdump"
