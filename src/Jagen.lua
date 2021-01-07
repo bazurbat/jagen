@@ -72,7 +72,7 @@ function Jagen:find_for_refresh()
 end
 
 function Jagen._load_layers()
-    local path, layers = Jagen:path(), {}
+    local path, layers = table.copy(Jagen:path()), {}
     assert(#path >= 2)
     table.remove(path)
     table.remove(path, 1)
