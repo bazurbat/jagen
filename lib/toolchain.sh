@@ -68,8 +68,14 @@ toolchain_generate_wrappers() {
         die "toolchain_generate_wrappers: the src dir '$src_dir' does not exist"
 
     if [ "$pkg_toolchain_prefix" ]; then
-        pathnames=$(find "$src_dir/bin" "$src_dir" -maxdepth 1 \
-                         -type f -executable -name "${pkg_toolchain_prefix}*")
+        # this is a very common layout
+        pathnames=$(find "$src_dir/bin" -maxdepth 1 -type f -executable \
+                         -name "${pkg_toolchain_prefix}*")
+        # something not common, try to a deep search
+        if [ -z "$pathnames" ]; then
+            pathnames=$(find "$src_dir" -maxdepth 10 -type f -executable \
+                             -path '*/bin/*' -name "${pkg_toolchain_prefix}*")
+        fi
         [ "$pathnames" ] || die "Failed to find any ${pkg_toolchain_prefix}* toolchain executables in $src_dir"
     else
         for path in $(cat "$c_names" "$cxx_names" "$linker_names"); do
