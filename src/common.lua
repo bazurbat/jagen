@@ -568,10 +568,10 @@ function table.merge(to, from)
     assert_arg('merge', 2, 'table', from)
     for k, v in pairs(from) do
         if type(k) ~= 'number' then
-            if type(v) == 'table' then
-                local rtv = rawget(to, k)
-                if rtv ~= nil and type(rtv) ~= 'table' then
-                    rawset(to, k, { rtv })
+            if type(v) == 'table' and next(v) then
+                local tov  = rawget(to, k)
+                if tov and type(tov) ~= 'table' then
+                    rawset(to, k, { tov })
                 end
                 rawset(to, k, table.merge(rawget(to, k) or {}, v))
             else
