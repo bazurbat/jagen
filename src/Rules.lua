@@ -488,7 +488,7 @@ function RuleEngine:process_config(pkg, config, this)
     local toolchain = build.toolchain
     if toolchain then
         self:collect_require(pkg, toolchain, Context:new { name = pkg.name, config = config })
-        this.uses = append_uniq(toolchain, this.uses)
+        this.uses = append_uniq(toolchain..' as toolchain', this.uses)
     end
 
     if not build.dir then
