@@ -99,9 +99,9 @@ fi
 if [ "$pkg_stage" != clean ]; then
     # include uses
     for spec in $pkg_uses; do
-        include "$(pkg__export_fname "$spec")" || exit
+        include "$jagen_include_dir/$(pkg__export_fname "$spec")" || exit
         if [ "$pkg_config" ]; then
-            include "$(pkg__export_fname "$spec" "$pkg_config")" || exit
+            include "$jagen_include_dir/$(pkg__export_fname "$spec" "$pkg_config")" || exit
         fi
         # assign "<name>_env_*" to "pkg_env_*" if unset
         name=$(jagen_name_to_id "${spec%:*}")

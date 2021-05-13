@@ -151,9 +151,9 @@ end
 local function write_export(w, pkg, config)
     local export = pkg.export
     if not export then return end
-    local prefix = 'export_'
+    local prefix = 'export__'
     if config then
-        prefix = string.format('_%s__%s', config, prefix)
+        prefix = string.format('%s%s_', prefix, config)
     end
 
     local function write_var(name, value)

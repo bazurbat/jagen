@@ -58,12 +58,13 @@ jagen_stage_image() {
 jagen_stage_export() {
     local prefix= content= key=
     local name="$(jagen_name_to_id "$pkg_name")"
-    local outfile="$(pkg__export_fname "$pkg_name" "$pkg_config")"
+    local outfile="$jagen_include_dir/$(pkg__export_fname "$pkg_name" "$pkg_config")"
+    echo outfile=$outfile
     if [ "$pkg_config" ]; then
-        prefix="pkg__${pkg_config}__export"
+        prefix="pkg_export__${pkg_config}"
         content="export ${name}_install_dir='$pkg_install_dir'"
     else
-        prefix="pkg_export"
+        prefix="pkg_export_"
     fi
     for key in $(set | sed -E -n "s/^${prefix}_([[:alnum:]_]+)=.*/\1/p"); do
         content="${content}${jagen_S}export ${name}_${key}='$(eval echo \"\$${prefix}_${key}\")'"

@@ -151,19 +151,16 @@ pkg_install_file() {
 }
 
 pkg__fname() {
-    : ${1:?}
-    local name= config=
-    name=${1%:*}
-    if [ "$2" ] && [ "$name" != "$1" ]; then
-        config=${1#*:}
-    else
-        config=$2
-    fi
-    printf '%s' "${name}${config:+:$config}"
+    printf '%s' "${1:?}${2:+:$2}"
 }
 
 pkg__export_fname() {
-    printf '%s' "${jagen_include_dir:?}/$(pkg__fname "$1" "$2"):export.sh"
+    : ${1:?}
+    local name="${1%%:*}" config="$2"
+    if [ "$name" != "$1" ]; then
+        config=${1#*:}
+    fi
+    printf '%s' "${name}${config:+:$config}.export.sh"
 }
 
 pkg__get_cmake_args() {

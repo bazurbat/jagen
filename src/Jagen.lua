@@ -587,7 +587,7 @@ function Jagen.command.refresh(args, packages)
 
     Command:new('find "$jagen_include_dir"')
            :append('-mindepth 1 -maxdepth 1')
-           :append('\\! \\( -name "*:export.*" -o -name "*:export:*" \\)')
+           :append('\\! \\( -name "*.export.sh" \\)')
            :append('-delete'):exec()
 
     for _, pkg in pairs(packages) do
