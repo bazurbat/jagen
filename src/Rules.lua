@@ -1020,17 +1020,29 @@ function P:load()
     P.rules = RuleEngine:new()
     local packages = P.rules.packages
 
-    local prelude = [[
-        local Log    = require 'Log'
-        local System = require 'System'
-    ]]
+    local env = {
+        Log    = require 'Log',
+        System = require 'System'
+    }
+    setmetatable(env, {__index = _G})
 
     local function try_load_rules(dir)
         local filename = System.mkpath(dir, 'rules.lua')
-        local file = io.open(filename, 'rb')
+        local file = io.open(filename)
         if file then
-            assert(loadstring(prelude..file:read('*a'), filename))()
             file:close()
+            local func, err, ok = loadfile(filename, 't', env)
+            if func then
+                if _VERSION == 'Lua 5.1' then
+                    setfenv(func, env)
+                end
+                ok, err = pcall(func)
+            end
+            if not ok then
+                err = string.format('Failed to load rules %s', err)
+                Log.error(err)
+                os.exit(1)
+            end
         end
     end
 
