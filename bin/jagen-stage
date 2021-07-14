@@ -93,22 +93,27 @@ if [ "$pkg_config" ]; then
         eval "pkg_export_${key}=\$${prefix}_${key}" || exit
     done; unset prefix key
     # append config-specific uses
+    # This might cause a duplicated include of export files but this is OK
+    # because they are fully expanded and should not have any side effects.
     pkg_uses="$pkg_uses $(eval echo \${pkg__${pkg_config}__uses})"
 fi
 
 if [ "$pkg_stage" != clean ]; then
     # include uses
     for spec in $pkg_uses; do
-        include "$jagen_include_dir/$(pkg__export_fname "$spec")" || exit
-        if [ "$pkg_config" ]; then
-            include "$jagen_include_dir/$(pkg__export_fname "$spec" "$pkg_config")" || exit
+        name=${spec%%:*} config=${spec##*:}
+        # no substitution means there was no :config suffix
+        [ "$config" = "$name" ] && config=$pkg_config
+        include "$jagen_include_dir/$(pkg__export_fname "$name")" || exit
+        if [ "$config" ]; then
+            include "$jagen_include_dir/$(pkg__export_fname "$name" "$config")" || exit
         fi
         # assign "<name>_env_*" to "pkg_env_*" if unset
         name=$(jagen_name_to_id "${spec%:*}")
         for key in $(set | sed -E -n "s/^${name}_env_([[:alnum:]_]+)=.*/\1/p"); do
             eval ": \${pkg_env_${key}=\$${name}_env_${key}}" || exit
         done; unset name key
-    done; unset spec
+    done; unset spec name config
 fi
 
 pkg__assign_alias() {

@@ -58,8 +58,7 @@ jagen_stage_image() {
 jagen_stage_export() {
     local prefix= content= key=
     local name="$(jagen_name_to_id "$pkg_name")"
-    local outfile="$jagen_include_dir/$(pkg__export_fname "$pkg_name" "$pkg_config")"
-    echo outfile=$outfile
+    local outfile="$jagen_include_dir/$(pkg__export_fname "$pkg_name" "$pkg_config").sh"
     if [ "$pkg_config" ]; then
         prefix="pkg_export__${pkg_config}"
         content="export ${name}_install_dir='$pkg_install_dir'"

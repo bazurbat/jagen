@@ -155,12 +155,7 @@ pkg__fname() {
 }
 
 pkg__export_fname() {
-    : ${1:?}
-    local name="${1%%:*}" config="$2"
-    if [ "$name" != "$1" ]; then
-        config=${1#*:}
-    fi
-    printf '%s' "${name}${config:+:$config}.export.sh"
+    printf '%s.export' "$(pkg__fname "$1" "$2")"
 }
 
 pkg__get_cmake_args() {
