@@ -437,10 +437,11 @@ function RuleEngine:define_rust_packages(packages)
                 config = config,
                 build = {
                     type      = 'rust-toolchain',
-                    toolchain = 'rustup:host',
+                    toolchain = 'rustup',
                     name      = build.rust_toolchain,
                     system    = build.system
                 },
+                uses = { 'rustup' },
                 export = {
                     env = {
                         RUSTUP_HOME = '$rustup_env_RUSTUP_HOME',
@@ -481,7 +482,7 @@ function RuleEngine:process_config(pkg, config, this)
         end
     end
 
-    if build.type then
+    if build.type ~= 'rust' or (build.type == 'rust' and config ~= 'host') then
         build.toolchain = pkg:gettoolchain(config)
     end
 
@@ -756,10 +757,16 @@ function RuleEngine:check_build_toolchain(pkg)
     local build
     for this, config in pkg:each_config() do
         build = this.build
-        if build and build.type and build.toolchain == nil then
-            self:print_error("the package '%s' requires '%s' build for "..
-                "config '%s' but does not have a toolchain set", pkg.name,
-                build.type, config)
+        if build and build.type then
+            if build.type == 'rust' and build.rust_toolchain == nil then
+                self:print_error("the package '%s' requires '%s' build for "..
+                    "config '%s' but does not have a rust toolchain set", pkg.name,
+                    build.type, config)
+            elseif build.type ~= 'rust' and not build.toolchain == nil then
+                self:print_error("the package '%s' requires '%s' build for "..
+                    "config '%s' but does not have a toolchain set", pkg.name,
+                    build.type, config)
+            end
         end
     end
 end

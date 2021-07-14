@@ -50,15 +50,20 @@ pkg_compile() {
             pkg_run "$exe" $pkg_build_options "$@" $MA
             ;;
         rust)
+            if [ "$CARGO_HOME" ]; then
+                PATH="$CARGO_HOME/bin:$PATH"
+            fi
             export CARGO_TARGET_DIR="$pkg_build_dir"
             cd "${pkg_source_dir:?}"
             pkg_is_release && A="--release"
             if [ "$pkg_build_rust_toolchain" = 'system' ]; then
+                debug2 "using cargo from $pkg_build_rust_toolchain: $(which cargo)"
                 pkg_run cargo build ${pkg_build_system:+--target=$pkg_build_system} \
                     $A "$@" $MA
             else
+                debug2 "using rustup from $pkg_build_rust_toolchain: $(which rustup)"
                 pkg_run rustup run "${pkg_build_rust_toolchain:?}" \
-                    pkg_run cargo build ${pkg_build_system:+--target=$pkg_build_system} \
+                    cargo build ${pkg_build_system:+--target=$pkg_build_system} \
                     $A "$@" $MA
             fi
             ;;
