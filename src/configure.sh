@@ -5,7 +5,7 @@ pkg_configure() {
 
     local IFS="$jagen_IFS" S="$jagen_FS" A= MA="$(cat "${jagen_build_args_file:?}" 2>&-)"
     local build_profile=$(pkg_get_build_profile)
-    local toolchain_file="$pkg_build_dir/toolchain.cmake"
+    local toolchain_file_tmpl toolchain_file="$pkg_build_dir/toolchain.cmake"
     local cmake_config=RELEASE
 
     case $pkg_build_type in
@@ -45,20 +45,10 @@ pkg_configure() {
             if [ "$pkg_build_cmake_toolchain_file" ]; then
                 A="$A$S-DCMAKE_TOOLCHAIN_FILE=$pkg_build_cmake_toolchain_file"
             else
-                A="$A$S-DCMAKE_TOOLCHAIN_FILE=$toolchain_file"
-                : >"$toolchain_file"
-                if [ "$pkg_config" = "target" ]; then
-                    echo "set(CMAKE_SYSTEM_NAME \"Linux\")" >>"$toolchain_file"
-                    if [ "$pkg_build_arch" ]; then
-                        echo "set(CMAKE_SYSTEM_PROCESSOR \"$pkg_build_arch\")" >>"$toolchain_file"
-                    fi
-                    if [ "$pkg_config" = "target" ]; then
-                        A="$A$S-DCMAKE_FIND_ROOT_PATH='$pkg_install_dir'"
-                        A="$A$S-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY"
-                        A="$A$S-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY"
-                        A="$A$S-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY"
-                        A="$A$S-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER"
-                    fi
+                toolchain_file_tmpl=$(find_in_path cmake/${pkg_config}_toolchain.cmake)
+                if [ "$toolchain_file_tmpl" ]; then
+                    toolchain_file_tmpl=$(cat "$toolchain_file_tmpl")
+                    jagen__expand "$toolchain_file_tmpl" > "$toolchain_file"
                 fi
             fi
 
@@ -99,11 +89,11 @@ pkg_configure() {
                 A="$A$S-DCMAKE_EXPORT_COMPILE_COMMANDS=YES"
             fi
 
-            pkg_run "${pkg_build_cmake_executable:?}" -G"$pkg_build_generator" \
+            pkg_run "${pkg_build_cmake_executable:-cmake}" -G"${pkg_build_generator:-Ninja}" \
                 --no-warn-unused-cli \
                 -DCMAKE_BUILD_TYPE="$(pkg_cmake_build_type)" \
                 -DCMAKE_INSTALL_PREFIX="$pkg_install_prefix" \
-                $A $jagen_cmake_options $pkg_build_options "$@" $MA "$pkg_source_dir"
+                $A $pkg_build_options "$@" $MA "$pkg_source_dir"
             ;;
         linux-kernel)
             use_env kbuild

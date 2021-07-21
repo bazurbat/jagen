@@ -1,13 +1,18 @@
 #!/bin/sh
+# shellcheck disable=2034,2154
 
 pkg_install_prefix=
 pkg_install_root=$jagen_target_dir
 
-if [ "${jagen_target_cmake_module_path+!}" ]; then
-    jagen_cmake_module_path=$jagen_target_cmake_module_path
+if ! [ "$jagen_target_cmake_options" ]; then
+    jagen_target_cmake_options='
+-DCMAKE_FIND_ROOT_PATH="$pkg_install_root"
+-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER
+-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY
+-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY
+-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY
+'
 fi
-
-pkg_build_cmake_toolchain_file=$jagen_cmake_toolchain_file
 
 export PKG_CONFIG_SYSROOT_DIR="$pkg_install_root"
 export PKG_CONFIG_LIBDIR="$pkg_install_root/lib/pkgconfig"

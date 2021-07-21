@@ -531,15 +531,30 @@ files = { { 'filename1' } }
   specified as the target. Defaults to **build.dir** when not specified.
 
 - **build.cmake_executable** (`pkg_build_cmake_executable`) — The path to cmake
-  executable. Defaults to `$jagen_cmake_executable` or `cmake` if not set.
+  executable. Defaults to `$toolchain_cmake_executable` or
+  `$jagen_<config>_cmake_executable` or `$jagen_cmake_executable` whichever is
+  set, or to `cmake` as the final default.
+
+- **build.cmake_generator** (`pkg_build_cmake_generator`) — Sets the CMake
+  generator for the package. Defaults to `$toolchain_cmake_generator` or
+  `$jagen_<config>_cmake_generator` or `$jagen_cmake_generator` whichever is
+  set, or to `Ninja` as the final default.
 
 - **build.cmake_module_path** (`pkg_build_cmake_module_path`) — Defines
-  `CMAKE_MODULE_PATH` for the package. Defaults to `$jagen_cmake_module_path`
-  if unset, empty string value disables.
+  `CMAKE_MODULE_PATH` for the package. Defaults to
+  `$toolchain_cmake_module_path` or `$jagen_<config>_cmake_module_path` or
+  `$jagen_cmake_module_path` whichever is set.
+
+- **build.cmake_options** (`pkg_build_cmake_options`) — Additional
+  CMake-specific configure options. Defaults to `$toolchain_cmake_options` or
+  `$jagen_<config>_cmake_options` or `$jagen_cmake_option` whichever is set.
 
 - **build.cmake_toolchain_file** (`pkg_build_cmake_toolchain_file`) — specifies
-  `CMAKE_TOOLCHAIN_FILE` for this package only. Set to empty string to disable
-  passing of the toolchain file from the environment.
+  `CMAKE_TOOLCHAIN_FILE` for the package. Defaults to
+  `$toolchain_cmake_toolchain_file` or `$jagen_<config>_cmake_toolchain_file`
+  or `$jagen_cmake_toolchain_file` whichever is set. If not set for 'target'
+  config Jagen will generate a basic toolchain file for cross-compilation in
+  the package's build dir.
 
 - **build.configure_file** (`pkg_build_configure_file`) — The location of the
   `configure` script (`$pkg_source_dir/configure`).
@@ -563,8 +578,8 @@ files = { { 'filename1' } }
   in the source directory and `autoreconf` command otherwise. If set to a string "autoreconf" the
   `autoreconf` command will be tried skipping `autogen.sh` script even if it exists.
 
-- **build.generator** (`pkg_build_generator`) — If the package build type is
-  'cmake' sets its CMake generator.
+- **build.generator** (`pkg_build_generator`) — _Deprecated._ An alias for
+  **build.cmake_generator** for backward compatibility.
 
 - **build.in_source** (`pkg_build_in_source`) — If set to `true`, indicates that the package can not be
   built outside of its source directory. Can be set to `multi` to indicate that the package supports
@@ -693,18 +708,17 @@ install = value
 - **jagen_build_verbose** — Indicates whether the build system should run
   verbosely.
 - **jagen_ccache** — The name of the ccache executable.
-- **jagen_cmake_generator** (`Ninja`) — Override CMake generator.
+- **jagen_cmake_executable** (`cmake`) — The executable to launch CMake.
+- **jagen_cmake_generator** (`Ninja`) — The generator to use with CMake.
 - **jagen_cmake_module_path** — The default `CMAKE_MODULE_PATH`.
-- **jagen_cmake_options** — Arguments to pass to CMake in `configure` stage.
+- **jagen_cmake_options** — Additional arguments to pass to CMake in `configure` stage.
 - **jagen_cmake_toolchain_file** — The `CMAKE_TOOLCHAIN_FILE` to pass to CMake
-  in `configure` stage. It applies only to `target` config.
+  in `configure` stage.
 - **jagen_debug** — Debug level.
 - **jagen_dir** — The location of the Jagen source directory.
 - **jagen_dist_dir** — The location of the `dist` directory
   (`$jagen_root_dir/dist`).
 - **jagen_flags** — Space-separated list of flags.
-- **jagen_host_cmake_module_path** — The `CMAKE_MODULE_PATH` for "host" config.
-  Overrides `$jagen_cmake_module_path` if set, empty value disables.
 - **jagen_host_dir** — The location of the `host` directory
   (`$jagen_root_dir/host`).
 - **jagen_include_dir** — The location of the `include` directory
@@ -741,18 +755,32 @@ install = value
 - **jagen_src_dir** — The location of the `src` directory
   (`$jagen_root_dir/src`).
 - **jagen_target_board** — The name of the current target board.
-- **jagen_target_cmake_module_path** — The `CMAKE_MODULE_PATH` for "target"
-  config. Overrides `$jagen_cmake_module_path` if set, empty value disables.
 - **jagen_target_dir** — The location of the `target` directory
   (`$jagen_root_dir/target`).
 - **jagen_target_toolchain** — The name of the current target toolchain.
+
+Settings **jagen_cmake_executable**, **jagen_cmake_generator**,
+**jagen_cmake_module_path**, **jagen_cmake_options** and
+**jagen_cmake_toolchain_file** have config-specific and toolchain-specific
+veriants with higher priority, e.g. **toolchain_cmake_executable** overrides
+**jagen_target_cmake_executable** which overrides **jagen_cmake_executable** if
+set.
 
 ## Stage-specific variables
 
 - **pkg_args** — stage arguments
 
+- **pkg_build_cmake_executable** (`build.cmake_executable`) — the CMake
+  executable use by configure stage.
+
+- **pkg_build_cmake_generator** (`build.cmake_executable`) — the generator
+  value passed to CMake during configure.
+
 - **pkg_build_cmake_module_path** (`build.cmake_module_path`) — the
-  `CMAKE_MODULE_PATH` for the package; default: `$jagen_cmake_module_path`
+  `CMAKE_MODULE_PATH` for the package
+
+- **pkg_build_cmake_options** (`build.cmake_options`) — additional
+  CMake-specific options.
 
 - **pkg_build_cmake_toolchain_file** (`build.cmake_toolchain_file`) —
   `CMAKE_TOOLCHAIN_FILE` for the current package
@@ -762,8 +790,8 @@ install = value
 
 - **pkg_build_dir** (`build.dir`) — the location of the package build directory
 
-- **pkg_build_generator** (`build.generator`) — if build type is "CMake" sets
-  per-package CMake generator option (passed in -G argument).
+- **pkg_build_generator** (`build.generator`) — _Deprecated._ An alias for
+  **pkg_build_cmake_generator**.
 
 - **pkg_build_in_source** (`build.in_source`) — if set, specifies that the
   location of the "build" directory is the same as the "source" directory; also

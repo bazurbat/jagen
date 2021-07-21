@@ -1,5 +1,5 @@
 #!/bin/sh
-#shellcheck disable=2154,2155
+# shellcheck disable=1090,2034,2086,2154,2155
 
 pkg_name="${1:?}"
 pkg_stage="${2:?}"
@@ -140,10 +140,17 @@ fi
 # useful pkg-specific variables for scripts
 pkg_install_dir="${pkg_install_root}${pkg_install_prefix}"
 
-# defaults
-: ${pkg_build_cmake_executable=${jagen_cmake_executable:-cmake}}
-: ${pkg_build_generator=${jagen_cmake_generator:-Ninja}}
-: ${pkg_build_cmake_module_path=$jagen_cmake_module_path}
+# cmake-specific defaults
+if [ "$pkg_config" ]; then
+    for name in cmake_executable cmake_generator cmake_options \
+                cmake_module_path cmake_toolchain_file
+    do
+        eval ": \${pkg_build_${name}=\${toolchain_${name}:-\${jagen_${pkg_config}_${name}:-\${jagen_${name}}}}}"
+    done; unset name
+fi
+
+# backwards compatibility
+pkg_build_generator=$pkg_build_cmake_generator
 
 # set pkg_env_* in the environment collecting names for delayed expansions
 for name in $(set | sed -E -n 's/^pkg_env_([[:alnum:]_]+)=.*/\1/p'); do
