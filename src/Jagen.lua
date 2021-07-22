@@ -22,6 +22,9 @@ Jagen =
     shell = os.getenv('jagen_shell'),
     flags = os.getenv('jagen_flags'),
 
+    src_dir = os.getenv('jagen_src_dir'),
+    host_dir = assert(os.getenv('jagen_host_dir')),
+    target_dir = assert(os.getenv('jagen_target_dir')),
     build_dir = assert(os.getenv('jagen_build_dir')),
 
     has_console = os.getenv('jagen__has_console')
@@ -1069,6 +1072,17 @@ function Jagen.command._compare_versions(args)
     else
         return tostatus(true)
     end
+end
+
+function Jagen.command._debug(args)
+    local Chunk = require 'Chunk'
+
+    local ch = Chunk:new {a=1, 'v', b=2, 'z', _c=3}
+
+    for k, v in ch:each() do
+        print(k, v)
+    end
+
 end
 
 function Jagen.nproc()

@@ -179,29 +179,6 @@ local function format_stage(target, pkg)
 
     local uses = {}
 
-    if config then
-        local this = assert(pkg.configs[config])
-        for spec in each(pkg.uses or {}, this.uses) do
-            local use = Target.from_use(spec)
-            local used = packages[use.name]
-            if used then
-                local config = use.config or used:has_config(config) and config
-                if config then
-                    append_uniq(Target.from_args(use.name, 'export', config), uses)
-                end
-            end
-        end
-    else
-        for use in each(pkg.uses or {}) do
-            append_uniq(Target.from_args(Target.from_use(use).name, 'export'), uses)
-        end
-        for this in pkg:each_config() do
-            for use in each(this.uses or {}) do
-                append_uniq(Target.from_args(Target.from_use(use).name, 'export'), uses)
-            end
-        end
-    end
-
     if target.stage == 'clean' then
         uses = target.order_only or {}
     end

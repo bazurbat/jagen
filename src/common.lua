@@ -407,6 +407,26 @@ function string.tocanon(s)
     return s
 end
 
+function table.get(t, ...)
+    local key, n = ..., select('#', ...)
+    local val = t[key]
+    if val == nil or n == 1 then
+        return val
+    else
+        return table.get(val, select(2, ...))
+    end
+end
+
+function table.set(t, val, ...)
+    local key, n = ..., select('#', ...)
+    if n == 1 then
+        t[key] = val
+    else
+        if rawget(t, key) == nil then t[key] = {} end
+        table.set(t[key], val, select(2, ...))
+    end
+end
+
 function table.tolist(t)
     local list = {}
     for k, v in pairs(t) do
@@ -628,7 +648,7 @@ function pretty(value, level)
         else
             local keys = {}
             for k, _ in pairs(value) do
-                if k ~= '_pkg' then -- need to get rid of backref in pkg config
+                if type(k) == 'string' and k:sub(1, 1) ~= '_' then
                     if type(k) ~= 'number' then insert(keys, k) end
                 end
             end

@@ -154,10 +154,6 @@ pkg__fname() {
     printf '%s' "${1:?}${2:+:$2}"
 }
 
-pkg__export_fname() {
-    printf '%s.export' "$(pkg__fname "$1" "$2")"
-}
-
 pkg__get_cmake_args() {
     local args= v_arg= j_arg=
     if [ "$jagen_build_verbose" ]; then

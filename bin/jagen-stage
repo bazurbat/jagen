@@ -76,58 +76,15 @@ fi
 
 cd "$jagen_build_dir" || exit
 
-pkg_work_dir="${jagen_build_dir:?}/$pkg_name"
-
-# override global env and set initial values for pkg env
-if [ "$pkg_config" ]; then
-    import "config/$pkg_config"
-fi
-
 # include scripts
 include "$jagen_include_dir/$(pkg__fname "$pkg_name")" || exit
 if [ "$pkg_config" ]; then
     include "$jagen_include_dir/$(pkg__fname "$pkg_name" "$pkg_config")" || exit
-    # assign "pkg__<config>__export_*" to "pkg_export_*"
-    prefix="pkg__${pkg_config}__export"
-    for key in $(set | sed -E -n "s/^${prefix}_([[:alnum:]_]+)=.*/\1/p"); do
-        eval "pkg_export_${key}=\$${prefix}_${key}" || exit
-    done; unset prefix key
     # append config-specific uses
     # This might cause a duplicated include of export files but this is OK
     # because they are fully expanded and should not have any side effects.
     pkg_uses="$pkg_uses $(eval echo \${pkg__${pkg_config}__uses})"
 fi
-
-if [ "$pkg_stage" != clean ]; then
-    # include uses
-    for spec in $pkg_uses; do
-        name=${spec%%:*} config=${spec##*:}
-        # no substitution means there was no :config suffix
-        [ "$config" = "$name" ] && config=$pkg_config
-        include "$jagen_include_dir/$(pkg__export_fname "$name")" || exit
-        if [ "$config" ]; then
-            include "$jagen_include_dir/$(pkg__export_fname "$name" "$config")" || exit
-        fi
-        # assign "<name>_env_*" to "pkg_env_*" if unset
-        name=$(jagen_name_to_id "${spec%:*}")
-        for key in $(set | sed -E -n "s/^${name}_env_([[:alnum:]_]+)=.*/\1/p"); do
-            eval ": \${pkg_env_${key}=\$${name}_env_${key}}" || exit
-        done; unset name key
-    done; unset spec name config
-fi
-
-pkg__assign_alias() {
-    local IFS='='; set -- $1; unset IFS
-    local key alias_to="$1" alias_from="$2"
-    for key in $(set | sed -E -n "s/^${alias_from}_([[:alnum:]_]+)=.*/\1/p"); do
-        eval "${alias_to}_${key}=\$${alias_from}_${key}" || return
-    done
-}
-
-pkg_use_alias="$pkg_use_alias $(eval echo "\$pkg__${pkg_config}__use_alias")"
-for use_alias in $pkg_use_alias; do
-    pkg__assign_alias "$use_alias" || exit
-done; unset use_alias
 
 : "${pkg_build_arch=$toolchain_arch}"
 : "${pkg_build_cpu=$toolchain_cpu}"
@@ -136,9 +93,6 @@ done; unset use_alias
 if [ "${pkg_build_system}" ]; then
     pkg_toolchain_prefix=${pkg_build_system}-
 fi
-
-# useful pkg-specific variables for scripts
-pkg_install_dir="${pkg_install_root}${pkg_install_prefix}"
 
 # cmake-specific defaults
 if [ "$pkg_config" ]; then
@@ -149,29 +103,10 @@ if [ "$pkg_config" ]; then
     done; unset name
 fi
 
+: "${pkg_build_cmake_executable:=cmake}"
+
 # backwards compatibility
 pkg_build_generator=$pkg_build_cmake_generator
-
-# set pkg_env_* in the environment collecting names for delayed expansions
-for name in $(set | sed -E -n 's/^pkg_env_([[:alnum:]_]+)=.*/\1/p'); do
-    # an existing non-empty global variable
-    if [ "$(eval echo \$$name)" ]; then
-        pkg__env_globals="${pkg__env_globals}${jagen_FS}${name}"
-    else
-        pkg__env_locals="${pkg__env_locals} -e ${name}"
-        eval "export $name=\"\$pkg_env_$name\"" || exit
-    fi
-done; unset name
-
-# expand single-quoted pkg_* and the collected local names
-eval "$(jagen__expand "$(set | grep -E -e '^pkg_[[:alpha:]][[:alnum:]_]+=' $pkg__env_locals)")"
-
-# assign the collected global names from the fully-expanded local env
-for name in $pkg__env_globals; do
-    eval "$name=\$pkg_env_$name"
-done; unset name
-
-unset pkg__env_locals pkg__env_globals
 
 if [ "$pkg_build_toolchain" ]; then
     use_env toolchain

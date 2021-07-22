@@ -1,6 +1,7 @@
 local Source = require 'Source'
 local Target = require 'Target'
 local System = require 'System'
+local Log    = require 'Log'
 
 local P = {}
 P.__index = P
@@ -242,6 +243,47 @@ end
 
 function P:is_scm()
     return self.source and Source:is_known(self.source.type)
+end
+
+function P:expand(data)
+    local function sub(path)
+        local keys = path:split2('.')
+        local value
+        if #keys > 1 then
+            if keys[1] == 'jagen' then
+                table.remove(keys, 1)
+                value = table.get(Jagen, table.unpack(keys))
+            else
+                value = table.get(self, table.unpack(keys))
+            end
+        else
+            value = self[path]
+        end
+        if value then
+            return value
+        else
+            Log.warning("could not expand '%s' for package %s:%s", path, self.name, self.config)
+        end
+    end
+
+    if type(data) == 'table' then
+        for key, value in pairs(data) do
+            if type(key) == 'string' and key:sub(1, 1) ~= '_'
+                and key ~= 'configs' and key ~= 'stages'
+                and key ~= 'contexts'
+            then
+                data[key] = self:expand(value)
+            end
+        end
+    elseif type(data) == 'string' then
+        local count, depth, max_depth = 0, 0, 2
+        repeat
+            data, count = data:gsub('${([%w_][%w_.]+)}', sub)
+            depth = depth + 1
+        until count == 0 or depth == max_depth
+    end
+
+    return data
 end
 
 function P:get(key, config)

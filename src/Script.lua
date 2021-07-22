@@ -1,7 +1,27 @@
 local System = require 'System'
 local Target = require 'Target'
+local Rules = require 'Rules'
+local Config = require 'Config'
 
 local P = {}
+
+local function write_var(w, name, value)
+    name = name:to_identifier()
+    local typ = type(value)
+    if typ == 'string' or typ == 'number' then
+        w("%s='%s'", name, value)
+    elseif typ == 'boolean' then
+        w("%s='yes'", name, value)
+    elseif typ == 'table' then
+        if #value > 0 then
+            w("%s='%s'", name, table.concat(value, '\t'))
+        else
+            for k, v in pairs(value) do
+                write_var(w, name..'_'..k, v)
+            end
+        end
+    end
+end
 
 local function write_pkg_var(w, prefix, name, value)
     if not value then return end
@@ -45,6 +65,8 @@ local function write_common(w, pkg)
         'uses',
         '_pkg',
         '_collected_targets',
+        '_config',
+        '_base'
     }
     local function custom_keys(_, key)
         return type(key) ~= 'number' and
@@ -96,10 +118,10 @@ local function write_patches(w, pkg)
     local resolved = filter(function(item) return item[3] end, patches)
     if #resolved > 0 then
         w('jagen_stage_apply_patches() {')
-        for i, item in ipairs(resolved) do
-            local name, n, path = item[1], item[2], item[3]
-            w('  pkg_run_patch %d "%s"', n, path)
-        end
+            for i, item in ipairs(resolved) do
+                local name, n, path = item[1], item[2], item[3]
+                w('  pkg_run_patch %d "%s"', n, path)
+            end
         w('}')
     end
 end
@@ -173,22 +195,56 @@ local function write_uses(w, pkg, config)
     if config then
         prefix = string.format('_%s__', config)
     end
-    local function write_var(name, value)
+    local function write(name, value)
         return write_pkg_var(w, prefix, name, value)
     end
 
-    local names, aliases, targets = {}, {}, sort(map(Target.from_use, uses),
-        function (a, b) return a.name < b.name end)
-    for target in each(targets) do
-        append(names, tostring(target))
-        if target.alias then
-            append(aliases, string.format('%s=%s',
-                    string.to_identifier(target.alias),
-                    string.to_identifier(target.name)))
+    local function write_use(name, config, pkg)
+        for key, val in pairs(pkg.export) do
+            write_var(w, name..'_'..key, val)
+        end
+        if config then
+            for key, val in pairs(pkg:get('export', config)) do
+                write_var(w, name..'_'..key, val)
+            end
         end
     end
-    write_var('uses', names)
-    write_var('use_alias', aliases)
+
+    for spec in each(uses) do
+        local use = Target.from_use(spec)
+        local pkg = Rules.rules.packages[use.name]
+        write_use(use.name, config, pkg)
+        if use.alias then
+            write_use(use.alias, config, pkg)
+        end
+    end
+
+    -- local names, aliases, targets = {}, {}, sort(map(Target.from_use, uses),
+    --     function (a, b) return a.name < b.name end)
+    -- for target in each(targets) do
+    --     append(names, tostring(target))
+    --     if target.alias then
+    --         append(aliases, string.format('%s=%s',
+    --                 string.to_identifier(target.alias),
+    --             string.to_identifier(target.name)))
+    --     end
+    -- end
+
+    write('uses', names)
+    write('use_alias', aliases)
+end
+
+local function write_config(w, pkg, config)
+    if not config then return end
+    local metatable = getmetatable(config)
+    if metatable then
+        write_config(w, pkg, metatable.__index)
+    end
+    for key, value in pairs(config) do
+        if type(key) == 'string' and key:sub(1, 1) ~= '_' then
+            write_var(w, 'pkg_'..key, pkg:expand(copy(value)))
+        end
+    end
 end
 
 local function generate_script(filename, pkg, config)
@@ -197,6 +253,7 @@ local function generate_script(filename, pkg, config)
         table.insert(lines, string.format(format, ...))
     end
 
+    -- write_config(w, pkg, pkg._config)
     write_common(w, pkg)
     write_source(w, pkg)
     write_patches(w, pkg)
@@ -207,6 +264,13 @@ local function generate_script(filename, pkg, config)
     -- should be the last to allow referencing other variables
     write_export(w, pkg, config)
     write_uses(w, pkg, config)
+
+    if pkg.env then
+        w('')
+    end
+    for key, value in Config.each(pkg.env or {}) do
+        w("export %s='%s'", key, value)
+    end
 
     local file = assert(io.open(filename, 'w+'))
     file:write(table.concat(lines, '\n'), '\n')

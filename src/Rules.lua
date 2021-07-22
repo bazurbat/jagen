@@ -4,6 +4,7 @@ local Source = require 'Source'
 local Log    = require 'Log'
 local Command = require 'Command'
 local Package = require 'Package'
+local Config = require 'Config'
 
 local function setpkg(table, pkg)
     if pkg then
@@ -116,12 +117,14 @@ local function pop_context()
     return o
 end
 
+
 local RuleEngine = {}
 RuleEngine.__index = RuleEngine
 
 function RuleEngine:new()
     local engine = {
         _rules = {},
+        _configs = {},
         packages              = {},
         _templates            = {},
         _variants             = {},
@@ -202,22 +205,26 @@ function RuleEngine:define_package(rule, context)
 
     local this = pkg
     if config then
-        if not pkg.configs[config] then pkg.configs[config] = {} end
+        if not pkg.configs[config] then pkg.configs[config] = Config:new{} end
         this = pkg.configs[config]
-        if not getmetatable(this) then
+        -- if not getmetatable(this) then
             this._pkg = pkg
             this.name, this.config = pkg.name, config
+            this._config = self._configs[config]
+            this._base = self._configs[config]
             if not this.stages then this.stages = {} end
             if not this._collected_targets then this._collected_targets = {} end
             if not this.build then this.build = {} end
             if not this.install then this.install = {} end
+            if not this.env then this.env = {} end
             if not this.export then this.export = {} end
-            setmetatable(this, Package)
-            setmetatable(this.build, { __index = pkg.build })
-            setmetatable(this.install, { __index = pkg.install })
-            setmetatable(this.export, { __index = pkg.export })
+            setmetatable(this, {__index = pkg})
+            setmetatable(this.build, {__index = pkg.build})
+            setmetatable(this.install, {__index = pkg.install})
+            setmetatable(this.env, {__index = pkg.env})
+            setmetatable(this.export, {__index = pkg.export})
             pkg:add_stage('clean', config)
-        end
+        -- end
     end
 
     if rule.source and Source:is_known(rule.source.type) then
@@ -494,9 +501,9 @@ function RuleEngine:process_config(pkg, config, this)
 
     if not build.dir then
         if build.in_source then
-            build.dir = '$pkg_source_dir'
+            build.dir = '${source.dir}'
         else
-            build.dir = System.mkpath('${pkg_work_dir:?}', config)
+            build.dir = System.mkpath('${work_dir}', config)
         end
     end
 
@@ -673,16 +680,9 @@ function RuleEngine:process_rules()
     end
 
     for _, pkg in pairs(self.packages) do
-        for this, config in pkg:each_config(true) do
-            for spec in each(this.uses) do
-                local use = Target.from_use(spec)
-                local used = self.packages[use.name]
-                if used then
-                    for this, config in used:each_config(true) do
-                        used:add_stage('export', config)
-                    end
-                end
-            end
+        for this, _ in pkg:each_config(true) do
+            Config.flatten(this)
+            this:expand(this)
         end
         P.export_dirs(pkg)
         P.export_build_env(pkg)
@@ -922,11 +922,6 @@ function P:add_ordering_dependencies(pkg)
         end
         if curr.stage == 'clean' and curr.config then
             prev_cclean = curr
-        elseif curr.stage == 'export' and curr.config then
-            curr:append(assert(common))
-            curr:append(Target.from_args(common.name, 'export'))
-        elseif curr.stage == 'export' then
-            curr.inputs = append(curr.inputs, assert(common))
         else
             if prev then
                 if common and curr.config ~= prev.config then
@@ -970,20 +965,9 @@ function P.export_build_env(pkg)
 end
 
 function P.export_dirs(pkg)
-    local function export_build_dir(this, config)
-        local export = this.export
-        local build = this.build
-        if build and export then
-            export.build = rawget(export, 'build') or {}
-            local dir = rawget(build, 'dir')
-            if export.build.dir == nil then
-                export.build.dir = dir
-            end
-        end
-    end
-    export_build_dir(pkg)
-    for this, config in pkg:each_config() do
-        export_build_dir(this, config)
+    for this, _ in pkg:each_config(true) do
+        table.set(this, rawget(this.build, 'dir'), 'export', 'build', 'dir')
+        table.set(this, this.install.dir, 'export', 'install', 'dir')
     end
     local export, source = pkg.export, pkg.source
     if source then
@@ -1023,13 +1007,22 @@ function template(rule)
     P.rules._templates[name] = rule
 end
 
+function P.config(rule)
+    local name = rule[1]
+    Log.debug2('found config '..name)
+    rule.__name = name
+    table.insert(P.rules._configs, rule)
+    P.rules._configs[name] = rule
+end
+
 function P:load()
     P.rules = RuleEngine:new()
     local packages = P.rules.packages
 
     local env = {
         Log    = require 'Log',
-        System = require 'System'
+        System = require 'System',
+        config = P.config
     }
     setmetatable(env, {__index = _G})
 
@@ -1037,6 +1030,7 @@ function P:load()
         local filename = System.mkpath(dir, 'rules.lua')
         local file = io.open(filename)
         if file then
+            Log.debug2('loading rules from '..filename)
             file:close()
             local func, err, ok = loadfile(filename, 't', env)
             if func then
@@ -1057,6 +1051,12 @@ function P:load()
         try_load_rules(dir)
     end
     try_load_rules(System.mkpath(Jagen.root_dir))
+
+    Config._all = P.rules._configs
+
+    for config in each(P.rules._configs) do
+        config = Config:new(config)
+    end
 
     for entry in each(P.rules._rules) do
         local pkg = P.rules:define_package(entry[1], entry[2])
