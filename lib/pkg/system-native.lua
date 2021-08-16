@@ -1,13 +1,8 @@
-return {
-    source = {
-        dir = '/usr'
-    },
-    build = {
-        cflags = '-march=native',
-        in_source = true,
-        toolchain = false
-    },
+package { 'system-native',
     install = {
         type = 'toolchain'
+    },
+    export = {
+        cflags = '-march=native'
     }
 }

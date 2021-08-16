@@ -22,6 +22,76 @@ local function check_ninja_features()
     end
 end
 
+local function dsp(arg)
+end
+
+local function fmt(args)
+    for i, arg in ipairs(args) do
+        if type(arg) == 'function' then
+            args[i] = arg()
+        end
+    end
+    return table.concat(args)
+end
+
+local function cat(...)
+    return fmt({...})
+end
+
+local function comp(...)
+    local args = {...}
+    return function(value)
+        local output = value
+        for i = 1, #args do
+            local f = args[i]
+            if type(f) == 'function' then
+                output = f(output)
+            end
+        end
+        return output
+    end
+end
+
+local function findent(n)
+    return function(value)
+        return string.format('%s%s', string.rep('^', n), tostring(value))
+    end
+end
+
+local function fjoin(args, f, sep)
+    if f == nil then
+        f = function(val) return val end
+    end
+    return function()
+        local out = {}
+        for _, arg in ipairs(args) do
+            table.insert(out, f(arg))
+        end
+        return table.concat(out, sep)
+    end
+end
+
+local function with_prefix(prefix)
+    return function(v)
+        return string.format('%s%s', prefix, tostring(v))
+    end
+end
+
+local function with_suffix(suffix)
+    return function(v)
+        return string.format('%s%s', tostring(v), suffix)
+    end
+end
+
+local function escaped()
+    return function(s)
+        s = string.gsub(s, "%$", "$$")
+        s = string.gsub(s, " ", "$ ")
+        s = string.gsub(s, ":", "$:")
+        return s
+    end
+end
+
 local function indent(n)
     return string.rep(' ', n or 4)
 end
@@ -56,8 +126,8 @@ local function nonempty(list)
     return out
 end
 
-local function join(list)
-    return concat(list)
+local function join(list, sep)
+    return concat(list, sep)
 end
 
 local function join_space(list)
@@ -94,8 +164,13 @@ local function format_rule(name, command)
     return format('rule %s\n%scommand = %s', name, indent(4), command)
 end
 
+local function format_target(target)
+    local output = { target.name, target.stage, target.config }
+    return join(output, ':')
+end
+
 local function format_outputs(outputs)
-    local lines = { escape(outputs[1]) }
+    local lines = { escape(outputs[1] or '') }
     if #outputs > 1 then
         extend(lines, map(function (x)
                     return indented(escape(tostring(x)), 6)
@@ -108,15 +183,17 @@ end
 local function format_inputs(inputs)
     local lines = { '' }
     extend(lines, sort(map(function (x)
-                    return indented(escape(tostring(x)), 16)
+                    return indented(escape(format_target(x)), 16)
         end, inputs or {})))
     return join_escaped(lines)
 end
 
-local function format_refresh(files, packages)
+local function format_refresh(files)
     local outputs = { 'build.ninja' }
-    return format('build %s: refresh%s\n%s%s', format_outputs(outputs), format_inputs(files),
-        indent(4), binding('description', 'refresh'))
+    return fmt { '\n', 'build build.ninja: refresh',
+        fjoin(files, comp(escape, with_prefix(cat(' $\n', indent(6))))),
+        '\n', indent(4), binding('description', 'refresh')
+    }
 end
 
 local function format_phony(files)
@@ -124,84 +201,49 @@ local function format_phony(files)
 end
 
 local function format_build(build)
-    local lines = { '' }
-
-    local function format_uses(uses)
-        local lines = {}
-        if #uses > 0 then
-            append(lines, ' ||')
-            extend(lines, sort(map(function (x)
-                            return indented(escape(tostring(x)), 16)
-                end, uses or {})))
-        end
-        return join_escaped(lines)
-    end
-
-    append(lines, format('build %s: %s%s%s',
-            format_outputs(build.outputs),
-            assert(build.rule),
-            format_inputs(build.inputs),
-            format_uses(build.uses)))
-
-    extend(lines, map(function (key)
-                return indented(binding(key, build.vars[key]))
-        end, sort(table.keys(build.vars))))
-
-    return join_nl(lines)
+    return fmt { '\n', 'build ',
+        fjoin(build.outputs, comp(escape, with_suffix(' $\n')), indent(6)),
+        cat(indent(8), ': stage'),
+        fjoin(build.inputs, comp(escape, with_prefix(cat(' $\n', indent(6))))),
+        fjoin(map(function (key)
+                      return binding(key, build.vars[key])
+                  end, sort(table.keys(build.vars))),
+              with_prefix(cat('\n', indent(2))))
+    }
 end
 
-local function format_stage(target, pkg)
-    local config = target.config
+local function format_stage(name, target, pkg)
+    local output = { pkg.name, name, pkg.config }
+    local args = { pkg.name, name, pkg.config or quote('') }
 
-    local function get_outputs()
-        local outputs = { tostring(target) }
-        return extend(outputs, target.outputs or {})
-    end
-
-    local function format_args()
-        local command = { target.name, target.stage,
-            config or quote('')
-        }
-        local arg = target.arg
-        if type(arg) == 'string' or type(arg) == 'number' then
-            arg = { tostring(arg) }
-        end
-        if type(arg) == 'table' then
-            append(command, join_quoted(target.arg))
-        end
-        return join_space(command)
+    local inputs = {}
+    for _, item in ipairs(target.inputs or {}) do
+        local t = { item.name or pkg.name, item.stage, item.config or pkg.config }
+        table.insert(inputs, join(t, ':'))
     end
 
     local vars = {
-        description = target:__tostring(' '),
-        args        = format_args(),
+        description = join(output, ' '),
+        args        = join(args, ' '),
     }
-
-    local uses = {}
-
-    if target.stage == 'clean' then
-        uses = target.order_only or {}
-    end
 
     vars.pool = target.pool
 
-    for use in each(target.uses) do
-        append_uniq(tostring(use), uses)
-    end
-
     return format_build {
         rule    = 'stage',
-        uses    = uses,
-        inputs  = target.inputs,
-        outputs = get_outputs(),
+        uses    = {},
+        inputs  = inputs,
+        outputs = { join(output, ':') },
         vars    = vars
     }
 end
 
-local function format_package(name, pkg)
-    local lines = {}
-    for stage in pkg:each() do
-        append(lines, format_stage(stage, pkg))
+local function format_package(pkg)
+    local lines  = {}
+    local stages = table.keys(pkg.stages)
+    table.sort(stages)
+    for name in each(stages) do
+        append(lines, format_stage(name, pkg.stages[name], pkg))
     end
     return join(lines)
 end
@@ -260,10 +302,6 @@ function P.generate(out_file, rules)
 
     packages = rules
     local file = assert(io.open(out_file, 'w'))
-    local sorted_rules = sort(table.tolist(rules),
-        function (a, b)
-            return a.name < b.name
-        end)
 
     assign_pools(rules)
 
@@ -278,18 +316,16 @@ function P.generate(out_file, rules)
         format_rule('refresh', join_space(nonempty { Jagen.shell, System.expand('$jagen_root_dir/jagen'), 'refresh' }))
     }
 
-    local for_refresh = Jagen:find_for_refresh()
-    local include_dir = System.expand(os.getenv('jagen_include_dir'))
-    for pkg in each(sorted_rules) do
-        append(for_refresh, System.mkpath(include_dir, string.format('%s.sh', pkg.name)))
-        for name, config in pairs(pkg.configs) do
-            append(for_refresh, System.mkpath(include_dir, string.format('%s:%s.sh', pkg.name, name)))
-        end
+    local for_refresh = {} -- Jagen:find_for_refresh()
+    local include_dir = Jagen.include_dir
+    for pkg in each(rules) do
+        append(for_refresh, System.mkpath(include_dir, string.format('%s.sh', pkg.ref)))
     end
-    append(lines, format_refresh(for_refresh, sorted_rules))
+
+    append(lines, format_refresh(for_refresh))
     append(lines, format_phony(for_refresh))
 
-    extend(lines, pmap(format_package, sorted_rules))
+    extend(lines, map(format_package, rules))
 
     file:write(join_nl(lines))
     file:write('\n')

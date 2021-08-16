@@ -1,7 +1,6 @@
 local Command = require 'Command'
 
 local Target = {}
-Target.__index = Target
 
 function Target:new(o)
     o = o or {}
@@ -11,34 +10,12 @@ function Target:new(o)
 end
 
 function Target.from_args(name, stage, config)
-    return Target:new {
+    local target = Target:new {
         name   = name,
         stage  = stage,
         config = config,
     }
-end
-
-function Target:parse(rule, name, config)
-    local stage = rule[1]; assert(type(stage) == 'string')
-    if type(rule[2]) == 'string' then
-        config = rule[2]
-        table.remove(rule, 2)
-    end
-    local target = Target.from_args(name, stage, config)
-
-    for k, v in pairs(rule) do
-        target[k] = rule[k]
-    end
-
-    if #rule > 1 then
-        target.inputs = target.inputs or {}
-    end
-
-    for i = 2, #rule do
-        local input = rule[i]
-        append(target.inputs, Target.from_args(input[1], input[2], input[3]))
-    end
-
+    target.ref = tostring(target)
     return target
 end
 
@@ -121,26 +98,6 @@ function Target:__rawtostring()
     return s
 end
 
-function Target:add_inputs(target)
-    assert(target)
-    if target.inputs then
-        for item in each(target.inputs) do
-            self:append(item)
-        end
-    end
-    return self
-end
-
-function Target:append(input)
-    self.inputs = append_uniq(input, self.inputs)
-    return self
-end
-
-function Target:append_uses(input)
-    self.uses = append_uniq(input, self.uses)
-    return self
-end
-
 function Target:match(pattern)
     return string.match(tostring(self), pattern)
 end
@@ -151,6 +108,11 @@ end
 
 function Target:remove()
     return Command:new('cd "$jagen_build_dir" && rm -f', quote(self)):exec()
+end
+
+function Target:log_filename()
+    return string.format('%s.log', tostring(self))
+
 end
 
 return Target

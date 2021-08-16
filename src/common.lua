@@ -155,7 +155,10 @@ function append(list, ...)
 end
 
 function prepend(list, ...)
-    return extend({...}, list)
+    for i = 1, select('#', ...) do
+        table.insert(list, 1, select(i, ...))
+    end
+    return list
 end
 
 function extend(list, other)
@@ -408,6 +411,7 @@ function string.tocanon(s)
 end
 
 function table.get(t, ...)
+    if t == nil then return nil end
     local key, n = ..., select('#', ...)
     local val = t[key]
     if val == nil or n == 1 then
@@ -648,7 +652,7 @@ function pretty(value, level)
         else
             local keys = {}
             for k, _ in pairs(value) do
-                if type(k) == 'string' and k:sub(1, 1) ~= '_' then
+                if type(k) == 'string' then
                     if type(k) ~= 'number' then insert(keys, k) end
                 end
             end

@@ -1,7 +1,7 @@
 require 'common'
 
 local System  = require 'System'
-local Rules   = require 'Rules'
+local Engine   = require 'Engine'
 local Target  = require 'Target'
 local Source  = require 'Source'
 local Log     = require 'Log'
@@ -16,16 +16,21 @@ end
 
 Jagen =
 {
-    dir         = os.getenv('jagen_dir'),
+    dir      = os.getenv('jagen_dir'),
     root_dir = os.getenv('jagen_root_dir'),
 
     shell = os.getenv('jagen_shell'),
     flags = os.getenv('jagen_flags'),
 
-    src_dir = os.getenv('jagen_src_dir'),
-    host_dir = assert(os.getenv('jagen_host_dir')),
+    include_dir = os.getenv('jagen_include_dir'),
+    log_dir     = os.getenv('jagen_log_dir'),
+
+    work_dir   = os.getenv('jagen_work_dir'),
+    src_dir    = os.getenv('jagen_src_dir'),
+    source_dir = os.getenv('jagen_src_dir'),
+    host_dir   = assert(os.getenv('jagen_host_dir')),
     target_dir = assert(os.getenv('jagen_target_dir')),
-    build_dir = assert(os.getenv('jagen_build_dir')),
+    build_dir  = assert(os.getenv('jagen_build_dir')),
 
     has_console = os.getenv('jagen__has_console')
 }
@@ -33,7 +38,6 @@ Jagen =
 Jagen.cmd = System.mkpath(Jagen.dir, 'src', 'cmd.sh')
 Jagen.pager = os.getenv('jagen_pager') or os.getenv('PAGER') or 'less'
 Jagen.build_file = System.mkpath(Jagen.build_dir, 'build.ninja')
-Jagen.build_auto_packages_file = System.mkpath(Jagen.build_dir, '.auto-packages')
 Jagen.build_targets_file = System.mkpath(Jagen.build_dir, '.build-targets')
 
 function Jagen.flag(f)
@@ -45,51 +49,14 @@ function Jagen.flag(f)
     return false
 end
 
-function Jagen:find_in_path(pathname)
-    Log.debug2('find_in_path: %s', pathname)
-    local tried_paths = {}
-    for dir in each(Jagen:path()) do
-        local path = System.mkpath(dir, pathname)
-        append(tried_paths, path)
-        local file = io.open(path)
-        if file then
-            file:close()
-            return path, tried_paths
-        end
-    end
-    return nil, tried_paths
-end
-
-function Jagen:path()
-    if self._path then return self._path end
-    local path = {}
-    for item in string.gmatch(os.getenv('jagen_path') or '', '[^\t\n]+') do
-        append(path, item)
-    end
-    self._path = path
-    return path
-end
-
 function Jagen:find_for_refresh()
     return Command:new(quote(Jagen.cmd), 'find_for_refresh'):aslist()
-end
-
-function Jagen._load_layers()
-    local path, layers = table.copy(Jagen:path()), {}
-    assert(#path >= 2)
-    table.remove(path)
-    table.remove(path, 1)
-    for dir in each(path) do
-        local name = assert(dir:match('.*/(.+)'), 'item is not a path: '..dir)
-        layers[name] = dir
-    end
-    return layers
 end
 
 -- src
 
 local function scm_packages(patterns)
-    local packages = Rules:load()
+    local packages = Engine:load()
     local o = {}
 
     if patterns and #patterns > 0 then
@@ -431,11 +398,12 @@ function Jagen.command.clean(args)
     local ignore_dirty = args['ignore-dirty'] or os.getenv('jagen__ignore_dirty')
     local ignore_exclude = args['ignore-exclude'] or os.getenv('jagen__ignore_exclude')
 
-    local packages = Rules:load()
-    if not Rules:validate() then
-        Log.error('aborting clean due to rule errors')
-        return false
-    end
+    local packages = Engine:load()
+
+    -- if not Engine:validate() then
+    --     Log.error('aborting clean due to rule errors')
+    --     return false
+    -- end
 
     local clean_all = false
     if #args == 0 then
@@ -512,180 +480,12 @@ function Jagen.command.clean(args)
     return Jagen.command.build(specs)
 end
 
-local function prepare_root()
-    local create_dirs = {
-        'jagen_bin_dir',
-        'jagen_build_dir',
-        'jagen_include_dir',
-        'jagen_log_dir',
-    }
-    assert(System.mkdir(table.unpack(System.getenv(create_dirs))))
-    System.create_file(Jagen.build_auto_packages_file)
-    System.create_file(Jagen.build_targets_file)
-end
-
-local function generate_cargo_config(packages)
-    local targets, lines = {}, {}
-    for name, pkg in pairs(packages) do
-        for this, config in pkg:each_config() do
-            local build = this.build
-            if build.type == 'rust' then
-                local system = pkg:get_build('system', config)
-                local cc = pkg:get_build('cc', config)
-                    or pkg:get_toolchain_build('cc', config, packages)
-                    or 'gcc'
-                local toolchain_system = pkg:get_toolchain_build('system', config, packages)
-                if system and cc and toolchain_system then
-                    targets[system] = string.format('%s-%s', toolchain_system, cc)
-                end
-            end
-        end
-    end
-    for target, path in pairs(targets) do
-        table.insert(lines, string.format('[target.%s]\nlinker = "%s"', target, path))
-    end
-    local config_dir = assert(os.getenv('jagen_cargo_config_dir'))
-    local config_path = System.mkpath(config_dir, 'config')
-    System.mkdir(config_dir)
-    local file = assert(io.open(config_path, 'w'))
-    file:write(table.concat(lines, '\n'), '\n')
-    file:close()
-end
-
-local function write_auto_packages(targets)
-    table.sort(targets)
-    local file = assert(io.open(Jagen.build_auto_packages_file, 'w'))
-    for target in each(targets) do
-        file:write(tostring(target), '\n')
-    end
-    file:close()
-end
-
-local function read_auto_packages()
-    local targets = {}
-    local file = io.open(Jagen.build_auto_packages_file, 'r')
-    if file then
-        for line in file:lines() do
-            append(targets, Target.from_use(line))
-        end
-        file:close()
-    end
-    return targets
-end
-
-function Jagen.command.refresh(args, packages)
+function Jagen.command.refresh(args)
     if help_requested(args) then
         return Jagen.command['help'] { 'refresh' }
     end
 
-    prepare_root()
-
-    local packages, ok = packages, true
-    if not packages then
-        packages = Rules:load(read_auto_packages())
-    end
-    local Script = require 'Script'
-    local include_dir = assert(os.getenv('jagen_include_dir'))
-    local log_dir = assert(os.getenv('jagen_log_dir'))
-
-    Command:new('find "$jagen_include_dir"')
-           :append('-mindepth 1 -maxdepth 1')
-           :append('\\! \\( -name "*.export.sh" \\)')
-           :append('-delete'):exec()
-
-    for _, pkg in pairs(packages) do
-        Rules:add_patch_dependencies(pkg)
-        Rules:add_files_dependencies(pkg)
-        Rules:add_ordering_dependencies(pkg)
-        Script:generate(pkg, include_dir)
-
-        for stage in pkg:each() do
-            local filename = string.format('%s/%s.log', log_dir, tostring(stage))
-            assert(io.open(filename, 'a+')):close()
-        end
-    end
-
-    do
-        local file = io.open(Jagen.build_targets_file, 'r')
-        if file then
-            for line in file:lines() do
-                local target = Target:from_arg(line)
-                for name, pkg in pairs(packages) do
-                    if name == pkg.name then
-                        for stage in pkg:each() do
-                            if stage == target then
-                                stage.interactive = true
-                            end
-                        end
-                    end
-                end
-            end
-            file:close()
-        end
-    end
-
-    Ninja.generate(Jagen.build_file, packages)
-    if Rules:have_rust() then
-        generate_cargo_config(packages)
-    end
-
-    local names = {}
-    for name, _ in pairs(packages) do
-        table.insert(names, name)
-    end
-    table.sort(names)
-
-    local names_file = assert(io.open(System.mkpath(Jagen.build_dir, '.jagen-names'), 'wb'))
-    local scm_names_file = assert(io.open(System.mkpath(Jagen.build_dir, '.jagen-scm-names'), 'wb'))
-    local configs_file = assert(io.open(System.mkpath(Jagen.build_dir, '.jagen-configs'), 'wb'))
-    local targets_file = assert(io.open(System.mkpath(Jagen.build_dir, '.jagen-targets'), 'wb'))
-    local layers_file = assert(io.open(System.mkpath(Jagen.build_dir, '.jagen-layers'), 'wb'))
-    local stages, cstages, configs = {}, {}, {}
-
-    for _, name in ipairs(names) do
-        local pkg = packages[name]
-        assert(names_file:write(string.format('%s\n', name)))
-        if pkg.source and pkg.source:is_scm() then
-            assert(scm_names_file:write(string.format('%s\n', name)))
-        end
-        for config, _ in pairs(pkg.configs or {}) do
-            configs[config] = true
-            assert(configs_file:write(string.format('%s:%s\n', name, config)))
-            assert(targets_file:write(string.format('%s::%s\n', name, config)))
-        end
-        assert(configs_file:write(string.format('%s\n', name)))
-        for target in pkg:each() do
-            if target.config then
-                cstages[target.stage] = true
-            else
-                stages[target.stage] = true
-            end
-            assert(targets_file:write(string.format('%s\n', tostring(target))))
-        end
-    end
-    for stage in pairs(stages) do
-        assert(targets_file:write(string.format(':%s\n', stage)))
-    end
-    for stage in pairs(cstages) do
-        for config in pairs(configs) do
-            assert(targets_file:write(string.format(':%s:%s\n', stage, config)))
-        end
-    end
-    for config in pairs(configs) do
-        assert(targets_file:write(string.format('::%s\n', config)))
-    end
-    local layers = Jagen._load_layers()
-    for name, path in pairs(layers) do
-        assert(layers_file:write(string.format('%s\n', name)))
-    end
-
-    names_file:close()
-    scm_names_file:close()
-    configs_file:close()
-    targets_file:close()
-    layers_file:close()
-
-    return Rules:validate()
+    return require('Refresh'):run(args)
 end
 
 local function write_targets(targets, args)
@@ -752,11 +552,11 @@ function Jagen.command.build(args)
         return Jagen.command['help']({ 'build' }, args['help'].short)
     end
 
-    local packages = Rules:load()
-    if not Rules:validate() then
-        Log.error('aborting the build due to rule errors')
-        return false
-    end
+    local packages = Engine:load_rules()
+    -- if not Engine:validate() then
+    --     Log.error('aborting the build due to rule errors')
+    --     return false
+    -- end
 
     local targets, arg_clean = {}, args['clean'] or args['clean-ignored']
 
@@ -834,10 +634,6 @@ function Jagen.command.build(args)
         return false
     end
 
-    -- if not table.iequal(read_auto_packages(), new_auto_pkgs) then
-    --     write_auto_packages(new_auto_pkgs)
-    -- end
-
     write_targets(targets, args)
 
     local args_path = System.mkpath(Jagen.build_dir, '.build-args')
@@ -904,7 +700,7 @@ function Jagen.command.list(args)
 
     local depth, show_all = args['depth'], args['all']
 
-    local packages = Rules:load()
+    local packages = Engine:load()
     local pkg_list, name_max = {}, 0
     for name, pkg in pairs(packages) do
         if #name > name_max then name_max = #name end
@@ -958,7 +754,7 @@ function Jagen.command.list(args)
     end
 
     for _, pkg in ipairs(pkg_list) do
-        io.write(pkg.name, Rules:format_contexts(pkg, start_col, start_col - #pkg.name), '\n')
+        io.write(pkg.name, Engine:format_contexts(pkg, start_col, start_col - #pkg.name), '\n')
     end
 
     return true
