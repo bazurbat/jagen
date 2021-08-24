@@ -29,6 +29,16 @@ function comp(...)
     end
 end
 
+function kvpairs(t)
+    return function(t, k)
+        local v
+        repeat
+            k, v = next(t, k)
+        until type(k) ~= 'number'
+        return k, v
+    end, t
+end
+
 function inext(t, i)
     if not i then i = 0 end
     i = i+1

@@ -67,6 +67,13 @@ function Engine:load_rules()
 
     self:apply_final_templates()
 
+    local Source = require 'Source'
+    for pkg in each(self.packages) do
+        if pkg.source ~= nil then
+            pkg.source = Source:create(pkg.source, pkg.name)
+        end
+    end
+
     -- for pkg in each(self.packages) do
     --     print(pretty(pkg))
     -- end
