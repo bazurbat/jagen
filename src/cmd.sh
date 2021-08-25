@@ -207,20 +207,16 @@ echo_if_exists() {
 
 cmd_find_for_refresh() {
     . "$jagen_dir/src/common.sh" || return
-    local paths="$jagen_dir" IFS="$jagen_S"
-    paths="${paths}${jagen_S}$(jagen__resolve_layers)" || return
+    local IFS="$jagen_S" paths='' dir
+    for dir in bin lib src; do
+        paths="${paths}${jagen_S}${jagen_dir}/${dir}"
+    done
     if [ -d "$jagen_root_lib_dir" ]; then
         paths="${paths}${jagen_S}${jagen_root_lib_dir}"
     fi
-    find $paths '(' \
-        -name '.git' -o \
-        -path '*jagen/doc' -o \
-        -name tags -o \
-        -name Session.vim \
-    ')' -prune -o -print
+    paths=${paths#${jagen_S}}
+    find $paths -type f -o -type d
     echo "$jagen_root_dir"
-    echo "$jagen_build_dir/.auto-packages"
-    echo "$jagen_build_dir/.build-targets"
     echo_if_exists "$jagen_root_dir/config.sh"
     echo_if_exists "$jagen_root_dir/env.sh"
     echo_if_exists "$jagen_root_dir/jagen"

@@ -316,14 +316,14 @@ function P.generate(out_file, rules)
         format_rule('refresh', join_space(nonempty { Jagen.shell, System.expand('$jagen_root_dir/jagen'), 'refresh' }))
     }
 
-    local for_refresh = {} -- Jagen:find_for_refresh()
+    local for_refresh = Jagen:find_for_refresh()
     local include_dir = Jagen.include_dir
     for pkg in each(rules) do
         append(for_refresh, System.mkpath(include_dir, string.format('%s.sh', pkg.ref)))
     end
 
     append(lines, format_refresh(for_refresh))
-    append(lines, format_phony(for_refresh))
+    -- append(lines, format_phony(for_refresh))
 
     extend(lines, map(format_package, rules))
 
