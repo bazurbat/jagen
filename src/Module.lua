@@ -17,6 +17,7 @@ function Module:new(name)
     local module = {
         name = name,
         uses = {},
+        configs = {},
         packages  = {},
         templates = {},
         parse_templates = {},
@@ -120,6 +121,10 @@ function Module.env.use(name)
     end
 
     append(current.uses, this)
+end
+
+function Module.env.config(rule)
+    append(current.configs, rule)
 end
 
 function Module.env.package(rule)

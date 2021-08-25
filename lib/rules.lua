@@ -1,3 +1,14 @@
+config {
+    name = 'jagen',
+    dir = {
+        bin     = '${dir.root}/bin',
+        build   = '${dir.root}/build',
+        include = '${dir.root}/include',
+        log     = '${dir.root}/log',
+        src     = '${dir.root}/src',
+    }
+}
+
 -- template {
 --     parse = true,
 --     match = { value 'name', anyof(value 'config', none) },

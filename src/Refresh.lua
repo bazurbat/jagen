@@ -7,24 +7,6 @@ local Target  = require 'Target'
 
 local Refresh = {}
 
-function Refresh:prepare_root()
-    local create_dirs = {
-        'jagen_bin_dir',
-        'jagen_build_dir',
-        'jagen_include_dir',
-        'jagen_log_dir',
-    }
-    assert(System.mkdir(table.unpack(System.getenv(create_dirs))))
-    System.create_file(Jagen.build_targets_file)
-end
-
-function Refresh:clean_include_dir()
-    Command:new('find "$jagen_include_dir"')
-           :append('-mindepth 1 -maxdepth 1')
-           :append('-delete')
-           :exec()
-end
-
 local function generate_cargo_config(packages)
     local targets, lines = {}, {}
     for name, pkg in pairs(packages) do
@@ -57,22 +39,23 @@ function Refresh:run(args)
     local engine = Engine:new()
     local packages = engine:load_rules()
 
-    self:prepare_root()
-    self:clean_include_dir()
+    -- print(pretty(engine.config.jagen))
 
-    local include_dir = Jagen.include_dir
-    local log_dir = Jagen.log_dir
+    local dir = engine.config.jagen.dir
+
+    System.mkdir(dir.build, dir.include, dir.log)
+    -- System.mkdir(dir.build, dir.include)
 
     local targets = {}
 
     for pkg in each(packages) do
-        local filename = System.mkpath(include_dir, string.format('%s.sh', pkg.name))
+        local filename = System.mkpath(dir.include, string.format('%s.sh', pkg.name))
         Script:write(pkg, filename)
 
         for name, stage in pairs(pkg.stages or {}) do
             local target = Target.from_args(pkg.name, name, pkg.config)
             append(targets, target)
-            local filename = string.format('%s/%s', log_dir, target:log_filename())
+            local filename = string.format('%s/%s', dir.log, target:log_filename())
             assert(io.open(filename, 'a+')):close()
         end
     end

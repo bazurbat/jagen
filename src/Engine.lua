@@ -3,6 +3,7 @@ local Target   = require 'Target'
 local Log      = require 'Log'
 local Package  = require 'Package'
 local Module   = require 'Module'
+local Rule     = require 'Rule'
 
 local Engine = {}
 local Pass = {}
@@ -10,6 +11,7 @@ local Pass = {}
 function Engine:new()
     local engine = {
         path = {},
+        config = {},
         modules = {},
         packages  = {},
         templates = {},
@@ -74,9 +76,15 @@ function Engine:load_rules()
         end
     end
 
-    -- for pkg in each(self.packages) do
-    --     print(pretty(pkg))
-    -- end
+    self.config.jagen.dir.root = os.getenv('jagen_root_dir')
+
+    for key, config in pairs(self.config) do
+        Rule.expand(config, config)
+    end
+
+    for pkg in each(self.packages) do
+        print(pretty(pkg))
+    end
 
     return self.packages
 end
@@ -127,6 +135,9 @@ end
 
 function Engine:process_modules(pass, modules)
     for mod in each(modules) do
+        for config in each(mod.configs) do
+            self.config[config.name] = config
+        end
         self.modules[mod.filename] = true
         extend(self.parse_templates, mod.parse_templates)
     end
