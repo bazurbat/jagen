@@ -31,6 +31,12 @@
 
 template {
     parse = true,
+    match = { class = bind(value(), oftype 'string') },
+    apply = { class = { value() } }
+}
+
+template {
+    parse = true,
     match = { build = bind(value(), oftype 'string') },
     apply = { build = { type = value() } }
 }
@@ -53,6 +59,31 @@ template {
     apply = { install = { none, type = value() } }
 }
 
+-- source
+
+template {
+    match = { source = { type = anyof('git', 'hg') } },
+    apply = { source = { scm = true } }
+}
+
+template {
+    match = { source = { scm = true } },
+    apply = {
+        source = { dir = '${jagen.source_dir}/${name}' }
+    }
+}
+
+template {
+    match = { source = { dir = some } },
+    apply = {
+        export = {
+            source = { dir = '${source.dir}' },
+        }
+    }
+}
+
+-- work_dir
+
 template {
     match = { config = none },
     apply = {
@@ -67,30 +98,14 @@ template {
     }
 }
 
-template {
-    match = { build = some },
-    apply = {
-        build = {
-            dir = '${work_dir}'
-        }
-    }
-}
+-- clean
 
 template {
     match = { source = some },
-    apply = {
-        stages = {
-            clean = {}
-        }
-    }
+    apply = { stages = { clean = {} } }
 }
 
-template {
-    match = { source = { type = anyof('git', 'hg') } },
-    apply = {
-        source = { scm = true }
-    }
-}
+-- update
 
 template {
     match = { source = { type = anyof('git', 'hg') } },
@@ -101,6 +116,8 @@ template {
     }
 }
 
+-- unpack
+
 template {
     match = { source = { type = '^dist' } },
     apply = {
@@ -109,6 +126,8 @@ template {
         }
     }
 }
+
+-- patch
 
 template {
     match = {
@@ -134,6 +153,24 @@ template {
     }
 }
 
+-- build
+
+-- build.dir
+
+template {
+    match = { build = some },
+    apply = {
+        build = { dir = '${work_dir}' },
+        export = {
+            build = {
+                dir = '${build.dir}'
+            }
+        }
+    }
+}
+
+-- build.arch
+
 template {
     match = {
         build = { system = value 'system', arch = none }
@@ -144,6 +181,21 @@ template {
         }
     }
 }
+
+-- build.cxxflags
+
+template {
+    match = {
+        build = { cflags = some, cxxflags = none }
+    },
+    apply = {
+        build = {
+            cxxflags = '${build.cflags}'
+        }
+    }
+}
+
+-- stage: configure
 
 template {
     match = {
@@ -183,6 +235,8 @@ template {
     }
 }
 
+-- stage: compile
+
 template {
     match = { build = { type = some } },
     apply = {
@@ -191,6 +245,8 @@ template {
         }
     }
 }
+
+-- install
 
 template {
     match = {
@@ -204,12 +260,30 @@ template {
     }
 }
 
+-- stage: install
+
+template {
+    match = { install = { type = some } },
+    apply = { stages  = { install = {} } }
+}
+
 template {
     match = {
+        build   = anyof(none, { type = none }),
         install = { type = some },
+        stages  = { clean = some }
+    },
+    apply = {
         stages = {
-            compile = some
+            install = { inputs = { stage 'clean' } }
         }
+    }
+}
+
+template {
+    match = {
+        install = { type    = some },
+        stages  = { compile = some }
     },
     apply = {
         stages = {
@@ -217,6 +291,108 @@ template {
         }
     }
 }
+
+-- host
+
+template {
+    match = { class = contains 'host' },
+    apply = {
+        install = {
+            prefix = '${jagen.host_dir}',
+            root = ''
+        },
+        env = {
+            PKG_CONFIG_PATH = '${install.prefix}/lib/pkgconfig'
+        }
+    }
+}
+
+-- target
+
+template {
+    match = { class = contains 'target' },
+    apply = {
+        install = {
+            prefix = '',
+            root = '${jagen.target_dir}'
+        },
+        env = {
+            PKG_CONFIG_SYSROOT_DIR = "${install.root}",
+            PKG_CONFIG_LIBDIR = "${install.root}/lib/pkgconfig",
+            PKG_CONFIG_PATH = "${install.root}/usr/lib/pkgconfig",
+
+            -- pkg-config tries to be smart and removes -I and -L flags from it's
+            -- output when they resemble system paths. This causes SYSROOT_DIR to
+            -- not be added to them, which prevents packages to find each other
+            -- when building the sysroot itself.
+            PKG_CONFIG_ALLOW_SYSTEM_CFLAGS = 1,
+            PKG_CONFIG_ALLOW_SYSTEM_LIBS = 1
+        }
+    }
+}
+
+template {
+    match = {
+        class = contains 'target',
+        build = { type = 'cmake' }
+    },
+    apply = {
+        build = {
+            cmake = {
+                options = {
+                    '-DCMAKE_FIND_ROOT_PATH="${install.root}"',
+                    '-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER',
+                    '-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY',
+                    '-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY',
+                    '-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY'
+                }
+            }
+        }
+    }
+}
+
+-- install.dir
+
+template {
+    match = { install = { root = some, prefix = some } },
+    apply = {
+        install = { dir = '${install.root}${install.prefix}' }
+    }
+}
+
+template {
+    match = { install = { dir = some } },
+    apply = {
+        export = {
+            install = {
+                dir = '${install.dir}'
+            }
+        }
+    }
+}
+
+-- toolchain
+
+template {
+    match = {
+        build = {
+            type = some,
+            toolchain = none
+        }
+    },
+    apply = {
+        build = {
+            toolchain = 'system-native'
+        }
+    }
+}
+
+template {
+    match = { build = { toolchain = some } },
+    apply = { uses = { '${build.toolchain}' } }
+}
+
+-- uses
 
 template {
     match = { uses = bind(value 'uses', oftype 'string') },
@@ -245,183 +421,6 @@ template {
     apply = {
         import = {
             [each] = pkg(each, 'export')
-        }
-    }
-}
-
-template {
-    match = { class = contains 'host' },
-    apply = {
-        install = {
-            prefix = '${jagen.host_dir}',
-            root = ''
-        },
-        env = {
-            PKG_CONFIG_PATH = '${install.prefix}/lib/pkgconfig'
-        }
-    }
-}
-
-template {
-    match = {
-        build = {
-            type = some,
-            toolchain = none
-        }
-    },
-    apply = {
-        build = {
-            toolchain = 'system-native'
-        }
-    }
-}
-
-template {
-    match = { build = { toolchain = some } },
-    apply = {
-        uses = { '${build.toolchain}' }
-    }
-}
-
-template {
-    match = { class = contains 'target' },
-    apply = {
-        install = {
-            prefix = '',
-            root = '${jagen.target_dir}'
-        },
-        env = {
-            PKG_CONFIG_SYSROOT_DIR = "${install.root}",
-            PKG_CONFIG_LIBDIR = "${install.root}/lib/pkgconfig",
-            PKG_CONFIG_PATH = "${install.root}/usr/lib/pkgconfig",
-
-            -- pkg-config tries to be smart and removes -I and -L flags from it's
-            -- output when they resemble system paths. This causes SYSROOT_DIR to
-            -- not be added to them, which prevents packages to find each other
-            -- when building the sysroot itself.
-            PKG_CONFIG_ALLOW_SYSTEM_CFLAGS = 1,
-            PKG_CONFIG_ALLOW_SYSTEM_LIBS = 1
-        }
-    }
-}
-
-template {
-    match = { install = { root = some, prefix = some } },
-    apply = {
-        install = { dir = '${install.root}${install.prefix}' }
-    }
-}
-
-template {
-    match = { config = 'target', build = { type = 'cmake' } },
-    apply = {
-        build = {
-            cmake = {
-                options = {
-                    '-DCMAKE_FIND_ROOT_PATH="${install.root}"',
-                    '-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER',
-                    '-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY',
-                    '-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY',
-                    '-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY'
-                }
-            }
-        }
-    }
-}
-
-template {
-    match = { source = { type = anyof('git', 'hg') } },
-    apply = {
-        source = { dir = '${jagen.source_dir}/${name}' }
-    }
-}
-
--- template {
---     match = {
---         build = { in_source = true },
---         source = { type = 'git' }
---     },
---     source = {
---         ignore_dirty = 'in_source'
---     }
--- }
-
--- template {
---     match = { build = { type = 'android-gradle' } },
---     source = {
---         ignore_dirty = false
---     },
---     build = {
---         in_source = true,
---         toolchain = 'android-sdk-tools:host',
---         profile   = 'debug',
---         clean     = '$build.dir/app/build'
---     }
--- }
-
--- template {
---     match = { build = { in_source = true } },
---     build = { dir = '${source.dir}' }
--- }
-
--- template {
---     name = 'kernel',
---     config = '${config}',
---     match = {
---         build = { type = 'linux-module' }
---     }
--- }
-
--- template {
---     match = { build = { type = 'linux-module' } },
---     apply = {
---         stages = {
---             configure = { inputs = { target('kernel', 'configure') } },
---             compile   = { inputs = { target('kernel', 'compile') } },
---             install   = { inputs = { target('kernel', 'install') } },
---         }
---     }
--- }
-
-template {
-    match = { source = { dir = some } },
-    apply = {
-        export = {
-            dir = '${source.dir}',
-            source = { dir = '${source.dir}' },
-        }
-    }
-}
-
-template {
-    match = { build = { dir = some } },
-    apply = {
-        export = {
-            build = {
-                dir = '${build.dir}'
-            }
-        }
-    }
-}
-
-template {
-    match = { install = { dir = some } },
-    apply = {
-        export = {
-            install = {
-                dir = '${install.dir}'
-            }
-        }
-    }
-}
-
-template {
-    match = {
-        build = { cflags = some, cxxflags = none }
-    },
-    apply = {
-        build = {
-            cxxflags = '${build.cflags}'
         }
     }
 }
