@@ -39,12 +39,16 @@ function Refresh:run(args)
     local engine = Engine:new()
     local packages = engine:load_rules()
 
+    engine:finalize()
+
+    -- print(pretty(packages))
+
     -- print(pretty(engine.config.jagen))
 
     local dir = engine.config.jagen.dir
 
-    System.mkdir(dir.build, dir.include, dir.log)
-    -- System.mkdir(dir.build, dir.include)
+    -- System.mkdir(dir.build, dir.include, dir.log)
+    System.mkdir(dir.build, dir.include)
 
     local targets = {}
 
@@ -55,8 +59,8 @@ function Refresh:run(args)
         for name, stage in pairs(pkg.stages or {}) do
             local target = Target.from_args(pkg.name, name, pkg.config)
             append(targets, target)
-            local filename = string.format('%s/%s', dir.log, target:log_filename())
-            assert(io.open(filename, 'a+')):close()
+            -- local filename = string.format('%s/%s', dir.log, target:log_filename())
+            -- assert(io.open(filename, 'a+')):close()
         end
     end
 

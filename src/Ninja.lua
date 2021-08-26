@@ -240,10 +240,10 @@ end
 
 local function format_package(pkg)
     local lines  = {}
-    local stages = table.keys(pkg.stages)
-    table.sort(stages)
-    for name in each(stages) do
-        append(lines, format_stage(name, pkg.stages[name], pkg))
+    local targets = table.keys(pkg._targets)
+    table.sort(targets)
+    for name in each(targets) do
+        append(lines, format_stage(name, pkg._targets[name], pkg))
     end
     return join(lines)
 end

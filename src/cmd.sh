@@ -40,6 +40,8 @@ cmd_build() {
 
     assert_ninja_found
 
+    mkdir -p "$jagen_log_dir"
+
     while [ $# -gt 0 ]; do
         case $1 in
             --all) build_all=1 ;;

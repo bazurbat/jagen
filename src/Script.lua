@@ -86,7 +86,7 @@ function P:write(pkg, filename)
 
     local properties = {}
     for key, val in pairs(pkg) do
-        if type(val) == 'string' then
+        if key:sub(1, 1) ~= '_' and type(val) == 'string' then
             append(properties, key)
             skip[key] = true
         end
@@ -100,7 +100,9 @@ function P:write(pkg, filename)
     local other_sections = {}
 
     for key, val in pairs(pkg) do
-        if not skip[key] and not standard_sections[key] then
+        if not skip[key]
+                and not standard_sections[key]
+                and not key:sub(1, 1) == '_' then
             append(other_sections, key)
         end
     end
@@ -131,6 +133,12 @@ function P:write(pkg, filename)
 
     for name in each(other_sections) do
         write(add_line, name, pkg[name])
+    end
+
+    if pkg._targets then
+        for stage, target in pairs(pkg._targets) do
+            write(add_line, string.format('stage_%s_log', stage), target.log)
+        end
     end
 
     if pkg.env ~= nil then
