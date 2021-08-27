@@ -166,8 +166,6 @@ template {
 
 -- build
 
--- build.dir
-
 template {
     match = { build = some },
     apply = {
@@ -180,9 +178,22 @@ template {
     }
 }
 
--- build.arch
+template {
+    final = true,
+    match = {
+        build = { toolchain = value 'toolchain' }
+    },
+    apply = {
+        build = {
+            system = pkg(value 'toolchain', 'export.system'),
+            arch   = pkg(value 'toolchain', 'export.arch'),
+            cpu    = pkg(value 'toolchain', 'export.cpu'),
+        }
+    }
+}
 
 template {
+    final = true,
     match = {
         build = { system = value 'system', arch = none }
     },
@@ -193,15 +204,45 @@ template {
     }
 }
 
--- build.cxxflags
+template {
+    final = true,
+    match = {
+        build = { system = value 'system' }
+    },
+    apply = {
+        build = {
+           toolchain_prefix = cat(value 'system', '-')
+        }
+    }
+}
 
 template {
     match = {
         build = { cflags = some, cxxflags = none }
     },
     apply = {
+        build = { cxxflags = '${build.cflags}' }
+    }
+}
+
+template {
+    final = true,
+    match = {
         build = {
-            cxxflags = '${build.cflags}'
+            type = 'cmake',
+            toolchain = value 'toolchain',
+            cmake_executable = anyof(value 'cmake_executable', none)
+        }
+    },
+    apply = {
+        build = {
+            cmake_executable = anyof(value 'cmake_executable',
+                pkg(value 'toolchain', 'export.cmake_executable'),
+                'cmake')
+            -- cmake_generator      = 'g',
+            -- cmake_options        = 'o',
+            -- cmake_module_path    = 'm',
+            -- cmake_toolchain_file = 't'
         }
     }
 }
@@ -276,6 +317,19 @@ template {
 template {
     match = { install = { type = some } },
     apply = { stages  = { install = {} } }
+}
+
+template {
+    match = {
+        build   = anyof(none, { type = none }),
+        install = { type = some },
+        stages  = { unpack = some }
+    },
+    apply = {
+        stages = {
+            install = { inputs = { stage 'unpack' } }
+        }
+    }
 }
 
 template {
@@ -424,6 +478,8 @@ template {
     }
 }
 
+-- final
+
 template {
     final = true,
     match = {
@@ -432,6 +488,18 @@ template {
     apply = {
         import = {
             [each] = pkg(each, 'export')
+        }
+    }
+}
+
+template {
+    final = true,
+    match = {
+        build = { toolchain = value 'toolchain' },
+    },
+    apply = {
+        import = {
+            toolchain = pkg(value 'toolchain', 'export'),
         }
     }
 }

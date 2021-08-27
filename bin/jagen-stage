@@ -78,35 +78,6 @@ cd "$jagen_build_dir" || exit
 
 # include scripts
 include "$jagen_include_dir/$(pkg__fname "$pkg_name")" || exit
-if [ "$pkg_config" ]; then
-    include "$jagen_include_dir/$(pkg__fname "$pkg_name" "$pkg_config")" || exit
-    # append config-specific uses
-    # This might cause a duplicated include of export files but this is OK
-    # because they are fully expanded and should not have any side effects.
-    pkg_uses="$pkg_uses $(eval echo \${pkg__${pkg_config}__uses})"
-fi
-
-: "${pkg_build_arch=$toolchain_arch}"
-: "${pkg_build_cpu=$toolchain_cpu}"
-: "${pkg_build_system=$toolchain_system}"
-
-if [ "${pkg_build_system}" ]; then
-    pkg_toolchain_prefix=${pkg_build_system}-
-fi
-
-# cmake-specific defaults
-if [ "$pkg_config" ]; then
-    for name in cmake_executable cmake_generator cmake_options \
-                cmake_module_path cmake_toolchain_file
-    do
-        eval ": \${pkg_build_${name}=\${toolchain_${name}:-\${jagen_${pkg_config}_${name}:-\${jagen_${name}}}}}"
-    done; unset name
-fi
-
-: "${pkg_build_cmake_executable:=cmake}"
-
-# backwards compatibility
-pkg_build_generator=$pkg_build_cmake_generator
 
 if [ "$pkg_build_toolchain" ]; then
     use_env toolchain
@@ -117,28 +88,9 @@ if [ "$pkg_config" ]; then
     use_env "$pkg_config"
 fi
 
-if [ -z "$jagen_recursive" ]; then
-    if [ "$pkg_config" ]; then
-        if [ "$pkg_stage" = 'install' ] && [ "$pkg_install_spawn_name" ]; then
-            pkg__spawn "$pkg_install_spawn_name"
-            exit
-        elif [ "$pkg_build_spawn_name" ]; then
-            pkg__spawn "$pkg_build_spawn_name"
-            exit
-        fi
-    elif [ "$pkg_spawn_name" ]; then
-        pkg__spawn "$pkg_spawn_name"
-        exit
-    fi
+if [ -f "$pkg_backing_script" ]; then
+    include "$pkg_backing_script"
 fi
-
-pkg__file=$(find_in_path "pkg/${pkg_name}.sh")
-if [ -z "$pkg__file" ]; then
-    pkg__file=$(find_in_path "pkg/${pkg_name%~*}.sh")
-fi
-if [ "$pkg__file" ]; then
-    include "$pkg__file" || exit
-fi; unset pkg__file
 
 case $pkg_stage in
     clean|unpack|update)

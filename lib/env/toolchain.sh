@@ -7,7 +7,7 @@ pkg__get_toolchain() {
     if [ "$value" != "${value#*/}" ]; then
         echo "$value"
     else
-        echo "${pkg_toolchain_prefix}${value:-$default}"
+        echo "${pkg_build_toolchain_prefix}${value:-$default}"
     fi
 }
 
@@ -18,13 +18,13 @@ export CPP=$(pkg__get_toolchain cpp cpp)
 export  LD=$(pkg__get_toolchain ld  ld )
 
 # Some of those are not very standard but relatively common.
-export AR="${pkg_toolchain_prefix}ar"
-export AS="${pkg_toolchain_prefix}as"
-export NM="${pkg_toolchain_prefix}nm"
-export OBJCOPY="${pkg_toolchain_prefix}objcopy"
-export OBJDUMP="${pkg_toolchain_prefix}objdump"
-export RANLIB="${pkg_toolchain_prefix}ranlib"
-export STRIP="${pkg_toolchain_prefix}strip"
+export AR="${pkg_build_toolchain_prefix}ar"
+export AS="${pkg_build_toolchain_prefix}as"
+export NM="${pkg_build_toolchain_prefix}nm"
+export OBJCOPY="${pkg_build_toolchain_prefix}objcopy"
+export OBJDUMP="${pkg_build_toolchain_prefix}objdump"
+export RANLIB="${pkg_build_toolchain_prefix}ranlib"
+export STRIP="${pkg_build_toolchain_prefix}strip"
 
 export jagen_pkg__cflags="$toolchain_cflags"
 export jagen_pkg__cxxflags="$toolchain_cxxflags"

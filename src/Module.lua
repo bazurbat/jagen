@@ -62,10 +62,11 @@ function Module:load_package(target, dirlist)
     for dir in each(dirlist) do
         prepend(path, string.format('%s/pkg/?.lua', dir, name))
     end
-    local filename, err = package.searchpath(name, table.concat(path, ';'))
+    local searchpath = table.concat(path, ';')
+    local filename, err = package.searchpath(name, searchpath, '')
 
     if not filename then
-        Log.debug2("try load package '%s': file not found", target.ref)
+        Log.debug2("try load package '%s': file not found in %s", target.ref, searchpath)
         return nil, err
     end
 
@@ -185,9 +186,21 @@ end
 function Module.env.anyof(...)
     local items = { ... }
     return function(value, state)
-        for i = 1, #items do
-            if Rule:match(value, items[i], state) then
-                return true
+        if state.matching then
+            for i = 1, #items do
+                if Rule:match(value, items[i], state) then
+                    return true
+                end
+            end
+        else
+            for i = 1, #items do
+                value = items[i]
+                if type(value) == 'function' then
+                    value = value(nil, state)
+                end
+                if value then
+                    return value
+                end
             end
         end
     end
@@ -249,7 +262,7 @@ function Module.env.pkg(ref, key)
         if type(ref) == 'function' then
             this_ref = ref(nil, state)
         end
-        return table.get(state.packages, this_ref, key)
+        return table.get(state.packages, this_ref, unpack(string.split2(key, '.')))
     end
 end
 

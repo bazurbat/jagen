@@ -64,7 +64,7 @@ pkg_run_patch() {
 
 pkg_strip_root() {
     local root="${1:?}" files
-    local strip="${pkg_toolchain_prefix}strip"
+    local strip="${pkg_build_toolchain_prefix}strip"
 
     files=$(find "$root" -type f -not -name "*.ko" \
         "(" -path "*/lib*" -o -path "*/bin*" -o -path "*/sbin*" ")" | \
@@ -206,25 +206,4 @@ pkg_is_debug() {
 
 pkg_is_release_with_debug() {
     test "$(pkg_get_build_profile)" = "release_with_debug"
-}
-
-pkg__spawn() {
-    local name="$1"
-    local IFS="$jagen_S" S="$jagen_S" A=
-    local layer_dirs="$(jagen__resolve_layers)" dir cmd spawn
-    A="--bind-dir${S}${jagen_root_dir}${S}--bind-dir${S}${jagen_dir}"
-    for dir in $layer_dirs; do
-        A="$A$S--bind-dir$S$dir"
-    done
-    cmd=$(cat <<EOF
-export jagen_recursive=1 jagen__stage_verbose=$jagen__stage_verbose
-. "$jagen_root_dir/env.sh" && jagen-stage $pkg_name $pkg_stage $pkg_config
-EOF
-)
-    if [ "$(command -v spawn-"$name")" ]; then
-        spawn="spawn-$name"
-    else
-        spawn="${spawn_dir:?}/spawn"
-    fi
-    "$spawn" $A "$name" -- sh -c "$cmd"
 }

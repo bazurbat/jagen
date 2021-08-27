@@ -78,18 +78,28 @@ function Engine:load_rules()
 
     self.config.jagen.dir.root = os.getenv('jagen_root_dir')
 
+    for pkg in each(self.packages) do
+        Rule.expand(pkg, pkg)
+    end
+
     for key, config in pairs(self.config) do
         Rule.expand(config, config)
     end
 
-    -- for pkg in each(self.packages) do
-    --     print(pretty(pkg))
-    -- end
+    for pkg in each(self.packages) do
+        print(pretty(pkg))
+    end
 
     return self.packages
 end
 
 function Engine:finalize()
+    local path = {}
+    for dir in each(self.path) do
+        append(path, string.format('%s/pkg/?.sh', dir))
+    end
+    local script_path = table.concat(path, ';')
+
     for pkg in each(self.packages) do
         pkg._targets = {}
         for name, stage in pairs(pkg.stages) do
@@ -97,6 +107,11 @@ function Engine:finalize()
             target.log = System.mkpath(self.config.jagen.dir.log, target.ref..'.log')
             target.inputs = stage.inputs
             pkg._targets[name] = target
+        end
+
+        local filename, err = package.searchpath(pkg.name, script_path, '')
+        if filename then
+            pkg.backing_script = filename
         end
     end
 end

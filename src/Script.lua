@@ -153,6 +153,11 @@ function P:write(pkg, filename)
         export_lines[i] = string.format('export %s', export_lines[i])
     end
 
+    if pkg.import ~= nil then
+        add_line('')
+        write(add_line, '', pkg.import)
+    end
+
     local file = assert(io.open(filename, 'w+'))
     file:write(table.concat(lines, '\n'), '\n')
     if next(export_lines) then
