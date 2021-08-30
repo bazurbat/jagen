@@ -18,6 +18,12 @@ function Engine:new()
         final_templates = {},
         parse_templates = {}
     }
+    engine.config.jagen = {
+        dir = {
+            core = os.getenv('jagen_dir'),
+            root = os.getenv('jagen_root_dir'),
+        }
+    }
     setmetatable(engine, self)
     self.__index = self
     return engine
@@ -76,14 +82,12 @@ function Engine:load_rules()
         end
     end
 
-    self.config.jagen.dir.root = os.getenv('jagen_root_dir')
+    for key, config in pairs(self.config) do
+        Rule.expand(config, config)
+    end
 
     for pkg in each(self.packages) do
         Rule.expand(pkg, pkg)
-    end
-
-    for key, config in pairs(self.config) do
-        Rule.expand(config, config)
     end
 
     for pkg in each(self.packages) do
@@ -162,20 +166,32 @@ end
 
 function Engine:process_modules(pass, modules)
     for mod in each(modules) do
-        for config in each(mod.configs) do
-            self.config[config.name] = config
-        end
         self.modules[mod.filename] = true
         extend(self.parse_templates, mod.parse_templates)
     end
 
     for mod in each(modules) do
         Log.debug2('process module %s', mod)
+        for rule in each(mod.configs) do
+            self:process_config(rule, pass)
+        end
         for rule in each(mod.packages) do
             self:process_package(rule, pass)
         end
         extend(pass.templates, mod.templates)
         extend(self.final_templates, mod.final_templates)
+    end
+end
+
+function Engine:process_config(rule, pass)
+    Log.debug2('process config %s', rule.name)
+
+    local key = rule.name
+    local config = self.config[key]
+    if config then
+        Rule:merge(config, rule)
+    else
+        self.config[key] = rule
     end
 end
 
