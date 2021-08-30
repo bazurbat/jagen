@@ -35,7 +35,7 @@ local function write(fmt, name, value)
                 append(array, tostring(item))
             end
         end
-        if #array > 0 then
+        if name and name ~= '' and #array > 0 then
             fmt("%s='%s'", name, table.concat(array, '\t'))
         end
     end
@@ -142,7 +142,7 @@ function P:write(pkg, filename)
     end
 
     if pkg.env ~= nil then
-        write(add_line, 'pkg_env', pkg.env)
+        write(add_line, 'env', pkg.env)
         write(add_export_line, '', pkg.env)
     end
 

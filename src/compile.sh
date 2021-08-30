@@ -31,7 +31,6 @@ pkg_compile() {
             pkg_run make $A $pkg_build_options "$@" $MA
             ;;
         linux-kernel)
-            use_env kbuild
             pkg_run cd "${pkg_source_dir:?}"
             if [ "$pkg_build_image" ]; then
                 pkg_run make $pkg_build_image $MA

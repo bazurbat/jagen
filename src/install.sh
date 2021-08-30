@@ -33,7 +33,6 @@ pkg_install() {
                 die "unable to install: build arch is not set"
             [ "$pkg_build_image" ] ||
                 die "unable to install: build image is not set"
-            use_env kbuild
             pkg_run cd "${pkg_source_dir:?}"
             pkg_run install -vm644 \
                 "${pkg_build_dir:?}/arch/${pkg_build_arch:?}/boot/${pkg_build_image:?}" \

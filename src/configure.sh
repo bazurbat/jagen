@@ -96,7 +96,6 @@ pkg_configure() {
                 $A $pkg_build_options "$@" $MA "$pkg_source_dir"
             ;;
         linux-kernel)
-            use_env kbuild
             pkg_run cd "$pkg_source_dir"
             pkg_run make "${pkg_build_config:?build.config is not set}"
             pkg_run make prepare

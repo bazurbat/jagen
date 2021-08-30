@@ -3,7 +3,7 @@
 pkg__image() {
     case $pkg_build_type in
         linux-kernel)
-            use_env kbuild
+            # use_env kbuild
             pkg_run cd "$pkg_source_dir"
             pkg_run make "${pkg_build_image:?}"
             pkg_run install -vm644 \

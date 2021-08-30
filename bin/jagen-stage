@@ -83,11 +83,6 @@ if [ "$pkg_build_toolchain" ]; then
     use_env toolchain
 fi
 
-# config-specific adjustment of pkg env
-if [ "$pkg_config" ]; then
-    use_env "$pkg_config"
-fi
-
 if [ -f "$pkg_backing_script" ]; then
     include "$pkg_backing_script"
 fi
