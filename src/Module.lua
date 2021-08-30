@@ -173,13 +173,43 @@ function Module.env.cat(...)
     end
 end
 
+function Module.env.none(value, state)
+    if state.matching then
+        return value == nil
+    end
+end
+
 function Module.env.some(value, state)
     return value ~= nil
 end
 
-function Module.env.none(value, state)
-    if state.matching then
-        return value == nil
+function Module.env.as(name)
+    name = name or true
+    return function(value, state)
+        if not state.value[name] then
+            state.value[name] = value
+            return value
+        else
+            return state.value[name]
+        end
+    end
+end
+
+function Module.env.value(name, state)
+    local key = true
+    local function this(value, state)
+        if state.matching then
+            state.value[key] = value
+            return value
+        else
+            return state.value[key]
+        end
+    end
+    if state ~= nil then
+        return this(name, state)
+    else
+        key = name
+        return this
     end
 end
 
@@ -209,18 +239,6 @@ end
 function Module.env.oftype(typename)
     return function(value, state)
         return type(value) == typename
-    end
-end
-
-function Module.env.value(name)
-    name = name or true
-    return function(value, state)
-        if not state.value[name] then
-            state.value[name] = value
-            return value
-        else
-            return state.value[name]
-        end
     end
 end
 
@@ -256,7 +274,7 @@ function Module.env.each(values, state)
     end
 end
 
-function Module.env.pkg(ref, key)
+function Module.env.from(ref, key)
     return function(value, state)
         local this_ref
         if type(ref) == 'function' then

@@ -28,62 +28,63 @@ config {
 
 template {
     parse = true,
-    match = { value 'name', anyof(value 'config', none) },
+    match = { as 'name', anyof(as 'config', none) },
     apply = {
         none, none,
-        name   = value 'name',
-        config = value 'config'
+        name   = as 'name',
+        config = as 'config'
     }
 }
 
 template {
     parse = true,
     match = {
-        name = value 'name'
+        name = as 'name'
     },
     apply = {
-        ref = value 'name'
+        ref = as 'name'
     }
 }
 
 template {
     parse = true,
     match = {
-        name   = value 'name',
-        config = value 'config'
+        name   = as 'name',
+        config = as 'config'
     },
     apply = {
-        ref = cat(value 'name', ':', value 'config')
+        ref = cat(as 'name', ':', as 'config')
     }
 }
+
 template {
     parse = true,
-    match = { class = bind(value(), oftype 'string') },
-    apply = { class = { value() } }
+    match = { class = bind(value, oftype 'string') },
+    apply = { class = { value } }
 }
 
 template {
     parse = true,
-    match = { build = bind(value(), oftype 'string') },
-    apply = { build = { type = value() } }
+    match = { build = bind(value, oftype 'string') },
+    apply = { build = { type = value } }
 }
 
 template {
     parse = true,
-    match = { build = { bind(value(), oftype 'string') } },
-    apply = { build = { none, type = value() } }
+    match = { build = { bind(value, oftype 'string') } },
+    apply = { build = { none, type = value } }
 }
 
 template {
     parse = true,
-    match = { install = bind(value(), oftype 'string') },
-    apply = { install = { type = value() } }
+    match = { install = bind(value, oftype 'string') },
+    apply = { install = { type = value } }
 }
 
 template {
     parse = true,
-    match = { install = { bind(value(), oftype 'string') } },
-    apply = { install = { none, type = value() } }
+    match = { install = { bind(value, oftype 'string') } },
+    apply = { install = { none, type = value } }
 }
 
 -- source
@@ -214,13 +215,13 @@ template {
 template {
     final = true,
     match = {
-        build = { toolchain = value 'toolchain' }
+        build = { toolchain = value }
     },
     apply = {
         build = {
-            system = pkg(value 'toolchain', 'export.system'),
-            arch   = pkg(value 'toolchain', 'export.arch'),
-            cpu    = pkg(value 'toolchain', 'export.cpu'),
+            system = from(value, 'export.system'),
+            arch   = from(value, 'export.arch'),
+            cpu    = from(value, 'export.cpu'),
         }
     }
 }
@@ -228,11 +229,11 @@ template {
 template {
     final = true,
     match = {
-        build = { system = value 'system', arch = none }
+        build = { system = value, arch = none }
     },
     apply = {
         build = {
-            arch = bind(value 'system', match('^(%w+)-?'))
+            arch = bind(value, match('^(%w+)-?'))
         }
     }
 }
@@ -240,11 +241,11 @@ template {
 template {
     final = true,
     match = {
-        build = { system = value 'system' }
+        build = { system = value }
     },
     apply = {
         build = {
-           toolchain_prefix = cat(value 'system', '-')
+           toolchain_prefix = cat(value, '-')
         }
     }
 }
@@ -254,15 +255,17 @@ template {
     match = {
         build = {
             type = 'cmake',
-            toolchain = value 'toolchain',
+            toolchain = as 'toolchain',
             cmake_executable = anyof(value 'cmake_executable', none)
         }
     },
     apply = {
         build = {
-            cmake_executable = anyof(value 'cmake_executable',
-                pkg(value 'toolchain', 'export.cmake_executable'),
-                'cmake')
+            cmake_executable = anyof(
+                value 'cmake_executable',
+                from(value 'toolchain', 'export.cmake_executable'),
+                'cmake'
+            )
             -- cmake_generator      = 'g',
             -- cmake_options        = 'o',
             -- cmake_module_path    = 'm',
@@ -495,8 +498,8 @@ template {
 -- uses
 
 template {
-    match = { uses = bind(value 'uses', oftype 'string') },
-    apply = { uses = { value 'uses' } }
+    match = { uses = bind(value, oftype 'string') },
+    apply = { uses = { value } }
 }
 
 template {
@@ -507,7 +510,7 @@ template {
     apply = {
         stages = {
             configure = {
-                inputs = { bind(each, as_target, with_stage('install')) }
+                inputs = { bind(each, as_target, with_stage 'install') }
             }
         }
     }
@@ -522,7 +525,7 @@ template {
     },
     apply = {
         import = {
-            [each] = pkg(each, 'export')
+            [each] = from(each, 'export')
         }
     }
 }
@@ -530,11 +533,11 @@ template {
 template {
     final = true,
     match = {
-        build = { toolchain = value 'toolchain' },
+        build = { toolchain = value },
     },
     apply = {
         import = {
-            toolchain = pkg(value 'toolchain', 'export'),
+            toolchain = from(value, 'export'),
         }
     }
 }
