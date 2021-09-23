@@ -45,11 +45,13 @@ function Engine:load_rules()
     Log.debug2('load rules')
 
     local jagen = Module:load('jagen', System.mkpath(Jagen.dir, 'lib', 'rules.lua'))
-    local root  = Module:load('root', System.mkpath(Jagen.root_dir, 'rules.lua'))
+    local root_loaded, root  = pcall(Module.load, Module, 'root', System.mkpath(Jagen.root_dir, 'rules.lua'))
 
     local toplevel_modules = {}
     extend(toplevel_modules, self:unprocessed_uses(jagen))
-    extend(toplevel_modules, self:unprocessed_uses(root))
+    if root_loaded then
+        extend(toplevel_modules, self:unprocessed_uses(root))
+    end
 
     for mod in each(toplevel_modules) do
         prepend(self.path, mod:basename(mod.filename))
