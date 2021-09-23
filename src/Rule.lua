@@ -10,46 +10,6 @@ function Rule:new(def)
     return def
 end
 
-function Rule:expand(env)
-    local function sub(path)
-        local keys = path:split2('.')
-        local value
-        if #keys > 1 then
-            if keys[1] == 'jagen' then
-                table.remove(keys, 1)
-                value = table.get(Jagen, table.unpack(keys))
-            else
-                value = table.get(env, table.unpack(keys))
-            end
-        else
-            value = env[path]
-        end
-        if value then
-            return value
-        else
-            Log.warning("could not expand '%s' for package %s:%s", path, env.name, env.config)
-        end
-    end
-
-    if type(self) == 'table' then
-        for key, value in pairs(self) do
-            if type(key) == 'string' and key:sub(1, 1) ~= '_'
-               or type(key) == 'number'
-            then
-                self[key] = Rule.expand(value, env)
-            end
-        end
-    elseif type(self) == 'string' then
-        local count, depth, max_depth = 0, 0, 2
-        repeat
-            self, count = self:gsub('${([%w_][%w_.]+)}', sub)
-            depth = depth + 1
-        until count == 0 or depth == max_depth
-    end
-
-    return self
-end
-
 function Rule:match(value, pattern, state)
     if type(pattern) == 'function' then
         return pattern(value, state)

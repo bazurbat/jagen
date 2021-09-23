@@ -6,7 +6,23 @@ config {
         include = '${dir.root}/include',
         log     = '${dir.root}/log',
         src     = '${dir.root}/src',
-    }
+    },
+    dist_dir = 'dist',
+    src_dir = 'src',
+    flags = {},
+    source_exclude = {},
+    build_profile = "release"
+}
+
+config {
+    name = 'root',
+    dir = os.getenv('jagen_root_dir'),
+    bin_dir = '${dir}/bin',
+    src_dir = '${dir}/src',
+    dist_dir = '${dir}/dist',
+    build_dir = '${dir}/build',
+    include_dir = '${dir}/include',
+    log_dir = '${dir}/log',
 }
 
 config {
@@ -149,7 +165,7 @@ template {
     },
     apply = {
         source = {
-            dir = cat('${jagen.source_dir}', '/', value 'name')
+            dir = cat('${root:src_dir}', '/', value 'name')
         }
     }
 }
@@ -165,7 +181,7 @@ template {
     },
     apply = {
         source = {
-            dir = cat('${jagen.build_dir}', '/', value 'name')
+            dir = cat('${root:build_dir}', '/', value 'name')
         }
     }
 }
@@ -184,14 +200,14 @@ template {
 template {
     match = { config = none },
     apply = {
-        work_dir = '${jagen.build_dir}/${name}',
+        work_dir = '${root:build_dir}/${name}',
     }
 }
 
 template {
     match = { config = some },
     apply = {
-        work_dir = '${jagen.build_dir}/${name}:${config}',
+        work_dir = '${root:build_dir}/${name}:${config}',
     }
 }
 

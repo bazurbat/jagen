@@ -85,11 +85,15 @@ function Engine:load_rules()
     end
 
     for key, config in pairs(self.config) do
-        Rule.expand(config, config)
+        self:expand(config, config)
     end
 
     for pkg in each(self.packages) do
-        Rule.expand(pkg, pkg)
+        self:expand(pkg, pkg)
+    end
+
+    for _, config in pairs(self.config) do
+        print(pretty(config))
     end
 
     for pkg in each(self.packages) do
@@ -269,7 +273,6 @@ function Engine:apply_templates(pass)
             for template in each(self.templates) do
                 self:apply_template(template, pkg)
             end
-            pkg:expand(pkg)
         end
         extend(self.packages, pass.packages)
     end
@@ -281,8 +284,55 @@ function Engine:apply_final_templates()
         for template in each(self.final_templates) do
             self:apply_template(template, pkg)
         end
-        pkg:expand(pkg)
     end
+end
+
+function Engine:expand(object, env)
+    local function sub(expr)
+        local name, path = expr:match('([%w_]+):([%w_][%w_.]+)')
+        local config
+        if name then
+            config = self.config[name]
+            if not config then
+                error(string.format(
+                    "the expression '%s' references a config '%s' "..
+                    "which is not defined", expr, name))
+            end
+        else
+            path = expr
+        end
+        local keys = path:split2('.')
+        local value
+        if config then
+            value = table.get(config, table.unpack(keys))
+        else
+            value = table.get(env, table.unpack(keys))
+        end
+        if value then
+            return value
+        else
+            error(string.format(
+                "expansion of the expression '%s' produced nil value", expr))
+        end
+    end
+
+    if type(object) == 'table' then
+        for key, value in pairs(object) do
+            if type(key) == 'string' and key:sub(1, 1) ~= '_'
+               or type(key) == 'number'
+            then
+                object[key] = self:expand(value, env)
+            end
+        end
+    elseif type(object) == 'string' then
+        local count, depth, max_depth = 0, 0, 2
+        repeat
+            object, count = object:gsub('${([%w_][%w_.:]+)}', sub)
+            depth = depth + 1
+        until count == 0 or depth == max_depth
+    end
+
+    return object
 end
 
 return Engine
