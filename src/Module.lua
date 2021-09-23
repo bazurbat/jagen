@@ -214,22 +214,22 @@ function Module.env.value(name, state)
 end
 
 function Module.env.anyof(...)
-    local items = { ... }
+    local args = { ... }
     return function(value, state)
         if state.matching then
-            for i = 1, #items do
-                if Rule:match(value, items[i], state) then
+            for i = 1, #args do
+                if Rule:match(value, args[i], state) then
                     return true
                 end
             end
         else
-            for i = 1, #items do
-                value = items[i]
-                if type(value) == 'function' then
-                    value = value(nil, state)
+            for i = 1, #args do
+                local arg = args[i]
+                if type(arg) == 'function' then
+                    arg = arg(value, state)
                 end
-                if value then
-                    return value
+                if arg then
+                    return arg
                 end
             end
         end

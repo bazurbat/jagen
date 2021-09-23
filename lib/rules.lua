@@ -90,14 +90,83 @@ template {
 -- source
 
 template {
+    match = { source = { type = some } },
+    apply = { source = { scm = false } }
+}
+
+template {
     match = { source = { type = anyof('git', 'hg') } },
     apply = { source = { scm = true } }
 }
 
 template {
-    match = { source = { scm = true } },
+    match = { source = { name = anyof(value, none) } },
+    apply = { source = { name = anyof(value, '${name}') } }
+}
+
+template {
+    match = {
+        source = {
+            location = value 'location',
+            filename = anyof(value 'filename', none)
+        }
+    },
     apply = {
-        source = { dir = '${jagen.source_dir}/${name}' }
+        source = {
+            filename = anyof(
+                value 'filename',
+                bind(value 'location', match '^.*/(.+)$'),
+                value 'location'),
+            basename = bind(value 'location',
+                            anyof(match '^.*/(.+)%.tar%.%w+$',
+                                  match '^.*/(.+)%.[^.]+$',
+                                  match '^.*/(.+)$',
+                                  match '.*'))
+        }
+    }
+}
+
+template {
+    match = {
+        source = {
+            type = 'dir',
+            location = value,
+        }
+    },
+    apply = {
+        source = { dir = value }
+    }
+}
+
+template {
+    match = {
+        source = {
+            location = some,
+            dir = none,
+            scm = true,
+            name = as 'name'
+        }
+    },
+    apply = {
+        source = {
+            dir = cat('${jagen.source_dir}', '/', value 'name')
+        }
+    }
+}
+
+template {
+    match = {
+        source = {
+            location = some,
+            dir = none,
+            scm = false,
+            name = as 'name'
+        }
+    },
+    apply = {
+        source = {
+            dir = cat('${jagen.build_dir}', '/', value 'name')
+        }
     }
 }
 

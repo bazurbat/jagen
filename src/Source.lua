@@ -102,41 +102,6 @@ function Source:create(source, name)
         source = Source:new(source)
     end
 
-    if source.name == nil then
-        source.name = name
-    end
-
-    if source.dir and string.match(source.dir, '^[^%c%s%z/$]') then
-        dir = source.dir
-        source.dir = nil
-    end
-
-    if source.location then
-        if not source.filename then
-            source.filename = source.location:match('^.*/(.+)$') or source.location
-        end
-        if not source.basename then
-            source.basename = source:_basename(source.filename)
-        end
-        if not source.dir then
-            if source:is_scm() then
-                source.dir = System.mkpath('${jagen.src_dir}', source.name or source.basename)
-            elseif source.type == 'dir' then
-                source.dir = source.location
-            else
-                source.dir = System.mkpath('${jagen.build_dir}', assert(source.name), source.basename)
-            end
-        end
-    end
-
-    if source.dir == nil then
-        source.dir = System.mkpath('${jagen.src_dir}', source.name)
-    end
-
-    if dir then
-        source.dir = System.mkpath(source.dir, dir)
-    end
-
     return source
 end
 
