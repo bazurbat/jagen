@@ -1,28 +1,23 @@
 config {
-    name = 'jagen',
-    dir = {
-        bin     = '${dir.root}/bin',
-        build   = '${dir.root}/build',
-        include = '${dir.root}/include',
-        log     = '${dir.root}/log',
-        src     = '${dir.root}/src',
-    },
-    dist_dir = 'dist',
-    src_dir = 'src',
-    flags = {},
-    source_exclude = {},
-    build_profile = "release"
+    name    = 'jagen',
+    dir     = os.getenv('jagen_dir'),
+    bin_dir = '${dir}/bin',
+    src_dir = '${dir}/src',
+    cmd     = '${src_dir}/cmd.sh',
 }
 
 config {
     name = 'root',
-    dir = os.getenv('jagen_root_dir'),
-    bin_dir = '${dir}/bin',
-    src_dir = '${dir}/src',
-    dist_dir = '${dir}/dist',
-    build_dir = '${dir}/build',
+    dir         = os.getenv('jagen_root_dir'),
+    bin_dir     = '${dir}/bin',
+    build_dir   = '${dir}/build',
+    dist_dir    = '${dir}/dist',
     include_dir = '${dir}/include',
-    log_dir = '${dir}/log',
+    lib_dir     = '${dir}/lib',
+    log_dir     = '${dir}/log',
+    src_dir     = '${dir}/src',
+    build_file  = '${build_dir}/build.ninja',
+    build_targets_file = '${build_dir}/.build-targets',
 }
 
 config {

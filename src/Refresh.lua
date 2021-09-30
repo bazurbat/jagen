@@ -41,19 +41,17 @@ function Refresh:run(args)
 
     engine:finalize()
 
-    -- print(pretty(packages))
+    local include_dir = engine.config.root.include_dir
 
-    -- print(pretty(engine.config.jagen))
+    local jagen = engine.config.jagen
+    local root = engine.config.root
 
-    local dir = engine.config.jagen.dir
-
-    -- System.mkdir(dir.build, dir.include, dir.log)
-    System.mkdir(dir.build, dir.include)
+    System.mkdir(root.build_dir, root.include_dir)
 
     local targets = {}
 
     for pkg in each(packages) do
-        local filename = System.mkpath(dir.include, string.format('%s.sh', pkg.name))
+        local filename = System.mkpath(include_dir, string.format('%s.sh', pkg.name))
         Script:write(pkg, filename)
 
         for name, stage in pairs(pkg.stages or {}) do
@@ -65,14 +63,14 @@ function Refresh:run(args)
     end
 
     for name, config in pairs(engine.config) do
-        local filename = System.mkpath(dir.include, string.format('%s.config.sh', name))
+        local filename = System.mkpath(include_dir, string.format('%s.config.sh', name))
         if name ~= 'jagen' then
             name = 'jagen_'..name
         end
         Script:write(config, filename, name)
     end
 
-    Ninja.generate(Jagen.build_file, packages)
+    Ninja.generate(packages, root, jagen)
 end
 
 return Refresh

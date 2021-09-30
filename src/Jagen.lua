@@ -14,43 +14,17 @@ local function die(...)
     os.exit(1)
 end
 
-Jagen =
-{
-    dir      = os.getenv('jagen_dir'),
-    root_dir = os.getenv('jagen_root_dir'),
+Jagen = {}
 
-    shell = os.getenv('jagen_shell'),
-    flags = os.getenv('jagen_flags'),
-
-    include_dir = os.getenv('jagen_include_dir'),
-    log_dir     = os.getenv('jagen_log_dir'),
-
-    work_dir   = os.getenv('jagen_work_dir'),
-    src_dir    = os.getenv('jagen_src_dir'),
-    source_dir = os.getenv('jagen_src_dir'),
-    host_dir   = assert(os.getenv('jagen_host_dir')),
-    target_dir = assert(os.getenv('jagen_target_dir')),
-    build_dir  = assert(os.getenv('jagen_build_dir')),
-
-    has_console = os.getenv('jagen__has_console')
-}
-
-Jagen.cmd = System.mkpath(Jagen.dir, 'src', 'cmd.sh')
-Jagen.pager = os.getenv('jagen_pager') or os.getenv('PAGER') or 'less'
-Jagen.build_file = System.mkpath(Jagen.build_dir, 'build.ninja')
-Jagen.build_targets_file = System.mkpath(Jagen.build_dir, '.build-targets')
 
 function Jagen.flag(f)
+    error('not implemented')
     for w in string.gmatch(Jagen.flags, "[_%w]+") do
         if w == f then
             return true
         end
     end
     return false
-end
-
-function Jagen:find_for_refresh()
-    return Command:new(quote(Jagen.cmd), 'find_for_refresh'):aslist()
 end
 
 -- src
@@ -294,9 +268,6 @@ function Jagen.command.clean(args)
             'jagen_build_dir',
             'jagen_include_dir',
             'jagen_log_dir',
-            'jagen_host_dir',
-            'jagen_target_dir',
-            'jagen_cargo_config_dir',
         }
         if not System.rmrf(unpack(System.getenv(clean_dirs))) then
             return false
@@ -511,14 +482,6 @@ function Jagen.command.update(args)
     end
 
     return retval
-end
-
-function Jagen.command.image(args)
-    if #args == 0 or help_requested(args) then
-        return Jagen.command['help'] { 'image' }
-    end
-    return Command:new(quote(System.mkpath(Jagen.dir, 'src', 'cmd.sh')),
-        'image', quote(unpack(args))):exec()
 end
 
 function Jagen.command._compare_versions(args)

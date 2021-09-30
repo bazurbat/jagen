@@ -44,8 +44,11 @@ end
 function Engine:load_rules()
     Log.debug2('load rules')
 
-    local jagen = Module:load('jagen', System.mkpath(Jagen.dir, 'lib', 'rules.lua'))
-    local root_loaded, root  = pcall(Module.load, Module, 'root', System.mkpath(Jagen.root_dir, 'rules.lua'))
+    local jagen_dir = os.getenv('jagen_dir')
+    local root_dir = os.getenv('jagen_root_dir')
+
+    local jagen = Module:load('jagen', System.mkpath(jagen_dir, 'lib', 'rules.lua'))
+    local root_loaded, root  = pcall(Module.load, Module, 'root', System.mkpath(root_dir, 'rules.lua'))
 
     local toplevel_modules = {}
     extend(toplevel_modules, self:unprocessed_uses(jagen))
@@ -92,13 +95,13 @@ function Engine:load_rules()
         self:expand(pkg, pkg)
     end
 
-    for _, config in pairs(self.config) do
-        print(pretty(config))
-    end
+    -- for _, config in pairs(self.config) do
+    --     print(pretty(config))
+    -- end
 
-    for pkg in each(self.packages) do
-        print(pretty(pkg))
-    end
+    -- for pkg in each(self.packages) do
+    --     print(pretty(pkg))
+    -- end
 
     return self.packages
 end
@@ -114,7 +117,7 @@ function Engine:finalize()
         pkg._targets = {}
         for name, stage in pairs(pkg.stages or {}) do
             local target = Target.from_args(pkg.name, name)
-            target.log = System.mkpath(self.config.jagen.dir.log, target.ref..'.log')
+            target.log = System.mkpath(self.config.root.log_dir, target.ref..'.log')
             target.inputs = stage.inputs
             pkg._targets[name] = target
         end

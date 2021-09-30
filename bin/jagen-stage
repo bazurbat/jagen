@@ -9,6 +9,9 @@ pkg_args="$@"
 
 . "${jagen_dir:?}/src/stages.sh" || exit
 
+. "${jagen_include_dir:?}/jagen.config.sh" || exit
+. "${jagen_include_dir:?}/root.config.sh"  || exit
+
 pkg__target="${pkg_name}:${pkg_stage}${pkg_config:+:${pkg_config}}"
 pkg__stamp_file="${jagen_build_dir:?}/${pkg__target}"
 pkg__log_file="${jagen_log_dir:?}/${pkg__target}.log"

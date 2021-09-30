@@ -1,6 +1,7 @@
 local P = {}
 local System = require 'System'
 local Target = require 'Target'
+local Command = require 'Command'
 
 local format = string.format
 local concat = table.concat
@@ -297,8 +298,10 @@ local function assign_pools(packages)
     end
 end
 
-function P.generate(out_file, rules)
+function P.generate(rules, config, jagen)
     check_ninja_features()
+
+    local out_file = config.build_file
 
     packages = rules
     local file = assert(io.open(out_file, 'w'))
@@ -307,17 +310,17 @@ function P.generate(out_file, rules)
 
     local lines = {
         binding('ninja_required_version', '1.1'),
-        binding('builddir', assert(Jagen.build_dir)),
+        binding('builddir', assert(config.build_dir)),
         format_pool('gradle_android', 1),
         format_pool('rust_toolchain', 1),
         format_rule('stage', join {
-                separated(Jagen.shell), 'jagen-stage $args'
+                separated(config.shell), 'jagen-stage $args'
             }),
-        format_rule('refresh', join_space(nonempty { Jagen.shell, System.expand('$jagen_root_dir/jagen'), 'refresh' }))
+        format_rule('refresh', join_space(nonempty { config.shell, System.expand('$jagen_root_dir/jagen'), 'refresh' }))
     }
 
-    local for_refresh = Jagen:find_for_refresh()
-    local include_dir = Jagen.include_dir
+    local for_refresh = Command:new(jagen.cmd, 'find_for_refresh'):aslist()
+    local include_dir = config.include_dir
     for pkg in each(rules) do
         append(for_refresh, System.mkpath(include_dir, string.format('%s.sh', pkg.ref)))
     end

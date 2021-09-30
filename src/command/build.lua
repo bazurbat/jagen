@@ -7,8 +7,9 @@ local Target  = require 'Target'
 
 local P = {}
 
-local function write_targets(targets, args)
-    local is_interactive = Jagen.has_console and not args['quiet'] and not (args['progress'] or args['follow'] or args['follow-all'])
+local function write_targets(targets, args, build_targets_file)
+    local has_console = os.getenv('jagen__has_console')
+    local is_interactive = has_console and not args['quiet'] and not (args['progress'] or args['follow'] or args['follow-all'])
     local curr_list, saved_list, is_eq = {}, {}, true
 
     if is_interactive then
@@ -20,7 +21,7 @@ local function write_targets(targets, args)
         sort(curr_list)
     end
 
-    local file = io.open(Jagen.build_targets_file)
+    local file = io.open(build_targets_file)
     if file then
         for line in file:lines() do
             append(saved_list, line)
@@ -40,7 +41,7 @@ local function write_targets(targets, args)
     end
 
     if not is_eq then
-        local file = assert(io.open(Jagen.build_targets_file, 'w'))
+        local file = assert(io.open(build_targets_file, 'w'))
         for target in each(curr_list) do
             file:write(target, '\n')
         end
@@ -139,16 +140,18 @@ function P:run(args)
         return false
     end
 
-    write_targets(targets, args)
+    local config = engine.config.root
 
-    local args_path = System.mkpath(Jagen.build_dir, '.build-args')
+    write_targets(targets, args, config.build_targets_file)
+
+    local args_path = System.mkpath(config.build_dir, '.build-args')
     local args_file = assert(io.open(args_path, 'w'))
     if args._args then
         args_file:write(table.concat(args._args, '\n'))
     end
     args_file:close()
 
-    local ok = Command:new(quote(Jagen.cmd), 'build', tostring(args), unpack(table.keys(targets))):exec()
+    local ok = Command:new(quote(config.cmd), 'build', tostring(args), unpack(table.keys(targets))):exec()
 
     -- io.open(args_path, 'w'):close()
 
