@@ -28,15 +28,21 @@ local function write(fmt, name, value)
             end
             write(fmt, newname, value[key])
         end
-        local array = {}
-        for i = 1, #value do
-            local item = value[i]
-            if is_simple_value(item) then
-                append(array, tostring(item))
+        if next(value) then
+            local array = {}
+            for i = 1, #value do
+                local item = value[i]
+                if is_simple_value(item) then
+                    append(array, tostring(item))
+                end
             end
-        end
-        if name and name ~= '' and #array > 0 then
-            fmt("%s='%s'", name, table.concat(array, '\t'))
+            if name and name ~= '' and #array > 0 then
+                fmt("%s='%s'", name, table.concat(array, '\t'))
+            end
+        else
+            if name and name ~= '' then
+                fmt("%s=", name)
+            end
         end
     end
 end
@@ -81,7 +87,8 @@ local function write_files(w, pkg)
     end
 end
 
-function P:write(pkg, filename)
+function P:write(pkg, filename, prefix)
+    prefix = prefix or 'pkg'
     local skip = { stages = true, uses = true, import = true, env = true }
 
     local properties = {}
@@ -102,11 +109,10 @@ function P:write(pkg, filename)
     for key, val in pairs(pkg) do
         if not skip[key]
                 and not standard_sections[key]
-                and not key:sub(1, 1) == '_' then
+                and key:sub(1, 1) ~= '_' then
             append(other_sections, key)
         end
     end
-    table.sort(other_sections)
 
     local lines, export_lines = {}, {}
 
@@ -147,7 +153,7 @@ function P:write(pkg, filename)
     end
 
     for i = 1, #lines do
-        lines[i] = string.format('pkg_%s', lines[i])
+        lines[i] = string.format('%s_%s', prefix, lines[i])
     end
     for i = 1, #export_lines do
         export_lines[i] = string.format('export %s', export_lines[i])

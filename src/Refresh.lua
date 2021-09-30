@@ -64,6 +64,14 @@ function Refresh:run(args)
         end
     end
 
+    for name, config in pairs(engine.config) do
+        local filename = System.mkpath(dir.include, string.format('%s.config.sh', name))
+        if name ~= 'jagen' then
+            name = 'jagen_'..name
+        end
+        Script:write(config, filename, name)
+    end
+
     Ninja.generate(Jagen.build_file, packages)
 end
 
