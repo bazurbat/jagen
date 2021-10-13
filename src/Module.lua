@@ -1,7 +1,8 @@
+local Config   = require 'Config'
 local Log      = require 'Log'
-local System   = require 'System'
 local Package  = require 'Package'
 local Rule     = require 'Rule'
+local System   = require 'System'
 
 local Module = {
     env = {},
@@ -125,7 +126,7 @@ function Module.env.use(name)
 end
 
 function Module.env.config(rule)
-    append(current.configs, rule)
+    append(current.configs, Config:new(rule))
 end
 
 function Module.env.package(rule)

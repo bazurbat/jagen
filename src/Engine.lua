@@ -18,12 +18,6 @@ function Engine:new()
         final_templates = {},
         parse_templates = {}
     }
-    engine.config.jagen = {
-        dir = {
-            core = os.getenv('jagen_dir'),
-            root = os.getenv('jagen_root_dir'),
-        }
-    }
     setmetatable(engine, self)
     self.__index = self
     return engine

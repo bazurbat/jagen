@@ -1,27 +1,25 @@
-config {
-    name    = 'jagen',
+config { 'self',
     dir     = os.getenv('jagen_dir'),
     bin_dir = '${dir}/bin',
     src_dir = '${dir}/src',
     cmd     = '${src_dir}/cmd.sh',
 }
 
-config {
-    name = 'root',
-    dir         = os.getenv('jagen_root_dir'),
-    bin_dir     = '${dir}/bin',
-    build_dir   = '${dir}/build',
-    dist_dir    = '${dir}/dist',
-    include_dir = '${dir}/include',
-    lib_dir     = '${dir}/lib',
-    log_dir     = '${dir}/log',
-    src_dir     = '${dir}/src',
+config { 'root',
+    dir         = os.getenv('jagen_dir'),
+    root_dir    = os.getenv('jagen_root_dir'),
+    bin_dir     = '${root_dir}/bin',
+    build_dir   = '${root_dir}/build',
+    dist_dir    = '${root_dir}/dist',
+    include_dir = '${root_dir}/include',
+    lib_dir     = '${root_dir}/lib',
+    log_dir     = '${root_dir}/log',
+    src_dir     = '${root_dir}/src',
     build_file  = '${build_dir}/build.ninja',
     build_targets_file = '${build_dir}/.build-targets',
 }
 
-config {
-    name = 'ccache',
+config { 'ccache',
     env = {
         jagen_ccache="${jagen_ccache:-ccache}",
 

@@ -4,6 +4,14 @@ local Chunk  = require 'Chunk'
 
 local P = {}
 
+local function is_simple_type(t)
+    return t == 'string' or t == 'number' or t == 'boolean'
+end
+
+local function is_table_type(t)
+    return t == 'table'
+end
+
 local function is_simple_value(value)
     local t = type(value)
     return t == 'string' or t == 'number' or t == 'boolean'
@@ -85,6 +93,58 @@ local function write_files(w, pkg)
             write_var(i, { item[1], item._src_path, item.path })
         end
     end
+end
+
+function P:write_config(config, filename, prefix)
+    local skip_keys = { name = true }
+    local props, sections = {}, {}
+
+    for key, val in pairs(config) do
+        if not skip_keys[key] and key:sub(1, 1) ~= '_' then
+            local val_type = type(val)
+            if is_simple_type(val_type) then
+                append(props, key)
+            elseif is_table_type(val_type) then
+                append(sections, key)
+            end
+        end
+    end
+
+    table.sort(props)
+    table.sort(sections)
+
+    local format = string.format
+    local lines, export_lines = {}, {}
+
+    local function add_line(s, ...)
+        append(lines, format(s, ...))
+    end
+    local function add_export_line(s, ...)
+        append(export_lines, format(s, ...))
+    end
+
+    for key in each(props) do
+        write(add_line, key, config[key])
+    end
+
+    if config.env ~= nil then
+        write(add_line, 'env', config.env)
+        write(add_export_line, '', config.env)
+    end
+
+    for i = 1, #lines do
+        lines[i] = format('%s_%s', prefix, lines[i])
+    end
+    for i = 1, #export_lines do
+        export_lines[i] = format('export %s', export_lines[i])
+    end
+
+    local file = assert(io.open(filename, 'w+'))
+    file:write(table.concat(lines, '\n'), '\n')
+    if next(export_lines) then
+        file:write('\n', table.concat(export_lines, '\n'), '\n')
+    end
+    file:close()
 end
 
 function P:write(pkg, filename, prefix)

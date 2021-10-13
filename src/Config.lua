@@ -3,14 +3,15 @@ local Chunk = require 'Chunk'
 local Config = Chunk:new()
 
 function Config:new(rule)
-    if rule.extends then
-        local base = Config._all[rule.extends]
-        rule.extends = nil
-        rule._base = base
-        rule._base_ = base
-    else
-        setmetatable(rule, self)
-        self.__index = self
+    setmetatable(rule, self)
+    self.__index = self
+    return rule:_parse(rule)
+end
+
+function Config:_parse(rule)
+    if type(rule[1]) == 'string' then
+        self.name = rule[1]
+        rule[1] = nil
     end
     return rule
 end

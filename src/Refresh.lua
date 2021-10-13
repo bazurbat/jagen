@@ -43,10 +43,10 @@ function Refresh:run(args)
 
     local include_dir = engine.config.root.include_dir
 
-    local jagen = engine.config.jagen
-    local root = engine.config.root
+    local self_config = engine.config.self
+    local root_config = engine.config.root
 
-    System.mkdir(root.build_dir, root.include_dir)
+    System.mkdir(root_config.build_dir, root_config.include_dir)
 
     local targets = {}
 
@@ -64,13 +64,15 @@ function Refresh:run(args)
 
     for name, config in pairs(engine.config) do
         local filename = System.mkpath(include_dir, string.format('%s.config.sh', name))
-        if name ~= 'jagen' then
+        if name == 'root' then
+            name = 'jagen'
+        else
             name = 'jagen_'..name
         end
-        Script:write(config, filename, name)
+        Script:write_config(config, filename, name)
     end
 
-    Ninja.generate(packages, root, jagen)
+    Ninja.generate(packages, root_config, self_config)
 end
 
 return Refresh
