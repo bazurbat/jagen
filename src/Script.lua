@@ -127,6 +127,12 @@ function P:write_config(config, filename, prefix)
         write(add_line, key, config[key])
     end
 
+    for key in each(sections) do
+        if key ~= 'env' then
+            write(add_line, key, config[key])
+        end
+    end
+
     if config.env ~= nil then
         write(add_line, 'env', config.env)
         write(add_export_line, '', config.env)
