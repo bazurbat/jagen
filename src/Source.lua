@@ -140,9 +140,9 @@ end
 
 function Source:update()
     local ok = true
-    if not Jagen.flag 'offline' then
+    -- if not Jagen.flag 'offline' then
         ok = self:fetch()
-    end
+    -- end
     return ok and self:switch()
 end
 
@@ -513,9 +513,9 @@ end
 function RepoSource:clean()
     local clean_cmd = 'if [ \"$(ls)\" ]; then git checkout HEAD -- . && git clean -fxd; fi'
     local sync_cmd = self:command('sync --detach --no-tags')
-    if Jagen.flag 'offline' then
-        sync_cmd:append('-l')
-    end
+    -- if Jagen.flag 'offline' then
+        -- sync_cmd:append('-l')
+    -- end
     return sync_cmd:exec() and
            self:command('forall -pc', squote(clean_cmd)):exec()
 end

@@ -20,11 +20,11 @@ local function scm_packages(patterns)
                 end
             end
             if not found then
-                error('could not find source packages matching: %s', pattern)
+                error(string.format('could not find source packages matching: %s', pattern))
             end
         end
     else
-        for _, pkg in pairs(packages) do
+        for _, pkg in kvpairs(packages) do
             if pkg.source and pkg.source.scm then
                 table.insert(o, pkg)
             end
@@ -38,6 +38,39 @@ local function scm_packages(patterns)
     return o
 end
 
+function P:dirty(args)
+    local packages = scm_packages(args)
+    for _, pkg in ipairs(packages) do
+        local source = pkg.source
+        if System.exists(source.dir) and not System.is_empty(source.dir) and
+                source:dirty() then
+            return true
+        end
+    end
+    return false
+end
+
+function P:status(args)
+    local packages = scm_packages(args)
+    for _, pkg in ipairs(packages) do
+        local source = pkg.source
+        if System.exists(source.dir) and System.exists(source:getscmdir()) then
+            local head = source:head_name()
+            local dirty = source:dirty() and ' dirty' or ''
+            if #dirty > 0 and source.ignore_dirty then
+                dirty = string.format(' dirty(ignored:%s)', tostring(source.ignore_dirty))
+            end
+            local exclude = source.exclude and ' excluded' or ''
+            print(string.format("%s%s%s%s%s", pkg.name,
+                    source.location and ' ('..source.location..')',
+                    head and ' ['..head..']', dirty, exclude))
+        else
+            print(string.format("%s (%s): not cloned", pkg.name, source.location))
+        end
+    end
+    return true
+end
+
 function P:update(args)
     local options = Options:new {
         { 'ignore-dirty,y' },
@@ -47,7 +80,7 @@ function P:update(args)
     if not args then return false end
 
     local packages, ok = scm_packages(args), true
-    local offline = Jagen.flag 'offline'
+    local offline = false -- Jagen.flag 'offline'
     local force_exclude = os.getenv('jagen__force_exclude')
     local ignore_dirty = args['ignore-dirty'] or os.getenv('jagen__ignore_dirty')
     local ignore_exclude = args['ignore-exclude'] or os.getenv('jagen__ignore_exclude')
@@ -202,5 +235,55 @@ function P:clean(args)
     return ok
 end
 
-return P
+function P:delete(args)
+    local packages = scm_packages(args)
+    for _, pkg in ipairs(packages) do
+        local source = pkg.source
+        if System.exists(source.dir) then
+            if not System.rmrf(source.dir) then
+                die('failed to delete %s source directory %s',
+                    pkg.name, source.dir)
+            end
+        end
+    end
+end
 
+function P:each(args)
+    local options = Options:new {
+        { 'help,h' },
+        { 'type=' },
+    }
+    args = options:parse(args)
+    if not args then
+        return 22
+    end
+    if args['help'] then
+        return Jagen.command['help'] { 'src_each' }
+    end
+    local packages = scm_packages()
+    for pkg in each(packages) do
+        local arg_type, src_type = args['type'], pkg.source.type
+        if arg_type and not Source:is_known(arg_type) then
+            die('unknown source type: %s', arg_type)
+        end
+        if #args < 1 then
+            die('the command is not specified')
+        end
+        local cmd = table.concat(args, ' ')
+        if not arg_type then
+            local bin = string.match(cmd, '^(%w+)')
+            if Source:is_known(bin) then
+                arg_type = bin
+            end
+        end
+        local dir = System.expand(pkg.source.dir)
+        local cmd = string.format('cd "%s" && %s', dir, cmd)
+        if not arg_type or arg_type == src_type then
+            Log.message('%s: %s', pkg.name, dir)
+            local ok, status = Command:new(cmd):exec()
+            if not ok then return status end
+        end
+    end
+end
+
+return P

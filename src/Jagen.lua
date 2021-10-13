@@ -15,154 +15,6 @@ local function die(...)
 end
 
 Jagen = {}
-
-
-function Jagen.flag(f)
-    error('not implemented')
-    for w in string.gmatch(Jagen.flags, "[_%w]+") do
-        if w == f then
-            return true
-        end
-    end
-    return false
-end
-
--- src
-
-local function scm_packages(patterns)
-    local engine = Engine:new()
-    local packages = engine:load_rules()
-    local o = {}
-
-    if patterns and #patterns > 0 then
-        for pattern in each(patterns) do
-            local cpattern, found = string.convert_pattern(pattern), false
-            for name, pkg in pairs(packages) do
-                if name:match(cpattern) and pkg.source:is_scm() then
-                    table.insert(o, pkg) found = true
-                end
-            end
-            if not found then
-                die('could not find source packages matching: %s', pattern)
-            end
-        end
-    else
-        for _, pkg in pairs(packages) do
-            if pkg.source and pkg.source:is_scm() then
-                table.insert(o, pkg)
-            end
-        end
-    end
-
-    table.sort(o, function (a, b)
-            return a.name < b.name
-        end)
-
-    return o
-end
-
-Jagen.source = {}
-Jagen.src = {
-    dirty  = Jagen.source.dirty,
-    status = Jagen.source.status,
-    clean  = Jagen.source.clean,
-    update = Jagen.source.update,
-    delete = Jagen.source.delete,
-    each   = Jagen.source.each,
-}
-
-function Jagen.source.dirty(args)
-    local packages = scm_packages(args)
-    for _, pkg in ipairs(packages) do
-        local source = pkg.source
-        if System.exists(source.dir) and not System.is_empty(source.dir) and
-                source:dirty() then
-            return true
-        end
-    end
-    return false
-end
-
-function Jagen.source.status(args)
-    local packages = scm_packages(args)
-    for _, pkg in ipairs(packages) do
-        local source = pkg.source
-        if System.exists(source.dir) and System.exists(source:getscmdir()) then
-            local head = source:head_name()
-            local dirty = source:dirty() and ' dirty' or ''
-            if #dirty > 0 and source.ignore_dirty then
-                dirty = string.format(' dirty(ignored:%s)', tostring(source.ignore_dirty))
-            end
-            local exclude = source.exclude and ' excluded' or ''
-            print(string.format("%s%s%s%s%s", pkg.name,
-                    source.location and ' ('..source.location..')',
-                    head and ' ['..head..']', dirty, exclude))
-        else
-            print(string.format("%s (%s): not cloned", pkg.name, source.location))
-        end
-    end
-    return true
-end
-
-function Jagen.source.clean(args)
-    return require('command/source'):clean(args)
-end
-
-function Jagen.source.update(args)
-    return require('command/source'):update(args)
-end
-
-function Jagen.source.delete(args)
-    local packages = scm_packages(args)
-    for _, pkg in ipairs(packages) do
-        local source = pkg.source
-        if System.exists(source.dir) then
-            if not System.rmrf(source.dir) then
-                die('failed to delete %s source directory %s',
-                    pkg.name, source.dir)
-            end
-        end
-    end
-end
-
-function Jagen.source.each(args)
-    local options = Options:new {
-        { 'help,h' },
-        { 'type=' },
-    }
-    args = options:parse(args)
-    if not args then
-        return 22
-    end
-    if args['help'] then
-        return Jagen.command['help'] { 'src_each' }
-    end
-    local packages = scm_packages()
-    for pkg in each(packages) do
-        local arg_type, src_type = args['type'], pkg.source.type
-        if arg_type and not Source:is_known(arg_type) then
-            die('unknown source type: %s', arg_type)
-        end
-        if #args < 1 then
-            die('the command is not specified')
-        end
-        local cmd = table.concat(args, ' ')
-        if not arg_type then
-            local bin = string.match(cmd, '^(%w+)')
-            if Source:is_known(bin) then
-                arg_type = bin
-            end
-        end
-        local dir = System.expand(pkg.source.dir)
-        local cmd = string.format('cd "%s" && %s', dir, cmd)
-        if not arg_type or arg_type == src_type then
-            Log.message('%s: %s', pkg.name, dir)
-            local ok, status = Command:new(cmd):exec()
-            if not ok then return status end
-        end
-    end
-end
-
 Jagen.command = {}
 
 local function help_requested(args)
@@ -317,17 +169,17 @@ Jagen.command['re'] = Jagen.command.build
 Jagen.command['do'] = Jagen.command.build
 
 function Jagen.command.source(args)
-    local first = args[1]
-    local command = Jagen.source[first]
-    if first then
-        if command then
-            table.remove(args, 1)
-            return command(args)
-        else
-            die('invalid source subcommand: %s', first)
-        end
-    else
+    if help_requested(args) then
         return Jagen.command.help { 'source' }
+    end
+    local source = require('command/source')
+    local command = args[1]
+    local func = source[command]
+    if func then
+        table.remove(args, 1)
+        return func(source, args)
+    else
+        die('invalid source subcommand: %s', command)
     end
 end
 Jagen.command.src = Jagen.command.source
