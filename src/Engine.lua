@@ -93,9 +93,9 @@ function Engine:load_rules()
     --     print(pretty(config))
     -- end
 
-    -- for pkg in each(self.packages) do
-    --     print(pretty(pkg))
-    -- end
+    for pkg in each(self.packages) do
+        print(pretty(pkg))
+    end
 
     return self.packages
 end
@@ -213,6 +213,7 @@ function Engine:process_package(rule, pass)
         local module = Module:load_package(rule, self.path)
         if module then
             pkg = Package:new(rule.name, rule.config)
+            pkg:merge(pkg, rule)
         else
             pkg = rule
         end
