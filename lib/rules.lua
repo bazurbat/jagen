@@ -624,8 +624,6 @@ template {
         build = { toolchain = value },
     },
     apply = {
-        import = {
-            toolchain = from(value, 'export'),
-        }
+        toolchain = from(value, 'export'),
     }
 }
