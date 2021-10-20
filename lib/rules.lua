@@ -579,8 +579,8 @@ template {
 }
 
 template {
-    match = { build = { toolchain = some } },
-    apply = { uses = { '${build.toolchain}' } }
+    match = { build = { toolchain = value } },
+    apply = { uses = { value } }
 }
 
 -- uses

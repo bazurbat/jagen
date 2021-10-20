@@ -72,8 +72,6 @@ function Engine:load_rules()
         end
     until not next(pass.packages) or count == 5
 
-    self:apply_final_templates()
-
     local Source = require 'Source'
     for pkg in each(self.packages) do
         if pkg.source ~= nil then
@@ -88,6 +86,8 @@ function Engine:load_rules()
     for pkg in each(self.packages) do
         self:expand(pkg, pkg)
     end
+
+    self:apply_final_templates()
 
     -- for _, config in pairs(self.config) do
     --     print(pretty(config))
