@@ -78,7 +78,7 @@ function Refresh:run(args)
     local names, targets = {}, {}
     for pkg in each(packages) do
         append(names, pkg.name)
-        for stage in pairs(pkg.stages) do
+        for stage in pairs(pkg.stages or {}) do
             append(targets, pkg.name..':'..stage)
         end
     end
