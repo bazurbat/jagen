@@ -141,17 +141,18 @@ function P:run(args)
     end
 
     local config = engine.config.root
+    local cmd = assert(engine.config.self.cmd)
 
-    write_targets(targets, args, config.build_targets_file)
+    write_targets(targets, args, assert(config.build_targets_file))
 
-    local args_path = System.mkpath(config.build_dir, '.build-args')
+    local args_path = System.mkpath(assert(config.build_dir), '.build-args')
     local args_file = assert(io.open(args_path, 'w'))
     if args._args then
         args_file:write(table.concat(args._args, '\n'))
     end
     args_file:close()
 
-    local ok = Command:new(quote(config.cmd), 'build', tostring(args), unpack(table.keys(targets))):exec()
+    local ok = Command:new(quote(cmd), 'build', tostring(args), unpack(table.keys(targets))):exec()
 
     -- io.open(args_path, 'w'):close()
 

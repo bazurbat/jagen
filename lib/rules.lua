@@ -8,15 +8,25 @@ config { 'self',
 config { 'root',
     dir         = os.getenv('jagen_dir'),
     root_dir    = os.getenv('jagen_root_dir'),
+    build_dir   = os.getenv('jagen_build_dir'),
+    include_dir = os.getenv('jagen_include_dir'),
     bin_dir     = '${root_dir}/bin',
-    build_dir   = '${root_dir}/build',
     dist_dir    = '${root_dir}/dist',
-    include_dir = '${root_dir}/include',
     lib_dir     = '${root_dir}/lib',
     log_dir     = '${root_dir}/log',
     src_dir     = '${root_dir}/src',
     build_file  = '${build_dir}/build.ninja',
     build_targets_file = '${build_dir}/.build-targets',
+    env = {
+        -- Disable passphrase querying.
+        GIT_SSH_COMMAND = 'ssh -o BatchMode=yes',
+        -- Do not prompt on the terminal (e.g. when asking for HTTP credentials).
+        GIT_TERMINAL_PROMPT = 0,
+        -- Never install the translations.
+        LINGUAS = '',
+        -- Do not run tools with an interactive graphical UI.
+        DISPLAY = ''
+    }
 }
 
 config { 'ccache',

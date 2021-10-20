@@ -31,6 +31,9 @@ Ninja (https://ninja-build.org) to run the build system."
 }
 
 cmd_build() {
+    . "${jagen_include_dir:?}/self.config.sh"
+    . "${jagen_include_dir:?}/root.config.sh"
+
     local IFS="$S"
     local build_all no_rebuild follow_selected follow_all print_all is_quiet
     local targets log logs err tries follow_pid pipe
@@ -208,18 +211,14 @@ echo_if_exists() {
 }
 
 cmd_find_for_refresh() {
-    . "$jagen_dir/src/common.sh" || return
     local IFS="$jagen_S" paths='' dir
     for dir in bin lib src; do
         paths="${paths}${jagen_S}${jagen_dir}/${dir}"
     done
-    if [ -d "$jagen_root_lib_dir" ]; then
-        paths="${paths}${jagen_S}${jagen_root_lib_dir}"
-    fi
-    paths=${paths#${jagen_S}}
+    paths="${paths}${jagen_S}${jagen_include_dir:?}"
+    paths="${paths#${jagen_S}}"
     find $paths -type f -o -type d
     echo "$jagen_root_dir"
-    echo_if_exists "$jagen_root_dir/config.sh"
     echo_if_exists "$jagen_root_dir/env.sh"
     echo_if_exists "$jagen_root_dir/jagen"
     echo_if_exists "$jagen_root_dir/rules.lua"

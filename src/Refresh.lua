@@ -41,12 +41,13 @@ function Refresh:run(args)
 
     engine:finalize()
 
-    local include_dir = engine.config.root.include_dir
-
     local self_config = engine.config.self
     local root_config = engine.config.root
 
-    System.mkdir(root_config.build_dir, root_config.include_dir)
+    local build_dir = root_config.build_dir
+    local include_dir = root_config.include_dir
+
+    System.mkdir(build_dir, include_dir)
 
     local targets = {}
 

@@ -320,10 +320,6 @@ function P.generate(rules, config, jagen)
     }
 
     local for_refresh = Command:new(jagen.cmd, 'find_for_refresh'):aslist()
-    local include_dir = config.include_dir
-    for pkg in each(rules) do
-        append(for_refresh, System.mkpath(include_dir, string.format('%s.sh', pkg.ref)))
-    end
 
     append(lines, format_refresh(for_refresh))
     -- append(lines, format_phony(for_refresh))

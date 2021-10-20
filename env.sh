@@ -17,7 +17,8 @@ jagen_debug="${jagen_debug-}"
 jagen__src_dir="$jagen_dir/src"
 jagen_root_lib_dir="$jagen_root_dir/lib"
 
-jagen_include_dir="$jagen_root_dir/include"
+jagen_build_dir="$jagen_root_dir/build"
+jagen_include_dir="$jagen_build_dir/include"
 
 jagen_build_verbose=${jagen_build_verbose-}
 
