@@ -74,6 +74,31 @@ function Refresh:run(args)
     end
 
     Ninja.generate(packages, root_config, self_config)
+
+    local names, targets = {}, {}
+    for pkg in each(packages) do
+        append(names, pkg.name)
+        for stage in pairs(pkg.stages) do
+            append(targets, pkg.name..':'..stage)
+        end
+    end
+
+    local names_file = assert(io.open(System.mkpath(build_dir, '.jagen-names'), 'w'))
+    names_file:write(table.concat(names, '\n'))
+    names_file:close()
+
+    local scm_names_file = assert(io.open(System.mkpath(build_dir, '.jagen-scm-names'), 'w'))
+    scm_names_file:close()
+
+    local configs_file = assert(io.open(System.mkpath(build_dir, '.jagen-configs'), 'w'))
+    configs_file:close()
+
+    local targets_file = assert(io.open(System.mkpath(build_dir, '.jagen-targets'), 'w'))
+    targets_file:write(table.concat(targets, '\n'))
+    targets_file:close()
+
+    local layers_file = assert(io.open(System.mkpath(build_dir, '.jagen-layers'), 'w'))
+    layers_file:close()
 end
 
 return Refresh
