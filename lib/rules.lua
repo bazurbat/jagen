@@ -17,6 +17,7 @@ config { 'root',
     src_dir     = '${root_dir}/src',
     build_file  = '${build_dir}/build.ninja',
     build_targets_file = '${build_dir}/.build-targets',
+    build_args_file = '${build_dir}/.build-args',
     env = {
         -- Disable passphrase querying.
         GIT_SSH_COMMAND = 'ssh -o BatchMode=yes',
@@ -303,13 +304,16 @@ template {
 template {
     final = true,
     match = {
-        build = { toolchain = value }
+        build = {
+            toolchain = as 'toolchain',
+            system = anyof(value 'system', none),
+        }
     },
     apply = {
         build = {
-            system = from(value, 'export.system'),
-            arch   = from(value, 'export.arch'),
-            cpu    = from(value, 'export.cpu'),
+            system = anyof(value 'system', from(value 'toolchain', 'export.system')),
+            arch   = from(value 'toolchain', 'export.arch'),
+            cpu    = from(value 'toolchain', 'export.cpu'),
         }
     }
 }

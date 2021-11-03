@@ -2,8 +2,6 @@
 
 . "$jagen_dir/env.sh" || { echo "Failed to load environment"; exit 1; }
 
-jagen_build_args_file="${jagen_build_dir:?}/.build-args"
-
 include "$jagen__src_dir/util"
 include "$jagen__src_dir/unpack"
 include "$jagen__src_dir/patch"
