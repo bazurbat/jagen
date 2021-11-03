@@ -313,16 +313,18 @@ function P.generate(rules, config, jagen)
         binding('builddir', assert(config.build_dir)),
         format_pool('gradle_android', 1),
         format_pool('rust_toolchain', 1),
-        format_rule('stage', join {
-                separated(config.shell), 'jagen-stage $args'
+        format_rule('stage', join_space {
+                -- join { 'jagen_dir=', quote(config.dir) },
+                -- join { 'jagen_root_dir=', quote(config.root_dir) },
+                join_space { quote(config.dir..'/bin/jagen-stage'), '$args' }
             }),
         format_rule('refresh', join_space(nonempty { config.shell, System.expand('$jagen_root_dir/jagen'), 'refresh' }))
     }
 
     local for_refresh = Command:new(jagen.cmd, 'find_for_refresh'):aslist()
 
+    append(lines, 'build refresh: phony build.ninja')
     append(lines, format_refresh(for_refresh))
-    -- append(lines, format_phony(for_refresh))
 
     extend(lines, map(format_package, rules))
 

@@ -93,9 +93,9 @@ function Engine:load_rules()
     --     print(pretty(config))
     -- end
 
-    for pkg in each(self.packages) do
-        print(pretty(pkg))
-    end
+    -- for pkg in each(self.packages) do
+    --     print(pretty(pkg))
+    -- end
 
     return self.packages
 end
