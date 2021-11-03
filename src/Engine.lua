@@ -79,12 +79,19 @@ function Engine:load_rules()
         end
     end
 
-    for key, config in pairs(self.config) do
-        self:expand(config, config)
-    end
+    local ok, err
+    ok, err = pcall(function ()
+        for key, config in pairs(self.config) do
+            self:expand(config, config, config.name)
+        end
 
-    for pkg in each(self.packages) do
-        self:expand(pkg, pkg)
+        for pkg in each(self.packages) do
+            self:expand(pkg, pkg, pkg.name)
+        end
+    end)
+    if not ok then
+        Log.error(err.message)
+        error('fatal error during rule expansion', 0)
     end
 
     self:apply_final_templates()
@@ -96,6 +103,8 @@ function Engine:load_rules()
     -- for pkg in each(self.packages) do
     --     print(pretty(pkg))
     -- end
+
+    self:validate()
 
     return self.packages
 end
@@ -285,16 +294,18 @@ function Engine:apply_final_templates()
     end
 end
 
-function Engine:expand(object, env)
+function Engine:expand(object, env, parent_key)
     local function sub(expr)
         local name, path = expr:match('([%w_]+):([%w_][%w_.]+)')
         local config
         if name then
             config = self.config[name]
             if not config then
-                error(string.format(
-                    "the expression '%s' references a config '%s' "..
-                    "which is not defined", expr, name))
+                error({
+                    message = string.format("an expression '%s' in %s "..
+                        "references a config '%s' which is not defined",
+                        expr, parent_key, name),
+                }, 0)
             end
         else
             path = expr
@@ -309,8 +320,10 @@ function Engine:expand(object, env)
         if value then
             return value
         else
-            error(string.format(
-                "expansion of the expression '%s' produced nil value", expr))
+            error({
+                    message = string.format("an expansion of the expression "..
+                        "'%s' in %s produced nil value", expr, parent_key)
+                }, 0)
         end
     end
 
@@ -319,18 +332,68 @@ function Engine:expand(object, env)
             if type(key) == 'string' and key:sub(1, 1) ~= '_'
                or type(key) == 'number'
             then
-                object[key] = self:expand(value, env)
+                object[key] = self:expand(value, env, parent_key..'.'..key)
             end
         end
     elseif type(object) == 'string' then
-        local count, depth, max_depth = 0, 0, 2
+        local count, depth, max_depth = 0, 0, 10
         repeat
             object, count = object:gsub('${([%w_][%w_.:]+)}', sub)
             depth = depth + 1
         until count == 0 or depth == max_depth
+        if depth == max_depth then
+            Log.warning("substitution depth limit %d reached while expanding "..
+                "property %s, current value: %s", max_depth, parent_key, object)
+        end
     end
 
     return object
+end
+
+function Engine:validate()
+    local num_fatal = 0
+
+    local function find_unexpanded(key, value)
+        local tvalue = type(value)
+        if tvalue == 'string' then
+            if value:match('${.+}') then
+                coroutine.yield(key, value)
+            end
+        elseif tvalue == 'table' then
+            for k, v in pairs(value) do
+                find_unexpanded(key..'.'..k, v)
+            end
+        end
+    end
+
+    local function iter_unexpanded(rule)
+        return coroutine.wrap(function () find_unexpanded(rule.name, rule) end)
+    end
+
+    local unexpanded = {}
+
+    for config in each(self.config) do
+        for key, value in iter_unexpanded(config) do
+            unexpanded[key] = value
+        end
+    end
+    for pkg in each(self.packages) do
+        for key, value in iter_unexpanded(pkg) do
+            unexpanded[key] = value
+        end
+    end
+
+    if next(unexpanded) then
+        num_fatal = num_fatal + 1
+        Log.error('Unexpanded properties left after rule loading:')
+        for key, value in pairs(unexpanded) do
+            Log.error('  %s = %s', key, value)
+        end
+    end
+
+    if num_fatal > 0 then
+        error(string.format('Rule validation failed with %d fatal errors.', num_fatal), 0)
+    end
 end
 
 return Engine

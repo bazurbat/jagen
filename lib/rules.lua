@@ -30,6 +30,14 @@ config { 'root',
     }
 }
 
+config { 'host',
+    dir = '${root:root_dir}/host',
+}
+
+config { 'target',
+    dir = '${root:root_dir}/target'
+}
+
 config { 'ccache',
     env = {
         jagen_ccache="${jagen_ccache:-ccache}",
@@ -482,7 +490,7 @@ template {
     match = { class = contains 'host' },
     apply = {
         install = {
-            prefix = '${jagen.host_dir}',
+            prefix = '${host:dir}',
             root = ''
         },
         env = {
@@ -498,7 +506,7 @@ template {
     apply = {
         install = {
             prefix = '',
-            root = '${jagen.target_dir}'
+            root = '${target:dir}'
         },
         env = {
             PKG_CONFIG_SYSROOT_DIR = "${install.root}",

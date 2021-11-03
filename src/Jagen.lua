@@ -409,11 +409,15 @@ function Jagen:run(args)
     end
     if Jagen.command[first] then
         table.remove(args, 1)
-        local status =  Jagen.command[first](args)
-        if status == nil or status == true or status == 0 then
-            return 0
+        local status, rv = pcall(Jagen.command[first], args)
+        if status == true then
+            if rv == nil or rv == true or rv == 0 then
+                return 0
+            else
+                return 1
+            end
         else
-            return 1
+            Log.error(rv)
         end
     else
         die("invalid command or argument '%s', try 'jagen help'", tostring(first))
