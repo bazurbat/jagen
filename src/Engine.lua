@@ -208,7 +208,7 @@ function Engine:process_named_template(rule, pass)
     local key = rule.name
     local template = self.named_templates[key]
     if template then
-        Rule:merge(template, rule)
+        template:merge(rule)
     else
         self.named_templates[key] = rule
     end
@@ -220,7 +220,7 @@ function Engine:process_config(rule, pass)
     local key = rule.name
     local config = self.config[key]
     if config then
-        Rule:merge(config, rule)
+        config:merge(rule)
     else
         self.config[key] = rule
     end
@@ -236,12 +236,12 @@ function Engine:process_package(rule, pass)
     local pkg = self.packages[rule.ref]
 
     if pkg then
-        pkg:merge(pkg, rule)
+        pkg:merge(rule)
     else
         local module = Module:load_package(rule, self.path)
         if module then
             pkg = Package:new(rule.name, rule.config)
-            pkg:merge(pkg, rule)
+            pkg:merge(rule)
         else
             pkg = rule
         end
@@ -266,19 +266,19 @@ end
 
 function Engine:apply_template(template, pkg)
     local state = { matching = true, value = {} }
-    if pkg:match(pkg, template.match, state) then
+    if pkg:match(template.match, state) then
         state.matching = false
         state.packages = self.packages
         if state.each then
             for i = 1, state.n do
                 state.i = i
-                pkg:merge(pkg, copy(template.apply), state)
+                pkg:merge(copy(template.apply), state)
             end
         else
-            pkg:merge(pkg, copy(template.apply), state)
+            pkg:merge(copy(template.apply), state)
         end
     elseif template.match == nil then
-        pkg:merge(pkg, copy(template.apply), state)
+        pkg:merge(copy(template.apply), state)
     end
 end
 

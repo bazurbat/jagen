@@ -10,14 +10,14 @@ function Rule:new(def)
     return def
 end
 
-function Rule:match(value, pattern, state)
+function Rule.match(value, pattern, state)
     if type(pattern) == 'function' then
         return pattern(value, state)
     elseif type(value) ~= type(pattern) then
         return false
     elseif type(value) == 'table' then
         for k, v in pairs(pattern) do
-            if not self:match(value[k], v, state) then
+            if not Rule.match(value[k], v, state) then
                 return false
             end
         end
@@ -30,7 +30,7 @@ function Rule:match(value, pattern, state)
     return true, state
 end
 
-function Rule:merge(to, from, state)
+function Rule.merge(to, from, state)
     for key, value in pairs(from or {}) do
         if type(key) ~= 'number' then
             if type(key) == 'function' then
@@ -43,7 +43,7 @@ function Rule:merge(to, from, state)
                 if type(to[key]) ~= 'table'  then
                     to[key] = {}
                 end
-                to[key] = self:merge(to[key], value, state)
+                to[key] = Rule.merge(to[key], value, state)
             else
                 to[key] = value
             end
@@ -56,7 +56,7 @@ function Rule:merge(to, from, state)
         if val == nil then
             to[i] = nil
         elseif type(val) == 'table' then
-            local v = self:merge({}, val, state)
+            local v = Rule.merge({}, val, state)
             if next(v) then
                 table.insert(to, v)
             end

@@ -138,6 +138,7 @@ end
 
 function Module.env.template(rule)
     -- Log.debug2('template: %s', pretty(rule))
+    rule = Rule:new(rule)
     if rule.name then
         append(current.named_templates, rule)
     elseif rule.parse then
@@ -222,7 +223,7 @@ function Module.env.anyof(...)
     return function(value, state)
         if state.matching then
             for i = 1, #args do
-                if Rule:match(value, args[i], state) then
+                if Rule.match(value, args[i], state) then
                     return true
                 end
             end

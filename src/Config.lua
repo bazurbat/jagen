@@ -1,6 +1,6 @@
-local Chunk = require 'Chunk'
+local Rule = require 'Rule'
 
-local Config = Chunk:new()
+local Config = Rule:new()
 
 function Config:new(rule)
     setmetatable(rule, self)
@@ -14,23 +14,6 @@ function Config:_parse(rule)
         rule[1] = nil
     end
     return rule
-end
-
-function Config:flatten()
-    local function import(to, from)
-        for key, value in Config.each(from) do
-            if rawget(to, key) == nil then
-                to[key] = copy(value)
-            elseif type(value) == 'table' then
-                import(to[key], value)
-            end
-        end
-    end
-    local base = self._base
-    while base ~= nil do
-        import(self, base)
-        base = base._base
-    end
 end
 
 return Config
