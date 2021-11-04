@@ -93,6 +93,12 @@ template {
 
 template {
     parse = true,
+    match = { apply = bind(value, oftype 'string') },
+    apply = { apply = { value } }
+}
+
+template {
+    parse = true,
     match = { build = bind(value, oftype 'string') },
     apply = { build = { type = value } }
 }

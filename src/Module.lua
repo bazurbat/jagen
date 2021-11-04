@@ -21,6 +21,7 @@ function Module:new(name)
         configs = {},
         packages  = {},
         templates = {},
+        named_templates = {},
         parse_templates = {},
         final_templates = {},
     }
@@ -137,7 +138,9 @@ end
 
 function Module.env.template(rule)
     -- Log.debug2('template: %s', pretty(rule))
-    if rule.parse then
+    if rule.name then
+        append(current.named_templates, rule)
+    elseif rule.parse then
         append(current.parse_templates, rule)
     elseif rule.final then
         append(current.final_templates, rule)

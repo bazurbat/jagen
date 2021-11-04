@@ -15,6 +15,7 @@ function Engine:new()
         modules = {},
         packages  = {},
         templates = {},
+        named_templates = {},
         final_templates = {},
         parse_templates = {}
     }
@@ -27,6 +28,7 @@ function Pass:new()
     return {
         packages  = {},
         templates = {},
+        named_templates = {},
         parse_templates = {}
     }
 end
@@ -81,6 +83,8 @@ function Engine:load_rules()
 
     local ok, err
     ok, err = pcall(function ()
+        self:apply_named_templates()
+
         for key, config in pairs(self.config) do
             self:expand(config, config, config.name)
         end
@@ -184,6 +188,9 @@ function Engine:process_modules(pass, modules)
 
     for mod in each(modules) do
         Log.debug2('process module %s', mod)
+        for rule in each(mod.named_templates) do
+            self:process_named_template(rule, pass)
+        end
         for rule in each(mod.configs) do
             self:process_config(rule, pass)
         end
@@ -192,6 +199,18 @@ function Engine:process_modules(pass, modules)
         end
         extend(pass.templates, mod.templates)
         extend(self.final_templates, mod.final_templates)
+    end
+end
+
+function Engine:process_named_template(rule, pass)
+    Log.debug2('process named template %s', rule.name)
+
+    local key = rule.name
+    local template = self.named_templates[key]
+    if template then
+        Rule:merge(template, rule)
+    else
+        self.named_templates[key] = rule
     end
 end
 
@@ -258,6 +277,8 @@ function Engine:apply_template(template, pkg)
         else
             pkg:merge(pkg, copy(template.apply), state)
         end
+    elseif template.match == nil then
+        pkg:merge(pkg, copy(template.apply), state)
     end
 end
 
@@ -282,6 +303,21 @@ function Engine:apply_templates(pass)
             end
         end
         extend(self.packages, pass.packages)
+    end
+end
+
+function Engine:apply_named_templates()
+    for pkg in each(self.packages) do
+        for name in each(pkg.apply) do
+            local template = self.named_templates[name]
+            if not template then
+                error({ message = string.format("the package '%s' "..
+                    "tries to apply template '%s' which is not defined",
+                    pkg.name, name) }, 0)
+            end
+            Log.debug2('apply template %s to %s', name, pkg)
+            self:apply_template(template, pkg)
+        end
     end
 end
 
