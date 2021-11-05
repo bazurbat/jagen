@@ -1,11 +1,4 @@
-config { 'self',
-    dir     = os.getenv('jagen_dir'),
-    bin_dir = '${dir}/bin',
-    src_dir = '${dir}/src',
-    cmd     = '${src_dir}/cmd.sh',
-}
-
-config { 'root',
+config { 'jagen',
     dir         = os.getenv('jagen_dir'),
     root_dir    = os.getenv('jagen_root_dir'),
     build_dir   = os.getenv('jagen_build_dir'),
@@ -18,6 +11,11 @@ config { 'root',
     build_file  = '${build_dir}/build.ninja',
     build_targets_file = '${build_dir}/.build-targets',
     build_args_file = '${build_dir}/.build-args',
+    self = {
+        bin_dir = '${dir}/bin',
+        src_dir = '${dir}/src',
+        cmd     = '${self.src_dir}/cmd.sh',
+    },
     env = {
         -- Disable passphrase querying.
         GIT_SSH_COMMAND = 'ssh -o BatchMode=yes',
@@ -31,11 +29,11 @@ config { 'root',
 }
 
 config { 'host',
-    dir = '${root:root_dir}/host',
+    dir = '${jagen:root_dir}/host',
 }
 
 config { 'target',
-    dir = '${root:root_dir}/target'
+    dir = '${jagen:root_dir}/target'
 }
 
 config { 'ccache',
@@ -183,7 +181,7 @@ template {
     },
     apply = {
         source = {
-            dir = cat('${root:src_dir}', '/', value 'name')
+            dir = cat('${jagen:src_dir}', '/', value 'name')
         }
     }
 }
@@ -199,7 +197,7 @@ template {
     },
     apply = {
         source = {
-            dir = cat('${root:build_dir}', '/', value 'name')
+            dir = cat('${jagen:build_dir}', '/', value 'name')
         }
     }
 }
@@ -218,14 +216,14 @@ template {
 template {
     match = { config = none },
     apply = {
-        work_dir = '${root:build_dir}/${name}',
+        work_dir = '${jagen:build_dir}/${name}',
     }
 }
 
 template {
     match = { config = some },
     apply = {
-        work_dir = '${root:build_dir}/${name}:${config}',
+        work_dir = '${jagen:build_dir}/${name}:${config}',
     }
 }
 
@@ -435,13 +433,11 @@ template {
 
 template {
     match = {
-        build   = { type = some },
+        build   = { type = value },
         install = anyof(none, { type = none })
     },
     apply = {
-        install = {
-            type = '${build.type}'
-        }
+        install = { type = value }
     }
 }
 
@@ -468,7 +464,7 @@ template {
 template {
     match = {
         build   = anyof(none, { type = none }),
-        install = { type = some },
+        install = { type  = some },
         stages  = { clean = some }
     },
     apply = {
@@ -498,7 +494,18 @@ template {
         install = {
             prefix = '${host:dir}',
             root = ''
-        },
+        }
+    }
+}
+
+template {
+    match = {
+        install = {
+            prefix = some,
+            root = none
+        }
+    },
+    apply = {
         env = {
             PKG_CONFIG_PATH = '${install.prefix}/lib/pkgconfig'
         }
@@ -509,6 +516,21 @@ template {
 
 template {
     match = { class = contains 'target' },
+    apply = {
+        install = {
+            prefix = '',
+            root = '${target:dir}'
+        }
+    }
+}
+
+template {
+    match = {
+        install = {
+            prefix = none,
+            root = some
+        }
+    },
     apply = {
         install = {
             prefix = '',
@@ -531,8 +553,8 @@ template {
 
 template {
     match = {
-        class = contains 'target',
-        build = { type = 'cmake' }
+        build   = { type = 'cmake' },
+        install = { root = some    }
     },
     apply = {
         build = {

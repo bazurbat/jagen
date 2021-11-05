@@ -298,7 +298,7 @@ local function assign_pools(packages)
     end
 end
 
-function P.generate(rules, config, jagen)
+function P.generate(rules, config)
     check_ninja_features()
 
     local out_file = config.build_file
@@ -321,7 +321,7 @@ function P.generate(rules, config, jagen)
         format_rule('refresh', join_space(nonempty { config.shell, System.expand('$jagen_root_dir/jagen'), 'refresh' }))
     }
 
-    local for_refresh = Command:new(jagen.cmd, 'find_for_refresh'):aslist()
+    local for_refresh = Command:new(config.self.cmd, 'find_for_refresh'):aslist()
 
     append(lines, 'build refresh: phony build.ninja')
     append(lines, format_refresh(for_refresh))

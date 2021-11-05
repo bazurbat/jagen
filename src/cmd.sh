@@ -31,7 +31,6 @@ Ninja (https://ninja-build.org) to run the build system."
 }
 
 cmd_build() {
-    . "${jagen_include_dir:?}/self.config.sh"
     . "${jagen_include_dir:?}/root.config.sh"
 
     local IFS="$S"
