@@ -63,10 +63,10 @@ toolchain_generate_wrappers() {
     local src_dir="${1:?}" dest_dir="${jagen_bin_dir}/${pkg_name}"
     local PATH="$(IFS=: list_remove "$dest_dir" "$PATH")"
     local IFS="$jagen_S" path pathnames
-    local c_names=$(find_in_path toolchain/c_compiler_names)
-    local cpp_names=$(find_in_path toolchain/cpp_names)
-    local cxx_names=$(find_in_path toolchain/cxx_compiler_names)
-    local linker_names=$(find_in_path toolchain/linker_names)
+    local c_names="$jagen_toolchain_c_compiler_names"
+    local cpp_names="$jagen_toolchain_cpp_names"
+    local cxx_names="$jagen_toolchain_cxx_compiler_names"
+    local linker_names="$jagen_toolchain_linker_names"
 
     [ -d "$src_dir" ] || \
         die "toolchain_generate_wrappers: the src dir '$src_dir' does not exist"

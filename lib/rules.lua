@@ -25,6 +25,12 @@ config { 'jagen',
         LINGUAS = '',
         -- Do not run tools with an interactive graphical UI.
         DISPLAY = ''
+    },
+    toolchain = {
+        c_compiler_names = { 'gcc', 'clang' },
+        cxx_compiler_names = { 'g++', 'c++', 'clang++' },
+        cpp_names = { 'cpp' },
+        linker_names = { 'ld' }
     }
 }
 
