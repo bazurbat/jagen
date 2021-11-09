@@ -188,6 +188,12 @@ function Module.env.some(value, state)
     return value ~= nil
 end
 
+function Module.env.isnot(other)
+    return function(value)
+        return value ~= other
+    end
+end
+
 function Module.env.as(name)
     name = name or true
     return function(value, state)
@@ -218,8 +224,7 @@ function Module.env.value(name, state)
     end
 end
 
-function Module.env.anyof(...)
-    local args = { ... }
+function Module.env.anyof(args)
     return function(value, state)
         if state.matching then
             for i = 1, #args do
@@ -283,7 +288,7 @@ function Module.env.from(ref, key)
     return function(value, state)
         local this_ref
         if type(ref) == 'function' then
-            this_ref = ref(nil, state)
+                this_ref = ref(nil, state)
         end
         return table.get(state.packages, this_ref, unpack(string.split2(key, '.')))
     end

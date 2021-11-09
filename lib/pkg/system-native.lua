@@ -6,6 +6,6 @@ package { 'system-native',
         type = 'toolchain'
     },
     export = {
-        cflags = '-march=native'
+        cflags = { '-march=native' }
     }
 }

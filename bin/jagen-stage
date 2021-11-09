@@ -103,7 +103,7 @@ case $pkg_stage in
             pkg_run mkdir -p "$pkg_build_dir"
             pkg_run cd "$pkg_build_dir"
         fi
-        in_flags ccache && use_env ccache
+        # in_flags ccache && use_env ccache
         ;;
 esac
 

@@ -100,6 +100,8 @@ function Engine:load_rules()
 
     self:apply_final_templates()
 
+    -- self:resolve_delayed_references()
+
     -- for _, config in pairs(self.config) do
     --     print(pretty(config))
     -- end
@@ -111,6 +113,23 @@ function Engine:load_rules()
     self:validate()
 
     return self.packages
+end
+
+function Engine:resolve_delayed_references()
+    local function expand(object)
+        for key, value in pairs(object) do
+            local tvalue = type(value)
+            if tvalue == 'function' then
+                object[key] = value()
+            elseif tvalue == 'table' then
+                expand(value)
+            end
+        end
+    end
+
+    for pkg in each(self.packages) do
+        expand(pkg)
+    end
 end
 
 function Engine:finalize()
@@ -272,9 +291,11 @@ function Engine:apply_template(template, pkg)
         if state.each then
             for i = 1, state.n do
                 state.i = i
+                -- print(pretty(template.apply))
                 pkg:merge(copy(template.apply), state)
             end
         else
+            -- print(pretty(template.apply))
             pkg:merge(copy(template.apply), state)
         end
     elseif template.match == nil then

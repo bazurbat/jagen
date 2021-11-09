@@ -60,7 +60,7 @@ config { 'ccache',
 
 template {
     parse = true,
-    match = { as 'name', anyof(as 'config', none) },
+    match = { as 'name', anyof { as 'config', none } },
     apply = {
         none, none,
         name   = as 'name',
@@ -133,33 +133,33 @@ template {
 }
 
 template {
-    match = { source = { type = anyof('git', 'hg') } },
+    match = { source = { type = anyof { 'git', 'hg' } } },
     apply = { source = { scm = true } }
 }
 
 template {
-    match = { source = { name = anyof(value, none) } },
-    apply = { source = { name = anyof(value, '${name}') } }
+    match = { source = { name = anyof { value, none } } },
+    apply = { source = { name = anyof { value, '${name}' } } }
 }
 
 template {
     match = {
         source = {
             location = value 'location',
-            filename = anyof(value 'filename', none)
+            filename = anyof { value 'filename', none }
         }
     },
     apply = {
         source = {
-            filename = anyof(
+            filename = anyof {
                 value 'filename',
                 bind(value 'location', match '^.*/(.+)$'),
-                value 'location'),
+                value 'location' },
             basename = bind(value 'location',
-                            anyof(match '^.*/(.+)%.tar%.%w+$',
-                                  match '^.*/(.+)%.[^.]+$',
-                                  match '^.*/(.+)$',
-                                  match '.*'))
+                            anyof { match '^.*/(.+)%.tar%.%w+$',
+                                    match '^.*/(.+)%.[^.]+$',
+                                    match '^.*/(.+)$',
+                                    match '.*' })
         }
     }
 }
@@ -209,10 +209,10 @@ template {
 }
 
 template {
-    match = { source = { dir = some } },
+    match = { source = { dir = value } },
     apply = {
         export = {
-            source = { dir = '${source.dir}' },
+            source = { dir = value },
         }
     }
 }
@@ -243,7 +243,7 @@ template {
 -- update
 
 template {
-    match = { source = { type = anyof('git', 'hg') } },
+    match = { source = { type = anyof { 'git', 'hg' } } },
     apply = {
         stages = {
             update = { inputs = { stage 'clean' } }
@@ -302,15 +302,6 @@ template {
     }
 }
 
-template {
-    match = {
-        build = { cflags = some, cxxflags = none }
-    },
-    apply = {
-        build = { cxxflags = '${build.cflags}' }
-    }
-}
-
 -- template {
 --     match = { install = { type = 'linux-kernel' } },
 --     apply = {
@@ -318,71 +309,6 @@ template {
 --         KBUILD_OUTPUT = "${build.dir}"
 --     }
 -- }
-
-template {
-    final = true,
-    match = {
-        build = {
-            toolchain = as 'toolchain',
-            system = anyof(value 'system', none),
-        }
-    },
-    apply = {
-        build = {
-            system = anyof(value 'system', from(value 'toolchain', 'export.system')),
-            arch   = from(value 'toolchain', 'export.arch'),
-            cpu    = from(value 'toolchain', 'export.cpu'),
-        }
-    }
-}
-
-template {
-    final = true,
-    match = {
-        build = { system = value, arch = none }
-    },
-    apply = {
-        build = {
-            arch = bind(value, match('^(%w+)-?'))
-        }
-    }
-}
-
-template {
-    final = true,
-    match = {
-        build = { system = value }
-    },
-    apply = {
-        build = {
-           toolchain_prefix = cat(value, '-')
-        }
-    }
-}
-
-template {
-    final = true,
-    match = {
-        build = {
-            type = 'cmake',
-            toolchain = as 'toolchain',
-            cmake_executable = anyof(value 'cmake_executable', none)
-        }
-    },
-    apply = {
-        build = {
-            cmake_executable = anyof(
-                value 'cmake_executable',
-                from(value 'toolchain', 'export.cmake_executable'),
-                'cmake'
-            )
-            -- cmake_generator      = 'g',
-            -- cmake_options        = 'o',
-            -- cmake_module_path    = 'm',
-            -- cmake_toolchain_file = 't'
-        }
-    }
-}
 
 -- stage: configure
 
@@ -440,7 +366,7 @@ template {
 template {
     match = {
         build   = { type = value },
-        install = anyof(none, { type = none })
+        install = anyof { none, { type = none } }
     },
     apply = {
         install = { type = value }
@@ -456,7 +382,7 @@ template {
 
 template {
     match = {
-        build   = anyof(none, { type = none }),
+        build   = anyof { none, { type = none } },
         install = { type = some },
         stages  = { unpack = some }
     },
@@ -469,7 +395,7 @@ template {
 
 template {
     match = {
-        build   = anyof(none, { type = none }),
+        build   = anyof { none, { type = none } },
         install = { type  = some },
         stages  = { clean = some }
     },
@@ -598,12 +524,10 @@ template {
 }
 
 template {
-    match = { install = { dir = some } },
+    match = { install = { dir = value } },
     apply = {
         export = {
-            install = {
-                dir = '${install.dir}'
-            }
+            install = { dir = value }
         }
     }
 }
@@ -626,7 +550,112 @@ template {
 
 template {
     match = { build = { toolchain = value } },
-    apply = { uses = { value } }
+    apply = { uses  = { value } }
+}
+
+template {
+    match = {
+        build = { cflags = value, cxxflags = none }
+    },
+    apply = {
+        build = { cxxflags = value }
+    }
+}
+
+template {
+    match = {
+        build = {
+            toolchain = value 'toolchain',
+            system    = anyof { value 'system', none },
+        }
+    },
+    apply = {
+        build = {
+            system = anyof { value 'system', from(value 'toolchain', 'export.system') },
+            arch   = from(value 'toolchain', 'export.arch'),
+            cpu    = from(value 'toolchain', 'export.cpu'),
+        }
+    }
+}
+
+template {
+    match = {
+        build = { system = value, arch = none }
+    },
+    apply = {
+        build = {
+            arch = bind(value, match('^(%w+)-?'))
+        }
+    }
+}
+
+template {
+    match = {
+        build = { system = value }
+    },
+    apply = {
+        build = {
+           toolchain_prefix = cat(value, '-')
+        }
+    }
+}
+
+template {
+    match = {
+        build = {
+            type = 'cmake',
+            toolchain = as 'toolchain',
+            cmake_executable = anyof { value 'cmake_executable', none }
+        }
+    },
+    apply = {
+        build = {
+            cmake_executable = anyof {
+                value 'cmake_executable',
+                from(value 'toolchain', 'export.cmake_executable'),
+                'cmake'
+            }
+            -- cmake_generator      = 'g',
+            -- cmake_options        = 'o',
+            -- cmake_module_path    = 'm',
+            -- cmake_toolchain_file = 't'
+        }
+    }
+}
+
+
+template {
+    match = { build = { toolchain = value } },
+    apply = {
+        env = {
+            -- CMake honors CC and CXX but not LD. It uses compiler for linking.
+            CC      = 'gcc',
+            CXX     = 'g++',
+            CPP     = 'cpp',
+            LD      = 'ld',
+            -- Some of those are not very standard but relatively common.
+            AR      = 'ar',
+            AS      = 'as',
+            NM      = 'nm',
+            OBJCOPY = 'objcopy',
+            OBJDUMP = 'objdump',
+            RANLIB  = 'ranlib',
+            STRIP   = 'strip',
+
+            PATH = cat('${jagen:bin_dir}/', value, ':$PATH')
+        }
+    }
+}
+
+template {
+    match = { build = { type = isnot 'cmake' } },
+    apply = {
+        env = {
+            CFLAGS = '',
+            CXXFLAGS = '',
+            LDFLAGS = ''
+        }
+    }
 }
 
 -- uses
@@ -671,5 +700,47 @@ template {
     },
     apply = {
         toolchain = from(value, 'export'),
+    }
+}
+
+template {
+    final = true,
+    match = {
+        toolchain = {
+            cflags   = anyof { value 'cflags',   none },
+            cxxflags = anyof { value 'cxxflags', none },
+            ldflags  = anyof { value 'ldflags',  none },
+        }
+    },
+    apply = {
+        env = {
+            jagen_pkg__cflags   = value 'cflags',
+            jagen_pkg__cxxflags = value 'cxxflags',
+            jagen_pkg__ldflags  = value 'ldflags',
+        }
+    }
+}
+
+template {
+    final = true,
+    match = {
+        build = {
+            with_install_dir = true
+        },
+        install = {
+            dir = value 'install_dir'
+        },
+        toolchain = {
+            cflags   = anyof { value 'cflags',   none },
+            cxxflags = anyof { value 'cxxflags', none },
+            ldflags  = anyof { value 'ldflags',  none }
+        }
+    },
+    apply = {
+        env = {
+            jagen_pkg__cflags   = { cat('-I', value 'install_dir', '/include') },
+            jagen_pkg__cxxflags = { cat('-I', value 'install_dir', '/include') },
+            jagen_pkg__ldflags  = { cat('-L', value 'install_dir', '/lib') }
+        }
     }
 }
