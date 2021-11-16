@@ -161,8 +161,7 @@ function Module.env.bind(...)
     end
 end
 
-function Module.env.cat(...)
-    local args = {...}
+function Module.env.cat(args)
     return function(_, state)
         local result, value = {}
         for i = 1, #args do
@@ -221,6 +220,17 @@ function Module.env.value(name, state)
     else
         key = name
         return this
+    end
+end
+
+function Module.env.maybe(key)
+    return function(value, state)
+        if state.matching then
+            state.value[key] = value
+            return true
+        else
+            return state.value[key]
+        end
     end
 end
 

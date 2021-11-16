@@ -85,7 +85,7 @@ template {
         config = as 'config'
     },
     apply = {
-        ref = cat(as 'name', ':', as 'config')
+        ref = cat { as 'name', ':', as 'config' }
     }
 }
 
@@ -187,7 +187,7 @@ template {
     },
     apply = {
         source = {
-            dir = cat('${jagen:src_dir}', '/', value 'name')
+            dir = cat { '${jagen:src_dir}', '/', value 'name' }
         }
     }
 }
@@ -203,7 +203,7 @@ template {
     },
     apply = {
         source = {
-            dir = cat('${jagen:build_dir}', '/', value 'name')
+            dir = cat { '${jagen:build_dir}', '/', value 'name' }
         }
     }
 }
@@ -564,22 +564,6 @@ template {
 
 template {
     match = {
-        build = {
-            toolchain = value 'toolchain',
-            system    = anyof { value 'system', none },
-        }
-    },
-    apply = {
-        build = {
-            system = anyof { value 'system', from(value 'toolchain', 'export.system') },
-            arch   = from(value 'toolchain', 'export.arch'),
-            cpu    = from(value 'toolchain', 'export.cpu'),
-        }
-    }
-}
-
-template {
-    match = {
         build = { system = value, arch = none }
     },
     apply = {
@@ -595,37 +579,15 @@ template {
     },
     apply = {
         build = {
-           toolchain_prefix = cat(value, '-')
+           toolchain_prefix = cat { value, '-' }
         }
     }
 }
 
 template {
     match = {
-        build = {
-            type = 'cmake',
-            toolchain = as 'toolchain',
-            cmake_executable = anyof { value 'cmake_executable', none }
-        }
+        build = { toolchain = value }
     },
-    apply = {
-        build = {
-            cmake_executable = anyof {
-                value 'cmake_executable',
-                from(value 'toolchain', 'export.cmake_executable'),
-                'cmake'
-            }
-            -- cmake_generator      = 'g',
-            -- cmake_options        = 'o',
-            -- cmake_module_path    = 'm',
-            -- cmake_toolchain_file = 't'
-        }
-    }
-}
-
-
-template {
-    match = { build = { toolchain = value } },
     apply = {
         env = {
             -- CMake honors CC and CXX but not LD. It uses compiler for linking.
@@ -642,18 +604,7 @@ template {
             RANLIB  = 'ranlib',
             STRIP   = 'strip',
 
-            PATH = cat('${jagen:bin_dir}/', value, ':$PATH')
-        }
-    }
-}
-
-template {
-    match = { build = { type = isnot 'cmake' } },
-    apply = {
-        env = {
-            CFLAGS = '',
-            CXXFLAGS = '',
-            LDFLAGS = ''
+            PATH = cat { '${jagen:bin_dir}/', value, ':$PATH' }
         }
     }
 }
@@ -728,19 +679,73 @@ template {
             with_install_dir = true
         },
         install = {
-            dir = value 'install_dir'
-        },
-        toolchain = {
-            cflags   = anyof { value 'cflags',   none },
-            cxxflags = anyof { value 'cxxflags', none },
-            ldflags  = anyof { value 'ldflags',  none }
+            dir = value
         }
     },
     apply = {
         env = {
-            jagen_pkg__cflags   = { cat('-I', value 'install_dir', '/include') },
-            jagen_pkg__cxxflags = { cat('-I', value 'install_dir', '/include') },
-            jagen_pkg__ldflags  = { cat('-L', value 'install_dir', '/lib') }
+            jagen_pkg__cflags   = { cat { '-I', value, '/include' } },
+            jagen_pkg__cxxflags = { cat { '-I', value, '/include' } },
+            jagen_pkg__ldflags  = { cat { '-L', value, '/lib'     } }
         }
     }
 }
+
+template {
+    final = true,
+    match = {
+        build = {
+            toolchain = as 'toolchain',
+            system    = as 'system',
+            arch      = as 'arch',
+            cpu       = as 'cpu'
+
+        }
+    },
+    apply = {
+        build = {
+            system = anyof { value 'system', from(value 'toolchain', 'export.system') },
+            arch   = from(value 'toolchain', 'export.arch'),
+            cpu    = from(value 'toolchain', 'export.cpu'),
+        }
+    }
+}
+
+template {
+    final = true,
+    match = {
+        build = { type = isnot 'cmake' }
+    },
+    apply = {
+        env = {
+            CFLAGS = '',
+            CXXFLAGS = '',
+            LDFLAGS = ''
+        }
+    }
+}
+
+template {
+    final = true,
+    match = {
+        build = {
+            type = 'cmake',
+            toolchain = as 'toolchain',
+            cmake_executable = anyof { value 'cmake_executable', none }
+        }
+    },
+    apply = {
+        build = {
+            cmake_executable = anyof {
+                value 'cmake_executable',
+                from(value 'toolchain', 'export.cmake_executable'),
+                'cmake'
+            }
+            -- cmake_generator      = 'g',
+            -- cmake_options        = 'o',
+            -- cmake_module_path    = 'm',
+            -- cmake_toolchain_file = 't'
+        }
+    }
+}
+
