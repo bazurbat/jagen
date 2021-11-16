@@ -91,37 +91,37 @@ template {
 
 template {
     parse = true,
-    match = { class = bind(value, oftype 'string') },
+    match = { class = bind { value, oftype 'string' } },
     apply = { class = { value } }
 }
 
 template {
     parse = true,
-    match = { apply = bind(value, oftype 'string') },
+    match = { apply = bind { value, oftype 'string' } },
     apply = { apply = { value } }
 }
 
 template {
     parse = true,
-    match = { build = bind(value, oftype 'string') },
+    match = { build = bind { value, oftype 'string' } },
     apply = { build = { type = value } }
 }
 
 template {
     parse = true,
-    match = { build = { bind(value, oftype 'string') } },
+    match = { build = { bind { value, oftype 'string' } } },
     apply = { build = { none, type = value } }
 }
 
 template {
     parse = true,
-    match = { install = bind(value, oftype 'string') },
+    match = { install = bind { value, oftype 'string' } },
     apply = { install = { type = value } }
 }
 
 template {
     parse = true,
-    match = { install = { bind(value, oftype 'string') } },
+    match = { install = { bind { value, oftype 'string' } } },
     apply = { install = { none, type = value } }
 }
 
@@ -153,13 +153,17 @@ template {
         source = {
             filename = anyof {
                 value 'filename',
-                bind(value 'location', match '^.*/(.+)$'),
+                bind { value 'location', match '^.*/(.+)$' },
                 value 'location' },
-            basename = bind(value 'location',
-                            anyof { match '^.*/(.+)%.tar%.%w+$',
-                                    match '^.*/(.+)%.[^.]+$',
-                                    match '^.*/(.+)$',
-                                    match '.*' })
+            basename = bind {
+                value 'location',
+                anyof {
+                    match '^.*/(.+)%.tar%.%w+$',
+                    match '^.*/(.+)%.[^.]+$',
+                    match '^.*/(.+)$',
+                    match '.*'
+                }
+            }
         }
     }
 }
@@ -568,7 +572,7 @@ template {
     },
     apply = {
         build = {
-            arch = bind(value, match('^(%w+)-?'))
+            arch = bind { value, match('^(%w+)-?') }
         }
     }
 }
@@ -612,7 +616,7 @@ template {
 -- uses
 
 template {
-    match = { uses = bind(value, oftype 'string') },
+    match = { uses = bind { value, oftype 'string' } },
     apply = { uses = { value } }
 }
 
@@ -624,7 +628,7 @@ template {
     apply = {
         stages = {
             configure = {
-                inputs = { bind(each, as_target, with_stage 'install') }
+                inputs = { bind { each, as_target, with_stage 'install' } }
             }
         }
     }

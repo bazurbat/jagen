@@ -150,8 +150,7 @@ function Module.env.template(rule)
     end
 end
 
-function Module.env.bind(...)
-    local fns = {...}
+function Module.env.bind(fns)
     return function(init, state)
         local result = init
         for i = 1, #fns do
