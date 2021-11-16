@@ -34,12 +34,34 @@ config { 'jagen',
     }
 }
 
-config { 'host',
-    dir = '${jagen:root_dir}/host',
+package { 'jagen',
+    dir         = os.getenv('jagen_dir'),
+    root_dir    = os.getenv('jagen_root_dir'),
+    build_dir   = os.getenv('jagen_build_dir'),
+    include_dir = os.getenv('jagen_include_dir'),
 }
 
-config { 'target',
-    dir = '${jagen:root_dir}/target'
+template {
+    match = {
+        name        = 'jagen',
+        dir         = value 'dir',
+        root_dir    = value 'root_dir',
+        build_dir   = value 'build_dir',
+        include_dir = value 'include_dir'
+    },
+    apply = {
+        export = {
+            dir = value 'dir',
+            root_dir    = value 'root_dir',
+            build_dir   = value 'build_dir',
+            include_dir = value 'include_dir',
+            bin_dir     = cat { value 'root_dir', '/bin'  },
+            dist_dir    = cat { value 'root_dir', '/dist' },
+            lib_dir     = cat { value 'root_dir', '/lib'  },
+            log_dir     = cat { value 'root_dir', '/log'  },
+            src_dir     = cat { value 'root_dir', '/src'  },
+        }
+    }
 }
 
 config { 'ccache',
@@ -295,14 +317,13 @@ template {
 -- build
 
 template {
-    match = { build = some },
+    match = {
+        work_dir = value,
+        build    = some
+    },
     apply = {
-        build = { dir = '${work_dir}' },
-        export = {
-            build = {
-                dir = '${build.dir}'
-            }
-        }
+        build  = { dir = value },
+        export = { build = { dir = value } }
     }
 }
 
@@ -422,40 +443,40 @@ template {
     }
 }
 
--- host
+-- default install sysroots
 
 template {
     match = { class = contains 'host' },
     apply = {
         install = {
-            prefix = '${host:dir}',
-            root = ''
+            prefix = '${jagen:root_dir}/host',
+            root   = ''
         }
     }
 }
-
-template {
-    match = {
-        install = {
-            prefix = some,
-            root = none
-        }
-    },
-    apply = {
-        env = {
-            PKG_CONFIG_PATH = '${install.prefix}/lib/pkgconfig'
-        }
-    }
-}
-
--- target
 
 template {
     match = { class = contains 'target' },
     apply = {
         install = {
             prefix = '',
-            root = '${target:dir}'
+            root   = '${jagen:root_dir}/target'
+        }
+    }
+}
+
+-- pkgconfig
+
+template {
+    match = {
+        install = {
+            prefix = value,
+            root   = none
+        }
+    },
+    apply = {
+        env = {
+            PKG_CONFIG_PATH = cat { value, '/lib/pkgconfig' }
         }
     }
 }
@@ -463,40 +484,37 @@ template {
 template {
     match = {
         install = {
-            prefix = none,
-            root = some
+            root = value
         }
     },
     apply = {
-        install = {
-            prefix = '',
-            root = '${target:dir}'
-        },
         env = {
-            PKG_CONFIG_SYSROOT_DIR = "${install.root}",
-            PKG_CONFIG_LIBDIR = "${install.root}/lib/pkgconfig",
-            PKG_CONFIG_PATH = "${install.root}/usr/lib/pkgconfig",
+            PKG_CONFIG_SYSROOT_DIR  = value,
+            PKG_CONFIG_LIBDIR = cat { value, '/lib/pkgconfig' },
+            PKG_CONFIG_PATH   = cat { value, '/usr/lib/pkgconfig' },
 
-            -- pkg-config tries to be smart and removes -I and -L flags from it's
-            -- output when they resemble system paths. This causes SYSROOT_DIR to
-            -- not be added to them, which prevents packages to find each other
-            -- when building the sysroot itself.
+            -- pkg-config tries to be smart and removes -I and -L flags from
+            -- it's output when they resemble system paths. This causes
+            -- SYSROOT_DIR to not be added to them, which prevents packages to
+            -- find each other when building the sysroot itself.
             PKG_CONFIG_ALLOW_SYSTEM_CFLAGS = 1,
             PKG_CONFIG_ALLOW_SYSTEM_LIBS = 1
         }
     }
 }
 
+-- cmake
+
 template {
     match = {
         build   = { type = 'cmake' },
-        install = { root = some    }
+        install = { root = value   }
     },
     apply = {
         build = {
             cmake = {
                 options = {
-                    '-DCMAKE_FIND_ROOT_PATH="${install.root}"',
+                    cat { '-DCMAKE_FIND_ROOT_PATH="', value, '"' },
                     '-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER',
                     '-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY',
                     '-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY',
@@ -506,6 +524,8 @@ template {
         }
     }
 }
+
+-- kbuild
 
 template {
     match = {
@@ -521,9 +541,14 @@ template {
 -- install.dir
 
 template {
-    match = { install = { root = some, prefix = some } },
+    match = {
+        install = {
+            root   = value 'root',
+            prefix = value 'prefix' 
+        }
+    },
     apply = {
-        install = { dir = '${install.root}${install.prefix}' }
+        install = { dir = cat { value 'root', value 'prefix' } }
     }
 }
 
