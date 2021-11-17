@@ -18,7 +18,6 @@ function Module:new(name)
     local module = {
         name = name,
         uses = {},
-        configs = {},
         packages  = {},
         templates = {},
         named_templates = {},
@@ -124,10 +123,6 @@ function Module.env.use(name)
     end
 
     append(current.uses, this)
-end
-
-function Module.env.config(rule)
-    append(current.configs, Config:new(rule))
 end
 
 function Module.env.package(rule)
@@ -297,7 +292,7 @@ function Module.env.from(ref, key)
     return function(value, state)
         local this_ref
         if type(ref) == 'function' then
-                this_ref = ref(nil, state)
+            this_ref = ref(nil, state)
         end
         return table.get(state.packages, this_ref, unpack(string.split2(key, '.')))
     end

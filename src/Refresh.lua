@@ -41,7 +41,7 @@ function Refresh:run(args)
 
     engine:finalize()
 
-    local root_config = engine.config.jagen
+    local root_config = engine.packages.jagen
 
     local build_dir = root_config.build_dir
     local include_dir = root_config.include_dir
@@ -60,14 +60,6 @@ function Refresh:run(args)
             -- local filename = string.format('%s/%s', dir.log, target:log_filename())
             -- assert(io.open(filename, 'a+')):close()
         end
-    end
-
-    for name, config in pairs(engine.config) do
-        local filename = System.mkpath(include_dir, string.format('%s.config.sh', name))
-        if name ~= 'jagen' then
-            name = 'jagen_'..name
-        end
-        Script:write_config(config, filename, name)
     end
 
     Ninja.generate(packages, root_config)

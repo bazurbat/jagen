@@ -11,7 +11,6 @@ local Pass = {}
 function Engine:new()
     local engine = {
         path = {},
-        config = {},
         modules = {},
         packages  = {},
         templates = {},
@@ -85,10 +84,6 @@ function Engine:load_rules()
     ok, err = pcall(function ()
         self:apply_named_templates()
 
-        for key, config in pairs(self.config) do
-            self:expand(config, config, config.name)
-        end
-
         for pkg in each(self.packages) do
             self:expand(pkg, pkg, pkg.name)
         end
@@ -100,36 +95,15 @@ function Engine:load_rules()
 
     self:apply_final_templates()
 
-    -- self:resolve_delayed_references()
-
-    -- for _, config in pairs(self.config) do
-    --     print(pretty(config))
-    -- end
-
-    for pkg in each(self.packages) do
-        print(pretty(pkg))
+    if os.getenv('jagen_debug_engine') then
+        for pkg in each(self.packages) do
+            print(pretty(pkg))
+        end
     end
 
     self:validate()
 
     return self.packages
-end
-
-function Engine:resolve_delayed_references()
-    local function expand(object)
-        for key, value in pairs(object) do
-            local tvalue = type(value)
-            if tvalue == 'function' then
-                object[key] = value()
-            elseif tvalue == 'table' then
-                expand(value)
-            end
-        end
-    end
-
-    for pkg in each(self.packages) do
-        expand(pkg)
-    end
 end
 
 function Engine:finalize()
@@ -143,7 +117,7 @@ function Engine:finalize()
         pkg._targets = {}
         for name, stage in pairs(pkg.stages or {}) do
             local target = Target.from_args(pkg.name, name)
-            target.log = System.mkpath(self.config.jagen.log_dir, target.ref..'.log')
+            target.log = System.mkpath(self.packages.jagen.log_dir, target.ref..'.log')
             target.inputs = stage.inputs
             pkg._targets[name] = target
         end
@@ -210,9 +184,6 @@ function Engine:process_modules(pass, modules)
         for rule in each(mod.named_templates) do
             self:process_named_template(rule, pass)
         end
-        for rule in each(mod.configs) do
-            self:process_config(rule, pass)
-        end
         for rule in each(mod.packages) do
             self:process_package(rule, pass)
         end
@@ -230,18 +201,6 @@ function Engine:process_named_template(rule, pass)
         template:merge(rule)
     else
         self.named_templates[key] = rule
-    end
-end
-
-function Engine:process_config(rule, pass)
-    Log.debug2('process config %s', rule.name)
-
-    local key = rule.name
-    local config = self.config[key]
-    if config then
-        config:merge(rule)
-    else
-        self.config[key] = rule
     end
 end
 
@@ -307,7 +266,7 @@ function Engine:apply_templates(pass)
     Log.debug2('%d new templates', #pass.templates)
     if next(pass.templates) then
         for pkg in each(self.packages) do
-            Log.debug2('[1] apply templates to %s', pkg)
+            Log.debug2('apply new templates to %s', pkg)
             for template in each(pass.templates) do
                 self:apply_template(template, pkg)
             end
@@ -318,7 +277,7 @@ function Engine:apply_templates(pass)
     Log.debug2('%d new packages', #pass.packages)
     if next(pass.packages) then
         for pkg in each(pass.packages) do
-            Log.debug2('[2] apply templates to %s', pkg)
+            Log.debug2('apply templates to %s', pkg)
             for template in each(self.templates) do
                 self:apply_template(template, pkg)
             end
@@ -354,13 +313,13 @@ end
 function Engine:expand(object, env, parent_key)
     local function sub(expr)
         local name, path = expr:match('([%w_]+):([%w_][%w_.]+)')
-        local config
+        local pkg
         if name then
-            config = self.config[name]
-            if not config then
+            pkg = self.packages[name]
+            if not pkg then
                 error({
                     message = string.format("an expression '%s' in %s "..
-                        "references a config '%s' which is not defined",
+                        "references a package '%s' which is not defined",
                         expr, parent_key, name),
                 }, 0)
             end
@@ -369,8 +328,8 @@ function Engine:expand(object, env, parent_key)
         end
         local keys = path:split2('.')
         local value
-        if config then
-            value = table.get(config, table.unpack(keys))
+        if pkg then
+            value = table.get(pkg, table.unpack(keys))
         else
             value = table.get(env, table.unpack(keys))
         end
@@ -429,11 +388,6 @@ function Engine:validate()
 
     local unexpanded = {}
 
-    for config in each(self.config) do
-        for key, value in iter_unexpanded(config) do
-            unexpanded[key] = value
-        end
-    end
     for pkg in each(self.packages) do
         for key, value in iter_unexpanded(pkg) do
             unexpanded[key] = value
