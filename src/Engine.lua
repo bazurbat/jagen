@@ -117,7 +117,7 @@ function Engine:finalize()
         pkg._targets = {}
         for name, stage in pairs(pkg.stages or {}) do
             local target = Target.from_args(pkg.name, name)
-            target.log = System.mkpath(self.packages.jagen.log_dir, target.ref..'.log')
+            -- target.log = System.mkpath(self.packages.jagen.log_dir, target.ref..'.log')
             target.inputs = stage.inputs
             pkg._targets[name] = target
         end

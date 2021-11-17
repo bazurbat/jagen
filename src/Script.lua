@@ -95,9 +95,8 @@ local function write_files(w, pkg)
     end
 end
 
-function P:write(pkg, filename, prefix)
-    prefix = prefix or 'pkg'
-    local skip = { stages = true, uses = true, import = true, env = true }
+function P:write(pkg, filename, engine)
+    local skip = { stages = true, uses = true, import = true, export = true, env = true }
 
     local properties = {}
     for key, val in pairs(pkg) do
@@ -109,8 +108,8 @@ function P:write(pkg, filename, prefix)
     table.sort(properties)
 
     local standard_sections = {
-        source = true, build = true, install = true, export = true,
-        'source', 'build', 'install', 'export'
+        source = true, build = true, install = true,
+        'source', 'build', 'install'
     }
     local other_sections = {}
 
@@ -141,9 +140,9 @@ function P:write(pkg, filename, prefix)
         end
     end
 
-    if pkg.import ~= nil then
-        write(add_line, 'import', pkg.import)
-    end
+    -- if pkg.import ~= nil then
+    --     write(add_line, 'import', pkg.import)
+    -- end
 
     for name in each(other_sections) do
         write(add_line, name, pkg[name])
@@ -155,13 +154,20 @@ function P:write(pkg, filename, prefix)
         end
     end
 
+    for name in each(pkg.uses) do
+        local use = engine.packages[name]
+        if use and use.export and use.export.env then
+            write(add_export_line, '', use.export.env)
+        end
+    end
+
     if pkg.env ~= nil then
-        write(add_line, 'env', pkg.env)
+        -- write(add_line, 'env', pkg.env)
         write(add_export_line, '', pkg.env)
     end
 
     for i = 1, #lines do
-        lines[i] = string.format('%s_%s', prefix, lines[i])
+        lines[i] = string.format('%s_%s', 'pkg', lines[i])
     end
     for i = 1, #export_lines do
         export_lines[i] = string.format('export %s', export_lines[i])

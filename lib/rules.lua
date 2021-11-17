@@ -127,6 +127,13 @@ template {
     apply = { install = { none, type = value } }
 }
 
+-- use jagen
+
+template {
+    match = { name = isnot 'jagen' },
+    apply = { uses = { 'jagen' } }
+}
+
 -- source
 
 template {
@@ -622,11 +629,6 @@ template {
 }
 
 -- uses
-
-template {
-    match = some,
-    apply = { uses = { 'jagen' } }
-}
 
 template {
     match = { uses = bind { value, oftype 'string' } },
