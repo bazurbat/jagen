@@ -1,4 +1,5 @@
-package { 'jagen',
+package {
+    name        = 'jagen',
     dir         = os.getenv('jagen_dir'),
     root_dir    = os.getenv('jagen_root_dir'),
     build_dir   = os.getenv('jagen_build_dir'),
@@ -59,73 +60,6 @@ package { 'jagen',
 --         CCACHE_SLOPPINESS="file_stat_matches,include_file_mtime,time_macros"
 --     }
 -- }
-
-template {
-    parse = true,
-    match = { as 'name', anyof { as 'config', none } },
-    apply = {
-        none, none,
-        name   = as 'name',
-        config = as 'config'
-    }
-}
-
-template {
-    parse = true,
-    match = {
-        name = as 'name'
-    },
-    apply = {
-        ref = as 'name'
-    }
-}
-
-template {
-    parse = true,
-    match = {
-        name   = as 'name',
-        config = as 'config'
-    },
-    apply = {
-        ref = cat { as 'name', ':', as 'config' }
-    }
-}
-
-template {
-    parse = true,
-    match = { class = bind { value, oftype 'string' } },
-    apply = { class = { value } }
-}
-
-template {
-    parse = true,
-    match = { apply = bind { value, oftype 'string' } },
-    apply = { apply = { value } }
-}
-
-template {
-    parse = true,
-    match = { build = bind { value, oftype 'string' } },
-    apply = { build = { type = value } }
-}
-
-template {
-    parse = true,
-    match = { build = { bind { value, oftype 'string' } } },
-    apply = { build = { none, type = value } }
-}
-
-template {
-    parse = true,
-    match = { install = bind { value, oftype 'string' } },
-    apply = { install = { type = value } }
-}
-
-template {
-    parse = true,
-    match = { install = { bind { value, oftype 'string' } } },
-    apply = { install = { none, type = value } }
-}
 
 -- use jagen
 

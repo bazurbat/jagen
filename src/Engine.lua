@@ -15,8 +15,7 @@ function Engine:new()
         packages  = {},
         templates = {},
         named_templates = {},
-        final_templates = {},
-        parse_templates = {}
+        final_templates = {}
     }
     setmetatable(engine, self)
     self.__index = self
@@ -27,8 +26,7 @@ function Pass:new()
     return {
         packages  = {},
         templates = {},
-        named_templates = {},
-        parse_templates = {}
+        named_templates = {}
     }
 end
 
@@ -175,11 +173,6 @@ end
 
 function Engine:process_modules(pass, modules)
     for mod in each(modules) do
-        self.modules[mod.filename] = true
-        extend(self.parse_templates, mod.parse_templates)
-    end
-
-    for mod in each(modules) do
         Log.debug2('process module %s', mod)
         for rule in each(mod.named_templates) do
             self:process_named_template(rule, pass)
@@ -205,10 +198,6 @@ function Engine:process_named_template(rule, pass)
 end
 
 function Engine:process_package(rule, pass)
-    for template in each(self.parse_templates) do
-        self:apply_template(template, rule)
-    end
-
     Log.debug2('process package %s', rule.ref)
 
     local pkg = self.packages[rule.ref]

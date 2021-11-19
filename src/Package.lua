@@ -34,24 +34,22 @@ function Package:create(name)
 end
 
 function Package:parse(rule)
-    if type(rule) == 'string' then
-        rule = { name = rule }
-    elseif type(rule) == 'table' then
-        if type(rule[1]) == 'string' then
-            rule.name = rule[1]
-            table.remove(rule, 1)
+    rule.ref = rule.name
+    rule.source = Source:parse(rule.source)
+
+    for key in each { 'class' } do
+        local value = rule[key]
+        if type(value) == 'string' then
+            rule[key] = { value }
         end
-        if type(rule[1]) == 'string' then
-            rule.config = rule[1]
-            table.remove(rule, 1)
-        end
-    else
-        error("invalid rule type")
     end
 
-    rule.ref = Package.__tostring(rule)
-
-    rule.source = Source:parse(rule.source)
+    for key in each { 'build', 'install' } do
+        local value = rule[key]
+        if type(value) == 'string' then
+            rule[key] = { type = value }
+        end
+    end
 
     if type(rule.patches) == 'table' then
         local patches = rule.patches

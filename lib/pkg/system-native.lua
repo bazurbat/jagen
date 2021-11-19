@@ -1,4 +1,5 @@
-package { 'system-native',
+package {
+    name = 'system-native',
     source = {
         dir = '/usr'
     },

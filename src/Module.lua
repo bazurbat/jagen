@@ -21,7 +21,6 @@ function Module:new(name)
         packages  = {},
         templates = {},
         named_templates = {},
-        parse_templates = {},
         final_templates = {},
     }
     setmetatable(module, self)
@@ -136,8 +135,6 @@ function Module.env.template(rule)
     rule = Rule:new(rule)
     if rule.name then
         append(current.named_templates, rule)
-    elseif rule.parse then
-        append(current.parse_templates, rule)
     elseif rule.final then
         append(current.final_templates, rule)
     else
