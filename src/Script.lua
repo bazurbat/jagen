@@ -1,6 +1,7 @@
+local Chunk  = require 'Chunk'
+local Module = require 'Module'
 local System = require 'System'
 local Target = require 'Target'
-local Chunk  = require 'Chunk'
 
 local P = {}
 
@@ -121,7 +122,7 @@ function P:write(pkg, filename, engine)
         end
     end
 
-    local lines, export_lines = {}, {}
+    local lines, export_lines, unset_lines = {}, {}, {}
 
     local function add_line(s, ...)
         append(lines, string.format(s, ...))
@@ -140,10 +141,6 @@ function P:write(pkg, filename, engine)
         end
     end
 
-    -- if pkg.import ~= nil then
-    --     write(add_line, 'import', pkg.import)
-    -- end
-
     for name in each(other_sections) do
         write(add_line, name, pkg[name])
     end
@@ -154,16 +151,25 @@ function P:write(pkg, filename, engine)
         end
     end
 
+    local function collect_env(env)
+        for key, value in pairs(env) do
+            if value == Module.env.none then
+                append(unset_lines, string.format('unset %s', key))
+            else
+                write(add_export_line, key, value)
+            end
+        end
+    end
+
     for name in each(pkg.uses) do
         local use = engine.packages[name]
         if use and use.export and use.export.env then
-            write(add_export_line, '', use.export.env)
+            collect_env(use.export.env)
         end
     end
 
     if pkg.env ~= nil then
-        -- write(add_line, 'env', pkg.env)
-        write(add_export_line, '', pkg.env)
+        collect_env(pkg.env)
     end
 
     for i = 1, #lines do
@@ -178,8 +184,14 @@ function P:write(pkg, filename, engine)
         write(add_line, '', pkg.import)
     end
 
+    table.sort(unset_lines)
+    table.sort(export_lines)
+
     local file = assert(io.open(filename, 'w+'))
     file:write(table.concat(lines, '\n'), '\n')
+    if next(unset_lines) then
+        file:write('\n', table.concat(unset_lines, '\n'), '\n')
+    end
     if next(export_lines) then
         file:write('\n', table.concat(export_lines, '\n'), '\n')
     end

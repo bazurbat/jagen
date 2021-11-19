@@ -32,9 +32,9 @@ package {
             -- Do not prompt on the terminal (e.g. when asking for HTTP credentials).
             GIT_TERMINAL_PROMPT = 0,
             -- Never install the translations.
-            LINGUAS = '',
+            LINGUAS = none,
             -- Do not run tools with an interactive graphical UI.
-            DISPLAY = ''
+            DISPLAY = none
         },
         toolchain = {
             c_compiler_names   = { 'gcc', 'clang'          },
