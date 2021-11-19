@@ -97,6 +97,11 @@ local function write_files(w, pkg)
 end
 
 function P:write(pkg, filename, engine)
+    local prefix = 'pkg'
+    if pkg.name == 'jagen' then
+        prefix = 'jagen'
+    end
+
     local skip = { stages = true, uses = true, import = true, export = true, env = true }
 
     local properties = {}
@@ -173,7 +178,7 @@ function P:write(pkg, filename, engine)
     end
 
     for i = 1, #lines do
-        lines[i] = string.format('%s_%s', 'pkg', lines[i])
+        lines[i] = string.format('%s_%s', prefix, lines[i])
     end
     for i = 1, #export_lines do
         export_lines[i] = string.format('export %s', export_lines[i])

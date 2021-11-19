@@ -23,8 +23,6 @@ package {
         build_dir = '${build_dir}',
         bin_dir   = '${bin_dir}',
         dist_dir  = '${dist_dir}',
-        lib_dir   = '${lib_dir}',
-        log_dir   = '${log_dir}',
         src_dir   = '${src_dir}',
         env = {
             -- Disable passphrase querying.
