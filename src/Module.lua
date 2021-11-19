@@ -20,7 +20,6 @@ function Module:new(name)
         uses = {},
         packages  = {},
         templates = {},
-        named_templates = {},
         final_templates = {},
     }
     setmetatable(module, self)
@@ -133,9 +132,7 @@ end
 function Module.env.template(rule)
     -- Log.debug2('template: %s', pretty(rule))
     rule = Rule:new(rule)
-    if rule.name then
-        append(current.named_templates, rule)
-    elseif rule.final then
+    if rule.final then
         append(current.final_templates, rule)
     else
         append(current.templates, rule)
