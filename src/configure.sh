@@ -1,7 +1,10 @@
 #!/bin/sh
 
 pkg_configure() {
-    [ "$pkg_source_dir" ] || return 0
+    if [ -z "$pkg_source_dir" ]; then
+        message "pkg_source_dir is not set, skipping configure"
+        return 0
+    fi
 
     local IFS="$jagen_IFS" S="$jagen_FS" A= MA="$(cat "${jagen_build_args_file:?}" 2>&-)"
     local build_profile=$(pkg_get_build_profile)

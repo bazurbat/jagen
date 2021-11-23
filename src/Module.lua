@@ -282,34 +282,36 @@ function Module.env.each(values, state)
     end
 end
 
-function Module.env.from(ref, key)
-    return function(value, state)
-        local this_ref
-        if type(ref) == 'function' then
-            this_ref = ref(nil, state)
+function Module.env.from(expr, key)
+    return function(_, state)
+        local ref = expr
+        if type(expr) == 'function' then
+            ref = expr(nil, state)
         end
-        return table.get(state.packages, this_ref, unpack(string.split2(key, '.')))
+        local pkg = state.packages[ref]
+        if pkg then
+            local tkey = type(key)
+            if tkey == 'string' then
+                return table.get(pkg, unpack(string.split2(key, '.')))
+            elseif tkey == 'function' then
+                return key(pkg, state)
+            elseif tkey == 'nil' then
+                return pkg
+            end
+        end
     end
 end
 
-function Module.env.as_target(spec, state)
-    local name, config = table.unpack(string.split2(spec, ':'))
-    return { name = name, config = config }
-end
-
-function Module.env.with_stage(stage)
-    return function(target, state)
-        target.stage = stage
-        return target
+function Module.env.stage(stage)
+    return function(pkg, state)
+        if pkg then
+            if pkg.stages and pkg.stages[stage] then
+                return { name = pkg.name, stage = stage }
+            end
+        else
+            return { stage = stage }
+        end
     end
-end
-
-function Module.env.target(name, stage, config)
-    -- return Target.from_args(name, stage, config)
-end
-
-function Module.env.stage(name)
-    return { stage = name }
 end
 
 return Module

@@ -40,7 +40,8 @@ package {
             cpp_names          = { 'cpp'                   },
             linker_names       = { 'ld'                    }
         }
-    }
+    },
+    stages = { install = {} }
 }
 
 -- package { 'ccache',
@@ -113,14 +114,24 @@ template {
 }
 
 template {
+    match = anyof {
+        { source = none, build = some },
+        { source = { type = none }, build = some }
+    },
+    apply = {
+        source = { type = 'dir' }
+    }
+}
+
+template {
     match = {
         source = {
             type = 'dir',
-            location = value,
+            location = anyof { value, none }
         }
     },
     apply = {
-        source = { dir = value }
+        source = { dir = anyof { value, '${jagen:src_dir}/${name}' } }
     }
 }
 
@@ -135,7 +146,7 @@ template {
     },
     apply = {
         source = {
-            dir = cat { '${jagen:src_dir}', '/', value 'name' },
+            dir = '${jagen:src_dir}/${name}'
         }
     }
 }
@@ -151,16 +162,7 @@ template {
     },
     apply = {
         source = {
-            dir = cat { '${jagen:build_dir}', '/', value 'name' }
-        }
-    }
-}
-
-template {
-    match = { source = { dir = value } },
-    apply = {
-        export = {
-            source = { dir = value },
+            dir = '${jagen:build_dir}/${name}'
         }
     }
 }
@@ -240,12 +242,21 @@ template {
 
 template {
     match = {
-        work_dir = value,
-        build    = some
+        source = { dir = value      },
+        build  = { in_source = true },
     },
     apply = {
-        build  = { dir = value },
-        export = { build = { dir = value } }
+        build = { dir = value }
+    }
+}
+
+template {
+    match = {
+        work_dir = value,
+        build = { dir = none  }
+    },
+    apply = {
+        build = { dir = value }
     }
 }
 
@@ -258,6 +269,15 @@ template {
 -- }
 
 -- stage: configure
+
+template {
+    match = {
+        build = { type = some }
+    },
+    apply = {
+        stages = { configure = {} }
+    }
+}
 
 template {
     match = {
@@ -555,7 +575,25 @@ template {
             RANLIB  = 'ranlib',
             STRIP   = 'strip',
 
-            PATH = cat { '${jagen:bin_dir}/', value, ':$PATH' }
+            PATH = cat { '${jagen:bin_dir}/', value, os.getenv('PATH') }
+        }
+    }
+}
+
+-- dir export
+
+template {
+    match = {
+        dir    = anyof { value 'dir', none },
+        source = { dir = anyof { value 'source', none } },
+        build  = { dir = anyof { value 'build',  none } }
+
+    },
+    apply = {
+        export = {
+            dir    = anyof { value 'dir', value 'source' },
+            source = { dir = value 'source' },
+            build  = { dir = value 'build'  }
         }
     }
 }
@@ -563,11 +601,7 @@ template {
 -- uses
 
 template {
-    match = { uses = bind { value, oftype 'string' } },
-    apply = { uses = { value } }
-}
-
-template {
+    final = true,
     match = {
         uses = each,
         stages = { configure = some }
@@ -575,7 +609,9 @@ template {
     apply = {
         stages = {
             configure = {
-                inputs = { bind { each, as_target, with_stage 'install' } }
+                inputs = {
+                    from(each, anyof { stage 'install', stage 'compile' })
+                }
             }
         }
     }
@@ -697,5 +733,15 @@ template {
             -- cmake_module_path    = 'm',
             -- cmake_toolchain_file = 't'
         }
+    }
+}
+
+template {
+    final = true,
+    match = {
+        name = 'jagen'
+    },
+    apply = {
+        stages = none
     }
 }

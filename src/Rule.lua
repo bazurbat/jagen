@@ -32,14 +32,15 @@ end
 
 function Rule.merge(to, from, state)
     for key, value in pairs(from or {}) do
-        if type(key) ~= 'number' then
-            if type(key) == 'function' then
+        local tkey, tvalue = type(key), type(value)
+        if tkey ~= 'number' then
+            if tkey == 'function' then
                 key = key(nil, state)
             end
-            if type(value) == 'function' then
+            if tvalue == 'function' then
                 value = value(nil, state)
             end
-            if type(value) == 'table' then
+            if tvalue == 'table' then
                 if type(to[key]) ~= 'table'  then
                     to[key] = {}
                 end
@@ -49,21 +50,21 @@ function Rule.merge(to, from, state)
             end
         end
     end
-    for i, val in ipairs(from or {}) do
-        if type(val) == 'function' then
-            val = val(nil, state)
+
+    for i, value in ipairs(from or {}) do
+        if type(value) == 'function' then
+            value = value(nil, state)
         end
-        if val == nil then
-            to[i] = nil
-        elseif type(val) == 'table' then
-            local v = Rule.merge({}, val, state)
-            if next(v) then
-                table.insert(to, v)
+        if value ~= nil then
+            if type(value) == 'table' then
+                value = Rule.merge({}, value, state)
             end
-        else
-            table.insert(to, val)
+            if value ~= nil then
+                table.insert(to, value)
+            end
         end
     end
+
     return to
 end
 

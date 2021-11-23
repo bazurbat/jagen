@@ -9,7 +9,7 @@ pkg_args="$@"
 
 . "${jagen_dir:?}/src/stages.sh" || exit
 
-. "${jagen_include_dir:?}/root.config.sh" || exit
+. "${jagen_include_dir:?}/jagen.sh" || exit
 
 pkg__target="${pkg_name}:${pkg_stage}${pkg_config:+:${pkg_config}}"
 pkg__stamp_file="${jagen_build_dir:?}/${pkg__target}"
@@ -81,13 +81,11 @@ cd "$jagen_build_dir" || exit
 # include scripts
 include "$jagen_include_dir/$(pkg__fname "$pkg_name")" || exit
 
-if [ "$pkg_build_toolchain" ]; then
-    use_env toolchain
-fi
-
 if [ -f "$pkg_backing_script" ]; then
     include "$pkg_backing_script"
 fi
+
+env | grep cycurlib_
 
 case $pkg_stage in
     clean|unpack|update)

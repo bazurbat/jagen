@@ -141,7 +141,7 @@ function P:run(args)
     end
 
     local config = engine.packages.jagen
-    local cmd = assert(engine.packages.self.cmd)
+    local cmd = assert(config.self.cmd)
 
     write_targets(targets, args, assert(config.build_targets_file))
 

@@ -37,7 +37,7 @@ function Package:parse(rule)
     rule.ref = rule.name
     rule.source = Source:parse(rule.source)
 
-    for key in each { 'class' } do
+    for key in each { 'class', 'uses' } do
         local value = rule[key]
         if type(value) == 'string' then
             rule[key] = { value }

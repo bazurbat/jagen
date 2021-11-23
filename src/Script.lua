@@ -97,11 +97,6 @@ local function write_files(w, pkg)
 end
 
 function P:write(pkg, filename, engine)
-    local prefix = 'pkg'
-    if pkg.name == 'jagen' then
-        prefix = 'jagen'
-    end
-
     local skip = { stages = true, uses = true, import = true, export = true, env = true }
 
     local properties = {}
@@ -127,41 +122,38 @@ function P:write(pkg, filename, engine)
         end
     end
 
-    local lines, export_lines, unset_lines = {}, {}, {}
+    local main, imports, unset, env = {}, {}, {}, {}
 
-    local function add_line(s, ...)
-        append(lines, string.format(s, ...))
+    local function add_main(s, ...)
+        append(main, string.format(s, ...))
     end
-    local function add_export_line(s, ...)
-        append(export_lines, string.format(s, ...))
+    local function add_import(s, ...)
+        append(imports, string.format(s, ...))
+    end
+    local function add_env(s, ...)
+        append(env, string.format(s, ...))
     end
 
     for key in each(properties) do
-        write(add_line, key, pkg[key])
+        write(add_main, key, pkg[key])
     end
 
     for name in each(standard_sections) do
         if pkg[name] ~= nil then
-            write(add_line, name, pkg[name])
+            write(add_main, name, pkg[name])
         end
     end
 
     for name in each(other_sections) do
-        write(add_line, name, pkg[name])
-    end
-
-    if pkg._targets then
-        for stage, target in pairs(pkg._targets) do
-            write(add_line, string.format('stage_%s_log', stage), target.log)
-        end
+        write(add_main, name, pkg[name])
     end
 
     local function collect_env(env)
         for key, value in pairs(env) do
             if value == Module.env.none then
-                append(unset_lines, string.format('unset %s', key))
+                append(unset, string.format('unset %s', key))
             else
-                write(add_export_line, key, value)
+                write(add_env, key, value)
             end
         end
     end
@@ -177,28 +169,43 @@ function P:write(pkg, filename, engine)
         collect_env(pkg.env)
     end
 
-    for i = 1, #lines do
-        lines[i] = string.format('%s_%s', prefix, lines[i])
-    end
-    for i = 1, #export_lines do
-        export_lines[i] = string.format('export %s', export_lines[i])
-    end
-
     if pkg.import ~= nil then
-        add_line('')
-        write(add_line, '', pkg.import)
+        write(add_import, '', pkg.import)
     end
 
-    table.sort(unset_lines)
-    table.sort(export_lines)
+    table.sort(imports)
+    table.sort(unset)
+    table.sort(env)
+
+    local prefix = 'pkg_'
+    if pkg.name == 'jagen' then
+        prefix = 'jagen_'
+    end
+
+    for i = 1, #main do
+        main[i] = prefix..main[i]
+    end
+
+    function add_export(list)
+        for i = 1, #list do
+            list[i] = 'export '..list[i]
+        end
+    end
+
+    for list in each { main, imports, env } do
+        add_export(list)
+    end
 
     local file = assert(io.open(filename, 'w+'))
-    file:write(table.concat(lines, '\n'), '\n')
-    if next(unset_lines) then
-        file:write('\n', table.concat(unset_lines, '\n'), '\n')
+    file:write(table.concat(main, '\n'), '\n')
+    if next(imports) then
+        file:write('\n', table.concat(imports, '\n'), '\n')
     end
-    if next(export_lines) then
-        file:write('\n', table.concat(export_lines, '\n'), '\n')
+    if next(unset) then
+        file:write('\n', table.concat(unset, '\n'), '\n')
+    end
+    if next(env) then
+        file:write('\n', table.concat(env, '\n'), '\n')
     end
     file:close()
 end

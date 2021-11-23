@@ -214,22 +214,43 @@ end
 
 function Engine:apply_template(template, pkg)
     local state = { matching = true, value = {} }
+    if template.debug then
+        Log.debug2('template: %s', pretty(template))
+    end
     if pkg:match(template.match, state) then
+        if template.debug then
+            Log.debug2('match')
+        end
         state.matching = false
         state.packages = self.packages
         if state.each then
             for i = 1, state.n do
                 state.i = i
                 -- print(pretty(template.apply))
+                if template.debug then
+                    Log.debug2('%s BEFORE (%d/%d): %s', pkg.name, i, state.n, pretty(pkg))
+                end
                 pkg:merge(copy(template.apply), state)
+                if template.debug then
+                    Log.debug2('%s AFTER (%d/%d): %s', pkg.name, i, state.n, pretty(pkg))
+                end
             end
         else
+            if template.debug then
+                Log.debug2('%s BEFORE: %s', pkg.name, pretty(pkg))
+            end
             -- print(pretty(template.apply))
             pkg:merge(copy(template.apply), state)
+            if template.debug then
+                Log.debug2('%s AFTER: %s', pkg.name, pretty(pkg))
+            end
         end
     elseif template.match == nil then
         pkg:merge(copy(template.apply), state)
     end
+    -- if template.debug then
+    --     print(pretty(self.packages))
+    -- end
 end
 
 function Engine:apply_templates(pass)
