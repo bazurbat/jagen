@@ -25,14 +25,16 @@ toolchain_get_lib_dir() {
 }
 
 toolchain_match() {
-    local path="${1:?}" list_file="${2:?}"
-    local name filename=${path##*/}
-    while IFS= read -r name; do
+    local path="${1:?}"
+    local name filename="${path##*/}" prefix="${pkg_export_system:+${pkg_export_system}-}"
+    local IFS="$jagen_FS"
+    shift
+    for name; do
         case $filename in
-            ${pkg_build_toolchain_prefix}${name}-*|${pkg_build_toolchain_prefix}${name})
+            ${prefix}${name}-*|${prefix}${name})
                 return 0 ;;
         esac
-    done <"$list_file"
+    done
     return 1
 }
 
@@ -41,13 +43,13 @@ toolchain_wrap() {
     local cmd="$path" filename="${path##*/}"
     local wrapper="${dest_dir}/${filename}"
     if [ "$varname" ]; then
-        message "${wrapper#$jagen_root_dir/} -> ${path#$jagen_root_dir/}"
+        message "wrap ${wrapper#$jagen_root_dir/} -> ${path#$jagen_root_dir/}"
         case $varname in
             cflags|cxxflags)
                 # compiler is often called as a linker, so it needs ldflags too
-                cmd="$cmd \$jagen_pkg__$varname \$jagen_pkg__ldflags" ;;
+                cmd="$cmd \$pkg_toolchain_$varname \$pkg_toolchain_ldflags" ;;
             *)
-                cmd="$cmd \$jagen_pkg__$varname" ;;
+                cmd="$cmd \$pkg_toolchain_$varname" ;;
         esac
         # if the wrapper is a symlink echo will overwrite the original
         # executable in the toolchain unless we remove the link first
@@ -55,6 +57,7 @@ toolchain_wrap() {
         echo "exec \$jagen_ccache $cmd \"\$@\""  >"$wrapper" || return
         chmod +x "$wrapper" || return
     else
+        message "link ${wrapper#$jagen_root_dir/} -> ${path}"
         ln -sf "$path" "$wrapper" || return
     fi
 }
@@ -62,27 +65,27 @@ toolchain_wrap() {
 toolchain_generate_wrappers() {
     local src_dir="${1:?}" dest_dir="${jagen_bin_dir}/${pkg_name}"
     local PATH="$(IFS=: list_remove "$dest_dir" "$PATH")"
-    local IFS="$jagen_S" path pathnames
-    local c_names="$jagen_toolchain_c_compiler_names"
-    local cpp_names="$jagen_toolchain_cpp_names"
-    local cxx_names="$jagen_toolchain_cxx_compiler_names"
-    local linker_names="$jagen_toolchain_linker_names"
+    local IFS="$jagen_IFS" path pathnames
+    local c_names="$toolchain_names_c"
+    local cpp_names="$toolchain_names_cpp"
+    local cxx_names="$toolchain_names_cxx"
+    local linker_names="$toolchain_names_ld"
 
     [ -d "$src_dir" ] || \
         die "toolchain_generate_wrappers: the src dir '$src_dir' does not exist"
 
-    if [ "$pkg_build_toolchain_prefix" ]; then
+    if [ "$pkg_export_system" ]; then
         # this is a very common layout
         pathnames=$(find "$src_dir/bin" -maxdepth 1 -type f -executable \
-                         -name "${pkg_build_toolchain_prefix}*" 2>/dev/null)
+                         -name "${pkg_export_system}-*" 2>/dev/null)
         # something not common, try to a deep search
         if [ -z "$pathnames" ]; then
             pathnames=$(find "$src_dir" -maxdepth 10 -type f -executable \
-                             -path '*/bin/*' -name "${pkg_build_toolchain_prefix}*" 2>/dev/null)
+                             -path '*/bin/*' -name "${pkg_export_system}-*" 2>/dev/null)
         fi
-        [ "$pathnames" ] || die "Failed to find any ${pkg_build_toolchain_prefix}* toolchain executables in $src_dir"
+        [ "$pathnames" ] || die "Failed to find any ${pkg_export_system}-* toolchain executables in $src_dir"
     else
-        for path in $(cat "$c_names" "$cpp_names" "$cxx_names" "$linker_names"); do
+        for path in $c_names $cpp_names $cxx_names $linker_names; do
             path=$(command -v "$path")
             if [ "$path" ]; then
                 pathnames="${pathnames}${jagen_S}${path}"
@@ -93,13 +96,13 @@ toolchain_generate_wrappers() {
     pkg_run mkdir -p "$dest_dir"
 
     for path in $pathnames; do
-        if toolchain_match "$path" "$c_names"; then
+        if toolchain_match "$path" $c_names; then
             toolchain_wrap "$dest_dir" "$path" cflags
-        elif toolchain_match "$path" "$cpp_names"; then
+        elif toolchain_match "$path" $cpp_names; then
             toolchain_wrap "$dest_dir" "$path" cflags
-        elif toolchain_match "$path" "$cxx_names"; then
+        elif toolchain_match "$path" $cxx_names; then
             toolchain_wrap "$dest_dir" "$path" cxxflags
-        elif toolchain_match "$path" "$linker_names"; then
+        elif toolchain_match "$path" $linker_names; then
             toolchain_wrap "$dest_dir" "$path" ldflags
         else
             toolchain_wrap "$dest_dir" "$path"

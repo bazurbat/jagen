@@ -122,10 +122,13 @@ function P:write(pkg, filename, engine)
         end
     end
 
-    local main, imports, unset, env = {}, {}, {}, {}
+    local main, exports, imports, unset, env = {}, {}, {}, {}, {}
 
     local function add_main(s, ...)
         append(main, string.format(s, ...))
+    end
+    local function add_export(s, ...)
+        append(exports, string.format(s, ...))
     end
     local function add_import(s, ...)
         append(imports, string.format(s, ...))
@@ -169,10 +172,14 @@ function P:write(pkg, filename, engine)
         collect_env(pkg.env)
     end
 
+    if pkg.export ~= nil then
+        write(add_export, '', pkg.export)
+    end
     if pkg.import ~= nil then
         write(add_import, '', pkg.import)
     end
 
+    table.sort(exports)
     table.sort(imports)
     table.sort(unset)
     table.sort(env)
@@ -185,19 +192,25 @@ function P:write(pkg, filename, engine)
     for i = 1, #main do
         main[i] = prefix..main[i]
     end
+    for i = 1, #exports do
+        exports[i] = 'pkg_export_'..exports[i]
+    end
 
-    function add_export(list)
+    function prepend_export(list)
         for i = 1, #list do
             list[i] = 'export '..list[i]
         end
     end
 
-    for list in each { main, imports, env } do
-        add_export(list)
+    for list in each { main, exports, imports, env } do
+        prepend_export(list)
     end
 
     local file = assert(io.open(filename, 'w+'))
     file:write(table.concat(main, '\n'), '\n')
+    if next(exports) then
+        file:write('\n', table.concat(exports, '\n'), '\n')
+    end
     if next(imports) then
         file:write('\n', table.concat(imports, '\n'), '\n')
     end

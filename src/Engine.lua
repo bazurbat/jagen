@@ -257,9 +257,11 @@ function Engine:apply_templates(pass)
     Log.debug2('%d new templates', #pass.templates)
     if next(pass.templates) then
         for pkg in each(self.packages) do
-            Log.debug2('apply new templates to %s', pkg)
-            for template in each(pass.templates) do
-                self:apply_template(template, pkg)
+            if not pkg.abstract then
+                Log.debug2('apply new templates to %s', pkg)
+                for template in each(pass.templates) do
+                    self:apply_template(template, pkg)
+                end
             end
         end
         extend(self.templates, pass.templates)
@@ -268,9 +270,11 @@ function Engine:apply_templates(pass)
     Log.debug2('%d new packages', #pass.packages)
     if next(pass.packages) then
         for pkg in each(pass.packages) do
-            Log.debug2('apply templates to %s', pkg)
-            for template in each(self.templates) do
-                self:apply_template(template, pkg)
+            if not pkg.abstract then
+                Log.debug2('apply templates to %s', pkg)
+                for template in each(self.templates) do
+                    self:apply_template(template, pkg)
+                end
             end
         end
         extend(self.packages, pass.packages)
@@ -279,9 +283,11 @@ end
 
 function Engine:apply_final_templates()
     for pkg in each(self.packages) do
-        Log.debug2('apply final templates to %s', pkg)
-        for template in each(self.final_templates) do
-            self:apply_template(template, pkg)
+        if not pkg.abstract then
+            Log.debug2('apply final templates to %s', pkg)
+            for template in each(self.final_templates) do
+                self:apply_template(template, pkg)
+            end
         end
     end
 end

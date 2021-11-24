@@ -85,8 +85,6 @@ if [ -f "$pkg_backing_script" ]; then
     include "$pkg_backing_script"
 fi
 
-env | grep cycurlib_
-
 case $pkg_stage in
     clean|unpack|update)
         cd "$jagen_build_dir"

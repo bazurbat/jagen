@@ -1,4 +1,5 @@
 package {
+    abstract    = true,
     name        = 'jagen',
     dir         = os.getenv('jagen_dir'),
     root_dir    = os.getenv('jagen_root_dir'),
@@ -33,15 +34,22 @@ package {
             LINGUAS = none,
             -- Do not run tools with an interactive graphical UI.
             DISPLAY = none
-        },
-        toolchain = {
-            c_compiler_names   = { 'gcc', 'clang'          },
-            cxx_compiler_names = { 'g++', 'c++', 'clang++' },
-            cpp_names          = { 'cpp'                   },
-            linker_names       = { 'ld'                    }
         }
     },
     stages = { install = {} }
+}
+
+package {
+    name = 'toolchain',
+    abstract = true,
+    export = {
+        names = {
+            c   = { 'gcc', 'clang'          },
+            cxx = { 'g++', 'c++', 'clang++' },
+            cpp = { 'cpp'                   },
+            ld  = { 'ld'                    }
+        }
+    }
 }
 
 -- package { 'ccache',
@@ -385,6 +393,15 @@ template {
     }
 }
 
+template {
+    match = {
+        install = { type = 'toolchain' },
+    },
+    apply = {
+        uses = { 'toolchain' }
+    }
+}
+
 -- default install sysroots
 
 template {
@@ -535,47 +552,13 @@ template {
 
 template {
     match = {
-        build = { system = value, arch = none }
-    },
-    apply = {
         build = {
-            arch = bind { value, match('^(%w+)-?') }
+            toolchain = value
         }
-    }
-}
-
-template {
-    match = {
-        build = { system = value }
-    },
-    apply = {
-        build = {
-           toolchain_prefix = cat { value, '-' }
-        }
-    }
-}
-
-template {
-    match = {
-        build = { toolchain = value }
     },
     apply = {
         env = {
-            -- CMake honors CC and CXX but not LD. It uses compiler for linking.
-            CC      = 'gcc',
-            CXX     = 'g++',
-            CPP     = 'cpp',
-            LD      = 'ld',
-            -- Some of those are not very standard but relatively common.
-            AR      = 'ar',
-            AS      = 'as',
-            NM      = 'nm',
-            OBJCOPY = 'objcopy',
-            OBJDUMP = 'objdump',
-            RANLIB  = 'ranlib',
-            STRIP   = 'strip',
-
-            PATH = cat { '${jagen:bin_dir}/', value, os.getenv('PATH') }
+            PATH = cat { '${jagen:bin_dir}/', value, ':', os.getenv('PATH') }
         }
     }
 }
@@ -644,36 +627,16 @@ template {
 template {
     final = true,
     match = {
-        toolchain = {
-            cflags   = anyof { value 'cflags',   none },
-            cxxflags = anyof { value 'cxxflags', none },
-            ldflags  = anyof { value 'ldflags',  none },
-        }
-    },
-    apply = {
-        env = {
-            jagen_pkg__cflags   = value 'cflags',
-            jagen_pkg__cxxflags = value 'cxxflags',
-            jagen_pkg__ldflags  = value 'ldflags',
-        }
-    }
-}
-
-template {
-    final = true,
-    match = {
         build = {
             with_install_dir = true
         },
-        install = {
-            dir = value
-        }
+        install = { dir = value }
     },
     apply = {
-        env = {
-            jagen_pkg__cflags   = { cat { '-I', value, '/include' } },
-            jagen_pkg__cxxflags = { cat { '-I', value, '/include' } },
-            jagen_pkg__ldflags  = { cat { '-L', value, '/lib'     } }
+        toolchain = {
+            cflags   = { cat { '-I', value, '/include' } },
+            cxxflags = { cat { '-I', value, '/include' } },
+            ldflags  = { cat { '-L', value, '/lib'     } }
         }
     }
 }
@@ -682,18 +645,18 @@ template {
     final = true,
     match = {
         build = {
-            toolchain = as 'toolchain',
-            system    = as 'system',
-            arch      = as 'arch',
-            cpu       = as 'cpu'
+            toolchain = value 'toolchain',
+            system    = anyof { value 'system', none },
+            arch      = anyof { value 'arch',   none },
+            cpu       = anyof { value 'cpu',    none }
 
         }
     },
     apply = {
         build = {
             system = anyof { value 'system', from(value 'toolchain', 'export.system') },
-            arch   = from(value 'toolchain', 'export.arch'),
-            cpu    = from(value 'toolchain', 'export.cpu'),
+            arch   = anyof { value 'arch',   from(value 'toolchain', 'export.arch')   },
+            cpu    = anyof { value 'cpu',    from(value 'toolchain', 'export.cpu')    }
         }
     }
 }
@@ -701,13 +664,71 @@ template {
 template {
     final = true,
     match = {
-        build = { type = isnot 'cmake' }
+        build = { system = value }
+    },
+    apply = {
+        build = {
+           toolchain_prefix = cat { value, '-' }
+        }
+    }
+}
+
+template {
+    final = true,
+    match = {
+        build = { system = value, arch = none }
+    },
+    apply = {
+        build = {
+            arch = bind { value, match('^(%w+)-?') }
+        }
+    }
+}
+
+template {
+    final = true,
+    match = {
+        build = { toolchain_prefix = anyof { value, none } }
     },
     apply = {
         env = {
-            CFLAGS = '',
-            CXXFLAGS = '',
-            LDFLAGS = ''
+            -- CMake honors CC and CXX but not LD. It uses compiler for linking.
+            CC      = cat { value, 'gcc' },
+            CXX     = cat { value, 'g++' },
+            CPP     = cat { value, 'cpp' },
+            LD      = cat { value, 'ld'  },
+            -- Some of those are not very standard but relatively common.
+            AR      = cat { value, 'ar' },
+            AS      = cat { value, 'as' },
+            NM      = cat { value, 'nm' },
+            OBJCOPY = cat { value, 'objcopy' },
+            OBJDUMP = cat { value, 'objdump' },
+            RANLIB  = cat { value, 'ranlib'  },
+            STRIP   = cat { value, 'strip'   },
+        }
+    }
+}
+
+template {
+    final = true,
+    match = {
+        build = {
+            type     = isnot 'cmake',
+            cflags   = anyof { value 'cflags',   none },
+            cxxflags = anyof { value 'cxxflags', none },
+            ldflags  = anyof { value 'ldflags',  none }
+        },
+        toolchain = {
+            cflags   = anyof { value 'toolchain_cflags',   none },
+            cxxflags = anyof { value 'toolchain_cxxflags', none },
+            ldflags  = anyof { value 'toolchain_ldflags',  none }
+        }
+    },
+    apply = {
+        env = {
+            CFLAGS   = join { value 'cflags',   value 'toolchain_cflags'   },
+            CXXFLAGS = join { value 'cxxflags', value 'toolchain_cxxflags' },
+            LDFLAGS  = join { value 'ldflags',  value 'toolchain_ldflags'  }
         }
     }
 }

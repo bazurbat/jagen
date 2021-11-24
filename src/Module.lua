@@ -149,7 +149,15 @@ function Module.env.bind(fns)
     end
 end
 
-function Module.env.cat(args)
+function Module.env.join(...)
+    local sep, args
+    if select('#', ...) == 1 then
+        sep = ' '
+        args = select(1, ...)
+    else
+        sep  = select(1, ...)
+        args = select(2, ...)
+    end
     return function(_, state)
         local result, value = {}
         for i = 1, #args do
@@ -161,8 +169,12 @@ function Module.env.cat(args)
             end
             append(result, value)
         end
-        return table.concat(result)
+        return table.concat(result, sep)
     end
+end
+
+function Module.env.cat(args)
+    return Module.env.join('', args)
 end
 
 function Module.env.none(value, state)
