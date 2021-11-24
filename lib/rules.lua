@@ -268,6 +268,19 @@ template {
     }
 }
 
+template {
+    match = {
+        build = {
+            profile = none
+        }
+    },
+    apply = {
+        build = {
+            profile = 'release'
+        }
+    }
+}
+
 -- template {
 --     match = { install = { type = 'linux-kernel' } },
 --     apply = {
@@ -462,32 +475,6 @@ template {
     }
 }
 
--- cmake
-
-template {
-    match = {
-        build = {
-            type  = 'cmake',
-            cmake = anyof { { options = value }, none }
-        },
-        install = { root = some }
-    },
-    apply = {
-        build = {
-            cmake = {
-                options = replace {
-                    '-DCMAKE_FIND_ROOT_PATH="${install.root}"',
-                    '-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER',
-                    '-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY',
-                    '-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY',
-                    '-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY',
-                    value
-                }
-            }
-        }
-    }
-}
-
 -- kbuild
 
 template {
@@ -621,6 +608,146 @@ template {
             cmake = {
                 options = {
                     '-DCMAKE_SYSTEM_NAME=Linux'
+                }
+            }
+        }
+    }
+}
+
+-- cmake
+
+template {
+    match = {
+        build = {
+            profile = anyof { 'release', none }
+        }
+    },
+    apply = {
+        build = {
+            cmake = {
+                config = 'RELEASE'
+            }
+        }
+    }
+}
+
+template {
+    match = {
+        build = {
+            profile = 'debug'
+        }
+    },
+    apply = {
+        build = {
+            cmake = {
+                config = 'DEBUG'
+            }
+        }
+    }
+}
+
+template {
+    match = {
+        build = {
+            profile = 'release_with_debug'
+        }
+    },
+    apply = {
+        build = {
+            cmake = {
+                config = 'RELWITHDEBINFO'
+            }
+        }
+    }
+}
+
+template {
+    match = {
+        build = {
+            type = 'cmake',
+            ldflags = value 'flags',
+            cmake = {
+                config  = value 'config',
+                options = anyof { value 'options', none }
+            }
+        }
+    },
+    apply = {
+        build = {
+            cmake = {
+                options = replace {
+                    cat { '-DCMAKE_EXE_LINKER_FLAGS_', value 'config', '="', join { value 'flags' }, '"' },
+                    value 'options'
+                }
+            }
+        }
+    }
+}
+
+template {
+    match = {
+        build = {
+            type = 'cmake',
+            cxxflags = value 'flags',
+            cmake = {
+                config  = value 'config',
+                options = anyof { value 'options', none }
+            }
+        }
+    },
+    apply = {
+        build = {
+            cmake = {
+                options = replace {
+                    cat { '-DCMAKE_CXX_FLAGS_', value 'config', '="', join { value 'flags' }, '"' },
+                    value 'options'
+                }
+            }
+        }
+    }
+}
+
+template {
+    match = {
+        build = {
+            type = 'cmake',
+            cflags = value 'flags',
+            cmake = {
+                config  = value 'config',
+                options = anyof { value 'options', none }
+            }
+        }
+    },
+    apply = {
+        build = {
+            cmake = {
+                options = replace {
+                    cat { '-DCMAKE_C_FLAGS_', value 'config', '="', join { value 'flags' }, '"' },
+                    value 'options'
+                }
+            }
+        }
+    }
+}
+
+template {
+    match = {
+        build = {
+            type  = 'cmake',
+            cmake = anyof { { options = value }, none }
+        },
+        install = { root = some }
+    },
+    apply = {
+        build = {
+            cmake = {
+                options = replace {
+                    '-DCMAKE_FIND_ROOT_PATH="${install.root}"',
+                    '-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER',
+                    '-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY',
+                    '-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY',
+                    '-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY',
+                    value
                 }
             }
         }
@@ -820,6 +947,50 @@ template {
                 toolchain_file = anyof {
                     value 'toolchain_file',
                     value 'toolchain_toolchain_file'
+                }
+            }
+        }
+    }
+}
+
+template {
+    final = true,
+    match = {
+        build = {
+            cmake = {
+                options = anyof { value 'options', none },
+                toolchain_file = value 'toolchain_file'
+            }
+        }
+    },
+    apply = {
+        build = {
+            cmake = {
+                options = replace {
+                    cat { '-DCMAKE_TOOLCHAIN_FILE="', value 'toolchain_file', '"' },
+                    value 'options'
+                }
+            }
+        }
+    }
+}
+
+template {
+    final = true,
+    match = {
+        build = {
+            cmake = {
+                options = anyof { value 'options', none },
+                toolchain_file = value 'module_path'
+            }
+        }
+    },
+    apply = {
+        build = {
+            cmake = {
+                options = replace {
+                    cat { '-DCMAKE_MODULE_PATH="', value 'module_path', '"' },
+                    value 'options'
                 }
             }
         }

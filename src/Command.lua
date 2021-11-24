@@ -23,7 +23,7 @@ function Command:__tostring()
 end
 
 function Command:exists()
-    return Command:new('command -v', self.command[1]):read()
+    return Command:new('command -v', self.command[1]):read() ~= nil
 end
 
 function Command:exec()

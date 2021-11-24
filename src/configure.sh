@@ -7,8 +7,6 @@ pkg_configure() {
     fi
 
     local IFS="$jagen_IFS" S="$jagen_FS" A= MA="$(cat "${jagen_build_args_file:?}" 2>&-)"
-    local build_profile=$(pkg_get_build_profile)
-    local toolchain_file_tmpl toolchain_file="$pkg_build_dir/toolchain.cmake"
     local cmake_config=RELEASE
 
     case $pkg_build_type in
@@ -41,45 +39,12 @@ pkg_configure() {
                 die "CMake build type specified but no CMakeLists.txt was found in $pkg_source_dir"
             fi
 
-            if [ "$pkg_build_cmake_module_path" ]; then
-                A="$A$S-DCMAKE_MODULE_PATH=$pkg_build_cmake_module_path"
-            fi
-
-            if [ "$pkg_build_cmake_toolchain_file" ]; then
-                A="$A$S-DCMAKE_TOOLCHAIN_FILE=$pkg_build_cmake_toolchain_file"
-            else
-                toolchain_file_tmpl=$(find_in_path cmake/${pkg_config}_toolchain.cmake)
-                if [ "$toolchain_file_tmpl" ]; then
-                    toolchain_file_tmpl=$(cat "$toolchain_file_tmpl")
-                    jagen__expand "$toolchain_file_tmpl" > "$toolchain_file"
-                fi
-            fi
-
             # This can be imported from a toolchain, the placement here is
             # important to be able to override CFLAGS.
             if [ "$pkg_build_cmake_options" ]; then
                 for option in $pkg_build_cmake_options; do
                     A="$A$S$option"
                 done
-            fi
-
-            case $build_profile in
-                release)
-                    cmake_config=RELEASE ;;
-                debug)
-                    cmake_config=DEBUG ;;
-                release_with_debug)
-                    cmake_config=RELWITHDEBINFO ;;
-            esac
-
-            if [ "$pkg_build_cflags" ]; then
-                A="$A$S-DCMAKE_C_FLAGS_${cmake_config}='$pkg_build_cflags'"
-            fi
-            if [ "$pkg_build_cxxflags" ]; then
-                A="$A$S-DCMAKE_CXX_FLAGS_${cmake_config}='$pkg_build_cxxflags'"
-            fi
-            if [ "$pkg_build_ldflags" ]; then
-                A="$A$S-DCMAKE_EXE_LINKER_FLAGS_${cmake_config}='$pkg_build_ldflags'"
             fi
 
             if $(jagen__versions ge "$(jagen__get_cmake_version)" 3.1); then

@@ -1,9 +1,10 @@
+local Command  = require 'Command'
+local Log      = require 'Log'
+local Module   = require 'Module'
+local Package  = require 'Package'
+local Rule     = require 'Rule'
 local System   = require 'System'
 local Target   = require 'Target'
-local Log      = require 'Log'
-local Package  = require 'Package'
-local Module   = require 'Module'
-local Rule     = require 'Rule'
 
 local Engine = {}
 local Pass = {}
@@ -53,6 +54,11 @@ function Engine:load_rules()
 
     local pass = Pass:new()
     self:process_modules(pass, toplevel_modules)
+
+    local cmake = Command:new('cmake', '--version')
+    if cmake:exists() then
+        self.packages.jagen.cmake_version = cmake:match('^cmake version ([%w_.]+)$')
+    end
 
     local count = 0
     repeat
