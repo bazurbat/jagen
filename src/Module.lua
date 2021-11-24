@@ -149,6 +149,26 @@ function Module.env.bind(fns)
     end
 end
 
+function Module.env.replace(args)
+    return function(state)
+        local result = {}
+        for i = 1, #args do
+            local arg = args[i]
+            if type(arg) == 'function' then
+                arg = arg(state)
+            end
+            if type(arg) == 'table' then
+                for j = 1, #arg do
+                    table.insert(result, arg[j])
+                end
+            else
+                table.insert(result, arg)
+            end
+        end
+        return result
+    end
+end
+
 function Module.env.join(...)
     local sep, args
     if select('#', ...) == 1 then
@@ -260,16 +280,16 @@ function Module.env.oftype(typename)
     end
 end
 
-function Module.env.contains(item)
+function Module.env.contains(pattern)
     return function(state, value)
         if type(value) == 'table' then
-            for _, value in ipairs(value) do
-                if value == item then
+            for _, v in ipairs(value) do
+                if string.match(v, pattern) then
                     return true
                 end
             end
-        else
-            return value == item
+        elseif type(value) == 'string' then
+            return string.match(value, pattern)
         end
     end
 end

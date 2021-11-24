@@ -225,7 +225,7 @@ function P:clean(args)
 
         if willclean then
             if source:clean(clean_ignored) then
-                assert(Target.from_args(assert(source.name), 'clean'):touch())
+                assert(Target.from_args(assert(pkg.name), 'clean'):touch())
             else
                 ok = false
             end

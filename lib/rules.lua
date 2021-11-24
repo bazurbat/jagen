@@ -92,7 +92,9 @@ template {
         name   = { value 'name' },
         source = { name = anyof { value, none } }
     },
-    apply = { source = { name = anyof { value, value 'name' } } }
+    apply = {
+        source = { name = anyof { value, value 'name' } }
+    }
 }
 
 template {
@@ -146,10 +148,8 @@ template {
 template {
     match = {
         source = {
-            location = some,
-            dir = none,
             scm = true,
-            name = value 'name'
+            dir = none
         }
     },
     apply = {
@@ -466,18 +466,22 @@ template {
 
 template {
     match = {
-        build   = { type = 'cmake' },
-        install = { root = value   }
+        build = {
+            type  = 'cmake',
+            cmake = anyof { { options = value }, none }
+        },
+        install = { root = some }
     },
     apply = {
         build = {
             cmake = {
-                options = {
-                    cat { '-DCMAKE_FIND_ROOT_PATH="', value, '"' },
+                options = replace {
+                    '-DCMAKE_FIND_ROOT_PATH="${install.root}"',
                     '-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER',
                     '-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY',
                     '-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY',
-                    '-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY'
+                    '-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY',
+                    value
                 }
             }
         }
@@ -604,6 +608,21 @@ template {
             -- OBJDUMP = join('-', { value, 'objdump' }),
             -- RANLIB  = join('-', { value, 'ranlib'  }),
             -- STRIP   = join('-', { value, 'strip'   }),
+        }
+    }
+}
+
+template {
+    match = {
+        class = contains 'cross%-toolchain'
+    },
+    apply = {
+        export = {
+            cmake = {
+                options = {
+                    '-DCMAKE_SYSTEM_NAME=Linux'
+                }
+            }
         }
     }
 }
@@ -759,43 +778,49 @@ template {
     match = {
         build = {
             type = 'cmake',
-            cmake_executable     = anyof { value 'executable',     none },
-            cmake_generator      = anyof { value 'generator',      none },
-            cmake_options        = anyof { value 'options',        none },
-            cmake_module_path    = anyof { value 'module_path',    none },
-            cmake_toolchain_file = anyof { value 'toolchain_file', none },
+            cmake = anyof { {
+                executable     = anyof { value 'executable',     none },
+                generator      = anyof { value 'generator',      none },
+                options        = anyof { value 'options',        none },
+                module_path    = anyof { value 'module_path',    none },
+                toolchain_file = anyof { value 'toolchain_file', none },
+            }, none }
         },
         toolchain = {
-            cmake_executable     = anyof { value 'toolchain_executable',     none },
-            cmake_generator      = anyof { value 'toolchain_generator',      none },
-            cmake_options        = anyof { value 'toolchain_options',        none },
-            cmake_module_path    = anyof { value 'toolchain_module_path',    none },
-            cmake_toolchain_file = anyof { value 'toolchain_toolchain_file', none },
+            cmake = anyof { {
+                executable     = anyof { value 'toolchain_executable',     none },
+                generator      = anyof { value 'toolchain_generator',      none },
+                options        = anyof { value 'toolchain_options',        none },
+                module_path    = anyof { value 'toolchain_module_path',    none },
+                toolchain_file = anyof { value 'toolchain_toolchain_file', none },
+            }, none }
         }
     },
     apply = {
         build = {
-            cmake_executable = anyof {
-                value 'executable',
-                value 'toolchain_executable',
-                'cmake'
-            },
-            cmake_generator = anyof {
-                value 'generator',
-                value 'toolchain_generator',
-                'Ninja'
-            },
-            cmake_options = anyof {
-                value 'options',
-                value 'toolchain_options'
-            },
-            cmake_module_path = anyof {
-                value 'module_path',
-                value 'toolchain_module_path'
-            },
-            cmake_toolchain_file = anyof {
-                value 'toolchain_file',
-                value 'toolchain_toolchain_file'
+            cmake = {
+                executable = anyof {
+                    value 'executable',
+                    value 'toolchain_executable',
+                    'cmake'
+                },
+                generator = anyof {
+                    value 'generator',
+                    value 'toolchain_generator',
+                    'Ninja'
+                },
+                options = join {
+                    value 'toolchain_options',
+                    value 'options'
+                },
+                module_path = anyof {
+                    value 'module_path',
+                    value 'toolchain_module_path'
+                },
+                toolchain_file = anyof {
+                    value 'toolchain_file',
+                    value 'toolchain_toolchain_file'
+                }
             }
         }
     }
