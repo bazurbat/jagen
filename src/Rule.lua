@@ -12,7 +12,7 @@ end
 
 function Rule.match(value, pattern, state)
     if type(pattern) == 'function' then
-        return pattern(value, state)
+        return pattern(state, value)
     elseif type(value) ~= type(pattern) then
         return false
     elseif type(value) == 'table' then
@@ -35,10 +35,10 @@ function Rule.merge(to, from, state)
         local tkey, tvalue = type(key), type(value)
         if tkey ~= 'number' then
             if tkey == 'function' then
-                key = key(nil, state)
+                key = key(state)
             end
             if tvalue == 'function' then
-                value = value(nil, state)
+                value = value(state)
             end
             if tvalue == 'table' then
                 if type(to[key]) ~= 'table'  then
@@ -53,7 +53,7 @@ function Rule.merge(to, from, state)
 
     for i, value in ipairs(from or {}) do
         if type(value) == 'function' then
-            value = value(nil, state)
+            value = value(state)
         end
         if value ~= nil then
             if type(value) == 'table' then

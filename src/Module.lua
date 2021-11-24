@@ -140,10 +140,10 @@ function Module.env.template(rule)
 end
 
 function Module.env.bind(fns)
-    return function(init, state)
-        local result = init
+    return function(state, value)
+        local result = value
         for i = 1, #fns do
-            result = fns[i](result, state)
+            result = fns[i](state, result)
         end
         return result
     end
@@ -158,14 +158,14 @@ function Module.env.join(...)
         sep  = select(1, ...)
         args = select(2, ...)
     end
-    return function(_, state)
+    return function(state)
         local result, value = {}
         for i = 1, #args do
             local arg = args[i]
             if type(arg) == 'function' then
-                value = Module.env.join(sep, { arg(nil, state) })(nil, state)
+                value = Module.env.join(sep, { arg(state) })(state)
             elseif type(arg) == 'table' then
-                value = Module.env.join(sep, arg)(nil, state)
+                value = Module.env.join(sep, arg)(state)
             else
                 value = tostring(arg)
             end
@@ -184,37 +184,40 @@ function Module.env.cat(args)
 end
 
 function Module.env.nonempty(arg)
-    return function(_, state)
+    return function(state)
         local targ = type(arg)
         if targ == 'string' and string.len(arg) > 0 then
             return arg
         elseif targ == 'table' and next(arg) then
             return arg
         elseif targ == 'function' then
-            return Module.env.nonempty(arg(nil, state))(nil, state)
+            return Module.env.nonempty(arg(state))(state)
         end
     end
 end
 
-function Module.env.none(value, state)
+function Module.env.none(state, value)
     if state.matching then
         return value == nil
     end
 end
 
-function Module.env.some(value, state)
+function Module.env.some(state, value)
     return value ~= nil
 end
 
 function Module.env.isnot(other)
-    return function(value)
+    return function(state, value)
         return value ~= other
     end
 end
 
-function Module.env.value(name, state)
+function Module.env.value(state, value)
     local key = true
-    local function this(value, state)
+    if type(state) == 'string' then
+        key = state
+    end
+    local function impl(state, value)
         if state.matching then
             state.value[key] = value
             return value
@@ -222,16 +225,15 @@ function Module.env.value(name, state)
             return state.value[key]
         end
     end
-    if state ~= nil then
-        return this(name, state)
+    if type(state) == 'string' then
+        return impl
     else
-        key = name
-        return this
+        return impl(state, value)
     end
 end
 
 function Module.env.anyof(args)
-    return function(value, state)
+    return function(state, value)
         if state.matching then
             for i = 1, #args do
                 if Rule.match(value, args[i], state) then
@@ -242,7 +244,7 @@ function Module.env.anyof(args)
             for i = 1, #args do
                 local arg = args[i]
                 if type(arg) == 'function' then
-                    arg = arg(value, state)
+                    arg = arg(state, value)
                 end
                 if arg then
                     return arg
@@ -253,36 +255,36 @@ function Module.env.anyof(args)
 end
 
 function Module.env.oftype(typename)
-    return function(value, state)
+    return function(state, value)
         return type(value) == typename
     end
 end
 
 function Module.env.contains(item)
-    return function(pvalue, self)
-        if type(pvalue) == 'table' then
-            for _, value in ipairs(pvalue) do
+    return function(state, value)
+        if type(value) == 'table' then
+            for _, value in ipairs(value) do
                 if value == item then
                     return true
                 end
             end
         else
-            return pvalue == item
+            return value == item
         end
     end
 end
 
 function Module.env.match(pattern)
-    return function (value, state)
+    return function (state, value)
         return string.match(value, pattern)
     end
 end
 
-function Module.env.each(values, state)
-    if not state.each then
+function Module.env.each(state, value)
+    if state.matching then
         state.i = 0
-        state.n = values and #values or 0
-        state.values = values
+        state.n = value and #value or 0
+        state.values = value
         state.each = true
         return true
     else
@@ -291,10 +293,10 @@ function Module.env.each(values, state)
 end
 
 function Module.env.from(expr, key)
-    return function(_, state)
+    return function(state)
         local ref = expr
         if type(expr) == 'function' then
-            ref = expr(nil, state)
+            ref = expr(state)
         end
         local pkg = state.packages[ref]
         if pkg then
@@ -311,7 +313,7 @@ function Module.env.from(expr, key)
 end
 
 function Module.env.stage(stage)
-    return function(pkg, state)
+    return function(state, pkg)
         if pkg then
             if pkg.stages and pkg.stages[stage] then
                 return { name = pkg.name, stage = stage }
