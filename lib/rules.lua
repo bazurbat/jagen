@@ -149,7 +149,7 @@ template {
             location = some,
             dir = none,
             scm = true,
-            name = as 'name'
+            name = value 'name'
         }
     },
     apply = {
@@ -165,7 +165,7 @@ template {
             location = some,
             dir = none,
             scm = false,
-            name = as 'name'
+            name = value 'name'
         }
     },
     apply = {
@@ -531,7 +531,7 @@ template {
     },
     apply = {
         build = {
-            toolchain = 'system-native'
+            toolchain = 'system-native-gcc'
         }
     }
 }
@@ -559,6 +559,51 @@ template {
     apply = {
         env = {
             PATH = cat { '${jagen:bin_dir}/', value, ':', os.getenv('PATH') }
+        }
+    }
+}
+
+template {
+    match = {
+        class = contains 'toolchain',
+        export = {
+            system = value,
+            arch   = none
+        }
+    },
+    apply = {
+        export = {
+            arch = bind { value, match('^(%w+)-?') }
+        }
+    }
+}
+
+template {
+    match = {
+        class = contains 'toolchain',
+        export = {
+            system = anyof { value 'system', none },
+            cc     = anyof { value 'cc',     none },
+            cxx    = anyof { value 'cxx',    none },
+            cpp    = anyof { value 'cpp',    none },
+            ld     = anyof { value 'ld',     none }
+        }
+    },
+    apply = {
+        export = {
+            prefix  = nonempty(join('-', { value 'system', '' })),
+            cc      = join('-', { value 'system', anyof { value 'cc',  'gcc' } }),
+            cxx     = join('-', { value 'system', anyof { value 'cxx', 'g++' } }),
+            cpp     = join('-', { value 'system', anyof { value 'cpp', 'cpp' } }),
+            ld      = join('-', { value 'system', anyof { value 'ld',  'ld'  } }),
+            -- Some of those are not very standard but relatively common.
+            -- AR      = join('-', { value, 'ar' }),
+            -- AS      = join('-', { value, 'as' }),
+            -- NM      = join('-', { value, 'nm' }),
+            -- OBJCOPY = join('-', { value, 'objcopy' }),
+            -- OBJDUMP = join('-', { value, 'objdump' }),
+            -- RANLIB  = join('-', { value, 'ranlib'  }),
+            -- STRIP   = join('-', { value, 'strip'   }),
         }
     }
 }
@@ -644,67 +689,43 @@ template {
 template {
     final = true,
     match = {
-        build = {
-            toolchain = value 'toolchain',
-            system    = anyof { value 'system', none },
-            arch      = anyof { value 'arch',   none },
-            cpu       = anyof { value 'cpu',    none }
-
+        toolchain = {
+            cc  = anyof { value 'cc',  none },
+            cxx = anyof { value 'cxx', none },
+            cpp = anyof { value 'cpp', none },
+            ld  = anyof { value 'ld',  none },
         }
-    },
-    apply = {
-        build = {
-            system = anyof { value 'system', from(value 'toolchain', 'export.system') },
-            arch   = anyof { value 'arch',   from(value 'toolchain', 'export.arch')   },
-            cpu    = anyof { value 'cpu',    from(value 'toolchain', 'export.cpu')    }
-        }
-    }
-}
-
-template {
-    final = true,
-    match = {
-        build = { system = value }
-    },
-    apply = {
-        build = {
-           toolchain_prefix = cat { value, '-' }
-        }
-    }
-}
-
-template {
-    final = true,
-    match = {
-        build = { system = value, arch = none }
-    },
-    apply = {
-        build = {
-            arch = bind { value, match('^(%w+)-?') }
-        }
-    }
-}
-
-template {
-    final = true,
-    match = {
-        build = { toolchain_prefix = anyof { value, none } }
     },
     apply = {
         env = {
             -- CMake honors CC and CXX but not LD. It uses compiler for linking.
-            CC      = cat { value, 'gcc' },
-            CXX     = cat { value, 'g++' },
-            CPP     = cat { value, 'cpp' },
-            LD      = cat { value, 'ld'  },
-            -- Some of those are not very standard but relatively common.
-            AR      = cat { value, 'ar' },
-            AS      = cat { value, 'as' },
-            NM      = cat { value, 'nm' },
-            OBJCOPY = cat { value, 'objcopy' },
-            OBJDUMP = cat { value, 'objdump' },
-            RANLIB  = cat { value, 'ranlib'  },
-            STRIP   = cat { value, 'strip'   },
+            CC  = nonempty(value 'cc'),
+            CXX = nonempty(value 'cxx'),
+            CPP = nonempty(value 'cpp'),
+            LD  = nonempty(value 'ld')
+        }
+    }
+}
+
+template {
+    final = true,
+    match = {
+        build = {
+            system = anyof { value 'system', none },
+            arch   = anyof { value 'arch',   none },
+            cpu    = anyof { value 'cpu',    none }
+        },
+        toolchain = {
+            system = anyof { value 'toolchain_system', none },
+            arch   = anyof { value 'toolchain_arch',   none },
+            cpu    = anyof { value 'toolchain_cpu',    none }
+        }
+    },
+    apply = {
+        build = {
+            system = anyof { value 'system', value 'toolchain_system' },
+            arch   = anyof { value 'arch',   value 'toolchain_arch'   },
+            cpu    = anyof { value 'cpu',    value 'toolchain_cpu'    }
         }
     }
 }
@@ -726,9 +747,9 @@ template {
     },
     apply = {
         env = {
-            CFLAGS   = join { value 'cflags',   value 'toolchain_cflags'   },
-            CXXFLAGS = join { value 'cxxflags', value 'toolchain_cxxflags' },
-            LDFLAGS  = join { value 'ldflags',  value 'toolchain_ldflags'  }
+            CFLAGS   = nonempty(join { value 'cflags',   value 'toolchain_cflags'   }),
+            CXXFLAGS = nonempty(join { value 'cxxflags', value 'toolchain_cxxflags' }),
+            LDFLAGS  = nonempty(join { value 'ldflags',  value 'toolchain_ldflags'  })
         }
     }
 }
@@ -738,31 +759,44 @@ template {
     match = {
         build = {
             type = 'cmake',
-            toolchain = as 'toolchain',
-            cmake_executable = anyof { value 'cmake_executable', none }
+            cmake_executable     = anyof { value 'executable',     none },
+            cmake_generator      = anyof { value 'generator',      none },
+            cmake_options        = anyof { value 'options',        none },
+            cmake_module_path    = anyof { value 'module_path',    none },
+            cmake_toolchain_file = anyof { value 'toolchain_file', none },
+        },
+        toolchain = {
+            cmake_executable     = anyof { value 'toolchain_executable',     none },
+            cmake_generator      = anyof { value 'toolchain_generator',      none },
+            cmake_options        = anyof { value 'toolchain_options',        none },
+            cmake_module_path    = anyof { value 'toolchain_module_path',    none },
+            cmake_toolchain_file = anyof { value 'toolchain_toolchain_file', none },
         }
     },
     apply = {
         build = {
             cmake_executable = anyof {
-                value 'cmake_executable',
-                from(value 'toolchain', 'export.cmake_executable'),
+                value 'executable',
+                value 'toolchain_executable',
                 'cmake'
+            },
+            cmake_generator = anyof {
+                value 'generator',
+                value 'toolchain_generator',
+                'Ninja'
+            },
+            cmake_options = anyof {
+                value 'options',
+                value 'toolchain_options'
+            },
+            cmake_module_path = anyof {
+                value 'module_path',
+                value 'toolchain_module_path'
+            },
+            cmake_toolchain_file = anyof {
+                value 'toolchain_file',
+                value 'toolchain_toolchain_file'
             }
-            -- cmake_generator      = 'g',
-            -- cmake_options        = 'o',
-            -- cmake_module_path    = 'm',
-            -- cmake_toolchain_file = 't'
         }
-    }
-}
-
-template {
-    final = true,
-    match = {
-        name = 'jagen'
-    },
-    apply = {
-        stages = none
     }
 }

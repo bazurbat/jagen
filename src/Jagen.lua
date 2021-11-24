@@ -409,7 +409,7 @@ function Jagen:run(args)
     end
     if Jagen.command[first] then
         table.remove(args, 1)
-        local status, rv = pcall(Jagen.command[first], args)
+        local status, rv = xpcall(Jagen.command[first], debug.traceback, args)
         if status == true then
             if rv == nil or rv == true or rv == 0 then
                 return 0

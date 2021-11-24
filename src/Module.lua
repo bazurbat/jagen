@@ -163,18 +163,37 @@ function Module.env.join(...)
         for i = 1, #args do
             local arg = args[i]
             if type(arg) == 'function' then
-                value = arg(nil, state)
+                value = Module.env.join(sep, { arg(nil, state) })(nil, state)
+            elseif type(arg) == 'table' then
+                value = Module.env.join(sep, arg)(nil, state)
             else
                 value = tostring(arg)
             end
-            append(result, value)
+            if value ~= nil then
+                append(result, value)
+            end
         end
-        return table.concat(result, sep)
+        if next(result) then
+            return table.concat(result, sep)
+        end
     end
 end
 
 function Module.env.cat(args)
     return Module.env.join('', args)
+end
+
+function Module.env.nonempty(arg)
+    return function(_, state)
+        local targ = type(arg)
+        if targ == 'string' and string.len(arg) > 0 then
+            return arg
+        elseif targ == 'table' and next(arg) then
+            return arg
+        elseif targ == 'function' then
+            return Module.env.nonempty(arg(nil, state))(nil, state)
+        end
+    end
 end
 
 function Module.env.none(value, state)
@@ -193,18 +212,6 @@ function Module.env.isnot(other)
     end
 end
 
-function Module.env.as(name)
-    name = name or true
-    return function(value, state)
-        if not state.value[name] then
-            state.value[name] = value
-            return value
-        else
-            return state.value[name]
-        end
-    end
-end
-
 function Module.env.value(name, state)
     local key = true
     local function this(value, state)
@@ -220,17 +227,6 @@ function Module.env.value(name, state)
     else
         key = name
         return this
-    end
-end
-
-function Module.env.maybe(key)
-    return function(value, state)
-        if state.matching then
-            state.value[key] = value
-            return true
-        else
-            return state.value[key]
-        end
     end
 end
 
