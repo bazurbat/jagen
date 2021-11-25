@@ -148,8 +148,8 @@ template {
 template {
     match = {
         source = {
-            scm = true,
-            dir = none
+            dir = none,
+            scm = true
         }
     },
     apply = {
@@ -162,10 +162,8 @@ template {
 template {
     match = {
         source = {
-            location = some,
             dir = none,
-            scm = false,
-            name = value 'name'
+            scm = false
         }
     },
     apply = {
@@ -618,14 +616,12 @@ template {
 
 template {
     match = {
-        build = {
-            profile = anyof { 'release', none }
-        }
+        build = { type = 'cmake' }
     },
     apply = {
         build = {
             cmake = {
-                config = 'RELEASE'
+                version = '3.22.0'
             }
         }
     }
@@ -633,124 +629,28 @@ template {
 
 template {
     match = {
-        build = {
-            profile = 'debug'
-        }
+        build = { profile = anyof { 'release', none } }
     },
     apply = {
-        build = {
-            cmake = {
-                config = 'DEBUG'
-            }
-        }
+        build = { cmake = { config = 'RELEASE' } }
     }
 }
 
 template {
     match = {
-        build = {
-            profile = 'release_with_debug'
-        }
+        build = { profile = 'debug' }
     },
     apply = {
-        build = {
-            cmake = {
-                config = 'RELWITHDEBINFO'
-            }
-        }
+        build = { cmake = { config = 'DEBUG' } }
     }
 }
 
 template {
     match = {
-        build = {
-            type = 'cmake',
-            ldflags = value 'flags',
-            cmake = {
-                config  = value 'config',
-                options = anyof { value 'options', none }
-            }
-        }
+        build = { profile = 'release_with_debug' }
     },
     apply = {
-        build = {
-            cmake = {
-                options = replace {
-                    cat { '-DCMAKE_EXE_LINKER_FLAGS_', value 'config', '="', join { value 'flags' }, '"' },
-                    value 'options'
-                }
-            }
-        }
-    }
-}
-
-template {
-    match = {
-        build = {
-            type = 'cmake',
-            cxxflags = value 'flags',
-            cmake = {
-                config  = value 'config',
-                options = anyof { value 'options', none }
-            }
-        }
-    },
-    apply = {
-        build = {
-            cmake = {
-                options = replace {
-                    cat { '-DCMAKE_CXX_FLAGS_', value 'config', '="', join { value 'flags' }, '"' },
-                    value 'options'
-                }
-            }
-        }
-    }
-}
-
-template {
-    match = {
-        build = {
-            type = 'cmake',
-            cflags = value 'flags',
-            cmake = {
-                config  = value 'config',
-                options = anyof { value 'options', none }
-            }
-        }
-    },
-    apply = {
-        build = {
-            cmake = {
-                options = replace {
-                    cat { '-DCMAKE_C_FLAGS_', value 'config', '="', join { value 'flags' }, '"' },
-                    value 'options'
-                }
-            }
-        }
-    }
-}
-
-template {
-    match = {
-        build = {
-            type  = 'cmake',
-            cmake = anyof { { options = value }, none }
-        },
-        install = { root = some }
-    },
-    apply = {
-        build = {
-            cmake = {
-                options = replace {
-                    '-DCMAKE_FIND_ROOT_PATH="${install.root}"',
-                    '-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER',
-                    '-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY',
-                    '-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY',
-                    '-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY',
-                    value
-                }
-            }
-        }
+        build = { cmake = { config = 'RELWITHDEBINFO' } }
     }
 }
 
@@ -905,22 +805,16 @@ template {
     match = {
         build = {
             type = 'cmake',
-            cmake = anyof { {
-                executable     = anyof { value 'executable',     none },
-                generator      = anyof { value 'generator',      none },
-                options        = anyof { value 'options',        none },
-                module_path    = anyof { value 'module_path',    none },
-                toolchain_file = anyof { value 'toolchain_file', none },
-            }, none }
+            cmake = {
+                executable = optional(value 'executable'),
+                generator  = optional(value 'generator'),
+            }
         },
         toolchain = {
-            cmake = anyof { {
-                executable     = anyof { value 'toolchain_executable',     none },
-                generator      = anyof { value 'toolchain_generator',      none },
-                options        = anyof { value 'toolchain_options',        none },
-                module_path    = anyof { value 'toolchain_module_path',    none },
-                toolchain_file = anyof { value 'toolchain_toolchain_file', none },
-            }, none }
+            cmake = optional {
+                executable = optional(value 'toolchain_executable'),
+                generator  = optional(value 'toolchain_generator'),
+            }
         }
     },
     apply = {
@@ -935,18 +829,6 @@ template {
                     value 'generator',
                     value 'toolchain_generator',
                     'Ninja'
-                },
-                options = join {
-                    value 'toolchain_options',
-                    value 'options'
-                },
-                module_path = anyof {
-                    value 'module_path',
-                    value 'toolchain_module_path'
-                },
-                toolchain_file = anyof {
-                    value 'toolchain_file',
-                    value 'toolchain_toolchain_file'
                 }
             }
         }
@@ -958,17 +840,43 @@ template {
     match = {
         build = {
             cmake = {
-                options = anyof { value 'options', none },
-                toolchain_file = value 'toolchain_file'
+                toolchain_file = optional(value 'from_package')
+            }
+        },
+        toolchain = {
+            cmake = optional {
+                toolchain_file = optional(value 'from_toolchain')
             }
         }
     },
     apply = {
         build = {
             cmake = {
-                options = replace {
-                    cat { '-DCMAKE_TOOLCHAIN_FILE="', value 'toolchain_file', '"' },
-                    value 'options'
+                template_options = {
+                    argument('-DCMAKE_TOOLCHAIN_FILE',
+                        anyof { value 'from_package',
+                                value 'from_toolchain'  })
+                }
+            }
+        }
+    }
+}
+
+template {
+    final = true,
+    match = {
+        build = { type = 'cmake' },
+        toolchain = {
+            cmake = optional {
+                options = optional(value)
+            }
+        }
+    },
+    apply = {
+        build = {
+            cmake = {
+                template_options = {
+                    value
                 }
             }
         }
@@ -980,19 +888,104 @@ template {
     match = {
         build = {
             cmake = {
-                options = anyof { value 'options', none },
-                toolchain_file = value 'module_path'
+                module_path = optional(value 'from_package')
+            }
+        },
+        toolchain = {
+            cmake = optional {
+                module_path = optional(value 'from_toolchain')
             }
         }
     },
     apply = {
         build = {
             cmake = {
-                options = replace {
-                    cat { '-DCMAKE_MODULE_PATH="', value 'module_path', '"' },
-                    value 'options'
+                template_options = {
+                    argument('-DCMAKE_MODULE_PATH', join(';', { value 'from_package', value 'from_toolchain'  }))
                 }
             }
         }
     }
 }
+
+template {
+    final = true,
+    match = {
+        build = {
+            type     = 'cmake',
+            cflags   = optional(value 'cflags'),
+            cxxflags = optional(value 'cxxflags'),
+            ldflags  = optional(value 'ldflags'),
+            cmake    = { config = value }
+        }
+    },
+    apply = {
+        build = {
+            cmake = {
+                template_options = {
+                    argument(cat{'-DCMAKE_C_FLAGS_', value },  join { value 'cflags'   }),
+                    argument(cat{'-DCMAKE_CXX_FLAGS_', value}, join { value 'cxxflags' }),
+                    argument(cat{'-DCMAKE_EXE_LINKER_FLAGS_', value}, join { value 'ldflags' }),
+                }
+            }
+        }
+    }
+}
+
+template {
+    final = true,
+    match = {
+        build   = { type = 'cmake' },
+        install = { root = value   }
+    },
+    apply = {
+        build = {
+            cmake = {
+                template_options = {
+                    argument('-DCMAKE_FIND_ROOT_PATH', value),
+                    '-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER',
+                    '-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY',
+                    '-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY',
+                    '-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY',
+                }
+            }
+        }
+    }
+}
+
+template {
+    final = true,
+    match = {
+        build = { type = 'cmake' }
+        -- CMake version >= 3.1
+    },
+    apply = {
+        build = {
+            cmake = {
+                template_options = {
+                    '-DCMAKE_EXPORT_NO_PACKAGE_REGISTRY=YES',
+                    '-DCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY=YES',
+                    '-DCMAKE_FIND_PACKAGE_NO_SYSTEM_PACKAGE_REGISTRY=YES'
+                }
+            }
+        }
+    }
+}
+
+template {
+    final = true,
+    match = {
+        build = { type = 'cmake' }
+        -- CMake version >= 3.5
+    },
+    apply = {
+        build = {
+            cmake = {
+                template_options = {
+                    '-DCMAKE_EXPORT_COMPILE_COMMANDS=YES'
+                }
+            }
+        }
+    }
+}
+

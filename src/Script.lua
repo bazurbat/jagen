@@ -18,6 +18,19 @@ local function is_simple_value(value)
     return t == 'string' or t == 'number' or t == 'boolean'
 end
 
+local function write_array(value)
+    local t = type(value)
+    if is_simple_type(t) then
+        return tostring(value)
+    elseif is_table_type(t) then
+        local result = {}
+        for i, v in ipairs(value) do
+            append(result, write_array(v))
+        end
+        return table.concat(result, '\t')
+    end
+end
+
 local function write(fmt, name, value)
     local tvalue = type(value)
     name = string.to_identifier(name)
@@ -37,21 +50,8 @@ local function write(fmt, name, value)
             end
             write(fmt, newname, value[key])
         end
-        if next(value) then
-            local array = {}
-            for i = 1, #value do
-                local item = value[i]
-                if is_simple_value(item) then
-                    append(array, tostring(item))
-                end
-            end
-            if name and name ~= '' and #array > 0 then
-                fmt("%s='%s'", name, table.concat(array, '\t'))
-            end
-        else
-            if name and name ~= '' then
-                fmt("%s=", name)
-            end
+        if #value > 0 then
+            fmt("%s='%s'", name, write_array(value))
         end
     end
 end

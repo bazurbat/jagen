@@ -225,7 +225,7 @@ function Engine:apply_template(template, pkg)
     end
     if pkg:match(template.match, state) then
         if template.debug then
-            Log.debug2('match')
+            Log.debug2('match: %s, state: %s', pretty(pkg), pretty(state))
         end
         state.matching = false
         state.packages = self.packages
@@ -244,9 +244,9 @@ function Engine:apply_template(template, pkg)
         else
             if template.debug then
                 Log.debug2('%s BEFORE: %s', pkg.name, pretty(pkg))
+                -- print(pretty(template.apply))
             end
-            -- print(pretty(template.apply))
-            pkg:merge(copy(template.apply), state)
+            pkg:merge(copy(template.apply), state, template.debug)
             if template.debug then
                 Log.debug2('%s AFTER: %s', pkg.name, pretty(pkg))
             end

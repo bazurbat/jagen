@@ -203,6 +203,21 @@ function Module.env.cat(args)
     return Module.env.join('', args)
 end
 
+function Module.env.argument(name, value)
+    return function(state)
+        local name, value = name, value
+        if type(name) == 'function' then
+            name = name(state)
+        end
+        if type(value) == 'function' then
+            value = value(state)
+        end
+        if value ~= nil then
+            return string.format('%s="%s"', name, value)
+        end
+    end
+end
+
 function Module.env.nonempty(arg)
     return function(state)
         local targ = type(arg)
@@ -217,9 +232,7 @@ function Module.env.nonempty(arg)
 end
 
 function Module.env.none(state, value)
-    if state.matching then
-        return value == nil
-    end
+    return value == nil
 end
 
 function Module.env.some(state, value)
@@ -244,11 +257,23 @@ function Module.env.value(state, value)
         else
             return state.value[key]
         end
+        return nil
     end
     if type(state) == 'string' then
         return impl
     else
         return impl(state, value)
+    end
+end
+
+function Module.env.optional(expr)
+    return function(state, value)
+        match = Rule.match(value, expr, state)
+        if value == nil then
+            return true
+        else
+            return match
+        end
     end
 end
 
