@@ -190,14 +190,15 @@ function Engine:process_package(rule, pass)
     local pkg = self.packages[rule.ref]
 
     if pkg then
-        pkg:merge(rule)
+        pkg:merge(rule, { pkg = pkg })
     else
         local module = Module:load_package(rule, self.path)
         if module then
             pkg = Package:new(rule.name, rule.config)
-            pkg:merge(rule)
+            pkg:merge(rule, { pkg = rule })
         else
-            pkg = rule
+            pkg = Package:new(rule.name, rule.config)
+            pkg:merge(rule, { pkg = rule })
         end
 
         self:add_package(pkg, pass)

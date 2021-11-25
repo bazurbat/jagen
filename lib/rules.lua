@@ -5,49 +5,35 @@ package {
     root_dir    = os.getenv('jagen_root_dir'),
     build_dir   = os.getenv('jagen_build_dir'),
     include_dir = os.getenv('jagen_include_dir'),
-    bin_dir     = '${root_dir}/bin',
-    dist_dir    = '${root_dir}/dist',
-    lib_dir     = '${root_dir}/lib',
-    log_dir     = '${root_dir}/log',
-    src_dir     = '${root_dir}/src',
-    build_file         = '${build_dir}/build.ninja',
-    build_targets_file = '${build_dir}/.build-targets',
-    build_args_file    = '${build_dir}/.build-args',
+    bin_dir     = expand '${root_dir}/bin',
+    dist_dir    = expand '${root_dir}/dist',
+    lib_dir     = expand '${root_dir}/lib',
+    log_dir     = expand '${root_dir}/log',
+    src_dir     = expand '${root_dir}/src',
+    build_file         = expand '${build_dir}/build.ninja',
+    build_targets_file = expand '${build_dir}/.build-targets',
+    build_args_file    = expand '${build_dir}/.build-args',
     self = {
-        bin_dir = '${dir}/bin',
-        src_dir = '${dir}/src',
-        cmd     = '${self.src_dir}/cmd.sh',
+        bin_dir = expand '${dir}/bin',
+        src_dir = expand '${dir}/src',
+        cmd     = expand '${self.src_dir}/cmd.sh',
     },
     export = {
-        dir       = '${dir}',
-        root_dir  = '${root_dir}',
-        build_dir = '${build_dir}',
-        bin_dir   = '${bin_dir}',
-        dist_dir  = '${dist_dir}',
-        src_dir   = '${src_dir}',
+        dir       = expand '${dir}',
+        root_dir  = expand '${root_dir}',
+        build_dir = expand '${build_dir}',
+        bin_dir   = expand '${bin_dir}',
+        dist_dir  = expand '${dist_dir}',
+        src_dir   = expand '${src_dir}',
         env = {
             -- Disable passphrase querying.
             GIT_SSH_COMMAND = 'ssh -o BatchMode=yes',
             -- Do not prompt on the terminal (e.g. when asking for HTTP credentials).
             GIT_TERMINAL_PROMPT = 0,
             -- Never install the translations.
-            LINGUAS = none,
+            LINGUAS = '<unset>',
             -- Do not run tools with an interactive graphical UI.
-            DISPLAY = none
-        }
-    },
-    stages = { install = {} }
-}
-
-package {
-    name = 'toolchain',
-    abstract = true,
-    export = {
-        names = {
-            c   = { 'gcc', 'clang'          },
-            cxx = { 'g++', 'c++', 'clang++' },
-            cpp = { 'cpp'                   },
-            ld  = { 'ld'                    }
+            DISPLAY = '<unset>'
         }
     }
 }
@@ -135,18 +121,25 @@ template {
 
 template {
     match = {
+        name = value 'name',
         source = {
             type = 'dir',
-            location = anyof { value, none }
+            location = optional(value)
         }
     },
     apply = {
-        source = { dir = anyof { value, '${jagen:src_dir}/${name}' } }
+        source = {
+            dir = anyof {
+                value,
+                path { from('jagen', 'src_dir'), value 'name' }
+            }
+        }
     }
 }
 
 template {
     match = {
+        name = value 'name',
         source = {
             dir = none,
             scm = true
@@ -154,7 +147,7 @@ template {
     },
     apply = {
         source = {
-            dir = '${jagen:src_dir}/${name}'
+            dir = path { from('jagen', 'src_dir'), value 'name' }
         }
     }
 }
@@ -168,7 +161,7 @@ template {
     },
     apply = {
         source = {
-            dir = '${jagen:build_dir}/${name}'
+            dir = path { from('jagen', 'build_dir'), value 'name' }
         }
     }
 }
@@ -176,16 +169,23 @@ template {
 -- work_dir
 
 template {
-    match = { config = none },
+    match = {
+        name   = value,
+        config = none
+    },
     apply = {
-        work_dir = '${jagen:build_dir}/${name}',
+        work_dir = path { from('jagen', 'build_dir'), value }
     }
 }
 
 template {
-    match = { config = some },
+    match = {
+        name   = value 'name',
+        config = value 'config'
+    },
     apply = {
-        work_dir = '${jagen:build_dir}/${name}:${config}',
+        work_dir = path { from('jagen', 'build_dir'),
+                          join(':', { value 'name', value 'config' }) }
     }
 }
 
@@ -404,22 +404,13 @@ template {
     }
 }
 
-template {
-    match = {
-        install = { type = 'toolchain' },
-    },
-    apply = {
-        uses = { 'toolchain' }
-    }
-}
-
 -- default install sysroots
 
 template {
     match = { class = contains 'host' },
     apply = {
         install = {
-            prefix = '${jagen:root_dir}/host',
+            prefix = path{from('jagen', 'root_dir'), 'host'},
             root   = ''
         }
     }
@@ -430,7 +421,7 @@ template {
     apply = {
         install = {
             prefix = '',
-            root   = '${jagen:root_dir}/target'
+            root   = path{from('jagen', 'root_dir'), 'target'}
         }
     }
 }
@@ -547,14 +538,14 @@ template {
     },
     apply = {
         env = {
-            PATH = cat { '${jagen:bin_dir}/', value, ':', os.getenv('PATH') }
+            PATH = cat { path{from('jagen', 'bin_dir'), value}, ':', os.getenv('PATH') }
         }
     }
 }
 
 template {
     match = {
-        class = contains 'toolchain',
+        class = contains(match 'toolchain'),
         export = {
             system = value,
             arch   = none
@@ -569,22 +560,60 @@ template {
 
 template {
     match = {
-        class = contains 'toolchain',
+        class = contains(match 'toolchain')
+    },
+    apply = {
         export = {
-            system = anyof { value 'system', none },
-            cc     = anyof { value 'cc',     none },
-            cxx    = anyof { value 'cxx',    none },
-            cpp    = anyof { value 'cpp',    none },
-            ld     = anyof { value 'ld',     none }
+            cc  = default 'gcc',
+            cxx = default 'g++',
+            cpp = default 'cpp',
+            ld  = default 'ld',
+        }
+    }
+}
+
+template {
+    match = {
+        class = contains(match 'toolchain%-gcc')
+    },
+    apply = {
+        export = {
+            cc  = 'gcc',
+            cxx = 'g++',
+        }
+    }
+}
+
+template {
+    match = {
+        class = contains(match 'toolchain%-clang')
+    },
+    apply = {
+        export = {
+            cc  = 'clang',
+            cxx = 'clang++',
+        }
+    }
+}
+
+template {
+    match = {
+        class = contains(match 'toolchain'),
+        export = {
+            system = optional(value 'system'),
+            cc     = value 'cc',
+            cxx    = value 'cxx',
+            cpp    = value 'cpp',
+            ld     = value 'ld'
         }
     },
     apply = {
         export = {
             prefix  = nonempty(join('-', { value 'system', '' })),
-            cc      = join('-', { value 'system', anyof { value 'cc',  'gcc' } }),
-            cxx     = join('-', { value 'system', anyof { value 'cxx', 'g++' } }),
-            cpp     = join('-', { value 'system', anyof { value 'cpp', 'cpp' } }),
-            ld      = join('-', { value 'system', anyof { value 'ld',  'ld'  } }),
+            cc      = join('-', { value 'system', value 'cc'  }),
+            cxx     = join('-', { value 'system', value 'cxx' }),
+            cpp     = join('-', { value 'system', value 'cpp' }),
+            ld      = join('-', { value 'system', value 'ld'  }),
             -- Some of those are not very standard but relatively common.
             -- AR      = join('-', { value, 'ar' }),
             -- AS      = join('-', { value, 'as' }),
@@ -599,7 +628,7 @@ template {
 
 template {
     match = {
-        class = contains 'cross%-toolchain'
+        class = contains(match 'cross%-toolchain')
     },
     apply = {
         export = {

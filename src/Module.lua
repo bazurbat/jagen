@@ -126,6 +126,7 @@ end
 function Module.env.package(rule)
     -- Log.debug2('package: %s', pretty(rule))
     local pkg = Package:from_rule(rule)
+    -- print(pretty(pkg))
     append(current.packages, pkg)
 end
 
@@ -201,6 +202,10 @@ end
 
 function Module.env.cat(args)
     return Module.env.join('', args)
+end
+
+function Module.env.path(args)
+    return Module.env.join('/', args)
 end
 
 function Module.env.argument(name, value)
@@ -305,18 +310,24 @@ function Module.env.oftype(typename)
     end
 end
 
-function Module.env.contains(pattern)
-    return function(state, value)
-        if type(value) == 'table' then
+function Module.env.contains(expr)
+    local function impl(state, value)
+        if type(value) == 'string' then
+            if type(expr) == 'function' then
+                return expr(state, value)
+            else
+                return expr == value
+            end
+        elseif type(value) == 'table' then
             for _, v in ipairs(value) do
-                if string.match(v, pattern) then
-                    return true
+                local match = impl(state, v)
+                if match then
+                    return match
                 end
             end
-        elseif type(value) == 'string' then
-            return string.match(value, pattern)
         end
     end
+    return impl
 end
 
 function Module.env.match(pattern)
@@ -366,6 +377,42 @@ function Module.env.stage(stage)
         else
             return { stage = stage }
         end
+    end
+end
+
+function Module.env.expand(expr)
+    return function(state)
+        local function sub(path)
+            local keys = path:split2('.')
+            local value = table.get(state.pkg, table.unpack(keys))
+            if type(value) == 'function' then
+                value = Module.env.expand(value)(state)
+            end
+            return value or ''
+        end
+        local value = expr
+        local count, depth, max_depth = 0, 0, 10
+        repeat
+            if type(value) == 'function' then
+                value, count = value(state), 1
+            elseif type(value) == 'string' then
+                value, count = value:gsub('${([%w_][%w_.:]+)}', sub)
+            else
+                count = 0
+            end
+            depth = depth + 1
+        until count == 0 or depth == max_depth
+        if depth == max_depth then
+            Log.warning("substitution depth limit %d reached while expanding "..
+                "property %s, current value: %s", max_depth, expr, value)
+        end
+        return value
+    end
+end
+
+function Module.env.default(defvalue)
+    return function(state, value)
+        return value or defvalue
     end
 end
 

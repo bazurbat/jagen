@@ -46,7 +46,7 @@ function Rule.merge(to, from, state, debug)
                 key = key(state)
             end
             if tvalue == 'function' then
-                value = value(state)
+                value = value(state, to[key])
             end
             if tvalue == 'table' then
                 if type(to[key]) ~= 'table'  then

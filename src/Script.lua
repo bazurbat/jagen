@@ -153,7 +153,7 @@ function P:write(pkg, filename, engine)
 
     local function collect_env(env)
         for key, value in pairs(env) do
-            if value == Module.env.none then
+            if value == '<unset>' then
                 append(unset, string.format('unset %s', key))
             else
                 write(add_env, key, value)
