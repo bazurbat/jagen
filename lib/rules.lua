@@ -704,7 +704,7 @@ template {
 -- uses
 
 template {
-    final = true,
+    -- final = true,
     match = {
         uses = each,
         stages = { configure = some }
@@ -723,7 +723,7 @@ template {
 -- final
 
 template {
-    final = true,
+    -- final = true,
     match = {
         uses = each,
     },
@@ -735,7 +735,7 @@ template {
 }
 
 template {
-    final = true,
+    -- final = true,
     match = {
         build = { toolchain = value },
     },
@@ -745,7 +745,7 @@ template {
 }
 
 template {
-    final = true,
+    -- final = true,
     match = {
         build = {
             with_install_dir = true
@@ -762,13 +762,13 @@ template {
 }
 
 template {
-    final = true,
+    -- final = true,
     match = {
         toolchain = {
-            cc  = anyof { value 'cc',  none },
-            cxx = anyof { value 'cxx', none },
-            cpp = anyof { value 'cpp', none },
-            ld  = anyof { value 'ld',  none },
+            cc  = optional(value 'cc'),
+            cxx = optional(value 'cxx'),
+            cpp = optional(value 'cpp'),
+            ld  = optional(value 'ld'),
         }
     },
     apply = {
@@ -783,7 +783,7 @@ template {
 }
 
 template {
-    final = true,
+    -- final = true,
     match = {
         build = {
             system = anyof { value 'system', none },
@@ -806,7 +806,7 @@ template {
 }
 
 template {
-    final = true,
+    -- final = true,
     match = {
         build = {
             type     = isnot 'cmake',
@@ -830,7 +830,7 @@ template {
 }
 
 template {
-    final = true,
+    -- final = true,
     match = {
         build = {
             type = 'cmake',
@@ -865,7 +865,7 @@ template {
 }
 
 template {
-    final = true,
+    -- final = true,
     match = {
         build = {
             cmake = {
@@ -892,7 +892,7 @@ template {
 }
 
 template {
-    final = true,
+    -- final = true,
     match = {
         build = { type = 'cmake' },
         toolchain = {
@@ -913,7 +913,7 @@ template {
 }
 
 template {
-    final = true,
+    -- final = true,
     match = {
         build = {
             cmake = {
@@ -938,7 +938,7 @@ template {
 }
 
 template {
-    final = true,
+    -- final = true,
     match = {
         build = {
             type     = 'cmake',
@@ -962,7 +962,7 @@ template {
 }
 
 template {
-    final = true,
+    -- final = true,
     match = {
         build   = { type = 'cmake' },
         install = { root = value   }
@@ -983,7 +983,7 @@ template {
 }
 
 template {
-    final = true,
+    -- final = true,
     match = {
         build = { type = 'cmake' }
         -- CMake version >= 3.1
@@ -1002,7 +1002,7 @@ template {
 }
 
 template {
-    final = true,
+    -- final = true,
     match = {
         build = { type = 'cmake' }
         -- CMake version >= 3.5
@@ -1017,4 +1017,3 @@ template {
         }
     }
 }
-

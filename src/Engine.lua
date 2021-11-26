@@ -15,7 +15,6 @@ function Engine:new()
         modules = {},
         packages  = {},
         templates = {},
-        final_templates = {}
     }
     setmetatable(engine, self)
     self.__index = self
@@ -34,46 +33,25 @@ function Engine:error(...)
 end
 
 function Engine:load_rules()
-    Log.debug2('load rules')
+    Log.debug1('load rules')
 
     local jagen_dir = os.getenv('jagen_dir')
     local root_dir = os.getenv('jagen_root_dir')
 
-    local jagen = Module:load('jagen', System.mkpath(jagen_dir, 'lib', 'rules.lua'))
-    local root_loaded, root  = pcall(Module.load, Module, 'root', System.mkpath(root_dir, 'rules.lua'))
-
-    local toplevel_modules = {}
-    extend(toplevel_modules, self:unprocessed_uses(jagen))
-    if root_loaded then
-        extend(toplevel_modules, self:unprocessed_uses(root))
-    end
-
-    for mod in each(toplevel_modules) do
-        prepend(self.path, mod:basename(mod.filename))
-    end
-
     local pass = Pass:new()
-    self:process_modules(pass, toplevel_modules)
+
+    local jagen = Module:load('jagen', System.mkpath(jagen_dir, 'lib', 'rules.lua'))
+    prepend(self.path, jagen:basename(jagen.filename))
+    self:process_modules(Pass:new(), jagen:collect_uses(self.modules))
+
+    local root = Module:load('root', System.mkpath(root_dir, 'rules.lua'))
+    prepend(self.path, root:basename(root.filename))
+    self:process_modules(Pass:new(), root:collect_uses(self.modules))
 
     local cmake = Command:new('cmake', '--version')
     if cmake:exists() then
         self.packages.jagen.cmake_version = cmake:match('^cmake version ([%w_.]+)$')
     end
-
-    local count = 0
-    repeat
-        count = count + 1
-        Log.debug2('pass %d', count)
-
-        self:apply_templates(pass)
-
-        local uses = self:collect_unresolved_refs(pass)
-
-        pass = Pass:new()
-        for target in each(uses) do
-            self:process_use(target, pass)
-        end
-    until not next(pass.packages) or count == 5
 
     local Source = require 'Source'
     for pkg in each(self.packages) do
@@ -92,8 +70,6 @@ function Engine:load_rules()
         Log.error(err.message)
         error('fatal error during rule expansion', 0)
     end
-
-    self:apply_final_templates()
 
     if os.getenv('jagen_debug_engine') then
         for pkg in each(self.packages) do
@@ -129,45 +105,6 @@ function Engine:finalize()
     end
 end
 
-function Engine:unprocessed_uses(module)
-    local uses = module:collect_uses({ module })
-    local new, seen = {}, extend({}, self.modules)
-
-    for i = #uses, 1, -1 do
-        local mod = uses[i]
-        if not seen[mod.filename] then
-            seen[mod.filename] = true
-            append(new, mod)
-        end
-    end
-
-    return new
-end
-
-function Engine:collect_unresolved_refs(pass)
-    local global = self.packages
-    local uses, seen = {}, {}
-
-    for pkg in each(pass.packages) do
-        for spec in each(pkg.uses or {}) do
-            local use = Target.from_use(spec)
-            if not global[use.ref] and not seen[use.ref] then
-                seen[use.ref] = use
-                append(seen, use.ref)
-                append(uses, use)
-            end
-        end
-    end
-
-    if #uses == 0 then
-        Log.debug2('0 unresolved references')
-    else
-        Log.debug2('%d unresolved use references: %s', #uses, table.concat(seen, ', '))
-    end
-
-    return uses
-end
-
 function Engine:add_package(pkg, pass)
     self.packages[pkg.ref] = pkg
     append(pass.packages, pkg)
@@ -175,23 +112,24 @@ end
 
 function Engine:process_modules(pass, modules)
     for mod in each(modules) do
-        Log.debug2('process module %s', mod)
+        Log.debug1('process module %s', mod)
         for rule in each(mod.packages) do
             self:process_package(rule, pass)
         end
         extend(pass.templates, mod.templates)
-        extend(self.final_templates, mod.final_templates)
+        self.modules[mod.filename] = mod
     end
+    self:apply_templates(pass)
 end
 
 function Engine:process_package(rule, pass)
-    Log.debug2('process package %s', rule.ref)
-
     local pkg = self.packages[rule.ref]
 
     if pkg then
+        Log.debug1('process package %s: merge with existing instance', rule.ref)
         pkg:merge(rule, { pkg = pkg })
     else
+        Log.debug1('process package %s: add new instance', rule.ref)
         local module = Module:load_package(rule, self.path)
         if module then
             pkg = Package:new(rule.name, rule.config)
@@ -204,68 +142,72 @@ function Engine:process_package(rule, pass)
         self:add_package(pkg, pass)
 
         if module then
-            self:process_modules(pass, self:unprocessed_uses(module))
+            self:process_modules(pass, module:collect_uses(self.modules))
         end
     end
 end
 
-function Engine:process_use(use, pass)
-    Log.debug2('process use %s', use)
+function Engine:process_use(use)
+    Log.debug1('process use %s', use)
     local module = Module:load_package(use, self.path)
+    local pass = Pass:new()
     if module then
         local pkg = Package:new(use.name, use.config)
         self:add_package(pkg, pass)
-        self:process_modules(pass, self:unprocessed_uses(module))
+        self:process_modules(pass, module:collect_uses(self.modules))
+    end
+end
+
+function Engine:check_uses(pkg, uses, state)
+    if not uses then return end
+    Log.debug1('%s has %d uses', pkg.ref, #uses)
+    for spec in each(uses) do
+        if type(spec) == 'function' then
+            spec = spec(state)
+        end
+        spec = Target.from_use(spec)
+        local use = self.packages[spec.ref]
+        if use then
+            Log.debug1('%s use %s is already loaded', pkg.ref, use.ref)
+        else
+            Log.debug1('loading %s use %s', pkg.ref, spec)
+            self:process_use(spec)
+        end
     end
 end
 
 function Engine:apply_template(template, pkg)
     local state = { matching = true, value = {} }
     if template.debug then
-        Log.debug2('template: %s', pretty(template))
+        Log.debug1('template: %s', pretty(template))
     end
-    if pkg:match(template.match, state) then
-        if template.debug then
-            Log.debug2('match: %s, state: %s', pretty(pkg), pretty(state))
-        end
+    if pkg:match(template.match, state, template.debug) then
         state.matching = false
         state.packages = self.packages
         if state.each then
             for i = 1, state.n do
                 state.i = i
-                -- print(pretty(template.apply))
-                if template.debug then
-                    Log.debug2('%s BEFORE (%d/%d): %s', pkg.name, i, state.n, pretty(pkg))
-                end
-                pkg:merge(copy(template.apply), state)
-                if template.debug then
-                    Log.debug2('%s AFTER (%d/%d): %s', pkg.name, i, state.n, pretty(pkg))
-                end
+                pkg:merge(template.apply, state)
+                self:check_uses(pkg, template.apply.uses, state)
             end
         else
             if template.debug then
-                Log.debug2('%s BEFORE: %s', pkg.name, pretty(pkg))
-                -- print(pretty(template.apply))
+                Log.debug1('match: %s', pretty(pkg))
             end
-            pkg:merge(copy(template.apply), state, template.debug)
-            if template.debug then
-                Log.debug2('%s AFTER: %s', pkg.name, pretty(pkg))
-            end
+            pkg:merge(template.apply, state)
+            self:check_uses(pkg, template.apply.uses, state)
         end
     elseif template.match == nil then
         pkg:merge(copy(template.apply), state)
     end
-    -- if template.debug then
-    --     print(pretty(self.packages))
-    -- end
 end
 
 function Engine:apply_templates(pass)
-    Log.debug2('%d new templates', #pass.templates)
+    Log.debug1('%d new templates', #pass.templates)
     if next(pass.templates) then
         for pkg in each(self.packages) do
             if not pkg.abstract then
-                Log.debug2('apply new templates to %s', pkg)
+                Log.debug1('apply new templates to %s', pkg)
                 for template in each(pass.templates) do
                     self:apply_template(template, pkg)
                 end
@@ -274,28 +216,18 @@ function Engine:apply_templates(pass)
         extend(self.templates, pass.templates)
     end
 
-    Log.debug2('%d new packages', #pass.packages)
+    Log.debug1('%d new packages', #pass.packages)
     if next(pass.packages) then
         for pkg in each(pass.packages) do
             if not pkg.abstract then
-                Log.debug2('apply templates to %s', pkg)
+                Log.debug1('apply templates to %s', pkg)
                 for template in each(self.templates) do
                     self:apply_template(template, pkg)
                 end
+                Log.debug1('end apply templates to %s', pkg)
             end
         end
         extend(self.packages, pass.packages)
-    end
-end
-
-function Engine:apply_final_templates()
-    for pkg in each(self.packages) do
-        if not pkg.abstract then
-            Log.debug2('apply final templates to %s', pkg)
-            for template in each(self.final_templates) do
-                self:apply_template(template, pkg)
-            end
-        end
     end
 end
 

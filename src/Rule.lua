@@ -10,16 +10,17 @@ function Rule:new(def)
     return def
 end
 
-function Rule.match(value, pattern, state)
+function Rule.match(value, pattern, state, debug)
     if type(pattern) == 'function' then
-        -- return Rule.match(value, pattern(state, value), state)
-        -- print(value, pattern(state, value), Rule.match(value, pattern(state, value), state))
+        if debug then
+            Log.debug1('match %s: %s', pattern, pattern(state, value))
+        end
         return pattern(state, value)
     elseif type(value) ~= type(pattern) then
         return false, 1
     elseif type(value) == 'table' then
         for k, v in pairs(pattern) do
-            if not Rule.match(value[k], v, state) then
+            if not Rule.match(value[k], v, state, debug) then
                 return false, 2
             end
         end

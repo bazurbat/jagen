@@ -31,18 +31,29 @@ function Module:__tostring()
     return string.format('%s (%s)', self.name, self.filename)
 end
 
-function Module:collect_uses(result)
-    for mod in each(self.uses) do
-        append(result, mod)
-        if mod.uses then
-            mod:collect_uses(result)
+function Module:collect_uses(processed)
+    local result, seen = {}, {}
+    local function add(mod)
+        if not processed[mod.filename] and not seen[mod.filename] then
+            append(result, mod)
+            seen[mod.filename] = mod
         end
     end
+    local function collect(mod)
+        for use in each(mod.uses) do
+            if use.uses then
+                collect(use)
+            end
+            add(use)
+        end
+    end
+    collect(self)
+    add(self)
     return result
 end
 
 function Module:load(name, filename)
-    Log.debug2("load module '%s' (%s)", name, filename)
+    Log.debug1("load module '%s' (%s)", name, filename)
 
     local this = Module:new(name)
 
@@ -51,6 +62,9 @@ function Module:load(name, filename)
     this:_loadfile(filename)
     depth = depth - 1
     current = nil
+
+    Log.debug1("end load module '%s': %d packages, %d templates",
+        name, #this.packages, #this.templates)
 
     return this
 end
@@ -65,13 +79,13 @@ function Module:load_package(target, dirlist)
     local filename, err = package.searchpath(name, searchpath, '')
 
     if not filename then
-        Log.debug2("try load package '%s': file not found in %s", target.ref, searchpath)
+        Log.debug1("try load package '%s': file not found in %s", target.ref, searchpath)
         return nil, err
     end
 
     local module = Module.loaded[filename]
 
-    Log.debug2("load package '%s' from '%s'%s", target.ref, filename,
+    Log.debug1("load package '%s' from '%s'%s", target.ref, filename,
         module and ' (already loaded as '..module.name..')' or '')
 
     if not module then
@@ -107,8 +121,12 @@ function Module.env.use(name)
 
     local this = Module.loaded[filename]
 
-    Log.debug2("use module '%s' (%s) [%d] from '%s' %s", name, filename, depth, current.name,
+    Log.debug1("use module '%s' (%s) [%d] from '%s' %s", name, filename, depth, current.name,
                this and '(already loaded)' or '')
+
+    if depth == 10 then
+        error(string.format('module use depth has reached 10'))
+    end
 
     if not this then
         this = Module:new(name)
@@ -124,14 +142,14 @@ function Module.env.use(name)
 end
 
 function Module.env.package(rule)
-    -- Log.debug2('package: %s', pretty(rule))
+    -- Log.debug1('package: %s', pretty(rule))
     local pkg = Package:from_rule(rule)
     -- print(pretty(pkg))
     append(current.packages, pkg)
 end
 
 function Module.env.template(rule)
-    -- Log.debug2('template: %s', pretty(rule))
+    -- Log.debug1('template: %s', pretty(rule))
     rule = Rule:new(rule)
     if rule.final then
         append(current.final_templates, rule)
