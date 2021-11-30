@@ -31,7 +31,7 @@ function Module:__tostring()
     return string.format('%s (%s)', self.name, self.filename)
 end
 
-function Module:collect_uses(processed)
+function Module:collect_unprocessed(processed)
     local result, seen = {}, {}
     local function add(mod)
         if not processed[mod.filename] and not seen[mod.filename] then

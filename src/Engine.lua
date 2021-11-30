@@ -6,8 +6,10 @@ local Rule     = require 'Rule'
 local System   = require 'System'
 local Target   = require 'Target'
 
+local format = string.format
+
 local Engine = {}
-local Pass = {}
+local ProcessingEnv = {}
 
 function Engine:new()
     local engine = {
@@ -21,8 +23,9 @@ function Engine:new()
     return engine
 end
 
-function Pass:new()
+function ProcessingEnv:new(engine)
     return {
+        engine    = engine,
         packages  = {},
         templates = {},
     }
@@ -38,15 +41,14 @@ function Engine:load_rules()
     local jagen_dir = os.getenv('jagen_dir')
     local root_dir = os.getenv('jagen_root_dir')
 
-    local pass = Pass:new()
-
     local jagen = Module:load('jagen', System.mkpath(jagen_dir, 'lib', 'rules.lua'))
-    prepend(self.path, jagen:basename(jagen.filename))
-    self:process_modules(Pass:new(), jagen:collect_uses(self.modules))
+    local root  = Module:load('root', System.mkpath(root_dir, 'rules.lua'))
 
-    local root = Module:load('root', System.mkpath(root_dir, 'rules.lua'))
-    prepend(self.path, root:basename(root.filename))
-    self:process_modules(Pass:new(), root:collect_uses(self.modules))
+    append(self.path, jagen:basename(jagen.filename))
+    append(self.path, root:basename(root.filename))
+
+    self:process_module(jagen)
+    self:process_module(root)
 
     local cmake = Command:new('cmake', '--version')
     if cmake:exists() then
@@ -105,101 +107,66 @@ function Engine:finalize()
     end
 end
 
-function Engine:add_package(pkg, pass)
-    self.packages[pkg.ref] = pkg
-    append(pass.packages, pkg)
-end
-
-function Engine:process_modules(pass, modules)
+function Engine:process_module(module, pkg)
+    local env = ProcessingEnv:new(self)
+    if pkg then
+        self:add_package(pkg, env)
+    end
+    local modules = module:collect_unprocessed(self.modules)
     for mod in each(modules) do
         Log.debug1('process module %s', mod)
         for rule in each(mod.packages) do
-            self:process_package(rule, pass)
+            self:process_package(rule, env)
         end
-        extend(pass.templates, mod.templates)
+        extend(env.templates, mod.templates)
         self.modules[mod.filename] = mod
     end
-    self:apply_templates(pass)
+    for pkg in each(env.packages) do
+        for spec in each(pkg.uses) do
+            self:process_use(spec, pkg)
+        end
+    end
+    self:apply_templates(env)
 end
 
-function Engine:process_package(rule, pass)
+function Engine:process_package(rule, env)
     local pkg = self.packages[rule.ref]
-
     if pkg then
         Log.debug1('process package %s: merge with existing instance', rule.ref)
         pkg:merge(rule, { pkg = pkg })
     else
         Log.debug1('process package %s: add new instance', rule.ref)
+        pkg = Package:new(rule.name, rule.config)
+        pkg:merge(rule, { pkg = rule })
+        self:add_package(pkg, env)
         local module = Module:load_package(rule, self.path)
         if module then
-            pkg = Package:new(rule.name, rule.config)
-            pkg:merge(rule, { pkg = rule })
-        else
-            pkg = Package:new(rule.name, rule.config)
-            pkg:merge(rule, { pkg = rule })
+            self:process_module(module)
         end
+    end
+end
 
-        self:add_package(pkg, pass)
-
+function Engine:process_use(spec, pkg)
+    local target = Target.from_use(spec)
+    local use = self.packages[target.ref]
+    if use then
+        Log.debug1('process use %s of %s: already processed', target.ref, pkg.ref)
+    else
+        Log.debug1('process use %s of %s: add new instance', target.ref, pkg.ref)
+        use = Package:new(target.name, target.config)
+        local module = Module:load_package(target, self.path)
         if module then
-            self:process_modules(pass, module:collect_uses(self.modules))
-        end
-    end
-end
-
-function Engine:process_use(use)
-    Log.debug1('process use %s', use)
-    local module = Module:load_package(use, self.path)
-    local pass = Pass:new()
-    if module then
-        local pkg = Package:new(use.name, use.config)
-        self:add_package(pkg, pass)
-        self:process_modules(pass, module:collect_uses(self.modules))
-    end
-end
-
-function Engine:check_uses(pkg, uses, state)
-    if not uses then return end
-    Log.debug1('%s has %d uses', pkg.ref, #uses)
-    for spec in each(uses) do
-        if type(spec) == 'function' then
-            spec = spec(state)
-        end
-        spec = Target.from_use(spec)
-        local use = self.packages[spec.ref]
-        if use then
-            Log.debug1('%s use %s is already loaded', pkg.ref, use.ref)
+            self:process_module(module, use)
         else
-            Log.debug1('loading %s use %s', pkg.ref, spec)
-            self:process_use(spec)
+            error(format("the package '%s' uses '%s' which is not defined"..
+                "and not found in module search path", pkg.ref, target.ref))
         end
     end
 end
 
-function Engine:apply_template(template, pkg)
-    local state = { matching = true, value = {} }
-    if template.debug then
-        Log.debug1('template: %s', pretty(template))
-    end
-    if pkg:match(template.match, state, template.debug) then
-        state.matching = false
-        state.packages = self.packages
-        if state.each then
-            for i = 1, state.n do
-                state.i = i
-                pkg:merge(template.apply, state)
-                self:check_uses(pkg, template.apply.uses, state)
-            end
-        else
-            if template.debug then
-                Log.debug1('match: %s', pretty(pkg))
-            end
-            pkg:merge(template.apply, state)
-            self:check_uses(pkg, template.apply.uses, state)
-        end
-    elseif template.match == nil then
-        pkg:merge(copy(template.apply), state)
-    end
+function Engine:add_package(pkg, pass)
+    self.packages[pkg.ref] = pkg
+    append(pass.packages, pkg)
 end
 
 function Engine:apply_templates(pass)
@@ -215,7 +182,6 @@ function Engine:apply_templates(pass)
         end
         extend(self.templates, pass.templates)
     end
-
     Log.debug1('%d new packages', #pass.packages)
     if next(pass.packages) then
         for pkg in each(pass.packages) do
@@ -228,6 +194,32 @@ function Engine:apply_templates(pass)
             end
         end
         extend(self.packages, pass.packages)
+    end
+end
+
+function Engine:apply_template(template, pkg)
+    local state = {
+        debug    = template.debug,
+        packages = self.packages,
+        matching = true,
+        value    = {},
+        i = 0, n = 1
+    }
+    if state.debug then
+        Log.debug1('apply template %s', pretty(template))
+    end
+    if pkg:match(template.match, state) then
+        state.matching = false
+        for i = 1, state.n do
+            state.i = i
+            pkg:merge(template.apply, state)
+            for spec in each(template.apply.uses) do
+                if type(spec) == 'function' then
+                    spec = spec(state)
+                end
+                self:process_use(spec, pkg)
+            end
+        end
     end
 end
 

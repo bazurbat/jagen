@@ -35,7 +35,7 @@ end
 
 function Rule.merge(to, from, state, debug)
     if debug then
-        Log.debug2('merging %s', pretty(from))
+        Log.debug1('merge %s', pretty(from))
     end
     for key, value in pairs(from or {}) do
         local tkey, tvalue = type(key), type(value)
@@ -61,21 +61,25 @@ function Rule.merge(to, from, state, debug)
     end
 
     for i, value in ipairs(from or {}) do
-        if debug then
-            Log.debug2('%d: %s %s', i, value, pretty(state.value))
-        end
         if type(value) == 'function' then
             if debug then
-                Log.debug2('%d: %s %s (expanded)', i, value, value(state) or 'nil')
+                Log.debug2('merge %d %s => %s', i, value, value(state) or 'nil')
             end
             value = value(state)
+        else
+            if debug then
+                Log.debug2('merge %d %s', i, value)
+            end
         end
         if value ~= nil then
             if type(value) == 'table' then
                 value = Rule.merge({}, value, state)
             end
             if value ~= nil then
-                table.insert(to, value)
+                if debug then
+                    Log.debug2('append %s', value)
+                end
+                append(to, value)
             end
         end
     end
