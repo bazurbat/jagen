@@ -301,7 +301,8 @@ jagen__resolve_layers() {
 
 jagen__get_path() {
     local path rv=0
-    path="$jagen_dir/lib"
+    path="$jagen_dir/src"
+    path="${path}${jagen_S}$jagen_dir/lib"
     path="${path}${jagen_S}$(jagen__resolve_layers)"; rv=$?
     path="${path}${jagen_S}$jagen_root_lib_dir"
     echo "$path"
