@@ -89,7 +89,9 @@ function P.exists(path)
 end
 
 function P.file_exists(path)
-    return P.exec('test -f "%s"', path)
+    local file = io.open(path, 'r+')
+    if file then file:close() end
+    return file ~= nil
 end
 
 function P.dir_exists(path)

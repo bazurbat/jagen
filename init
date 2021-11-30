@@ -4,7 +4,6 @@ set -ef
 
 jagen_url="https://github.com/bazurbat/jagen.git"
 env_file="env.sh"
-config_file="config.sh"
 runner_script="jagen"
 
 NL=$(printf '\n!'); NL=${NL%!}
@@ -13,7 +12,7 @@ show_usage() {
     cat <<EOF
 jagen-init
 
-  Initialize a directory as a Jagen build root or project
+  Initialize a directory as Jagen workspace
 
 USAGE
 
@@ -24,10 +23,10 @@ USAGE
 
 DESCRIPTION
 
-  The script sets up the current working directory to act as a Jagen workspace.
-  When piped to a shell it will clone the Jagen source repository on its own or
-  it can be run locally by reaching out with a relative path to an already
-  checked out Jagen source repository.
+  The script sets up the current working directory as Jagen workspace.
+  When piped to Shell it will clone the Jagen source repository into the
+  '.jagen' subdirectory. Alternatively, it can be run locally by reaching out
+  with a relative path to an already checked out Jagen source repository.
 
 OPTIONS
 
@@ -37,7 +36,6 @@ OPTIONS
   -j|--jagen-branch  clone the specified Jagen branch
   --root             force init as a build root
   --project          force init as a project
-  --skip-config      do not generate config.sh
   -L                 add a directory to the layers search path
 
 EOF
@@ -86,7 +84,6 @@ is_build_root() {
     local dir="${1:-$PWD}"
     [ -d "$dir" ] &&
     [ -f "$dir/$env_file" ] &&
-    [ -f "$dir/$config_file" ] &&
     [ -x "$dir/$runner_script" ]
 }
 
@@ -108,8 +105,6 @@ parse_command_line() {
             init_root=1 ;;
         --project)
             init_project=1 ;;
-        --skip-config)
-            init_skip_config=1 ;;
         -L) [ "$2" ] || die "the -L option requires a directory argument"
             init_layer_path="${init_layer_path}${NL}${2}"; shift ;;
         -*) die "invalid option: $1" ;;
@@ -164,52 +159,6 @@ write_runner() {
 . "$(dirname "$0")/env.sh" && _jagen "$@"
 EOF
     chmod +x "$runner_script"
-}
-
-write_config() {
-    cat >"$config_file" <<EOF
-# jagen_root_dir - refers to the location of the current build root
-EOF
-    if [ "$jagen_project_dir" ]; then
-        cat >>"$config_file" <<EOF
-
-# A directory of the project associated with this root.
-jagen_project_dir="$jagen_project_dir"
-EOF
-    fi
-    if [ "$jagen_layers" ]; then
-        cat >>"$config_file" <<EOF
-
-# A newline-separated list of directories with additional package definitions.
-jagen_layers="$jagen_layers"
-EOF
-    fi
-    if [ "$jagen_layer_path" ]; then
-        cat >>"$config_file" <<EOF
-
-# A newline-separated list of directories to search for unqualified layers.
-jagen_layer_path="$jagen_layer_path"
-EOF
-    fi
-    cat >>"$config_file" <<EOF
-
-# A directory for downloaded distribution files.
-jagen_dist_dir="\$jagen_root_dir/dist"
-
-# A directory for packages sources.
-jagen_src_dir="\$jagen_root_dir/src"
-
-# A space-separated list of optional features:
-#   ccache  - wrap compilation commands with ccache
-#   offline - skip network operations
-jagen_flags=""
-
-# A space-separated list of package names excluded from cleaning and updating.
-jagen_source_exclude=""
-
-# The default build profile: release|debug|release_with_debug
-jagen_build_profile="release"
-EOF
 }
 
 main() {
@@ -328,14 +277,6 @@ main() {
 
     write_env
     write_runner
-
-    if [ -z "$init_skip_config" ]; then
-        if [ -f "$config_file" ]; then
-            say "backing up an existing ${config_file} as ${config_file}.bak"
-            cp -f "$config_file" "${config_file}.bak"
-        fi
-        write_config "$config_file"
-    fi
 
     . ./env.sh
     jagen refresh

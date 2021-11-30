@@ -38,17 +38,18 @@ end
 function Engine:load_rules()
     Log.debug1('load rules')
 
-    local jagen_dir = os.getenv('jagen_dir')
-    local root_dir = os.getenv('jagen_root_dir')
+    local jagen_rules = System.mkpath(os.getenv('jagen_dir'), 'lib', 'rules.lua')
+    local root_rules  = System.mkpath(os.getenv('jagen_root_dir'), 'rules.lua')
 
-    local jagen = Module:load('jagen', System.mkpath(jagen_dir, 'lib', 'rules.lua'))
-    local root  = Module:load('root', System.mkpath(root_dir, 'rules.lua'))
-
+    local jagen = Module:load('jagen', jagen_rules)
     append(self.path, jagen:basename(jagen.filename))
-    append(self.path, root:basename(root.filename))
-
     self:process_module(jagen)
-    self:process_module(root)
+
+    if System.file_exists(root_rules) then
+        local root  = Module:load('root', root_rules)
+        append(self.path, root:basename(root.filename))
+        self:process_module(root)
+    end
 
     local cmake = Command:new('cmake', '--version')
     if cmake:exists() then
