@@ -1047,14 +1047,38 @@ template {
 template {
     match = {
         build = {
-            cmake = {
-                template_options = value
-            }
+            cmake = { template_options = value }
         }
     },
     apply = {
         build = {
             options = { value }
+        }
+    }
+}
+
+template {
+    match = {
+        build = {
+            options = value 'options',
+            cmake = {
+                executable = value 'cmake',
+                generator  = value 'generator',
+                template_options = value 'template_options'
+            }
+        }
+    },
+    apply = {
+        build = {
+            command = {
+                configure = {
+                    '${build.cmake.executable}',
+                    '--no-warn-unused-cli',
+                    '-G"${build.cmake.generator}"',
+                    value 'options',
+                    '${source.dir}'
+                }
+            }
         }
     }
 }
