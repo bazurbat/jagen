@@ -10,27 +10,31 @@ function Rule:new(def)
     return def
 end
 
-function Rule.match(value, pattern, state, debug)
+function Rule.match(value, pattern, state)
+    local debug = state.debug
     if type(pattern) == 'function' then
         if debug then
             Log.debug1('match %s: %s', pattern, pattern(state, value))
         end
         return pattern(state, value)
     elseif type(value) ~= type(pattern) then
-        return false, 1
+        return false
     elseif type(value) == 'table' then
         for k, v in pairs(pattern) do
-            if not Rule.match(value[k], v, state, debug) then
-                return false, 2
+            if debug then
+                Log.debug2('k %s, v %s', k, v)
+            end
+            if not Rule.match(value[k], v, state) then
+                return false
             end
         end
     elseif type(value) == 'string'
            and not string.match(value, pattern) then
-        return false, 3
+        return false
     elseif type(value) ~= 'string' and value ~= pattern then
-        return false, 4
+        return false
     end
-    return true, state
+    return true
 end
 
 function Rule.merge(to, from, state, debug)

@@ -291,16 +291,34 @@ end
 
 function Module.env.optional(expr)
     return function(state, value)
-        match = Rule.match(value, expr, state)
-        if value == nil then
-            return true
+        if state.matching then
+            local match = Rule.match(value, expr, state)
+            if value == nil then
+                return true
+            else
+                return match
+            end
         else
-            return match
+            if value == nil then
+                local expr = expr
+                while type(expr) == 'function' do
+                    expr = expr(state)
+                end
+                return expr
+            else
+                return value
+            end
         end
     end
 end
 
-function Module.env.anyof(args)
+function Module.env.anyof(...)
+    local args
+    if select('#', ...) == 1 then
+        args = select(1, ...)
+    else
+        args = {...}
+    end
     return function(state, value)
         if state.matching then
             for i = 1, #args do

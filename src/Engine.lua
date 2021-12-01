@@ -45,15 +45,22 @@ function Engine:load_rules()
     append(self.path, jagen:basename(jagen.filename))
     self:process_module(jagen)
 
+    local cmd = Command:new('cmake', '--version')
+    if cmd:exists() then
+        local cmake = self.packages.jagen.cmake
+        cmake.version = cmd:match('^cmake version ([%w_.]+)$')
+        if Jagen.command._compare_versions{'ge', cmake.version, '3.1'} then
+            cmake.supports_disable_package_registry = true
+        end
+        if Jagen.command._compare_versions{'ge', cmake.version, '3.5'} then
+            cmake.supports_export_compile_commands = true
+        end
+    end
+
     if System.file_exists(root_rules) then
         local root  = Module:load('root', root_rules)
         append(self.path, root:basename(root.filename))
         self:process_module(root)
-    end
-
-    local cmake = Command:new('cmake', '--version')
-    if cmake:exists() then
-        self.packages.jagen.cmake_version = cmake:match('^cmake version ([%w_.]+)$')
     end
 
     local Source = require 'Source'

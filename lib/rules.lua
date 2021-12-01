@@ -5,7 +5,7 @@ package {
     root_dir    = os.getenv('jagen_root_dir'),
     build_dir   = os.getenv('jagen_build_dir'),
     include_dir = os.getenv('jagen_include_dir'),
-    bin_dir     = expand '${root_dir}/bin',
+    bin_dir     = expand '${build_dir}/bin',
     dist_dir    = expand '${root_dir}/dist',
     lib_dir     = expand '${root_dir}/lib',
     log_dir     = expand '${root_dir}/log',
@@ -35,6 +35,8 @@ package {
             -- Do not run tools with an interactive graphical UI.
             DISPLAY = '<unset>'
         }
+    },
+    cmake = {
     }
 }
 
@@ -294,7 +296,7 @@ template {
         build = { type = some }
     },
     apply = {
-        stages = { configure = {} }
+        stages = { configure = { inputs = { stage 'clean' } } }
     }
 }
 
@@ -532,19 +534,6 @@ template {
 
 template {
     match = {
-        build = {
-            toolchain = value
-        }
-    },
-    apply = {
-        env = {
-            PATH = cat { path{from('jagen', 'bin_dir'), value}, ':', os.getenv('PATH') }
-        }
-    }
-}
-
-template {
-    match = {
         class = contains(match 'toolchain'),
         export = {
             system = value,
@@ -645,23 +634,15 @@ template {
 
 template {
     match = {
-        build = { type = 'cmake' }
+        build = { profile = anyof { 'release', none } }
     },
     apply = {
         build = {
             cmake = {
-                version = '3.22.0'
+                build_type = 'Release',
+                config = 'RELEASE'
             }
         }
-    }
-}
-
-template {
-    match = {
-        build = { profile = anyof { 'release', none } }
-    },
-    apply = {
-        build = { cmake = { config = 'RELEASE' } }
     }
 }
 
@@ -670,7 +651,12 @@ template {
         build = { profile = 'debug' }
     },
     apply = {
-        build = { cmake = { config = 'DEBUG' } }
+        build = {
+            cmake = {
+                build_type = 'Debug',
+                config = 'DEBUG'
+            }
+        }
     }
 }
 
@@ -679,7 +665,12 @@ template {
         build = { profile = 'release_with_debug' }
     },
     apply = {
-        build = { cmake = { config = 'RELWITHDEBINFO' } }
+        build = {
+            cmake = {
+                build_type = 'RelWithDebInfo',
+                config = 'RELWITHDEBINFO'
+            }
+        }
     }
 }
 
@@ -704,7 +695,6 @@ template {
 -- uses
 
 template {
-    -- final = true,
     match = {
         uses = each,
         stages = { configure = some }
@@ -720,10 +710,7 @@ template {
     }
 }
 
--- final
-
 template {
-    -- final = true,
     match = {
         uses = each,
     },
@@ -735,7 +722,6 @@ template {
 }
 
 template {
-    -- final = true,
     match = {
         build = { toolchain = value },
     },
@@ -745,7 +731,6 @@ template {
 }
 
 template {
-    -- final = true,
     match = {
         build = {
             with_install_dir = true
@@ -762,28 +747,41 @@ template {
 }
 
 template {
-    -- final = true,
     match = {
+        build = {
+            cc   = optional(value 'build.cc'),
+            cxx  = optional(value 'build.cxx'),
+            cpp  = optional(value 'build.cpp'),
+            ld   = optional(value 'build.ld'),
+            path = optional(value 'build.path'),
+            toolchain = value
+        },
         toolchain = {
-            cc  = optional(value 'cc'),
-            cxx = optional(value 'cxx'),
-            cpp = optional(value 'cpp'),
-            ld  = optional(value 'ld'),
+            cc   = optional(value 'toolchain.cc'),
+            cxx  = optional(value 'toolchain.cxx'),
+            cpp  = optional(value 'toolchain.cpp'),
+            ld   = optional(value 'toolchain.ld'),
+            path = optional(value 'toolchain.path')
         }
     },
     apply = {
         env = {
             -- CMake honors CC and CXX but not LD. It uses compiler for linking.
-            CC  = nonempty(value 'cc'),
-            CXX = nonempty(value 'cxx'),
-            CPP = nonempty(value 'cpp'),
-            LD  = nonempty(value 'ld')
+            CC  = optional(anyof(value 'build.cc',  value 'toolchain.cc')),
+            CXX = optional(anyof(value 'build.cxx', value 'toolchain.cxx')),
+            CPP = optional(anyof(value 'build.cpp', value 'toolchain.cpp')),
+            LD  = optional(anyof(value 'build.ld',  value 'toolchain.ld')),
+            PATH = join(':', {
+                                 value 'build.path',
+                                 path{from('jagen', 'bin_dir'), value},
+                                 value 'toolchain.path',
+                                 os.getenv('PATH')
+            })
         }
     }
 }
 
 template {
-    -- final = true,
     match = {
         build = {
             system = anyof { value 'system', none },
@@ -806,7 +804,6 @@ template {
 }
 
 template {
-    -- final = true,
     match = {
         build = {
             type     = isnot 'cmake',
@@ -830,7 +827,6 @@ template {
 }
 
 template {
-    -- final = true,
     match = {
         build = {
             type = 'cmake',
@@ -865,7 +861,6 @@ template {
 }
 
 template {
-    -- final = true,
     match = {
         build = {
             cmake = {
@@ -892,7 +887,6 @@ template {
 }
 
 template {
-    -- final = true,
     match = {
         build = { type = 'cmake' },
         toolchain = {
@@ -913,7 +907,6 @@ template {
 }
 
 template {
-    -- final = true,
     match = {
         build = {
             cmake = {
@@ -938,7 +931,25 @@ template {
 }
 
 template {
-    -- final = true,
+    match = {
+        build = {
+            cmake = {
+                build_type = value
+            }
+        }
+    },
+    apply = {
+        build = {
+            cmake = {
+                template_options = {
+                    argument('-DCMAKE_BUILD_TYPE', value)
+                }
+            }
+        }
+    }
+}
+
+template {
     match = {
         build = {
             type     = 'cmake',
@@ -962,7 +973,6 @@ template {
 }
 
 template {
-    -- final = true,
     match = {
         build   = { type = 'cmake' },
         install = { root = value   }
@@ -983,10 +993,26 @@ template {
 }
 
 template {
-    -- final = true,
     match = {
-        build = { type = 'cmake' }
+        build   = { type = 'cmake' },
+        install = { prefix = value }
+    },
+    apply = {
+        build = {
+            cmake = {
+                template_options = {
+                    argument('-DCMAKE_INSTALL_PREFIX', value)
+                }
+            }
+        }
+    }
+}
+
+template {
+    match = {
+        build = { type = 'cmake' },
         -- CMake version >= 3.1
+        from('jagen', 'cmake.supports_disable_package_registry'),
     },
     apply = {
         build = {
@@ -1002,10 +1028,10 @@ template {
 }
 
 template {
-    -- final = true,
     match = {
-        build = { type = 'cmake' }
+        build = { type = 'cmake' },
         -- CMake version >= 3.5
+        from('jagen', 'cmake.supports_export_compile_commands'),
     },
     apply = {
         build = {
@@ -1014,6 +1040,21 @@ template {
                     '-DCMAKE_EXPORT_COMPILE_COMMANDS=YES'
                 }
             }
+        }
+    }
+}
+
+template {
+    match = {
+        build = {
+            cmake = {
+                template_options = value
+            }
+        }
+    },
+    apply = {
+        build = {
+            options = { value }
         }
     }
 }
