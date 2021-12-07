@@ -634,7 +634,10 @@ template {
 
 template {
     match = {
-        build = { profile = anyof { 'release', none } }
+        build = {
+            type    = 'cmake',
+            profile = anyof { 'release', none }
+        }
     },
     apply = {
         build = {
@@ -648,7 +651,10 @@ template {
 
 template {
     match = {
-        build = { profile = 'debug' }
+        build = {
+            type    = 'cmake',
+            profile = 'debug'
+        }
     },
     apply = {
         build = {
@@ -662,7 +668,10 @@ template {
 
 template {
     match = {
-        build = { profile = 'release_with_debug' }
+        build = {
+            type    = 'cmake',
+            profile = 'release_with_debug'
+        }
     },
     apply = {
         build = {
@@ -1078,6 +1087,22 @@ template {
                     value 'options',
                     '${source.dir}'
                 }
+            }
+        }
+    }
+}
+
+template {
+    match = {
+        build = {
+            type = 'make',
+            in_source = true
+        }
+    },
+    apply = {
+        stages = {
+            clean = {
+                command = 'make clean'
             }
         }
     }
