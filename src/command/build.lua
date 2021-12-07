@@ -106,7 +106,7 @@ function P:run(args)
         end
 
         for name, pkg in filter(by_name)(kvpairs(packages)) do
-            for stage in kvpairs(pkg.stages or {}) do
+            for stage in kvpairs(pkg.stage or {}) do
                 local target = Target.from_args(name, stage)
                 if arg_clean and stage == 'clean' then
                     targets[tostring(target)] = true

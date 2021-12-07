@@ -195,7 +195,7 @@ template {
 
 template {
     match = { source = some },
-    apply = { stages = { clean = {} } }
+    apply = { stage = { clean = {} } }
 }
 
 -- update
@@ -203,7 +203,7 @@ template {
 template {
     match = { source = { type = anyof { 'git', 'hg' } } },
     apply = {
-        stages = {
+        stage = {
             update = { inputs = { stage 'clean' } }
         }
     }
@@ -214,7 +214,7 @@ template {
 template {
     match = { source = { type = '^dist' } },
     apply = {
-        stages = {
+        stage = {
             unpack = { inputs = { stage 'clean' } }
         }
     }
@@ -225,10 +225,10 @@ template {
 template {
     match = {
         patches = some,
-        stages  = { update = some }
+        stage  = { update = some }
     },
     apply = {
-        stages = {
+        stage = {
             patch = { inputs = { stage 'update' } }
         }
     }
@@ -237,10 +237,10 @@ template {
 template {
     match = {
         patches = some,
-        stages  = { unpack = some }
+        stage  = { unpack = some }
     },
     apply = {
-        stages = {
+        stage = {
             patch = { inputs = { stage 'unpack' } }
         }
     }
@@ -296,7 +296,7 @@ template {
         build = { type = some }
     },
     apply = {
-        stages = { configure = { inputs = { stage 'clean' } } }
+        stage = { configure = { inputs = { stage 'clean' } } }
     }
 }
 
@@ -306,7 +306,7 @@ template {
         build = { type = some }
     },
     apply = {
-        stages = {
+        stage = {
             configure = { inputs = { stage 'patch' } }
         }
     }
@@ -315,11 +315,11 @@ template {
 template {
     match = {
         build   = { type = some },
-        stages  = { unpack = some },
+        stage  = { unpack = some },
         patches = none,
     },
     apply = {
-        stages = {
+        stage = {
             configure = { inputs = { stage 'unpack' } }
         }
     }
@@ -328,11 +328,11 @@ template {
 template {
     match = {
         build   = { type = some },
-        stages  = { update = some },
+        stage  = { update = some },
         patches = none,
     },
     apply = {
-        stages = {
+        stage = {
             configure = { inputs = { stage 'update' } }
         }
     }
@@ -343,7 +343,7 @@ template {
 template {
     match = { build = { type = some } },
     apply = {
-        stages = {
+        stage = {
             compile = { inputs = { stage 'configure' } }
         }
     }
@@ -365,17 +365,17 @@ template {
 
 template {
     match = { install = { type = some } },
-    apply = { stages  = { install = {} } }
+    apply = { stage  = { install = {} } }
 }
 
 template {
     match = {
         build   = anyof { none, { type = none } },
         install = { type = some },
-        stages  = { unpack = some }
+        stage  = { unpack = some }
     },
     apply = {
-        stages = {
+        stage = {
             install = { inputs = { stage 'unpack' } }
         }
     }
@@ -385,10 +385,10 @@ template {
     match = {
         build   = anyof { none, { type = none } },
         install = { type  = some },
-        stages  = { clean = some }
+        stage  = { clean = some }
     },
     apply = {
-        stages = {
+        stage = {
             install = { inputs = { stage 'clean' } }
         }
     }
@@ -397,10 +397,10 @@ template {
 template {
     match = {
         install = { type    = some },
-        stages  = { compile = some }
+        stage  = { compile = some }
     },
     apply = {
-        stages = {
+        stage = {
             install = { inputs = { stage 'compile' } }
         }
     }
@@ -706,10 +706,10 @@ template {
 template {
     match = {
         uses = each,
-        stages = { configure = some }
+        stage = { configure = some }
     },
     apply = {
-        stages = {
+        stage = {
             configure = {
                 inputs = {
                     from(each, anyof { stage 'install', stage 'compile' })
@@ -1100,9 +1100,10 @@ template {
         }
     },
     apply = {
-        stages = {
+        stage = {
             clean = {
-                command = 'make clean'
+                work_dir = '${source.dir}',
+                command = { 'make', 'clean' }
             }
         }
     }

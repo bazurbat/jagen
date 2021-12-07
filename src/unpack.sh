@@ -148,6 +148,9 @@ pkg_clean() {
         # inside the work dir in the default configuration.
         toclean="$pkg_work_dir${jagen_S}$pkg_source_dir"
     fi
+    if [ "$pkg_stage_clean_command" ]; then
+        echo $pkg_stage_clean_command
+    fi
     for dir in $toclean; do
         if [ -d "$dir" ]; then
             if jagen_is_same_dir "$dir" "$pkg_source_dir"; then

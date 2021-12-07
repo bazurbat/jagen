@@ -51,7 +51,10 @@ local function write(fmt, name, value)
             write(fmt, newname, value[key])
         end
         if #value > 0 then
-            fmt("%s='%s'", name, write_array(value))
+            local s = write_array(value)
+            if not string.empty(s) then
+                fmt("%s='%s'", name, s)
+            end
         end
     end
 end
@@ -97,7 +100,7 @@ local function write_files(w, pkg)
 end
 
 function P:write(pkg, filename, engine)
-    local skip = { stages = true, uses = true, import = true, export = true, env = true }
+    local skip = { stage = true, uses = true, import = true, export = true, env = true }
 
     local properties = {}
     for key, val in pairs(pkg) do
@@ -109,8 +112,8 @@ function P:write(pkg, filename, engine)
     table.sort(properties)
 
     local standard_sections = {
-        source = true, build = true, install = true,
-        'source', 'build', 'install'
+        source = true, toolchain = true, build = true, install = true,
+        'source', 'toolchain', 'build', 'install'
     }
     local other_sections = {}
 
@@ -149,6 +152,11 @@ function P:write(pkg, filename, engine)
 
     for name in each(other_sections) do
         write(add_main, name, pkg[name])
+    end
+
+    local stages = table.keys(pkg.stage)
+    for stage in each(stages) do
+        write(add_main, 'stage_'..stage, pkg.stage[stage])
     end
 
     local function collect_env(env)
