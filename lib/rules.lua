@@ -19,12 +19,14 @@ package {
         cmd     = expand '${self.src_dir}/cmd.sh',
     },
     export = {
-        dir       = expand '${dir}',
-        root_dir  = expand '${root_dir}',
-        build_dir = expand '${build_dir}',
-        bin_dir   = expand '${bin_dir}',
-        dist_dir  = expand '${dist_dir}',
-        src_dir   = expand '${src_dir}',
+        bin_dir     = expand '${bin_dir}',
+        build_dir   = expand '${build_dir}',
+        dir         = expand '${dir}',
+        dist_dir    = expand '${dist_dir}',
+        include_dir = expand '${include_dir}',
+        log_dir     = expand '${log_dir}',
+        root_dir    = expand '${root_dir}',
+        src_dir     = expand '${src_dir}',
         env = {
             -- Disable passphrase querying.
             GIT_SSH_COMMAND = 'ssh -o BatchMode=yes',
@@ -55,13 +57,6 @@ package {
 --         CCACHE_SLOPPINESS="file_stat_matches,include_file_mtime,time_macros"
 --     }
 -- }
-
--- use jagen
-
-template {
-    match = { name = isnot 'jagen' },
-    apply = { uses = { 'jagen' } }
-}
 
 -- source
 

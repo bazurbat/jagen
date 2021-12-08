@@ -108,15 +108,18 @@ local function format_table(path, value, fmt)
         fmt(path, tostring(value))
     elseif tvalue == 'table' then
         for k, v in kvpairs(value) do
-            format_table(append(path, k), v, fmt)
+            format_table(append(copy(path), k), v, fmt)
         end
         if #value > 0 then
-            fmt(path, table.concat(collect_array(value), '\t'))
+            local array = collect_array(value)
+            if #array > 0 then
+                fmt(path, table.concat(array, '\t'))
+            end
         end
     end
 end
 
-local function format_property(property, prefix, skip)
+local function format_rule(property, prefix, skip)
     skip = skip or {}
 
     local format = string.format
@@ -132,7 +135,7 @@ local function format_property(property, prefix, skip)
     end
 
     for key, value in pairs(property) do
-        if not skip[key] then
+        if not skip[key] and key:sub(1, 1) ~= '_' then
             local path = prefix and {prefix, key} or {key}
             format_table(path, value, format_variable)
         end
@@ -143,12 +146,27 @@ local function format_property(property, prefix, skip)
     return table.concat(result, '\n')
 end
 
+function Package:generate_script()
+    local result = {}
+    append(result, format_rule(self, 'pkg', {
+                env = true,
+                export = true,
+                import = true,
+        }))
+    if self.env then
+        append(result, '')
+        append(result, format_rule(self.env))
+    end
+    return table.concat(result, '\n')
+end
+
 function Package:generate_export_script()
     local result = {}
     if self.export then
-        append(result, format_property(self.export, self.name, { env = true }))
+        append(result, format_rule(self.export, self.name, { env = true }))
         if self.export.env then
-            append(result, format_property(self.export.env))
+            append(result, '')
+            append(result, format_rule(self.export.env))
         end
     end
     return table.concat(result, '\n')

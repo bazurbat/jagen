@@ -100,7 +100,7 @@ local function write_files(w, pkg)
 end
 
 function P:write(pkg, filename, engine)
-    local skip = { stage = true, uses = true, import = true, export = true, env = true }
+    local skip = { stage = true, import = true, export = true, env = true }
 
     local properties = {}
     for key, val in pairs(pkg) do
@@ -216,15 +216,15 @@ function P:write(pkg, filename, engine)
 
     local file = assert(io.open(filename, 'w+'))
     file:write(table.concat(main, '\n'), '\n')
-    if next(exports) then
-        file:write('\n', table.concat(exports, '\n'), '\n')
-    end
-    if next(imports) then
-        file:write('\n', table.concat(imports, '\n'), '\n')
-    end
-    if next(unset) then
-        file:write('\n', table.concat(unset, '\n'), '\n')
-    end
+    -- if next(exports) then
+    --     file:write('\n', table.concat(exports, '\n'), '\n')
+    -- end
+    -- if next(imports) then
+    --     file:write('\n', table.concat(imports, '\n'), '\n')
+    -- end
+    -- if next(unset) then
+    --     file:write('\n', table.concat(unset, '\n'), '\n')
+    -- end
     if next(env) then
         file:write('\n', table.concat(env, '\n'), '\n')
     end

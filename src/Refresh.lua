@@ -52,7 +52,10 @@ function Refresh:run(args)
 
     for pkg in each(packages) do
         local filename = System.mkpath(include_dir, string.format('%s.sh', pkg.name))
-        Script:write(pkg, filename, engine)
+        local script_file = assert(io.open(filename, 'w'))
+        script_file:write(pkg:generate_script())
+        script_file:close()
+        -- Script:write(pkg, filename, engine)
         local export_filename = System.mkpath(include_dir, string.format('%s.export.sh', pkg.name))
         local export_file = assert(io.open(export_filename, 'w'))
         export_file:write(pkg:generate_export_script())

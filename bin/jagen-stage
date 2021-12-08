@@ -78,8 +78,12 @@ fi
 
 cd "$jagen_build_dir" || exit
 
-# include scripts
-include "$jagen_include_dir/$(pkg__fname "$pkg_name")" || exit
+for use in $pkg_uses; do
+    echo $use
+    include "${jagen_include_dir}/${use}.export.sh" || exit
+done; unset use
+
+include "${jagen_include_dir}/${pkg_name}.sh" || exit
 
 if [ -f "$pkg_backing_script" ]; then
     include "$pkg_backing_script"
