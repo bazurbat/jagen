@@ -34,6 +34,11 @@ function Package:create(name)
 end
 
 function Package:parse(rule)
+    if type(rule[1]) == 'string' then
+        rule.name = rule[1]
+        table.remove(rule, 1)
+    end
+
     rule.ref = rule.name
     rule.source = Source:parse(rule.source)
 

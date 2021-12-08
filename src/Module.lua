@@ -144,7 +144,10 @@ end
 function Module.env.package(rule)
     -- Log.debug1('package: %s', pretty(rule))
     local pkg = Package:from_rule(rule)
-    -- print(pretty(pkg))
+    local state = { pkg = pkg }
+    for key, value in pairs(pkg) do
+        pkg[key] = Module.env.expand(value)(state)
+    end
     append(current.packages, pkg)
 end
 
