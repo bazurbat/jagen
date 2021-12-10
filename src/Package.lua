@@ -111,6 +111,8 @@ local function format_table(path, value, fmt)
         fmt(path, value)
     elseif tvalue == 'number' then
         fmt(path, tostring(value))
+    elseif tvalue == 'boolean' and value then
+        fmt(path, 'yes')
     elseif tvalue == 'table' then
         for k, v in kvpairs(value) do
             format_table(append(copy(path), k), v, fmt)
