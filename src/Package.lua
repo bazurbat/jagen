@@ -152,29 +152,29 @@ local function format_rule(property, prefix, skip)
 end
 
 function Package:generate_script()
-    local result = {}
-    append(result, format_rule(self, 'pkg', {
-                env = true,
-                export = true,
-                import = true,
-        }))
+    return format_rule(self, 'pkg', {
+            env    = true,
+            export = true,
+            import = true,
+        })
+end
+
+function Package:generate_env_script()
     if self.env then
-        append(result, '')
-        append(result, format_rule(self.env))
+        return format_rule(self.env)
     end
-    return table.concat(result, '\n')
 end
 
 function Package:generate_export_script()
-    local result = {}
+    local output = {}
     if self.export then
-        append(result, format_rule(self.export, self.name, { env = true }))
+        append(output, format_rule(self.export, self.name, { env = true }))
         if self.export.env then
-            append(result, '')
-            append(result, format_rule(self.export.env))
+            append(output, '')
+            append(output, format_rule(self.export.env))
         end
     end
-    return table.concat(result, '\n')
+    return table.concat(output, '\n')
 end
 
 return Package

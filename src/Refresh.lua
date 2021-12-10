@@ -36,6 +36,8 @@ local function generate_cargo_config(packages)
 end
 
 function Refresh:run(args)
+    local format, mkpath = string.format, System.mkpath
+
     local engine = Engine:new()
     local packages = engine:load_rules()
 
@@ -48,53 +50,58 @@ function Refresh:run(args)
 
     System.mkdir(build_dir, include_dir)
 
-    local targets = {}
-
     for pkg in each(packages) do
-        local filename = System.mkpath(include_dir, string.format('%s.sh', pkg.name))
-        local script_file = assert(io.open(filename, 'w'))
-        script_file:write(pkg:generate_script())
-        script_file:close()
-        -- Script:write(pkg, filename, engine)
-        local export_filename = System.mkpath(include_dir, string.format('%s.export.sh', pkg.name))
-        local export_file = assert(io.open(export_filename, 'w'))
-        export_file:write(pkg:generate_export_script())
-        export_file:close()
+        local scripts = {
+            {
+                name     = format('%s.sh', pkg.ref),
+                contents = pkg:generate_script()
+            },
+            {
+                name     = format('%s.env.sh', pkg.ref),
+                contents = pkg:generate_env_script()
+            },
+            {
+                name     = format('%s.export.sh', pkg.ref),
+                contents = pkg:generate_export_script()
+            }
+        }
 
-        for name, stage in pairs(pkg.stages or {}) do
-            local target = Target.from_args(pkg.name, name, pkg.config)
-            append(targets, target)
-            -- local filename = string.format('%s/%s', dir.log, target:log_filename())
-            -- assert(io.open(filename, 'a+')):close()
+        for _, script in ipairs(scripts) do
+            if script.contents then
+                local path = mkpath(include_dir, script.name)
+                local file = assert(io.open(path, 'w'))
+                file:write(script.contents)
+                file:close()
+            end
         end
     end
 
     Ninja.generate(packages, root_config)
 
-    local names, targets = {}, {}
+    local autocomplete = {
+        names     = { name = '.jagen-names'     },
+        scm_names = { name = '.jagen-scm-names' },
+        configs   = { name = '.jagen-configs'   },
+        targets   = { name = '.jagen-targets'   },
+    }
+
     for pkg in each(packages) do
-        append(names, pkg.name)
-        for stage in pairs(pkg.stages or {}) do
-            append(targets, pkg.name..':'..stage)
+        if not pkg.abstract then
+            append(autocomplete.names, pkg.name)
+            if pkg.source and pkg.source.scm then
+                append(autocomplete.scm_names, pkg.name)
+            end
+            for stage in pairs(pkg.stage or {}) do
+                append(autocomplete.targets, pkg.name..':'..stage)
+            end
         end
     end
 
-    local names_file = assert(io.open(System.mkpath(build_dir, '.jagen-names'), 'w'))
-    names_file:write(table.concat(names, '\n'))
-    names_file:close()
+    for _, item in pairs(autocomplete) do
+        table.sort(item)
+        System.write_file(mkpath(build_dir, item.name), table.concat(item, '\n'))
 
-    local scm_names_file = assert(io.open(System.mkpath(build_dir, '.jagen-scm-names'), 'w'))
-    scm_names_file:close()
-
-    local configs_file = assert(io.open(System.mkpath(build_dir, '.jagen-configs'), 'w'))
-    configs_file:close()
-
-    local targets_file = assert(io.open(System.mkpath(build_dir, '.jagen-targets'), 'w'))
-    targets_file:write(table.concat(targets, '\n'))
-    targets_file:close()
-
-    local layers_file = assert(io.open(System.mkpath(build_dir, '.jagen-layers'), 'w'))
-    layers_file:close()
+    end
 end
 
 return Refresh

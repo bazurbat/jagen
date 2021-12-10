@@ -137,4 +137,10 @@ function P.dirname(path)
     return P.pread('*l', 'dirname "%s"', path)
 end
 
+function P.write_file(filename, contents)
+    local file = assert(io.open(filename, 'w'))
+    file:write(contents)
+    file:close()
+end
+
 return P
