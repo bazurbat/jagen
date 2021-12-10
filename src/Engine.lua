@@ -217,8 +217,14 @@ function Engine:apply_template(template, pkg)
         Log.debug1('apply template %s', pretty(template))
     end
     if pkg:match(template.match, state) then
+        if state.debug then
+            Log.debug1('matched %d', state.n)
+        end
         state.matching = false
         for i = 1, state.n do
+            if state.debug then
+                Log.debug1('apply %d', i)
+            end
             state.i = i
             pkg:merge(template.apply, state)
             for spec in each(template.apply.uses) do
@@ -227,6 +233,10 @@ function Engine:apply_template(template, pkg)
                 end
                 self:process_use(spec, pkg)
             end
+        end
+    else
+        if state.debug then
+            Log.debug1('not matched')
         end
     end
 end

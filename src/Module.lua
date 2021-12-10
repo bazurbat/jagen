@@ -377,10 +377,12 @@ end
 
 function Module.env.each(state, value)
     if state.matching then
-        state.i = 0
         state.n = value and #value or 0
         state.values = value
         state.each = true
+        if state.debug then
+            print(pretty(state.values))
+        end
         return true
     else
         return state.values[state.i]

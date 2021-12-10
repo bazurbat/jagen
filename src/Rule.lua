@@ -14,7 +14,7 @@ function Rule.match(value, pattern, state)
     local debug = state.debug
     if type(pattern) == 'function' then
         if debug then
-            Log.debug1('match %s: %s', pattern, pattern(state, value))
+            Log.debug1('match %s -> %s', pattern, pattern(state, value))
         end
         return pattern(state, value)
     elseif type(value) ~= type(pattern) then
