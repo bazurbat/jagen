@@ -144,10 +144,8 @@ end
 function Module.env.package(rule)
     -- Log.debug1('package: %s', pretty(rule))
     local pkg = Package:from_rule(rule)
-    local state = { pkg = pkg }
-    for key, value in pairs(pkg) do
-        pkg[key] = Module.env.expand(value)(state)
-    end
+    local state = { env = pkg }
+    Module.env.expand(pkg)(state)
     append(current.packages, pkg)
 end
 
@@ -165,7 +163,9 @@ function Module.env.bind(fns)
     return function(state, value)
         local result = value
         for i = 1, #fns do
-            result = fns[i](state, result)
+            if type(fns[i]) == 'function' then
+                result = fns[i](state, result)
+            end
         end
         return result
     end
@@ -188,6 +188,16 @@ function Module.env.replace(args)
             end
         end
         return result
+    end
+end
+
+function Module.env.quoted(expr)
+    return function(state)
+        local value = expr
+        while type(value) == 'function' do
+            value = value(state)
+        end
+        return string.format('"%s"', tostring(value))
     end
 end
 
@@ -295,11 +305,10 @@ end
 function Module.env.optional(expr)
     return function(state, value)
         if state.matching then
-            local match = Rule.match(value, expr, state)
-            if value == nil then
-                return true
+            if value ~= nil then
+                return Rule.match(value, expr, state)
             else
-                return match
+                return true
             end
         else
             if value == nil then
@@ -391,18 +400,27 @@ end
 
 function Module.env.from(expr, key)
     return function(state)
+        local debug = state.debug
         local ref = expr
-        if type(expr) == 'function' then
-            ref = expr(state)
+        while type(ref) == 'function' do
+            ref = ref(state)
         end
-        local pkg = state.packages[ref]
+        local pkg
+        if ref == '<self>' then
+            pkg = state.self
+        else
+            pkg = state.packages[ref]
+        end
         if pkg then
-            local tkey = type(key)
-            if tkey == 'string' then
+            local keytype = type(key)
+            if debug then
+                Log.debug1('from %s %s', pkg.ref, pretty(key))
+            end
+            if keytype == 'string' then
                 return table.get(pkg, unpack(string.split2(key, '.')))
-            elseif tkey == 'function' then
-                return key(pkg, state)
-            elseif tkey == 'nil' then
+            elseif keytype == 'function' then
+                return key(state, pkg)
+            elseif keytype == 'nil' then
                 return pkg
             end
         end
@@ -411,11 +429,18 @@ end
 
 function Module.env.stage(stage)
     return function(state, pkg)
+        local debug = state.debug
         if pkg then
-            if pkg.stages and pkg.stages[stage] then
+            if pkg.stage and pkg.stage[stage] then
+                Log.debug1('stage %s:%s found', pkg.name, stage)
                 return { name = pkg.name, stage = stage }
+            else
+                Log.debug1('stage %s:%s not found', pkg.name, stage)
             end
         else
+            if debug then
+                Log.debug1('stage %s', stage)
+            end
             return { stage = stage }
         end
     end
@@ -423,21 +448,29 @@ end
 
 function Module.env.expand(expr)
     return function(state)
+        local debug = state.debug
         local function sub(path)
             local keys = path:split2('.')
-            local value = table.get(state.pkg, table.unpack(keys))
+            local value = table.get(state.env, table.unpack(keys))
             if type(value) == 'function' then
                 value = Module.env.expand(value)(state)
             end
-            return value or ''
+            return value or '<none>'
         end
         local value = expr
         local count, depth, max_depth = 0, 0, 10
         repeat
+            if debug then
+                Log.debug1('expand %d %s', depth, pretty(value))
+            end
             if type(value) == 'function' then
                 value, count = value(state), 1
             elseif type(value) == 'string' then
                 value, count = value:gsub('${([%w_][%w_.:]+)}', sub)
+            elseif type(value) == 'table' then
+                for k, v in pairs(value) do
+                    value[k] = Module.env.expand(v)(state)
+                end
             else
                 count = 0
             end

@@ -70,17 +70,6 @@ function Engine:load_rules()
         end
     end
 
-    local ok, err
-    ok, err = pcall(function ()
-        for pkg in each(self.packages) do
-            self:expand(pkg, pkg, pkg.name)
-        end
-    end)
-    if not ok then
-        Log.error(err.message)
-        error('fatal error during rule expansion', 0)
-    end
-
     if os.getenv('jagen_debug_engine') then
         for pkg in each(self.packages) do
             print(pretty(pkg))
@@ -141,11 +130,11 @@ function Engine:process_package(rule, env)
     local pkg = self.packages[rule.ref]
     if pkg then
         Log.debug1('process package %s: merge with existing instance', rule.ref)
-        pkg:merge(rule, { pkg = pkg })
+        pkg:merge(rule, { env = pkg })
     else
         Log.debug1('process package %s: add new instance', rule.ref)
         pkg = Package:new(rule.name, rule.config)
-        pkg:merge(rule, { pkg = rule })
+        pkg:merge(rule, { env = rule })
         self:add_package(pkg, env)
         local module = Module:load_package(rule, self.path)
         if module then
@@ -211,20 +200,16 @@ function Engine:apply_template(template, pkg)
         packages = self.packages,
         matching = true,
         value    = {},
+        env      = pkg,
+        self     = pkg,
         i = 0, n = 1
     }
     if state.debug then
         Log.debug1('apply template %s', pretty(template))
     end
     if pkg:match(template.match, state) then
-        if state.debug then
-            Log.debug1('matched %d', state.n)
-        end
         state.matching = false
         for i = 1, state.n do
-            if state.debug then
-                Log.debug1('apply %d', i)
-            end
             state.i = i
             pkg:merge(template.apply, state)
             for spec in each(template.apply.uses) do
@@ -234,102 +219,50 @@ function Engine:apply_template(template, pkg)
                 self:process_use(spec, pkg)
             end
         end
-    else
-        if state.debug then
-            Log.debug1('not matched')
-        end
     end
-end
-
-function Engine:expand(object, env, parent_key)
-    local function sub(expr)
-        local name, path = expr:match('([%w_]+):([%w_][%w_.]+)')
-        local pkg
-        if name then
-            pkg = self.packages[name]
-            if not pkg then
-                error({
-                    message = string.format("an expression '%s' in %s "..
-                        "references a package '%s' which is not defined",
-                        expr, parent_key, name),
-                }, 0)
-            end
-        else
-            path = expr
-        end
-        local keys = path:split2('.')
-        local value
-        if pkg then
-            value = table.get(pkg, table.unpack(keys))
-        else
-            value = table.get(env, table.unpack(keys))
-        end
-        if value then
-            return value
-        else
-            error({
-                    message = string.format("an expansion of the expression "..
-                        "'%s' in %s produced nil value", expr, parent_key)
-                }, 0)
-        end
-    end
-
-    if type(object) == 'table' then
-        for key, value in pairs(object) do
-            if type(key) == 'string' and key:sub(1, 1) ~= '_'
-               or type(key) == 'number'
-            then
-                object[key] = self:expand(value, env, parent_key..'.'..key)
-            end
-        end
-    elseif type(object) == 'string' then
-        local count, depth, max_depth = 0, 0, 10
-        repeat
-            object, count = object:gsub('${([%w_][%w_.:]+)}', sub)
-            depth = depth + 1
-        until count == 0 or depth == max_depth
-        if depth == max_depth then
-            Log.warning("substitution depth limit %d reached while expanding "..
-                "property %s, current value: %s", max_depth, parent_key, object)
-        end
-    end
-
-    return object
 end
 
 function Engine:validate()
     local num_fatal = 0
 
-    local function find_unexpanded(key, value)
+    local unexpanded, empty = {}, {}
+
+    local function find_invalid(keypath, value)
         local tvalue = type(value)
         if tvalue == 'string' then
             if value:match('${.+}') then
-                coroutine.yield(key, value)
+                unexpanded[keypath] = value
+            elseif value:match('<none>') then
+                empty[keypath] = value
             end
         elseif tvalue == 'table' then
             for k, v in pairs(value) do
-                find_unexpanded(key..'.'..k, v)
+                find_invalid(string.format('%s.%s', keypath, k), v)
             end
         end
     end
 
-    local function iter_unexpanded(rule)
-        return coroutine.wrap(function () find_unexpanded(rule.name, rule) end)
-    end
-
-    local unexpanded = {}
-
     for pkg in each(self.packages) do
-        for key, value in iter_unexpanded(pkg) do
-            unexpanded[key] = value
-        end
+        find_invalid(pkg.ref, pkg)
     end
 
     if next(unexpanded) then
+        local keys = table.keys(unexpanded)
+        table.sort(keys)
         num_fatal = num_fatal + 1
         Log.error('Unexpanded properties left after rule loading:')
-        for key, value in pairs(unexpanded) do
-            Log.error('  %s = %s', key, value)
+        for key in each(keys) do
+            Log.error('  %s = %s', key, unexpanded[key])
+        end
+    end
+
+    if next(empty) then
+        local keys = table.keys(empty)
+        table.sort(keys)
+        num_fatal = num_fatal + 1
+        Log.error('Some properties still contain empty value marker <none>:')
+        for key in each(keys) do
+            Log.error('  %s = %s', key, empty[key])
         end
     end
 

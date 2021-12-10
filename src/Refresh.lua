@@ -74,6 +74,8 @@ function Refresh:run(args)
                 file:close()
             end
         end
+
+        pkg.script = mkpath(include_dir, scripts[1].name)
     end
 
     Ninja.generate(packages, root_config)

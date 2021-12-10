@@ -37,15 +37,9 @@ function Rule.match(value, pattern, state)
     return true
 end
 
-function Rule.merge(to, from, state, debug)
-    if debug then
-        Log.debug1('merge %s', pretty(from))
-    end
+function Rule.merge(to, from, state)
     for key, value in pairs(from or {}) do
         local tkey, tvalue = type(key), type(value)
-        if debug then
-            Log.debug2('%s: %s', tostring(key), tostring(value))
-        end
         if tkey ~= 'number' then
             if tkey == 'function' then
                 key = key(state)
@@ -57,7 +51,7 @@ function Rule.merge(to, from, state, debug)
                 if type(to[key]) ~= 'table'  then
                     to[key] = {}
                 end
-                to[key] = Rule.merge(to[key], value, state, debug)
+                to[key] = Rule.merge(to[key], value, state)
             else
                 to[key] = value
             end
@@ -66,23 +60,13 @@ function Rule.merge(to, from, state, debug)
 
     for i, value in ipairs(from or {}) do
         if type(value) == 'function' then
-            if debug then
-                Log.debug2('merge %d %s => %s', i, value, value(state) or 'nil')
-            end
             value = value(state)
-        else
-            if debug then
-                Log.debug2('merge %d %s', i, value)
-            end
         end
         if value ~= nil then
             if type(value) == 'table' then
                 value = Rule.merge({}, value, state)
             end
             if value ~= nil then
-                if debug then
-                    Log.debug2('append %s', value)
-                end
                 append(to, value)
             end
         end

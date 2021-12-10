@@ -1,15 +1,14 @@
 #!/bin/sh
 # shellcheck disable=1090,2034,2086,2154,2155
 
-pkg_name="${1:?}"
-pkg_stage="${2:?}"
-pkg_config="$3"
-shift 3
-pkg_args="$@"
+pkg_stage=${1:?}
+pkg__include_script=${2:?}
 
-. "${jagen_dir:?}/src/stages.sh" || exit
+jagen_include_dir=$(dirname "$pkg__include_script")
 
-. "${jagen_include_dir:?}/jagen.sh" || exit
+. "$pkg__include_script"                   || exit
+. "${jagen_include_dir:?}/jagen.export.sh" || exit
+. "${jagen_dir:?}/src/stages.sh"           || exit
 
 pkg__target="${pkg_name}:${pkg_stage}${pkg_config:+:${pkg_config}}"
 pkg__stamp_file="${jagen_build_dir:?}/${pkg__target}"
@@ -76,55 +75,40 @@ then
     exec >>"$pkg__log_file" 2>&1 || exit
 fi
 
-cd "$jagen_build_dir" || exit
+pkg_run cd "${jagen_build_dir:?}" || exit
 
 for use in $pkg_uses; do
-    echo $use
     include "${jagen_include_dir}/${use}.export.sh" || exit
 done; unset use
 
-include "${jagen_include_dir}/${pkg_name}.sh" || exit
-
-if [ -f "$pkg_backing_script" ]; then
-    include "$pkg_backing_script"
+pkg__env_script="${jagen_include_dir}/${pkg_ref}.env.sh"
+if [ -f "$pkg__env_script" ]; then
+    include "$pkg__env_script"
 fi
 
-case $pkg_stage in
-    clean|unpack|update)
-        cd "$jagen_build_dir"
-        ;;
-    patch|generate)
-        if [ "$pkg_source_dir" ] && [ -d "$pkg_source_dir" ]; then
-            pkg_run cd "$pkg_source_dir"
-        fi
-        ;;
-    *)
-        if [ "$pkg_build_dir" ]; then
-            pkg_run mkdir -p "$pkg_build_dir"
-            pkg_run cd "$pkg_build_dir"
-        fi
-        # in_flags ccache && use_env ccache
-        ;;
-esac
+pkg__work_dir=$(eval echo "\$pkg_stage_${pkg_stage}_work_dir")
+: ${pkg__work_dir:=$jagen_build_dir}
 
-pkg__try_stages="jagen_pkg_${pkg_stage} jagen_stage_${pkg_stage}"
-if [ "$pkg_config" ]; then
-    pkg__try_stages="\
-jagen_pkg_${pkg_stage}_${pkg_config} \
-jagen_stage_${pkg_stage}_${pkg_config} \
-$pkg__try_stages"
+if ! [ -d "$pkg__work_dir" ]; then
+    pkg_run mkdir -p "$pkg__work_dir"
 fi
-pkg__try_stages=$(echo "$pkg__try_stages" | sed 's/-/_/g')
+pkg_run cd "$pkg__work_dir"
 
-for pkg__current_stage in $pkg__try_stages; do
-    if is_function "$pkg__current_stage"; then
-        # this command should remain unchecked for errexit to be able to
-        # interrupt the function as expected
-        eval "$pkg__current_stage" $pkg_args; pkg__err=$?
-        # an error status always causes an exit regardless of errexit
-        [ $pkg__err = 0 ] || exit $pkg__err
-        break
-    fi
-done
+pkg__stage_function=$(eval echo "\$pkg_stage_${pkg_stage}_function")
+: ${pkg__stage_function:=$(eval echo "jagen_stage_${pkg_stage}")}
+pkg__stage_function=$(jagen_to_shell_name "$pkg__stage_function")
+
+if is_function $pkg__stage_function; then
+    debug2 "executing stage function $pkg__stage_function"
+    $pkg__stage_function
+fi
+
+# if is_function "$pkg__stage_function"; then
+#     # this command should remain unchecked for errexit to be able to interrupt
+#     # the function as expected
+#     eval "$pkg__stage_function"; pkg__err=$?
+#     # an error status always causes an exit regardless of errexit
+#     [ $pkg__err = 0 ] || exit $pkg__err
+# fi
 
 touch "$pkg__stamp_file"

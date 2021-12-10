@@ -1,7 +1,7 @@
 #!/bin/sh
 
 pkg_compile() {
-    local IFS="$jagen_IFS" S="$jagen_FS" A= MA="$(cat "${jagen_build_args_file:?}" 2>&-)"
+    local IFS="$jagen_IFS" S="$jagen_FS" A= MA="$(cat "$jagen_build_args_file" 2>&-)"
 
     local is_offline= verbose_opt= jobs=
     local makefile=

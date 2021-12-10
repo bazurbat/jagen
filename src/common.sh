@@ -583,3 +583,7 @@ jagen__uname() {
     fi
     echo "$jagen__uname_cache"
 }
+
+jagen_to_shell_name() {
+    echo "$*" | sed -E 's/[^[[:alnum:]_]/_/g'
+}

@@ -215,7 +215,7 @@ end
 
 local function format_stage(name, target, pkg)
     local output = { pkg.name, name, pkg.config }
-    local args = { pkg.name, name, pkg.config or quote('') }
+    local args   = { name, quote(pkg.script) }
 
     local inputs = {}
     for _, item in ipairs(target.inputs or {}) do

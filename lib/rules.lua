@@ -26,6 +26,7 @@ package { 'jagen',
         log_dir     = '${log_dir}',
         root_dir    = '${root_dir}',
         src_dir     = '${src_dir}',
+        build_args_file = '${build_args_file}',
         env = {
             -- Disable passphrase querying.
             GIT_SSH_COMMAND = 'ssh -o BatchMode=yes',
@@ -185,20 +186,27 @@ template {
     }
 }
 
--- clean
+-- stage: clean
 
 template {
-    match = { source = some },
-    apply = { stage = { clean = {} } }
+    match = {
+        source = some
+    },
+    apply = {
+        stage = { clean = {} }
+    }
 }
 
 -- update
 
 template {
-    match = { source = { type = anyof { 'git', 'hg' } } },
+    match = { source = { scm = true } },
     apply = {
         stage = {
-            update = { inputs = { stage 'clean' } }
+            update = {
+                inputs = { stage 'clean' },
+                work_dir = from('jagen', 'build_dir')
+            }
         }
     }
 }
@@ -209,7 +217,10 @@ template {
     match = { source = { type = '^dist' } },
     apply = {
         stage = {
-            unpack = { inputs = { stage 'clean' } }
+            unpack = {
+                inputs = { stage 'clean' },
+                work_dir = from('jagen', 'build_dir')
+            }
         }
     }
 }
@@ -219,23 +230,20 @@ template {
 template {
     match = {
         patches = some,
-        stage  = { update = some }
+        source  = { dir = value 'source.dir' },
     },
     apply = {
         stage = {
-            patch = { inputs = { stage 'update' } }
-        }
-    }
-}
-
-template {
-    match = {
-        patches = some,
-        stage  = { unpack = some }
-    },
-    apply = {
-        stage = {
-            patch = { inputs = { stage 'unpack' } }
+            patch = {
+                inputs = {
+                    from('<self>', anyof {
+                            stage 'update',
+                            stage 'unpack',
+                            stage 'clean'
+                        })
+                },
+                work_dir = value 'source.dir'
+            }
         }
     }
 }
@@ -287,47 +295,24 @@ template {
 
 template {
     match = {
-        build = { type = some }
-    },
-    apply = {
-        stage = { configure = { inputs = { stage 'clean' } } }
-    }
-}
-
-template {
-    match = {
-        patches = some,
-        build = { type = some }
-    },
-    apply = {
-        stage = {
-            configure = { inputs = { stage 'patch' } }
+        build = {
+            type = some,
+            dir  = some
         }
-    }
-}
-
-template {
-    match = {
-        build   = { type = some },
-        stage  = { unpack = some },
-        patches = none,
     },
     apply = {
         stage = {
-            configure = { inputs = { stage 'unpack' } }
-        }
-    }
-}
-
-template {
-    match = {
-        build   = { type = some },
-        stage  = { update = some },
-        patches = none,
-    },
-    apply = {
-        stage = {
-            configure = { inputs = { stage 'update' } }
+            configure = {
+                inputs = {
+                    anyof {
+                        stage 'patch',
+                        stage 'update',
+                        stage 'unpack',
+                        stage 'clean'
+                    }
+                },
+                work_dir = expand '${build.dir}'
+            } 
         }
     }
 }
@@ -335,10 +320,20 @@ template {
 -- stage: compile
 
 template {
-    match = { build = { type = some } },
+    match = {
+        build = {
+            type = some,
+            dir  = some
+        } 
+    },
     apply = {
         stage = {
-            compile = { inputs = { stage 'configure' } }
+            compile = {
+                inputs = {
+                    stage 'configure'
+                },
+                work_dir = expand '${build.dir}'
+            }
         }
     }
 }
@@ -358,8 +353,17 @@ template {
 -- stage: install
 
 template {
-    match = { install = { type = some } },
-    apply = { stage  = { install = {} } }
+    match = {
+        build   = { dir = value 'build.dir' },
+        install = { type = some }
+    },
+    apply = {
+        stage = {
+            install = {
+                work_dir = value 'build.dir'
+            }
+        }
+    }
 }
 
 template {
@@ -681,16 +685,15 @@ template {
 
 template {
     match = {
-        dir    = anyof { value 'dir', none },
-        source = { dir = anyof { value 'source', none } },
-        build  = { dir = anyof { value 'build',  none } }
+        source = { dir = optional(value 'source.dir') },
+        build  = { dir = optional(value 'build.dir')  }
 
     },
     apply = {
         export = {
-            dir    = anyof { value 'dir', value 'source' },
-            source = { dir = value 'source' },
-            build  = { dir = value 'build'  }
+            dir    = {       value 'source.dir' },
+            source = { dir = value 'source.dir' },
+            build  = { dir = value 'build.dir'  }
         }
     }
 }
@@ -709,17 +712,6 @@ template {
                     from(each, anyof { stage 'install', stage 'compile' })
                 }
             }
-        }
-    }
-}
-
-template {
-    match = {
-        uses = each,
-    },
-    apply = {
-        import = {
-            [each] = from(each, 'export')
         }
     }
 }
@@ -787,21 +779,21 @@ template {
 template {
     match = {
         build = {
-            system = anyof { value 'system', none },
-            arch   = anyof { value 'arch',   none },
-            cpu    = anyof { value 'cpu',    none }
+            system = optional(value 'system'),
+            arch   = optional(value 'arch'),
+            cpu    = optional(value 'cpu')
         },
         toolchain = {
-            system = anyof { value 'toolchain_system', none },
-            arch   = anyof { value 'toolchain_arch',   none },
-            cpu    = anyof { value 'toolchain_cpu',    none }
+            system = optional(value 'toolchain.system'),
+            arch   = optional(value 'toolchain.arch'),
+            cpu    = optional(value 'toolchain.cpu')
         }
     },
     apply = {
         build = {
-            system = anyof { value 'system', value 'toolchain_system' },
-            arch   = anyof { value 'arch',   value 'toolchain_arch'   },
-            cpu    = anyof { value 'cpu',    value 'toolchain_cpu'    }
+            system = anyof { value 'system', value 'toolchain.system' },
+            arch   = anyof { value 'arch',   value 'toolchain.arch'   },
+            cpu    = anyof { value 'cpu',    value 'toolchain.cpu'    }
         }
     }
 }
@@ -810,14 +802,14 @@ template {
     match = {
         build = {
             type     = isnot 'cmake',
-            cflags   = anyof { value 'cflags',   none },
-            cxxflags = anyof { value 'cxxflags', none },
-            ldflags  = anyof { value 'ldflags',  none }
+            cflags   = optional(value 'cflags'),
+            cxxflags = optional(value 'cxxflags'),
+            ldflags  = optional(value 'ldflags')
         },
         toolchain = {
-            cflags   = anyof { value 'toolchain_cflags',   none },
-            cxxflags = anyof { value 'toolchain_cxxflags', none },
-            ldflags  = anyof { value 'toolchain_ldflags',  none }
+            cflags   = optional(value 'toolchain_cflags'),
+            cxxflags = optional(value 'toolchain_cxxflags'),
+            ldflags  = optional(value 'toolchain_ldflags')
         }
     },
     apply = {
@@ -1062,12 +1054,12 @@ template {
 
 template {
     match = {
-        build = {
+        source = { dir = value 'source.dir' },
+        build  = {
             options = value 'options',
             cmake = {
                 executable = value 'cmake',
-                generator  = value 'generator',
-                template_options = value 'template_options'
+                generator  = value 'generator'
             }
         }
     },
@@ -1075,11 +1067,10 @@ template {
         build = {
             command = {
                 configure = {
-                    '${build.cmake.executable}',
-                    '--no-warn-unused-cli',
-                    '-G"${build.cmake.generator}"',
+                    value 'cmake', '--no-warn-unused-cli',
+                    join {'-G', quoted(value 'generator')},
                     value 'options',
-                    '${source.dir}'
+                    value 'source.dir'
                 }
             }
         }
@@ -1088,7 +1079,8 @@ template {
 
 template {
     match = {
-        build = {
+        source = { dir = some },
+        build  = {
             type = 'make',
             in_source = true
         }
@@ -1096,7 +1088,7 @@ template {
     apply = {
         stage = {
             clean = {
-                work_dir = '${source.dir}',
+                work_dir = expand '${source.dir}',
                 command = { 'make', 'clean' }
             }
         }

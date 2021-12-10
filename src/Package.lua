@@ -154,11 +154,16 @@ local function format_rule(property, prefix, skip)
 end
 
 function Package:generate_script()
-    return format_rule(self, 'pkg', {
-            env    = true,
-            export = true,
-            import = true,
-        })
+    local output = {}
+    append(output, format_rule(self, 'pkg', {
+                env    = true,
+                export = true,
+        }))
+    if self.export then
+        append(output, '')
+        append(output, format_rule(self.export, 'pkg_export'))
+    end
+    return table.concat(output, '\n')
 end
 
 function Package:generate_env_script()
