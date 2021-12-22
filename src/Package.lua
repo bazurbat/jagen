@@ -38,11 +38,20 @@ function Package:parse(rule)
         rule.name = rule[1]
         table.remove(rule, 1)
     end
+    if type(rule[2]) == 'string' then
+        rule.config = rule[1]
+        table.remove(rule, 1)
+    end
 
-    rule.ref = rule.name
+    if rule.name and rule.config then
+        rule.ref = string.format('%s:%s', rule.name, rule.config)
+    else
+        rule.ref = rule.name or rule.config
+    end
+
     rule.source = Source:parse(rule.source)
 
-    for key in each { 'class', 'uses' } do
+    for key in each { 'class', 'uses', 'extends' } do
         local value = rule[key]
         if type(value) == 'string' then
             rule[key] = { value }

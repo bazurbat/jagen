@@ -123,13 +123,30 @@ function Engine:process_module(module, pkg)
             self:process_use(spec, pkg)
         end
     end
+    for i = 1, #env.packages do
+        local pkg = env.packages[i]
+        for ref in each(pkg.extends) do
+            local parent = self.packages[ref]
+            if parent then
+                local this = copy(parent)
+                this.abstract = nil
+                this.config = nil
+                this:merge(pkg, { env = pkg })
+                env.packages[i] = this
+                env.packages[this.ref] = this
+            else
+                error(format('package %s extends %s which is not defined',
+                    pkg.ref, ref))
+            end
+        end
+    end
     self:apply_templates(env)
 end
 
 function Engine:process_package(rule, env)
     local pkg = self.packages[rule.ref]
     if pkg then
-        Log.debug1('process package %s: merge with existing instance', rule.ref)
+        Log.debug1('process package %s: merge with an existing instance', rule.ref)
         pkg:merge(rule, { env = pkg })
     else
         Log.debug1('process package %s: add new instance', rule.ref)

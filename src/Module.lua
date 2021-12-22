@@ -406,7 +406,7 @@ function Module.env.from(expr, key)
             ref = ref(state)
         end
         local pkg
-        if ref == '<self>' then
+        if ref == nil then
             pkg = state.self
         else
             pkg = state.packages[ref]
@@ -422,6 +422,10 @@ function Module.env.from(expr, key)
                 return key(state, pkg)
             elseif keytype == 'nil' then
                 return pkg
+            end
+        else
+            if debug then
+                Log.debug1('from %s: not found', ref)
             end
         end
     end

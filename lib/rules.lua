@@ -186,11 +186,24 @@ template {
     }
 }
 
+template {
+    match = {
+        name  = value,
+        build = some
+    },
+    apply = {
+        build = {
+            work_dir = path { from('jagen', 'build_dir'), value }
+        }
+    }
+}
+
 -- stage: clean
 
 template {
-    match = {
-        source = some
+    match = anyof {
+        { source = some },
+        { build  = some }
     },
     apply = {
         stage = { clean = {} }
@@ -200,12 +213,14 @@ template {
 -- update
 
 template {
-    match = { source = { scm = true } },
+    match = {
+        source = { scm = true }
+    },
     apply = {
         stage = {
             update = {
                 inputs = { stage 'clean' },
-                work_dir = from('jagen', 'build_dir')
+                work_dir = from('jagen', 'src_dir')
             }
         }
     }
@@ -230,19 +245,17 @@ template {
 template {
     match = {
         patches = some,
-        source  = { dir = value 'source.dir' },
     },
     apply = {
         stage = {
             patch = {
                 inputs = {
-                    from('<self>', anyof {
+                    from(self, anyof {
                             stage 'update',
                             stage 'unpack',
                             stage 'clean'
                         })
-                },
-                work_dir = value 'source.dir'
+                }
             }
         }
     }
@@ -297,22 +310,22 @@ template {
     match = {
         build = {
             type = some,
-            dir  = some
+            dir  = value 'build.dir'
         }
     },
     apply = {
         stage = {
             configure = {
                 inputs = {
-                    anyof {
-                        stage 'patch',
-                        stage 'update',
-                        stage 'unpack',
-                        stage 'clean'
-                    }
+                    from(self, anyof {
+                            stage 'patch',
+                            stage 'update',
+                            stage 'unpack',
+                            stage 'clean'
+                        })
                 },
-                work_dir = expand '${build.dir}'
-            } 
+                work_dir = value 'build.dir'
+            }
         }
     }
 }
