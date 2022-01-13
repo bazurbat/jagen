@@ -11,6 +11,16 @@ It is designed to be a very lightweight alternative to
 [Repo](https://source.android.com/setup/develop/repo)/[GClient](https://www.chromium.org/developers/how-tos/depottools)
 and [Yocto](https://www.yoctoproject.org).
 
+## Warning
+
+The current `master` branch is a complete rewrite of rule engine and many other internal changes
+which break backwards compatibility. While the top level package rule syntax is about the same the
+internal processing is different, some property names were changed, etc. Given the opportunity I've
+decided to drop the most of the historical baggage as well. The process is not yet complete, so
+expect breakage. The documentation about rules is now mostly obsolete. 
+
+The latest stable version before the rewrite was moved to the `legacy` branch.
+
 ## Introduction
 
 - [Features](#features)
